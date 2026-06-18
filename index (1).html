@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>THILIKON · Παρακολούθηση Παραγγελίας</title>
+<link rel="icon" href="https://i.imgur.com/TbSGZu5.png">
+
+<!-- ===== Share preview (Open Graph / Twitter) =====
+     ΑΛΛΑΞΕ το YOUR-DOMAIN παρακάτω με το πραγματικό σου domain/path,
+     και ανέβασε το thilikon-og.png δίπλα σε αυτό το αρχείο (ίδιος φάκελος).
+     π.χ. https://thilikon.gr/track/  ή  https://kostism900.github.io/thilikon/track/ -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="THILIKON">
+<meta property="og:title" content="Παρακολούθηση Παραγγελίας · THILIKON">
+<meta property="og:description" content="Δες σε ποια φάση βρίσκεται η χειροποίητη δημιουργία σου, βήμα-βήμα. 🤍">
+<meta property="og:image" content="https://YOUR-DOMAIN/thilikon-og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://YOUR-DOMAIN/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Παρακολούθηση Παραγγελίας · THILIKON">
+<meta name="twitter:description" content="Δες σε ποια φάση βρίσκεται η χειροποίητη δημιουργία σου, βήμα-βήμα. 🤍">
+<meta name="twitter:image" content="https://YOUR-DOMAIN/thilikon-og.png">
+<meta name="theme-color" content="#141414">
+<!-- ===== /Share preview ===== -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#141414;
+    --ink-soft:#4a4843;
+    --paper:#ffffff;
+    --cream:#f4f3f1;
+    --stone:#eae8e3;
+    --line:#e4e1db;
+    --muted:#928d84;
+    --ok:#1f1f1d;
+    --radius:18px;
+    --pill:999px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    background:var(--cream);
+    color:var(--ink);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  /* display headings (high-contrast editorial serif) */
+  .serif{font-family:'Cormorant',Georgia,serif;font-weight:600;letter-spacing:.005em}
+  .eyebrow{
+    font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--muted);font-weight:600;
+  }
+  .wrap{max-width:600px;margin:0 auto;padding:0 22px}
+
+  /* ---------- top bar ---------- */
+  header{
+    padding:30px 0 14px;text-align:center;
+  }
+  header img{height:46px;width:auto;filter:brightness(0)}
+  header .sub{
+    margin-top:10px;font-size:11px;letter-spacing:.3em;
+    text-transform:uppercase;color:var(--muted);
+  }
+
+  /* ---------- generic card ---------- */
+  .card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:28px 24px;
+  }
+  .center{text-align:center}
+
+  /* ---------- buttons / fields ---------- */
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    font-family:'Inter';font-size:11.5px;font-weight:600;
+    letter-spacing:.08em;text-transform:uppercase;
+    padding:13px 22px;border-radius:var(--pill);
+    border:1px solid var(--ink);cursor:pointer;
+    transition:.18s ease;text-decoration:none;background:transparent;color:var(--ink);
+  }
+  .btn.solid{background:var(--ink);color:#fff}
+  .btn.solid:hover{background:#000}
+  .btn.ghost:hover{background:var(--ink);color:#fff}
+  .btn.sm{padding:9px 15px;font-size:10.5px;letter-spacing:.06em}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .btn.danger{border-color:#b54b3a;color:#b54b3a}
+  .btn.danger:hover{background:#b54b3a;color:#fff}
+
+  label.fld{display:block;margin-bottom:14px}
+  label.fld span{
+    display:block;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:6px;font-weight:600;
+  }
+  input,textarea,select{
+    width:100%;font-family:'Inter';font-size:14px;color:var(--ink);
+    background:var(--cream);border:1px solid var(--line);
+    border-radius:12px;padding:12px 14px;outline:none;transition:.15s;
+  }
+  textarea{resize:vertical;min-height:70px}
+  input:focus,textarea:focus,select:focus{border-color:var(--ink);background:#fff}
+
+  .hidden{display:none!important}
+
+  /* ---------- landing ---------- */
+  #view-landing{padding-top:6px}
+  #view-landing h1{font-size:36px;font-weight:600;line-height:1.1;margin:14px 0 10px;letter-spacing:.005em}
+  #view-landing p.lead{color:var(--ink-soft);font-size:14px;margin-bottom:24px}
+  .code-row{display:flex;gap:10px;margin-top:6px}
+  .code-row input{text-align:center;letter-spacing:.08em}
+
+  /* ---------- tracking ---------- */
+  .order-head{margin-bottom:6px}
+  .order-head h1{font-size:33px;font-weight:600;line-height:1.12;letter-spacing:.005em}
+  .order-head .who{color:var(--ink-soft);font-size:14px;margin-top:6px}
+  .meta-row{
+    display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;
+  }
+  .tag{
+    font-size:11.5px;letter-spacing:.01em;color:var(--ink-soft);
+    background:var(--stone);border-radius:var(--pill);padding:6px 13px;
+  }
+
+  /* stage banner */
+  .banner{
+    margin:24px 0 6px;padding:18px 20px;border-radius:16px;
+    background:var(--ink);color:#fff;display:flex;align-items:center;gap:16px;
+  }
+  .banner.done{background:#1d3b2a}
+  .banner .pct{
+    flex:none;width:52px;height:52px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    border:1.5px solid rgba(255,255,255,.5);font-size:13px;letter-spacing:.02em;font-weight:500;
+  }
+  .banner .b-txt .e{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;opacity:.6;font-weight:600}
+  .banner .b-txt .t{font-family:'Cormorant',Georgia,serif;font-size:24px;font-weight:600;line-height:1.1;margin-top:2px}
+
+  /* ---------- stitch timeline (signature) ---------- */
+  .timeline{margin-top:28px;position:relative}
+  .step{position:relative;padding:0 0 28px 50px;}
+  .step:last-child{padding-bottom:0}
+  /* the stitched thread */
+  .step::before{
+    content:"";position:absolute;left:16px;top:30px;bottom:-4px;width:0;
+    border-left:2px dashed var(--line);
+  }
+  .step:last-child::before{display:none}
+  .step.done::before{border-left:2px solid var(--ink)}
+  .dot{
+    position:absolute;left:0;top:0;width:33px;height:33px;border-radius:50%;
+    background:var(--paper);border:2px dashed var(--line);
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px;color:var(--muted);font-weight:600;
+  }
+  .step.done .dot{background:var(--ink);border:2px solid var(--ink);color:#fff}
+  .step.active .dot{
+    border:2px solid var(--ink);color:var(--ink);
+    box-shadow:0 0 0 0 rgba(20,20,20,.35);animation:pulse 2s infinite;
+  }
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(20,20,20,.30)}
+    70%{box-shadow:0 0 0 9px rgba(20,20,20,0)}
+    100%{box-shadow:0 0 0 0 rgba(20,20,20,0)}
+  }
+  .step h3{font-size:20px;font-weight:600;line-height:1.18}
+  .step .dur{font-size:12.5px;color:var(--muted);margin-top:3px}
+  .step.active h3::after{
+    content:"σε εξέλιξη";font-family:'Inter',sans-serif;font-size:9px;letter-spacing:.12em;font-weight:600;
+    text-transform:uppercase;color:#fff;background:var(--ink);
+    border-radius:var(--pill);padding:3px 9px;margin-left:9px;vertical-align:middle;
+  }
+  .step.pending h3{color:var(--muted);font-weight:500}
+
+  .note-box{
+    margin-top:24px;background:var(--paper);border:1px solid var(--line);
+    border-left:3px solid var(--ink);border-radius:12px;padding:15px 18px;
+  }
+  .note-box .e{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .note-box p{font-size:14.5px;margin-top:6px;color:var(--ink-soft);line-height:1.55}
+
+  .ship-box{
+    margin-top:14px;border:1px solid var(--ink);border-radius:14px;padding:15px 18px;
+    display:flex;flex-wrap:wrap;align-items:center;gap:12px;justify-content:space-between;
+  }
+  .ship-box .si .e{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .ship-box .si .v{font-weight:600;font-size:14px;margin-top:3px}
+
+  .updated{margin-top:18px;text-align:center;font-size:11px;color:var(--muted);letter-spacing:.04em}
+
+  .contact{
+    margin-top:24px;text-align:center;
+  }
+  .contact p{font-size:13.5px;color:var(--ink-soft);margin-bottom:12px}
+
+  /* ---------- post-delivery (feedback + reminders) ---------- */
+  .post{margin-top:18px;display:flex;flex-direction:column;gap:14px}
+  .post-lock{
+    display:flex;gap:12px;align-items:flex-start;
+    background:var(--stone);border:1px dashed #c9c4ba;border-radius:14px;padding:14px 16px;
+  }
+  .post-lock .ico{font-size:18px;line-height:1.3;flex:none}
+  .post-lock .pl-t{font-weight:600;font-size:13.5px}
+  .post-lock .pl-s{font-size:13px;color:var(--ink-soft);margin-top:3px;line-height:1.5}
+  .post.locked .pcard{opacity:.5;filter:grayscale(.35)}
+  .post.locked .pcard .btn,
+  .post.locked .pcard .stars button,
+  .post.locked .pcard textarea{pointer-events:none}
+  .fb-locked{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:13.5px;color:var(--muted);font-weight:500}
+  .pcard{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:22px 22px}
+  .pcard.dark{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .pcard .pe{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .pcard.dark .pe{color:rgba(255,255,255,.55)}
+  .pcard h3{font-family:'Cormorant',Georgia,serif;font-size:24px;font-weight:600;line-height:1.12;margin-top:6px}
+  .pcard p.pb{font-size:14px;line-height:1.6;color:var(--ink-soft);margin-top:8px}
+  .pcard.dark p.pb{color:rgba(255,255,255,.8)}
+  .pcard .pbtn{margin-top:16px}
+  .pcard.dark .btn{border-color:#fff;color:#fff}
+  .pcard.dark .btn:hover{background:#fff;color:var(--ink)}
+  /* star rating */
+  .stars{display:flex;gap:6px;margin:14px 0 4px}
+  .stars button{background:none;border:none;cursor:pointer;font-size:30px;line-height:1;color:var(--line);transition:.12s;padding:0}
+  .stars button.on{color:#e8b23a}
+  .fb-thanks{font-size:14px;color:var(--ink-soft);margin-top:6px}
+
+  /* ---------- admin ---------- */
+  .admin-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+  .admin-bar .e{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .order-row{
+    border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px;background:#fff;
+  }
+  .order-row .r-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+  .order-row .r-name{font-weight:600;font-size:15px}
+  .order-row .r-prod{font-size:13px;color:var(--ink-soft);margin-top:1px}
+  .order-row .r-fb{font-size:12px;color:#a07b1e;margin-top:6px}
+  .order-row .r-money{font-size:12.5px;margin-top:6px;font-weight:600;color:var(--ink)}
+  .order-row .r-money .pay-ok{color:#2c6e49;font-weight:600}
+  .order-row .r-money .pay-due{color:#b06a1e;font-weight:600}
+  .order-row .r-stage{
+    font-size:10px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;font-weight:600;
+    background:var(--ink);color:#fff;border-radius:var(--pill);padding:5px 11px;
+  }
+  .order-row .r-stage.done{background:#1d3b2a}
+  .order-row .r-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+  .fb-readout{background:var(--cream);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:13px}
+  .fb-readout b{color:#a07b1e}
+  /* stats */
+  .stats{margin-bottom:16px;border:1px solid var(--line);border-radius:16px;background:#fff;overflow:hidden}
+  .stats-h{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;cursor:pointer;user-select:none}
+  .stats-h .e{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .stats-h .chev{color:var(--muted);font-size:13px;transition:.2s}
+  .stats.open .chev{transform:rotate(180deg)}
+  .stats-body{display:none;padding:4px 16px 18px}
+  .stats.open .stats-body{display:block}
+  .stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  @media(min-width:480px){.stat-grid{grid-template-columns:repeat(4,1fr)}}
+  .stat{background:var(--cream);border:1px solid var(--line);border-radius:12px;padding:13px 14px}
+  .stat .n{font-family:'Cormorant',Georgia,serif;font-size:30px;font-weight:600;line-height:1}
+  .stat .l{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:5px;font-weight:600}
+  .stat.dark{background:var(--ink);border-color:var(--ink);color:#fff}
+  .stat.dark .l{color:rgba(255,255,255,.6)}
+  .stat-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;font-size:12.5px;color:var(--ink-soft)}
+  .stats-sub{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:18px 0 9px}
+  .stat-pill{background:var(--stone);border-radius:var(--pill);padding:6px 12px}
+  .stage-bars{margin-top:14px;display:flex;flex-direction:column;gap:7px}
+  .sbar{display:flex;align-items:center;gap:10px;font-size:12px}
+  .sbar .lbl{width:108px;color:var(--ink-soft);flex:none}
+  .sbar .track{flex:1;height:8px;background:var(--stone);border-radius:6px;overflow:hidden}
+  .sbar .fill{display:block;height:100%;background:var(--ink);border-radius:6px;min-width:0}
+  .sbar .cnt{width:24px;text-align:right;font-weight:600;flex:none}
+  .feed{margin-top:14px}
+  .msg{font-size:13px;padding:11px 14px;border-radius:12px;margin-bottom:12px}
+  .msg.err{background:#fbeae6;color:#9b3b29}
+  .msg.ok{background:#e9f1ea;color:#26452f}
+
+  /* modal */
+  .overlay{
+    position:fixed;inset:0;background:rgba(20,20,20,.55);backdrop-filter:blur(3px);
+    display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;
+    overflow:auto;z-index:50;
+  }
+  .modal{background:#fff;border-radius:var(--radius);max-width:520px;width:100%;padding:26px 24px;margin:auto}
+  .modal h2{font-size:22px;font-weight:600;margin-bottom:4px;letter-spacing:-.01em}
+  .modal .mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+  .x{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1}
+
+  .stage-picker{display:flex;gap:8px;flex-wrap:wrap}
+  .stage-picker button{
+    flex:1;min-width:64px;border:1px solid var(--line);background:var(--cream);
+    border-radius:12px;padding:9px 6px;cursor:pointer;font-family:'Inter';
+    font-size:11px;color:var(--ink-soft);transition:.15s;text-align:center;
+  }
+  .stage-picker button.sel{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .stage-picker button .n{display:block;font-size:15px;margin-bottom:2px;font-weight:600}
+
+  .link-box{
+    display:flex;gap:8px;margin-top:10px;background:var(--cream);
+    border:1px solid var(--line);border-radius:14px;padding:8px 8px 8px 14px;align-items:center;
+  }
+  .link-box code{flex:1;font-size:12px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  footer{padding:36px 0 30px;text-align:center}
+  footer img{height:24px;filter:brightness(0);opacity:.55}
+  footer .fl{margin-top:10px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+  .adm-link{color:var(--muted);text-decoration:underline;cursor:pointer;font-size:11px;letter-spacing:.1em}
+
+  .spinner{width:30px;height:30px;border:2px solid var(--line);border-top-color:var(--ink);border-radius:50%;animation:spin .8s linear infinite;margin:30px auto}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+  @media(min-width:560px){
+    .order-head h1{font-size:37px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <img src="https://i.imgur.com/TbSGZu5.png" alt="THILIKON">
+  <div class="sub">Order Tracking</div>
+</header>
+
+<main class="wrap" style="padding-bottom:20px">
+
+  <!-- ============ LANDING ============ -->
+  <section id="view-landing" class="hidden">
+    <div class="card center">
+      <p class="eyebrow">Παρακολούθηση</p>
+      <h1 class="serif">Πού βρίσκεται<br>η παραγγελία σου;</h1>
+      <p class="lead">Βάλε τον κωδικό, τον αριθμό παραγγελίας ή επικόλλησε το link που σου στείλαμε.</p>
+      <div class="code-row">
+        <input id="codeInput" placeholder="κωδικός ή αρ. παραγγελίας" autocomplete="off" spellcheck="false">
+        <button class="btn solid" onclick="goTrack()">Δες</button>
+      </div>
+      <p id="landErr" class="msg err hidden" style="margin-top:14px"></p>
+    </div>
+  </section>
+
+  <!-- ============ TRACKING ============ -->
+  <section id="view-track" class="hidden">
+    <div id="trackLoading"><div class="spinner"></div></div>
+    <div id="trackContent" class="hidden">
+      <div class="card">
+        <div class="order-head">
+          <p class="eyebrow" id="tOrderNo"></p>
+          <h1 class="serif" id="tProduct"></h1>
+          <p class="who" id="tWho"></p>
+        </div>
+        <div class="meta-row" id="tMeta"></div>
+
+        <div class="banner" id="tBanner">
+          <div class="pct" id="tPct">—</div>
+          <div class="b-txt">
+            <div class="e">Τρέχουσα κατάσταση</div>
+            <div class="t" id="tBannerTitle"></div>
+          </div>
+        </div>
+
+        <div class="timeline" id="tTimeline"></div>
+
+        <div class="note-box hidden" id="tNoteBox">
+          <div class="e">Σημείωση από το THILIKON</div>
+          <p id="tNote"></p>
+        </div>
+
+        <div class="ship-box hidden" id="tShip">
+          <div class="si">
+            <div class="e">Αποστολή</div>
+            <div class="v" id="tShipV"></div>
+          </div>
+          <a id="tShipBtn" class="btn ghost sm" target="_blank" rel="noopener">Εντόπισε το δέμα σου</a>
+        </div>
+
+        <div class="updated" id="tUpdated"></div>
+      </div>
+
+      <!-- post-delivery: feedback + reminders (visible from start, locked until ready) -->
+      <div class="post hidden" id="tPost">
+
+        <div class="post-lock hidden" id="postLock">
+          <span class="ico">🔒</span>
+          <div>
+            <div class="pl-t">Θα ξεκλειδώσει μόλις παραλάβεις τη δημιουργία σου</div>
+            <div class="pl-s">Με το που ολοκληρωθεί η παραγγελία σου, εδώ θα μπορείς να μας αφήσεις την αξιολόγησή σου. Γύρνα να μας πεις τη γνώμη σου όταν τη φορέσεις! 🤍</div>
+          </div>
+        </div>
+
+        <div class="pcard">
+          <div class="pe">Η εμπειρία σου</div>
+          <h3 id="fbTitle">Πώς σου φάνηκε;</h3>
+          <p class="pb">Η γνώμη σου μετράει πολύ για εμάς. Πες μας πώς σου φάνηκε η δημιουργία σου και η όλη εμπειρία — μας βοηθάει να γινόμαστε καλύτεροι.</p>
+          <div class="fb-locked hidden" id="fbLocked"><span>🔒</span> Διαθέσιμο μόλις παραλάβεις τη δημιουργία σου</div>
+          <div id="fbForm">
+            <div class="stars" id="fbStars">
+              <button data-v="1" aria-label="1">★</button>
+              <button data-v="2" aria-label="2">★</button>
+              <button data-v="3" aria-label="3">★</button>
+              <button data-v="4" aria-label="4">★</button>
+              <button data-v="5" aria-label="5">★</button>
+            </div>
+            <textarea id="fbComment" placeholder="Πες μας δυο λόγια (προαιρετικό)…" style="margin-top:10px"></textarea>
+            <p id="fbMsg" class="msg err hidden" style="margin-top:10px"></p>
+            <div class="pbtn"><button class="btn solid" onclick="submitFeedback()">Στείλε την αξιολόγηση</button></div>
+          </div>
+          <div id="fbDone" class="hidden"><p class="fb-thanks">Ευχαριστούμε για την αξιολόγησή σου! 🤍</p></div>
+        </div>
+
+        <div class="pcard dark">
+          <div class="pe">Δείξε μας</div>
+          <h3>Φόρεσέ τη και κάνε μας tag</h3>
+          <p class="pb">Θα χαρούμε πολύ να δούμε τη δημιουργία σου σε δράση! Ανέβασε μια φωτογραφία και κάνε μας tag ή στείλε τη DM — μπορεί να την αναδημοσιεύσουμε στο προφίλ μας.</p>
+          <div class="pbtn"><a class="btn ghost" href="https://www.instagram.com/thilikon.gr/" target="_blank" rel="noopener">@thilikon.gr στο Instagram</a></div>
+        </div>
+
+        <div class="pcard">
+          <div class="pe">Είμαστε εδώ</div>
+          <h3>Χρειάζεσαι κάτι;</h3>
+          <p class="pb">Για οτιδήποτε προκύψει με την παραγγελία σου, μη διστάσεις να μας γράψεις. Στείλε μας ένα DM στο Instagram και θα σου απαντήσουμε το συντομότερο.</p>
+          <div class="pbtn"><a class="btn ghost" href="https://www.instagram.com/thilikon.gr/" target="_blank" rel="noopener">Στείλε μας μήνυμα</a></div>
+        </div>
+      </div>
+
+      <div class="contact" id="tContact">
+        <p>Έχεις απορία για την παραγγελία σου;</p>
+        <a class="btn ghost" href="https://www.instagram.com/thilikon.gr/" target="_blank" rel="noopener">Στείλε μας DM στο Instagram</a>
+      </div>
+    </div>
+
+    <div id="trackError" class="hidden">
+      <div class="card center">
+        <p class="eyebrow">Ωχ</p>
+        <h1 class="serif" style="font-size:28px;font-weight:500;margin:12px 0 6px">Δεν βρέθηκε παραγγελία</h1>
+        <p style="color:var(--ink-soft);font-size:14px;margin-bottom:20px">Ο κωδικός μάλλον δεν είναι σωστός. Έλεγξε το link ή στείλε μας ένα μήνυμα.</p>
+        <a class="btn ghost" href="https://www.instagram.com/thilikon.gr/" target="_blank" rel="noopener">Επικοινωνία</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ADMIN ============ -->
+  <section id="view-admin" class="hidden">
+
+    <!-- login -->
+    <div id="adminLogin" class="card">
+      <p class="eyebrow center">Διαχείριση</p>
+      <h1 class="serif center" style="font-size:28px;font-weight:500;margin:10px 0 20px">Σύνδεση</h1>
+      <label class="fld"><span>Email</span><input id="loginEmail" type="email" autocomplete="username"></label>
+      <label class="fld"><span>Κωδικός</span><input id="loginPass" type="password" autocomplete="current-password"></label>
+      <p id="loginMsg" class="msg err hidden"></p>
+      <button class="btn solid" style="width:100%" onclick="adminLogin()">Σύνδεση</button>
+    </div>
+
+    <!-- panel -->
+    <div id="adminPanel" class="hidden">
+      <div class="admin-bar">
+        <span class="e">Παραγγελίες</span>
+        <div style="display:flex;gap:8px">
+          <button class="btn solid sm" onclick="openOrderModal()">+ Νέα</button>
+          <button class="btn ghost sm" onclick="adminLogout()">Έξοδος</button>
+        </div>
+      </div>
+      <div class="stats open" id="statsBox">
+        <div class="stats-h" onclick="document.getElementById('statsBox').classList.toggle('open')">
+          <span class="e">📊 Στατιστικά</span>
+          <span class="chev">▾</span>
+        </div>
+        <div class="stats-body" id="statsBody"></div>
+      </div>
+      <input id="search" placeholder="Αναζήτηση (όνομα, προϊόν, κωδικός…)" oninput="renderOrders()" style="margin-bottom:14px">
+      <div id="adminMsg" class="msg ok hidden"></div>
+      <div id="ordersList"><div class="spinner"></div></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <img src="https://i.imgur.com/TbSGZu5.png" alt="THILIKON">
+  <div class="fl">Handcrafted with love</div>
+  <div style="margin-top:14px"><span class="adm-link" id="footAdmin">διαχείριση</span></div>
+</footer>
+
+<!-- ============ ORDER MODAL (admin) ============ -->
+<div id="orderModal" class="overlay hidden">
+  <div class="modal">
+    <div class="mh">
+      <h2 id="modalTitle">Νέα παραγγελία</h2>
+      <button class="x" onclick="closeOrderModal()">✕</button>
+    </div>
+
+    <div id="fbReadout" class="fb-readout hidden"></div>
+
+    <label class="fld"><span>Όνομα πελάτη *</span><input id="fName"></label>
+    <label class="fld"><span>Προϊόν *</span><input id="fProduct" placeholder="π.χ. Laluna — Μαύρο"></label>
+    <div style="display:flex;gap:10px">
+      <label class="fld" style="flex:1"><span>Αρ. παραγγελίας</span><input id="fOrderNo" placeholder="π.χ. TH-001"></label>
+    </div>
+    <label class="fld"><span>Λεπτομέρειες</span><textarea id="fDetails" placeholder="υλικό, χρώμα, ειδικές οδηγίες…"></textarea></label>
+
+    <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:4px 0 8px">Στάδιο</p>
+    <div class="stage-picker" id="stagePicker"></div>
+
+    <label class="fld" style="margin-top:16px"><span>Σημείωση προς πελάτη</span><textarea id="fNote" placeholder="προαιρετικό μήνυμα που θα δει ο πελάτης"></textarea></label>
+
+    <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:4px 0 8px">Τρόπος παράδοσης</p>
+    <div class="stage-picker" id="methodPicker" style="margin-bottom:16px">
+      <button data-m="shipping" onclick="pickMethod('shipping')"><span class="n">📦</span>Courier</button>
+      <button data-m="pickup" onclick="pickMethod('pickup')"><span class="n">🤝</span>Διά ζώσης</button>
+    </div>
+
+    <div id="courierFields">
+      <div style="display:flex;gap:10px">
+        <label class="fld" style="flex:1"><span>Courier</span><input id="fCourier" placeholder="BoxNow"></label>
+        <label class="fld" style="flex:1"><span>Αρ. αποστολής</span><input id="fTrackNo" placeholder="π.χ. 0001"></label>
+      </div>
+      <label class="fld"><span>Link courier (προαιρετικό)</span><input id="fTrackUrl" placeholder="αυτόματο για BoxNow — άστο κενό"></label>
+    </div>
+
+    <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:6px 0 8px">💶 Οικονομικά <span style="text-transform:none;letter-spacing:0">(μόνο εσωτερικά — δεν τα βλέπει ο πελάτης)</span></p>
+    <div style="display:flex;gap:10px">
+      <label class="fld" style="flex:1"><span>Τιμή €</span><input id="fPrice" inputmode="decimal" placeholder="0"></label>
+      <label class="fld" style="flex:1"><span>Κόστος υλικών €</span><input id="fCost" inputmode="decimal" placeholder="0"></label>
+      <label class="fld" style="flex:1"><span>Πληρωμένο €</span><input id="fPaid" inputmode="decimal" placeholder="0"></label>
+    </div>
+    <div id="moneyHint" style="font-size:12.5px;color:var(--ink-soft);margin:-4px 0 10px"></div>
+
+    <p id="modalMsg" class="msg err hidden"></p>
+
+    <div id="modalLinkWrap" class="hidden">
+      <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Link για τον πελάτη</p>
+      <div class="link-box"><code id="modalLink"></code><button class="btn solid sm" onclick="copyLink()">Copy</button></div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:18px">
+      <button class="btn solid" style="flex:1" id="saveBtn" onclick="saveOrder()">Αποθήκευση</button>
+      <button class="btn ghost" onclick="closeOrderModal()">Κλείσιμο</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   CONFIG
+============================================================ */
+const SUPABASE_URL  = "https://bmdwlckzzpxjjfcvyiui.supabase.co";
+const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtZHdsY2t6enB4ampmY3Z5aXVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MjQyNjgsImV4cCI6MjA5NzIwMDI2OH0.JADjEDrk1Yflimp3ZEzXOpG-IE3_7xyL2jCoG38XNmU";
+const REST = SUPABASE_URL + "/rest/v1";
+const AUTH = SUPABASE_URL + "/auth/v1";
+
+// Στάδια ανά τρόπο παράδοσης. Στάδιο 3 & 4 αλλάζουν λεκτικά για courier vs διά ζώσης.
+const STAGES_BY_METHOD = {
+  shipping:{
+    1:{title:"Παραγγελία & Παραλαβή Υλικών", dur:"συνήθως 3–7 μέρες"},
+    2:{title:"Δημιουργία Προϊόντος",         dur:"συνήθως 1–7 μέρες"},
+    3:{title:"Συσκευασία & Αποστολή",        dur:"συνήθως ~1 μέρα"},
+    4:{title:"Παραδόθηκε",                   dur:"η παραγγελία ολοκληρώθηκε"}
+  },
+  pickup:{
+    1:{title:"Παραγγελία & Παραλαβή Υλικών", dur:"συνήθως 3–7 μέρες"},
+    2:{title:"Δημιουργία Προϊόντος",         dur:"συνήθως 1–7 μέρες"},
+    3:{title:"Συσκευασία & Έτοιμο για Παραλαβή", dur:"θα συνεννοηθούμε για ραντεβού"},
+    4:{title:"Παραλήφθηκε",                  dur:"η παραγγελία ολοκληρώθηκε"}
+  }
+};
+function stagesFor(method){ return STAGES_BY_METHOD[method==="pickup"?"pickup":"shipping"]; }
+
+// BoxNow tracking link builder
+function boxnowUrl(num){ return num ? ("https://boxnow.gr/?track=" + encodeURIComponent(num)) : ""; }
+
+// money helpers (Greek decimals: δέχεται κόμμα ή τελεία)
+function parseMoney(v){
+  if(v===null||v===undefined) return null;
+  const s = String(v).trim().replace(/€/g,"").replace(",",".").replace(/\s/g,"");
+  if(s==="") return null;
+  const n = parseFloat(s);
+  return isNaN(n) ? null : Math.round(n*100)/100;
+}
+function fmtMoney(n){
+  if(n===null||n===undefined||isNaN(n)) return "—";
+  return "€" + Number(n).toLocaleString("el-GR",{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function updateMoneyHint(){
+  const price=parseMoney(document.getElementById("fPrice").value);
+  const cost=parseMoney(document.getElementById("fCost").value);
+  const paid=parseMoney(document.getElementById("fPaid").value);
+  const bits=[];
+  if(price!=null && paid!=null){
+    const rem=Math.round((price-paid)*100)/100;
+    bits.push(rem>0?`Υπόλοιπο: ${fmtMoney(rem)}`:(rem<0?`Ρέστα: ${fmtMoney(-rem)}`:"Εξοφλημένο ✓"));
+  }
+  if(price!=null && cost!=null) bits.push(`Κέρδος: ${fmtMoney(Math.round((price-cost)*100)/100)}`);
+  document.getElementById("moneyHint").textContent = bits.join("   ·   ");
+}
+
+/* small storage helper (no crash if blocked) */
+const store = {
+  get(k){try{return sessionStorage.getItem(k)}catch(e){return null}},
+  set(k,v){try{sessionStorage.setItem(k,v)}catch(e){}},
+  del(k){try{sessionStorage.removeItem(k)}catch(e){}}
+};
+
+let adminToken = store.get("th_admin_token") || null;
+let ordersCache = [];
+let editingId = null;
+let pickedStage = 1;
+let pickedMethod = "shipping";
+
+/* ============================================================
+   ROUTER
+============================================================ */
+function show(id){
+  ["view-landing","view-track","view-admin"].forEach(v=>{
+    document.getElementById(v).classList.toggle("hidden", v!==id);
+  });
+}
+function route(){
+  const params = new URLSearchParams(location.search);
+  const t = params.get("t");
+  if(location.hash === "#admin"){ openAdmin(); return; }
+  if(t){ show("view-track"); loadTracking(t); return; }
+  show("view-landing");
+}
+window.addEventListener("hashchange", route);
+document.getElementById("footAdmin").onclick = ()=>{ location.hash = "#admin"; };
+
+/* ============================================================
+   LANDING
+============================================================ */
+function extractCode(raw){
+  raw = (raw||"").trim();
+  // αν έβαλε ολόκληρο link, βγάλε το ?t=...
+  const m = raw.match(/[?&]t=([^&\s#]+)/i) || raw.match(/^t=([^&\s#]+)/i);
+  if(m) { try { return decodeURIComponent(m[1]); } catch(e){ return m[1]; } }
+  return raw;
+}
+function goTrack(){
+  const code = extractCode(document.getElementById("codeInput").value);
+  const err = document.getElementById("landErr");
+  if(!code){ err.textContent="Βάλε τον κωδικό ή τον αριθμό παραγγελίας σου."; err.classList.remove("hidden"); return; }
+  location.search = "?t=" + encodeURIComponent(code);
+}
+document.getElementById("codeInput")?.addEventListener("keydown",e=>{ if(e.key==="Enter") goTrack(); });
+
+/* ============================================================
+   TRACKING (public, via RPC)
+============================================================ */
+async function loadTracking(token){
+  try{
+    const res = await fetch(REST + "/rpc/lookup_order", {
+      method:"POST",
+      headers:{ "apikey":SUPABASE_ANON, "Authorization":"Bearer "+SUPABASE_ANON, "Content-Type":"application/json" },
+      body: JSON.stringify({ p_code: token })
+    });
+    const rows = await res.json();
+    const o = Array.isArray(rows) ? rows[0] : null;
+    document.getElementById("trackLoading").classList.add("hidden");
+    if(!o){ document.getElementById("trackError").classList.remove("hidden"); return; }
+    renderTracking(o);
+  }catch(e){
+    document.getElementById("trackLoading").classList.add("hidden");
+    document.getElementById("trackError").classList.remove("hidden");
+  }
+}
+
+function fmtDate(iso){
+  if(!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleDateString("el-GR",{day:"numeric",month:"long",year:"numeric"}) +
+         " · " + d.toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit"});
+}
+
+function renderTracking(o){
+  currentToken = o.track_token || new URLSearchParams(location.search).get("t");
+  document.getElementById("trackContent").classList.remove("hidden");
+  document.getElementById("tProduct").textContent = o.product_name || "Η παραγγελία σου";
+  document.getElementById("tWho").textContent = o.customer_name ? ("Γεια σου " + o.customer_name + " 👋") : "";
+  document.getElementById("tOrderNo").textContent = o.order_number ? ("Παραγγελία " + o.order_number) : "Παραγγελία";
+
+  // meta tags
+  const meta = document.getElementById("tMeta"); meta.innerHTML="";
+  if(o.product_details){ const s=document.createElement("span"); s.className="tag"; s.textContent=o.product_details; meta.appendChild(s); }
+  if(o.created_at){ const s=document.createElement("span"); s.className="tag"; s.textContent="Καταχωρήθηκε " + new Date(o.created_at).toLocaleDateString("el-GR"); meta.appendChild(s); }
+
+  const stage = Math.min(Math.max(o.stage||1,1),4);
+  const done = stage === 4;
+  const method = o.delivery_method === "pickup" ? "pickup" : "shipping";
+  const STG = stagesFor(method);
+
+  // banner
+  const banner = document.getElementById("tBanner");
+  banner.classList.toggle("done", done);
+  document.getElementById("tPct").textContent = done ? "✓" : (stage===1?"33%":stage===2?"66%":"90%");
+  document.getElementById("tBannerTitle").textContent = STG[stage].title;
+
+  // timeline (show 1-3 always, + final marker)
+  const tl = document.getElementById("tTimeline"); tl.innerHTML="";
+  for(let i=1;i<=3;i++){
+    const st = stage>i || done ? "done" : (stage===i ? "active" : "pending");
+    tl.insertAdjacentHTML("beforeend", stepHtml(i, STG[i].title, STG[i].dur, st));
+  }
+  tl.insertAdjacentHTML("beforeend",
+    stepHtml("✓", STG[4].title, STG[4].dur, done ? "done" : "pending"));
+
+  // note
+  const nb = document.getElementById("tNoteBox");
+  if(o.note && o.note.trim()){ nb.classList.remove("hidden"); document.getElementById("tNote").textContent = o.note; }
+  else nb.classList.add("hidden");
+
+  // delivery box (courier tracking OR pickup info)
+  const ship = document.getElementById("tShip");
+  const shipV = document.getElementById("tShipV");
+  const btn = document.getElementById("tShipBtn");
+  if(method === "pickup"){
+    if(stage>=3){
+      ship.classList.remove("hidden");
+      shipV.textContent = "Παραλαβή διά ζώσης" + (done ? " — παραλήφθηκε" : " — έτοιμο για παραλαβή");
+      btn.classList.add("hidden");
+    } else ship.classList.add("hidden");
+  } else {
+    if(stage>=3 && (o.courier || o.tracking_number)){
+      ship.classList.remove("hidden");
+      const parts=[]; if(o.courier) parts.push(o.courier); if(o.tracking_number) parts.push("#"+o.tracking_number);
+      shipV.textContent = parts.join("  ·  ");
+      const isBox = /box\s*now/i.test(o.courier||"");
+      // For BoxNow, ALWAYS build the ?track= link from the number (guarantees the =code).
+      let url = isBox && o.tracking_number ? boxnowUrl(o.tracking_number) : (o.tracking_url||"").trim();
+      btn.textContent = isBox ? "BoxNow — Εντόπισε το δέμα σου" : "Εντόπισε το δέμα σου";
+      if(url){ btn.href=url; btn.classList.remove("hidden"); }
+      else btn.classList.add("hidden");
+    } else ship.classList.add("hidden");
+  }
+
+  document.getElementById("tUpdated").textContent = "Τελευταία ενημέρωση: " + fmtDate(o.updated_at);
+
+  // post-delivery block: visible from the start, LOCKED until ready (stage >= 3)
+  const post = document.getElementById("tPost");
+  const contact = document.getElementById("tContact");
+  const unlocked = stage >= 4;   // ξεκλειδώνει μόνο όταν παραδοθεί/παραληφθεί
+  post.classList.remove("hidden");
+  post.classList.toggle("locked", !unlocked);
+  document.getElementById("postLock").classList.toggle("hidden", unlocked);
+  contact.classList.toggle("hidden", unlocked); // simple contact only while locked
+  setupFeedback(o, unlocked);
+}
+
+/* ---- feedback ---- */
+let fbRating = 0;
+let currentToken = null;
+function setupFeedback(o, unlocked){
+  const form = document.getElementById("fbForm");
+  const doneBox = document.getElementById("fbDone");
+  const locked = document.getElementById("fbLocked");
+  if(!unlocked){                 // not ready yet — locked
+    locked.classList.remove("hidden");
+    form.classList.add("hidden");
+    doneBox.classList.add("hidden");
+    return;
+  }
+  locked.classList.add("hidden");
+  if(o.feedback_at){             // already submitted
+    form.classList.add("hidden");
+    doneBox.classList.remove("hidden");
+    return;
+  }
+  form.classList.remove("hidden");
+  doneBox.classList.add("hidden");
+  fbRating = 0;
+  document.getElementById("fbComment").value = "";
+  document.getElementById("fbMsg").classList.add("hidden");
+  paintStars(0);
+  document.querySelectorAll("#fbStars button").forEach(b=>{
+    b.onclick = ()=>{ fbRating = +b.dataset.v; paintStars(fbRating); };
+  });
+}
+function paintStars(n){
+  document.querySelectorAll("#fbStars button").forEach(b=>b.classList.toggle("on", +b.dataset.v <= n));
+}
+async function submitFeedback(){
+  const msg = document.getElementById("fbMsg");
+  msg.classList.add("hidden");
+  if(!fbRating){ msg.textContent="Διάλεξε πόσα αστέρια θα έδινες."; msg.classList.remove("hidden"); return; }
+  const token = currentToken || new URLSearchParams(location.search).get("t");
+  const comment = document.getElementById("fbComment").value.trim();
+  try{
+    const res = await fetch(REST + "/rpc/submit_feedback", {
+      method:"POST",
+      headers:{ "apikey":SUPABASE_ANON, "Authorization":"Bearer "+SUPABASE_ANON, "Content-Type":"application/json" },
+      body: JSON.stringify({ p_token: token, p_rating: fbRating, p_comment: comment })
+    });
+    if(!res.ok) throw new Error();
+    document.getElementById("fbForm").classList.add("hidden");
+    document.getElementById("fbDone").classList.remove("hidden");
+  }catch(e){
+    msg.textContent="Κάτι πήγε στραβά. Δοκίμασε ξανά σε λίγο."; msg.classList.remove("hidden");
+  }
+}
+
+function stepHtml(num,title,dur,state){
+  const icon = state==="done" ? "✓" : num;
+  return `<div class="step ${state}">
+    <div class="dot">${icon}</div>
+    <h3 class="serif">${title}</h3>
+    <div class="dur">${dur}</div>
+  </div>`;
+}
+
+/* ============================================================
+   ADMIN
+============================================================ */
+function openAdmin(){
+  show("view-admin");
+  if(adminToken){ enterPanel(); }
+  else{ document.getElementById("adminLogin").classList.remove("hidden"); document.getElementById("adminPanel").classList.add("hidden"); }
+}
+
+async function adminLogin(){
+  const email = document.getElementById("loginEmail").value.trim();
+  const pass  = document.getElementById("loginPass").value;
+  const msg   = document.getElementById("loginMsg");
+  msg.classList.add("hidden");
+  if(!email||!pass){ msg.textContent="Συμπλήρωσε email και κωδικό."; msg.classList.remove("hidden"); return; }
+  try{
+    const res = await fetch(AUTH + "/token?grant_type=password", {
+      method:"POST",
+      headers:{ "apikey":SUPABASE_ANON, "Content-Type":"application/json" },
+      body: JSON.stringify({ email, password: pass })
+    });
+    const data = await res.json();
+    if(!res.ok || !data.access_token){ throw new Error(data.error_description || data.msg || "Λάθος στοιχεία"); }
+    adminToken = data.access_token;
+    store.set("th_admin_token", adminToken);
+    document.getElementById("loginPass").value="";
+    enterPanel();
+  }catch(e){
+    msg.textContent = "Αποτυχία σύνδεσης: " + e.message;
+    msg.classList.remove("hidden");
+  }
+}
+
+function adminLogout(){
+  adminToken=null; store.del("th_admin_token");
+  document.getElementById("adminPanel").classList.add("hidden");
+  document.getElementById("adminLogin").classList.remove("hidden");
+}
+
+function authHeaders(){
+  return { "apikey":SUPABASE_ANON, "Authorization":"Bearer "+adminToken, "Content-Type":"application/json" };
+}
+
+async function enterPanel(){
+  document.getElementById("adminLogin").classList.add("hidden");
+  document.getElementById("adminPanel").classList.remove("hidden");
+  await loadOrders();
+}
+
+async function loadOrders(){
+  const list = document.getElementById("ordersList");
+  list.innerHTML='<div class="spinner"></div>';
+  try{
+    const res = await fetch(REST + "/orders?select=*&order=created_at.desc", { headers: authHeaders() });
+    if(res.status===401){ adminLogout(); return; }
+    ordersCache = await res.json();
+    renderStats();
+    renderOrders();
+  }catch(e){
+    list.innerHTML='<div class="msg err">Σφάλμα φόρτωσης. Δοκίμασε ξανά.</div>';
+  }
+}
+
+function renderStats(){
+  const all = ordersCache;
+  const total = all.length;
+  const byStage = [0,0,0,0];
+  let ship=0, pickup=0, monthCount=0, ratingSum=0, ratingN=0;
+  // financials
+  let revMonth=0, profitMonth=0, outstanding=0, priceSum=0, priceN=0;
+  const now = new Date(); const ymNow = now.getFullYear()+"-"+now.getMonth();
+  const monthly = {}; // "YYYY-M" -> revenue
+  all.forEach(o=>{
+    const s = Math.min(Math.max(o.stage||1,1),4);
+    byStage[s-1]++;
+    if(o.delivery_method==="pickup") pickup++; else ship++;
+    const c = new Date(o.created_at);
+    const ym = c.getFullYear()+"-"+c.getMonth();
+    if(ym===ymNow) monthCount++;
+    if(o.feedback_rating){ ratingSum+=o.feedback_rating; ratingN++; }
+    const price = o.price!=null ? Number(o.price) : null;
+    const cost  = o.cost!=null ? Number(o.cost) : null;
+    const paid  = o.amount_paid!=null ? Number(o.amount_paid) : 0;
+    if(price!=null){
+      priceSum+=price; priceN++;
+      monthly[ym] = (monthly[ym]||0) + price;
+      if(ym===ymNow){ revMonth+=price; if(cost!=null) profitMonth += (price-cost); }
+      const rem = price - paid;
+      if(rem>0) outstanding += rem;
+    }
+  });
+  const active = byStage[0]+byStage[1]+byStage[2];
+  const done = byStage[3];
+  const avg = ratingN ? (ratingSum/ratingN).toFixed(1) : "—";
+  const avgOrder = priceN ? priceSum/priceN : null;
+  const labels = ["Παραλαβή υλικών","Δημιουργία","Συσκευασία/Αποστολή","Ολοκληρωμένες"];
+  const maxStage = Math.max(1, ...byStage);
+
+  const tiles = [
+    {n:total, l:"Σύνολο"},
+    {n:active, l:"Σε εξέλιξη"},
+    {n:done, l:"Ολοκληρωμένες", dark:true},
+    {n:monthCount, l:"Αυτόν τον μήνα"}
+  ].map(t=>`<div class="stat ${t.dark?'dark':''}"><div class="n">${t.n}</div><div class="l">${t.l}</div></div>`).join("");
+
+  const money = [
+    {n:fmtMoney(revMonth), l:"Τζίρος μήνα", dark:true},
+    {n:fmtMoney(profitMonth), l:"Κέρδος μήνα"},
+    {n:fmtMoney(outstanding), l:"Εκκρεμείς εισπράξεις"},
+    {n:avgOrder!=null?fmtMoney(avgOrder):"—", l:"Μέση αξία"}
+  ].map(t=>`<div class="stat ${t.dark?'dark':''}"><div class="n" style="font-size:23px">${t.n}</div><div class="l">${t.l}</div></div>`).join("");
+
+  // monthly revenue bars (τελευταίοι 6 μήνες)
+  const mNames = ["Ιαν","Φεβ","Μαρ","Απρ","Μάι","Ιουν","Ιουλ","Αυγ","Σεπ","Οκτ","Νοε","Δεκ"];
+  const months=[];
+  for(let i=5;i>=0;i--){
+    const d=new Date(now.getFullYear(), now.getMonth()-i, 1);
+    const key=d.getFullYear()+"-"+d.getMonth();
+    months.push({key, label:mNames[d.getMonth()], val:monthly[key]||0});
+  }
+  const maxRev = Math.max(1, ...months.map(m=>m.val));
+  const revBars = months.map(m=>`
+    <div class="sbar">
+      <span class="lbl" style="width:42px">${m.label}</span>
+      <span class="track"><span class="fill" style="width:${Math.round(m.val/maxRev*100)}%"></span></span>
+      <span class="cnt" style="width:64px">${fmtMoney(m.val)}</span>
+    </div>`).join("");
+
+  const bars = byStage.map((c,i)=>`
+    <div class="sbar">
+      <span class="lbl">${labels[i]}</span>
+      <span class="track"><span class="fill" style="width:${Math.round(c/maxStage*100)}%"></span></span>
+      <span class="cnt">${c}</span>
+    </div>`).join("");
+
+  document.getElementById("statsBody").innerHTML = `
+    <div class="stat-grid">${tiles}</div>
+    <div class="stat-row">
+      <span class="stat-pill">⭐ Μ.Ο. αξιολόγησης: <b>${avg}</b>${ratingN?` (${ratingN})`:""}</span>
+      <span class="stat-pill">📦 Courier: ${ship}</span>
+      <span class="stat-pill">🤝 Διά ζώσης: ${pickup}</span>
+    </div>
+
+    <div class="stats-sub">💶 Οικονομικά</div>
+    <div class="stat-grid">${money}</div>
+    <div class="stats-sub">Τζίρος ανά μήνα</div>
+    <div class="stage-bars">${revBars}</div>
+
+    <div class="stats-sub">Παραγγελίες ανά στάδιο</div>
+    <div class="stage-bars">${bars}</div>`;
+}
+
+function renderOrders(){
+  const q = (document.getElementById("search").value||"").toLowerCase();
+  const list = document.getElementById("ordersList");
+  const filtered = ordersCache.filter(o=>{
+    const hay = [o.customer_name,o.product_name,o.order_number,o.product_details].join(" ").toLowerCase();
+    return hay.includes(q);
+  });
+  if(!filtered.length){ list.innerHTML='<p style="text-align:center;color:var(--muted);padding:24px 0;font-size:13px">Καμία παραγγελία ακόμη. Πάτησε «+ Νέα».</p>'; return; }
+  list.innerHTML = filtered.map(o=>{
+    const stage = Math.min(Math.max(o.stage||1,1),4);
+    const done = stage===4;
+    const pickup = o.delivery_method === "pickup";
+    const doneLabel = pickup ? "Παραλήφθηκε" : "Παραδόθηκε";
+    return `<div class="order-row">
+      <div class="r-top">
+        <div>
+          <div class="r-name">${esc(o.customer_name)} ${o.order_number?`<span style="color:var(--muted);font-weight:400">· ${esc(o.order_number)}</span>`:""} <span title="${pickup?'Παραλαβή διά ζώσης':'Αποστολή με courier'}" style="opacity:.6">${pickup?'🤝':'📦'}</span></div>
+          <div class="r-prod">${esc(o.product_name)}</div>
+        </div>
+        <span class="r-stage ${done?'done':''}">${done?doneLabel:('Στάδιο '+stage)}</span>
+      </div>
+      ${o.feedback_rating?`<div class="r-fb">★ ${o.feedback_rating}/5 αξιολόγηση${o.feedback_comment?` — «${esc(o.feedback_comment)}»`:""}</div>`:""}
+      ${moneyLine(o)}
+      <div class="r-actions">
+        <button class="btn ghost sm" onclick="copyLinkFor('${o.track_token}')">📋 Link</button>
+        ${stage<4?`<button class="btn solid sm" onclick="advance('${o.id}',${stage})">Επόμενο στάδιο →</button>`:""}
+        <button class="btn ghost sm" onclick="editOrder('${o.id}')">Επεξεργασία</button>
+        <button class="btn danger sm" onclick="delOrder('${o.id}','${esc(o.customer_name)}')">Διαγραφή</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function esc(s){ return (s||"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function moneyLine(o){
+  if(o.price==null && o.amount_paid==null) return "";
+  const price = o.price!=null ? o.price : null;
+  const paid  = o.amount_paid!=null ? o.amount_paid : 0;
+  let status="";
+  if(price!=null){
+    const rem = Math.round((price-paid)*100)/100;
+    if(rem<=0) status = `<span class="pay-ok">Εξοφλημένο</span>`;
+    else status = `<span class="pay-due">Υπόλοιπο ${fmtMoney(rem)}</span>`;
+  }
+  const priceTxt = price!=null ? fmtMoney(price) : "";
+  return `<div class="r-money">${priceTxt}${priceTxt&&status?" · ":""}${status}</div>`;
+}
+
+function adminFlash(text){
+  const m=document.getElementById("adminMsg"); m.textContent=text; m.classList.remove("hidden");
+  setTimeout(()=>m.classList.add("hidden"),2500);
+}
+
+function linkFor(token){ return location.origin + location.pathname + "?t=" + token; }
+
+async function copyLinkFor(token){
+  try{ await navigator.clipboard.writeText(linkFor(token)); adminFlash("Το link αντιγράφηκε ✓"); }
+  catch(e){ prompt("Αντίγραψε το link:", linkFor(token)); }
+}
+
+async function advance(id, cur){
+  try{
+    const res = await fetch(REST + "/orders?id=eq."+id, {
+      method:"PATCH", headers:{...authHeaders(),"Prefer":"return=representation"},
+      body: JSON.stringify({ stage: cur+1 })
+    });
+    if(!res.ok) throw new Error();
+    await loadOrders(); adminFlash("Στάδιο ενημερώθηκε ✓");
+  }catch(e){ adminFlash("Σφάλμα ενημέρωσης."); }
+}
+
+async function delOrder(id,name){
+  if(!confirm("Διαγραφή παραγγελίας για «"+name+"»; Δεν αναιρείται.")) return;
+  try{
+    const res = await fetch(REST + "/orders?id=eq."+id, { method:"DELETE", headers: authHeaders() });
+    if(!res.ok) throw new Error();
+    await loadOrders(); adminFlash("Διαγράφηκε.");
+  }catch(e){ adminFlash("Σφάλμα διαγραφής."); }
+}
+
+/* ---- modal ---- */
+function buildStagePicker(){
+  const p=document.getElementById("stagePicker"); p.innerHTML="";
+  for(let i=1;i<=4;i++){
+    p.insertAdjacentHTML("beforeend",
+      `<button data-s="${i}" onclick="pickStage(${i})"><span class="n">${i===4?'✓':i}</span>${shortLabel(i)}</button>`);
+  }
+  pickStage(pickedStage);
+}
+function shortLabel(i){
+  const pickup = pickedMethod === "pickup";
+  if(i===1) return "Παραλαβή υλικών";
+  if(i===2) return "Δημιουργία";
+  if(i===3) return pickup ? "Έτοιμο" : "Αποστολή";
+  return pickup ? "Παραλήφθηκε" : "Παραδόθηκε";
+}
+function pickStage(i){
+  pickedStage=i;
+  document.querySelectorAll("#stagePicker button").forEach(b=>b.classList.toggle("sel", +b.dataset.s===i));
+}
+function pickMethod(m){
+  pickedMethod = m;
+  document.querySelectorAll("#methodPicker button").forEach(b=>b.classList.toggle("sel", b.dataset.m===m));
+  document.getElementById("courierFields").style.display = (m==="pickup") ? "none" : "block";
+  buildStagePicker(); // refresh stage labels for the chosen method
+}
+
+function openOrderModal(){
+  editingId=null; pickedStage=1; pickedMethod="shipping";
+  document.getElementById("modalTitle").textContent="Νέα παραγγελία";
+  ["fName","fProduct","fOrderNo","fDetails","fNote","fTrackNo","fTrackUrl","fPrice","fCost","fPaid"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("fCourier").value="BoxNow";
+  document.getElementById("moneyHint").textContent="";
+  document.getElementById("modalLinkWrap").classList.add("hidden");
+  document.getElementById("fbReadout").classList.add("hidden");
+  document.getElementById("modalMsg").classList.add("hidden");
+  document.getElementById("saveBtn").textContent="Δημιουργία";
+  buildStagePicker();
+  pickMethod("shipping");
+  document.getElementById("orderModal").classList.remove("hidden");
+}
+
+function editOrder(id){
+  const o = ordersCache.find(x=>x.id===id); if(!o) return;
+  editingId=id; pickedStage=Math.min(Math.max(o.stage||1,1),4);
+  pickedMethod = o.delivery_method === "pickup" ? "pickup" : "shipping";
+  document.getElementById("modalTitle").textContent="Επεξεργασία";
+  document.getElementById("fName").value=o.customer_name||"";
+  document.getElementById("fProduct").value=o.product_name||"";
+  document.getElementById("fOrderNo").value=o.order_number||"";
+  document.getElementById("fDetails").value=o.product_details||"";
+  document.getElementById("fNote").value=o.note||"";
+  document.getElementById("fCourier").value=o.courier||"";
+  document.getElementById("fTrackNo").value=o.tracking_number||"";
+  document.getElementById("fTrackUrl").value=o.tracking_url||"";
+  document.getElementById("fPrice").value = o.price!=null ? o.price : "";
+  document.getElementById("fCost").value  = o.cost!=null ? o.cost : "";
+  document.getElementById("fPaid").value  = o.amount_paid!=null ? o.amount_paid : "";
+  updateMoneyHint();
+  document.getElementById("saveBtn").textContent="Αποθήκευση";
+  buildStagePicker();
+  pickMethod(pickedMethod);
+  // feedback readout
+  const fr = document.getElementById("fbReadout");
+  if(o.feedback_rating){
+    fr.innerHTML = `<b>★ ${o.feedback_rating}/5</b> αξιολόγηση από τον πελάτη` +
+      (o.feedback_comment?`<br>«${esc(o.feedback_comment)}»`:"") +
+      (o.feedback_at?`<br><span style="color:var(--muted)">${fmtDate(o.feedback_at)}</span>`:"");
+    fr.classList.remove("hidden");
+  } else fr.classList.add("hidden");
+  // show link
+  const lw=document.getElementById("modalLinkWrap"); lw.classList.remove("hidden");
+  document.getElementById("modalLink").textContent=linkFor(o.track_token);
+  document.getElementById("modalLink").dataset.token=o.track_token;
+  document.getElementById("modalMsg").classList.add("hidden");
+  document.getElementById("orderModal").classList.remove("hidden");
+}
+
+function closeOrderModal(){ document.getElementById("orderModal").classList.add("hidden"); }
+
+function copyLink(){
+  const t=document.getElementById("modalLink").dataset.token;
+  if(t) copyLinkFor(t);
+}
+
+async function saveOrder(){
+  const msg=document.getElementById("modalMsg"); msg.classList.add("hidden");
+  const isPickup = pickedMethod === "pickup";
+  const courier = document.getElementById("fCourier").value.trim();
+  const trackNo = document.getElementById("fTrackNo").value.trim();
+  let trackUrl = document.getElementById("fTrackUrl").value.trim();
+  // auto BoxNow link if courier is BoxNow, number given and no manual url
+  if(!isPickup && !trackUrl && trackNo && /box\s*now/i.test(courier)) trackUrl = boxnowUrl(trackNo);
+  const payload={
+    customer_name: document.getElementById("fName").value.trim(),
+    product_name:  document.getElementById("fProduct").value.trim(),
+    order_number:  document.getElementById("fOrderNo").value.trim() || null,
+    product_details: document.getElementById("fDetails").value.trim() || null,
+    note: document.getElementById("fNote").value.trim() || null,
+    delivery_method: isPickup ? "pickup" : "shipping",
+    courier: isPickup ? null : (courier || null),
+    tracking_number: isPickup ? null : (trackNo || null),
+    tracking_url: isPickup ? null : (trackUrl || null),
+    price: parseMoney(document.getElementById("fPrice").value),
+    cost: parseMoney(document.getElementById("fCost").value),
+    amount_paid: parseMoney(document.getElementById("fPaid").value),
+    stage: pickedStage
+  };
+  if(!payload.customer_name || !payload.product_name){
+    msg.textContent="Συμπλήρωσε όνομα πελάτη και προϊόν."; msg.classList.remove("hidden"); return;
+  }
+  const btn=document.getElementById("saveBtn"); btn.disabled=true;
+  try{
+    let res;
+    if(editingId){
+      res = await fetch(REST + "/orders?id=eq."+editingId, {
+        method:"PATCH", headers:{...authHeaders(),"Prefer":"return=representation"},
+        body: JSON.stringify(payload)
+      });
+    }else{
+      res = await fetch(REST + "/orders", {
+        method:"POST", headers:{...authHeaders(),"Prefer":"return=representation"},
+        body: JSON.stringify(payload)
+      });
+    }
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.message || "Σφάλμα");
+    const row = Array.isArray(data)?data[0]:data;
+    // show link
+    const lw=document.getElementById("modalLinkWrap"); lw.classList.remove("hidden");
+    document.getElementById("modalLink").textContent=linkFor(row.track_token);
+    document.getElementById("modalLink").dataset.token=row.track_token;
+    editingId=row.id;
+    document.getElementById("modalTitle").textContent="Αποθηκεύτηκε ✓";
+    document.getElementById("saveBtn").textContent="Αποθήκευση";
+    await loadOrders();
+  }catch(e){
+    msg.textContent="Σφάλμα: "+e.message; msg.classList.remove("hidden");
+  }finally{ btn.disabled=false; }
+}
+
+/* close modal on overlay click */
+document.getElementById("orderModal").addEventListener("click",e=>{
+  if(e.target.id==="orderModal") closeOrderModal();
+});
+
+/* live money hint */
+["fPrice","fCost","fPaid"].forEach(id=>{
+  const el=document.getElementById(id); if(el) el.addEventListener("input", updateMoneyHint);
+});
+
+/* go */
+route();
+</script>
+</body>
+</html>

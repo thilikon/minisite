@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THILIKON — Handcrafted with Love</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--black:#0a0a0a;--white:#fafaf8;--gl:#f0eeeb;--gm:#c8c4be;--gd:#6b6560}
+html{scroll-behavior:smooth}
+body{background:var(--white);color:var(--black);font-family:'Montserrat',sans-serif;font-weight:300;overflow-x:hidden;cursor:none}
+.cursor{width:10px;height:10px;background:var(--black);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .25s,height .25s}
+.cursor-ring{width:36px;height:36px;border:1px solid var(--black);border-radius:50%;position:fixed;pointer-events:none;z-index:9998;transform:translate(-50%,-50%)}
+nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:22px 48px;background:rgba(250,250,248,.94);backdrop-filter:blur(14px);border-bottom:1px solid transparent;transition:border-color .4s}
+nav.scrolled{border-color:var(--gm)}
+.nav-logo img{height:34px}
+.nav-links{display:flex;gap:36px;list-style:none}
+.nav-links a{text-decoration:none;color:var(--black);font-size:10px;letter-spacing:.2em;text-transform:uppercase;font-weight:500;position:relative}
+.nav-links a::after{content:'';position:absolute;bottom:-3px;left:0;right:0;height:1px;background:var(--black);transform:scaleX(0);transform-origin:left;transition:transform .3s}
+.nav-links a:hover::after{transform:scaleX(1)}
+.nav-cta{font-size:10px;letter-spacing:.15em;text-transform:uppercase;font-weight:500;color:var(--black);border:1px solid var(--black);padding:9px 22px;text-decoration:none;border-radius:100px;transition:background .3s,color .3s}
+.nav-cta:hover{background:var(--black);color:var(--white)}
+.hero{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:120px 48px 60px;gap:60px;position:relative;overflow:hidden}
+.hero::before{content:'THILIKON';position:absolute;font-family:'Cormorant Garamond',serif;font-size:clamp(80px,18vw,260px);font-weight:300;color:transparent;-webkit-text-stroke:1px var(--gm);top:50%;left:50%;transform:translate(-50%,-50%);white-space:nowrap;pointer-events:none;opacity:.22;z-index:0}
+.hero-text{position:relative;z-index:1}
+.eyebrow{font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--gd);margin-bottom:24px;display:flex;align-items:center;gap:16px}
+.eyebrow::before{content:'';display:block;width:40px;height:1px;background:var(--gd)}
+.eyebrow-center{justify-content:center}
+.eyebrow-center::before,.eyebrow-center::after{content:'';display:block;width:40px;height:1px;background:var(--gm)}
+h1.hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(50px,5.5vw,88px);font-weight:300;line-height:1.05;margin-bottom:32px}
+h1.hero-title em,h2 em{font-style:italic}
+.hero-body{font-size:14px;line-height:1.9;color:var(--gd);max-width:400px;margin-bottom:48px}
+.hero-actions{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.btn-primary{background:var(--black);color:var(--white);padding:13px 34px;text-decoration:none;font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:500;border-radius:100px;transition:opacity .3s,transform .3s;display:inline-block;border:none;cursor:none}
+.btn-primary:hover{opacity:.78;transform:translateY(-2px)}
+.btn-outline{border:1px solid var(--black);color:var(--black);padding:13px 34px;text-decoration:none;font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:500;border-radius:100px;transition:background .3s,color .3s,transform .3s;display:inline-block}
+.btn-outline:hover{background:var(--black);color:var(--white);transform:translateY(-2px)}
+.hero-visual{position:relative;z-index:1;display:flex;justify-content:center}
+.img-frame{width:100%;max-width:460px;aspect-ratio:3/4;background:var(--gl);border-radius:8px;overflow:hidden;position:relative}
+.img-frame img{width:100%;height:100%;object-fit:cover;transition:transform .6s}
+.img-frame:hover img{transform:scale(1.04)}
+.hero-badge{position:absolute;bottom:24px;left:-20px;background:var(--white);border:1px solid var(--black);border-radius:100px;padding:9px 20px;font-size:9px;letter-spacing:.15em;text-transform:uppercase;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,.08)}
+.marquee-bar{border-top:1px solid var(--black);border-bottom:1px solid var(--black);padding:14px 0;overflow:hidden;background:var(--black)}
+.marquee-track{display:flex;animation:marquee 30s linear infinite;white-space:nowrap}
+.marquee-item{display:inline-flex;align-items:center;gap:20px;padding:0 36px;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--white)}
+.marquee-dot{width:3px;height:3px;background:var(--gm);border-radius:50%;flex-shrink:0}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.sec-hdr{text-align:center;padding:90px 48px 0}
+h2.sec-title{font-family:'Cormorant Garamond',serif;font-size:clamp(38px,5vw,68px);font-weight:300;line-height:1.1;margin-bottom:18px}
+.sec-sub{font-size:13px;color:var(--gd);line-height:1.85;max-width:520px;margin:0 auto}
+/* FILTERS */
+.filter-wrap{padding:44px 48px 0;display:flex;justify-content:center}
+.filter-bar{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.filter-btn{font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:500;padding:10px 24px;border-radius:100px;border:1px solid var(--gm);background:transparent;color:var(--gd);cursor:none;transition:all .3s}
+.filter-btn:hover{border-color:var(--black);color:var(--black)}
+.filter-btn.active{background:var(--black);color:var(--white);border-color:var(--black)}
+/* GRID */
+.bags-wrap{padding:44px 48px 100px}
+.bag-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.bag-card{position:relative;overflow:hidden;background:var(--white);cursor:none;transition:opacity .35s}
+.bag-card.hidden{display:none}
+.bag-card:nth-child(3n+2){margin-top:40px}
+.bag-img-wrap{aspect-ratio:3/4;overflow:hidden;position:relative;background:var(--white)}
+.bag-img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform .7s;filter:grayscale(6%)}
+.bag-card:hover .bag-img-wrap img{transform:scale(1.06);filter:grayscale(0%)}
+.bag-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.5),transparent 55%);opacity:0;transition:opacity .4s}
+.bag-card:hover .bag-overlay{opacity:1}
+.bag-info{padding:22px 20px 26px;border-top:1px solid var(--gm);background:var(--white)}
+.bag-cat-tag{display:inline-block;font-size:9px;letter-spacing:.2em;text-transform:uppercase;border:1px solid var(--gm);color:var(--gd);padding:4px 12px;border-radius:100px;margin-bottom:12px}
+.bag-name{font-family:'Cormorant Garamond',serif;font-size:28px;font-style:italic;margin-bottom:8px}
+.bag-desc{font-size:12px;color:var(--gd);line-height:1.7;margin-bottom:14px}
+.bag-see{font-size:10px;letter-spacing:.15em;text-transform:uppercase;font-weight:500;display:flex;align-items:center;gap:8px}
+.bag-see::after{content:'→';transition:transform .2s}
+.bag-card:hover .bag-see::after{transform:translateX(4px)}
+.bag-ooakline{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--gm);margin-bottom:14px}
+/* ABOUT */
+.about-section{padding:100px 48px;background:var(--black);color:var(--white);display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;position:relative;overflow:hidden}
+.about-section::before{content:'ANASA';position:absolute;right:-60px;top:50%;transform:translateY(-50%) rotate(90deg);font-family:'Cormorant Garamond',serif;font-size:200px;font-weight:300;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.06);pointer-events:none;white-space:nowrap}
+.about-ey{font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--gm);margin-bottom:28px;display:flex;align-items:center;gap:16px}
+.about-ey::before{content:'';width:40px;height:1px;background:var(--gm);display:block}
+h2.about-title{font-family:'Cormorant Garamond',serif;font-size:clamp(38px,4.5vw,64px);font-weight:300;line-height:1.1;margin-bottom:32px}
+.about-body{font-size:14px;line-height:2;color:rgba(255,255,255,.65);margin-bottom:14px}
+.about-sign{font-family:'Cormorant Garamond',serif;font-size:20px;font-style:italic;color:var(--gm);margin-top:28px}
+.about-frame{aspect-ratio:3/4;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;overflow:hidden;position:relative}
+.about-frame img{width:100%;height:100%;object-fit:cover;opacity:.82}
+.about-pill{position:absolute;top:28px;right:-16px;background:var(--white);color:var(--black);border-radius:100px;padding:11px 20px;font-size:9px;letter-spacing:.2em;text-transform:uppercase;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.35)}
+/* CUSTOM CREATIONS */
+.creations-section{padding:100px 48px;border-top:1px solid var(--gm)}
+.custom-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-top:56px}
+.custom-item{aspect-ratio:1;overflow:hidden;background:var(--gl);cursor:none;position:relative}
+.custom-item img{width:100%;height:100%;object-fit:cover;transition:transform .6s,filter .4s;filter:grayscale(8%)}
+.custom-item:hover img{transform:scale(1.08);filter:grayscale(0%)}
+.custom-placeholder{aspect-ratio:1;background:var(--gl);display:flex;align-items:center;justify-content:center;border:1px dashed var(--gm)}
+.custom-placeholder span{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--gm)}
+/* CUSTOM EDITORIAL GRID */
+.custom-editorial{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+.ce-item{aspect-ratio:1/1;overflow:hidden;background:var(--gl)}
+.ce-item.tall{aspect-ratio:1/1;grid-row:span 2}
+.ce-item img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .7s;cursor:zoom-in}
+.ce-item img:hover{transform:scale(1.05)}
+@media(max-width:700px){
+  .custom-editorial{grid-template-columns:repeat(2,1fr)}
+  .ce-item.tall{grid-row:span 1}
+}
+
+/* LIGHTBOX */
+.lb-overlay{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .35s;cursor:zoom-out}
+.lb-overlay.open{opacity:1;pointer-events:all}
+.lb-img{max-width:92vw;max-height:92vh;object-fit:contain;border-radius:4px;transform:scale(.96);transition:transform .35s}
+.lb-overlay.open .lb-img{transform:scale(1)}
+.lb-close{position:absolute;top:20px;right:24px;background:none;border:none;color:white;font-size:28px;cursor:pointer;opacity:.7;transition:opacity .2s;line-height:1}
+.lb-close:hover{opacity:1}
+/* HOW TO CUSTOMIZE */
+.how-to-wrap{background:var(--gl);margin-top:80px;padding:90px 48px;text-align:center}
+.how-to-inner{max-width:680px;margin:0 auto}
+.how-to-inner .eyebrow{color:var(--gd)}
+.how-to-inner h2{color:var(--black)}
+/* CUSTOM ORDER */
+.order-section{padding:100px 48px;background:var(--gl);text-align:center}
+.order-inner{max-width:660px;margin:0 auto}
+.steps{display:flex;justify-content:center;gap:40px;margin:50px 0;flex-wrap:wrap}
+.step{display:flex;flex-direction:column;align-items:center;gap:12px;max-width:160px;text-align:center}
+.step-num{width:40px;height:40px;border:1px solid var(--black);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:20px;font-style:italic}
+.step-label{font-size:10px;letter-spacing:.15em;text-transform:uppercase;font-weight:500}
+.step-desc{font-size:12px;color:var(--gd);line-height:1.65}
+/* FOOTER */
+footer{background:var(--black);color:var(--white);padding:80px 48px 40px}
+.footer-top{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:60px;padding-bottom:60px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:40px}
+footer img.footer-logo{height:30px;filter:invert(1);margin-bottom:18px;display:block}
+.footer-tagline{font-size:12px;color:rgba(255,255,255,.4);line-height:1.85;max-width:240px}
+.footer-col-title{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:20px;font-weight:500}
+.footer-links{list-style:none;display:flex;flex-direction:column;gap:12px}
+.footer-links a{text-decoration:none;color:rgba(255,255,255,.6);font-size:12px;transition:color .2s}
+.footer-links a:hover{color:var(--white)}
+.footer-bottom{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:rgba(255,255,255,.22);letter-spacing:.1em}
+.footer-ig a{color:rgba(255,255,255,.3);text-decoration:none;font-size:10px;letter-spacing:.15em;text-transform:uppercase;transition:color .2s}
+.footer-ig a:hover{color:var(--white)}
+/* FADE */
+.fade-up{opacity:0;transform:translateY(26px);transition:opacity .75s ease,transform .75s ease}
+.fade-up.visible{opacity:1;transform:translateY(0)}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.72);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .4s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--white);width:min(660px,92vw);max-height:88vh;border-radius:6px;overflow:hidden;display:flex;flex-direction:column;transform:translateY(18px);transition:transform .4s}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-header{padding:30px 32px 18px;border-bottom:1px solid var(--gl);display:flex;justify-content:space-between;align-items:flex-start;flex-shrink:0}
+.modal-bag-name{font-family:'Cormorant Garamond',serif;font-size:36px;font-style:italic}
+.modal-bag-cat{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--gd);margin-top:4px}
+.modal-close{background:none;border:none;cursor:none;font-size:20px;color:var(--gd);transition:color .2s;line-height:1;padding:4px}
+.modal-close:hover{color:var(--black)}
+.modal-body{padding:22px 32px 30px;overflow-y:auto}
+.modal-label{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gd);margin-bottom:18px;font-weight:500}
+.modal-colors-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:14px;margin-bottom:26px}
+.modal-color-item{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:none}
+.modal-color-swatch{width:50px;height:50px;border-radius:50%;border:1.5px solid rgba(0,0,0,.1);transition:transform .2s;box-shadow:0 2px 8px rgba(0,0,0,.09)}
+.modal-color-item:hover .modal-color-swatch{transform:scale(1.12)}
+.modal-color-code{font-size:9px;letter-spacing:.08em;font-weight:500;color:var(--black)}
+.modal-color-name{font-size:9px;color:var(--gm);text-align:center;line-height:1.3}
+.modal-note{font-size:12px;color:var(--gd);line-height:1.85;border-top:1px solid var(--gl);padding-top:18px}
+.modal-note strong{color:var(--black);font-weight:500}
+/* MATERIAL TOGGLE */
+.modal-toggle{display:flex;gap:8px;margin-bottom:22px}
+.modal-toggle-btn{font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:500;padding:8px 20px;border-radius:100px;border:1px solid var(--gm);background:transparent;color:var(--gd);cursor:none;transition:all .25s}
+.modal-toggle-btn:hover{border-color:var(--black);color:var(--black)}
+.modal-toggle-btn.active{background:var(--black);color:var(--white);border-color:var(--black)}
+/* QUIZ */
+.quiz-section{padding:100px 48px;background:var(--black);color:var(--white);position:relative;overflow:hidden}
+.quiz-section::before{content:'FIND\AYOUR\ABAG';white-space:pre;position:absolute;font-family:'Cormorant Garamond',serif;font-size:clamp(60px,12vw,160px);font-weight:300;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.05);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;line-height:1;text-align:center}
+.quiz-inner{max-width:680px;margin:0 auto;text-align:center;position:relative;z-index:1}
+.quiz-eyebrow{font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--gm);margin-bottom:20px;display:flex;align-items:center;justify-content:center;gap:16px}
+.quiz-eyebrow::before,.quiz-eyebrow::after{content:'';display:block;width:40px;height:1px;background:rgba(255,255,255,.2)}
+.quiz-title{font-family:'Cormorant Garamond',serif;font-size:clamp(38px,5vw,68px);font-weight:300;line-height:1.1;margin-bottom:12px;color:var(--white)}
+.quiz-title em{font-style:italic}
+.quiz-subtitle{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:56px;line-height:1.7}
+/* progress */
+.quiz-progress{display:flex;gap:8px;justify-content:center;margin-bottom:48px}
+.quiz-progress-dot{width:28px;height:2px;background:rgba(255,255,255,.15);border-radius:2px;transition:background .4s}
+.quiz-progress-dot.active{background:var(--white)}
+.quiz-progress-dot.done{background:rgba(255,255,255,.45)}
+/* question */
+.quiz-q{font-family:'Cormorant Garamond',serif;font-size:clamp(22px,3vw,32px);font-style:italic;color:var(--white);margin-bottom:36px;min-height:44px;transition:opacity .3s}
+/* options */
+.quiz-options{display:flex;flex-direction:column;gap:12px;margin-bottom:0}
+.quiz-opt{background:transparent;border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.8);padding:16px 28px;border-radius:100px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:400;cursor:none;transition:all .3s;text-align:left;display:flex;align-items:center;gap:16px}
+.quiz-opt:hover{border-color:var(--white);color:var(--white);background:rgba(255,255,255,.05)}
+.quiz-opt.selected{border-color:var(--white);background:var(--white);color:var(--black)}
+.quiz-opt-icon{font-size:18px;flex-shrink:0;width:24px;text-align:center}
+/* result */
+.quiz-result{display:none;animation:fadeInUp .6s ease forwards}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.quiz-result-img{width:180px;height:220px;object-fit:cover;border-radius:4px;margin:0 auto 28px;display:block;filter:brightness(.95)}
+.quiz-result-label{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gm);margin-bottom:12px}
+.quiz-result-name{font-family:'Cormorant Garamond',serif;font-size:52px;font-style:italic;color:var(--white);margin-bottom:8px}
+.quiz-result-desc{font-size:13px;color:rgba(255,255,255,.6);line-height:1.8;max-width:420px;margin:0 auto 32px}
+.quiz-result-actions{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.btn-white{background:var(--white);color:var(--black);padding:13px 34px;text-decoration:none;font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:500;border-radius:100px;transition:opacity .3s;border:none;cursor:none;display:inline-block}
+.btn-white:hover{opacity:.85}
+.btn-ghost{background:transparent;color:rgba(255,255,255,.7);padding:13px 34px;font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:500;border-radius:100px;border:1px solid rgba(255,255,255,.25);cursor:none;transition:all .3s}
+.btn-ghost:hover{border-color:var(--white);color:var(--white)}
+/* RESPONSIVE */
+@media(max-width:900px){
+  nav{padding:18px 24px}.nav-links{display:none}
+  /* hero: text first, image below */
+  .hero{grid-template-columns:1fr;padding:100px 24px 60px;gap:32px}
+  .hero-text{order:1}
+  .hero-visual{order:2}
+  .bag-grid{grid-template-columns:1fr 1fr}.bag-card:nth-child(3n+2){margin-top:0}.bag-card:nth-child(2n){margin-top:28px}
+  .about-section{grid-template-columns:1fr;padding:60px 24px}.about-section::before{display:none}
+  .bags-wrap,.filter-wrap,.sec-hdr{padding-left:24px;padding-right:24px}
+  .creations-section{padding:60px 24px}
+  .how-to-wrap{padding:60px 24px;margin-top:60px}
+  .custom-editorial{grid-template-columns:1fr!important}
+  .custom-editorial-main{aspect-ratio:4/3!important}
+  .custom-editorial-side{grid-template-columns:1fr 1fr!important;gap:8px!important}
+  .footer-top{grid-template-columns:1fr;gap:36px}.footer-bottom{flex-direction:column;gap:10px;text-align:center}
+  .quiz-section{padding:60px 24px}
+  .quiz-opt{padding:14px 20px;font-size:11px}
+}
+@media(max-width:560px){
+  .bag-grid{grid-template-columns:1fr}.bag-card:nth-child(2n){margin-top:0}
+  .hero-actions{flex-direction:column;align-items:flex-start}
+  .custom-editorial-side{grid-template-columns:1fr 1fr!important}
+  .filter-bar{gap:8px}
+  .filter-btn{padding:8px 16px;font-size:9px}
+}
+/* hide cursor on touch devices */
+@media(hover:none){
+  .cursor,.cursor-ring{display:none!important}
+  *{cursor:auto!important}
+  .quiz-opt,.filter-btn,.bag-card,a,button{cursor:pointer!important}
+}
+</style>
+</head>
+<body>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<nav id="mainNav">
+  <a class="nav-logo" href="#"><img src="https://i.imgur.com/xAANrPo.png" alt="Thilikon"></a>
+  <ul class="nav-links">
+    <li><a href="#collection">Collection</a></li>
+    <li><a href="#creations">Custom</a></li>
+    <li><a href="#quiz">Find Your Bag</a></li>
+    <li><a href="#about">Anasa</a></li>
+  </ul>
+  <a class="nav-cta" href="https://www.instagram.com/thilikon.gr/" target="_blank">DM to Order</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-text fade-up">
+    <p class="eyebrow">Collection — Anasa</p>
+    <h1 class="hero-title">Handcrafted<br><em>with love,</em><br>for you.</h1>
+    <p class="hero-body">Every bag is a small story. Made with patience, love and attention to detail — to become your favourite accessory.</p>
+    <div class="hero-actions">
+      <a href="#collection" class="btn-primary">Explore the Collection</a>
+      <a href="#about" class="btn-outline">About Anasa</a>
+    </div>
+  </div>
+  <div class="hero-visual fade-up">
+    <div class="img-frame">
+      <video autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover">
+        <source src="https://i.imgur.com/obNi4Jp.mp4" type="video/mp4">
+      </video>
+      <div class="hero-badge">✦ Anasa Collection</div>
+    </div>
+  </div>
+</section>
+
+<div class="marquee-bar">
+  <div class="marquee-track">
+    <span class="marquee-item">Handcrafted with Love<span class="marquee-dot"></span></span>
+    <span class="marquee-item">Custom Orders Available<span class="marquee-dot"></span></span>
+    <span class="marquee-item">Collection Anasa<span class="marquee-dot"></span></span>
+    <span class="marquee-item">Delivered within 20 days<span class="marquee-dot"></span></span>
+    <span class="marquee-item">Minimal &amp; Timeless<span class="marquee-dot"></span></span>
+    <span class="marquee-item">Handcrafted with Love<span class="marquee-dot"></span></span>
+    <span class="marquee-item">Custom Orders Available<span class="marquee-dot"></span></span>
+    <span class="marquee-item">Collection Anasa<span class="marquee-dot"></span></span>
+    <span class="marquee-item">Delivered within 20 days<span class="marquee-dot"></span></span>
+    <span class="marquee-item">Minimal &amp; Timeless<span class="marquee-dot"></span></span>
+  </div>
+</div>
+
+<section id="collection">
+  <div class="sec-hdr fade-up">
+    <p class="eyebrow eyebrow-center">Anasa Collection</p>
+    <h2 class="sec-title">The Collection</h2>
+    <p class="sec-sub">Choose a category and discover the available colours for each bag.</p>
+  </div>
+  <div class="filter-wrap fade-up">
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="marshmallow">Marshmallow</button>
+      <button class="filter-btn" data-filter="tshirt">T-Shirt Yarn</button>
+      <button class="filter-btn" data-filter="acrylic">Acrylic Beads</button>
+      <button class="filter-btn" data-filter="crystal">Crystal Beads</button>
+      <button class="filter-btn" data-filter="accessories">Accessories</button>
+    </div>
+  </div>
+  <div class="bags-wrap">
+    <div class="bag-grid" id="bagGrid"></div>
+  </div>
+</section>
+
+<section id="creations" class="creations-section">
+
+  <div class="sec-hdr fade-up" style="padding:0 0 52px">
+    <p class="eyebrow eyebrow-center">Handcrafted for You</p>
+    <h2 class="sec-title">Custom Creations</h2>
+    <p class="sec-sub">Every piece is built to order. Tell us what you want — we'll make it happen.</p>
+  </div>
+
+  <!-- EDITORIAL LAYOUT — all square, 3-col grid -->
+  <div class="custom-editorial fade-up">
+    <div class="ce-item"><img src="https://i.imgur.com/GiCBOv8.jpeg" alt="Custom creation" onclick="openLightbox('https://i.imgur.com/GiCBOv8.jpeg')"></div>
+    <div class="ce-item"><img src="https://i.imgur.com/WTXTQ8g.jpeg" alt="Custom creation" onclick="openLightbox('https://i.imgur.com/WTXTQ8g.jpeg')"></div>
+    <div class="ce-item"><img src="https://i.imgur.com/I7JcRT5.jpeg" alt="Custom creation" onclick="openLightbox('https://i.imgur.com/I7JcRT5.jpeg')"></div>
+    <div class="ce-item"><img src="https://i.imgur.com/cLpTlGs.jpeg" alt="Custom creation" onclick="openLightbox('https://i.imgur.com/cLpTlGs.jpeg')"></div>
+    <div class="ce-item"><img src="https://i.imgur.com/ufVGlVV.jpeg" alt="Custom creation" onclick="openLightbox('https://i.imgur.com/ufVGlVV.jpeg')"></div>
+    <div class="ce-item"><img src="https://i.imgur.com/aIOzlYM.jpeg" alt="Custom creation" onclick="openLightbox('https://i.imgur.com/aIOzlYM.jpeg')"></div>
+  </div>
+
+  <!-- black strip -->
+  <div style="background:var(--black);padding:18px 32px;display:flex;align-items:center;justify-content:center;gap:40px;flex-wrap:wrap;margin-top:52px">
+    <span style="font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.55)">✦ Built to order</span>
+    <span style="font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.55)">✦ Delivered within 20 days</span>
+    <span style="font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.55)">✦ Fully customisable</span>
+  </div>
+
+  <!-- HOW TO CUSTOMIZE -->
+  <div class="how-to-wrap fade-up">
+    <div class="how-to-inner">
+      <p class="eyebrow eyebrow-center">Custom Orders</p>
+      <h2 class="sec-title">How to<br><em>Customize Yours</em></h2>
+      <p class="sec-sub" style="margin-bottom:52px">Build something entirely your own — pick your design, find your shade and leave the rest to us.</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-label">Select Your Design</div>
+          <div class="step-desc">You can find all our available designs in our feed</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-label">Find Your Perfect Shade</div>
+          <div class="step-desc">Explore our color palettes in highlights</div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-label">DM Us</div>
+          <div class="step-desc">We will craft it just for you — delivered within 20 days</div>
+        </div>
+      </div>
+      <a href="https://www.instagram.com/thilikon.gr/" target="_blank" class="btn-primary" style="margin-top:48px;display:inline-block">DM us on Instagram</a>
+    </div>
+  </div>
+</section>
+
+<section id="about" class="about-section">
+  <div class="about-text fade-up">
+    <p class="about-ey">The Anasa Collection</p>
+    <h2 class="about-title">A small<br><em>ANASA</em><br>of creation.</h2>
+    <p class="about-body">Το THILIKON ξεκίνησε σαν μια μικρή ανάγκη για ηρεμία και δημιουργία μέσα στην καθημερινότητά μου. Με τον καιρό έγινε κάτι πολύ περισσότερο — μια πηγή έμπνευσης, χαλάρωσης και μια πραγματική Ανάσα.</p>
+    <p class="about-body">Γι' αυτό και η πρώτη μας συλλογή ονομάστηκε Anasa. Minimal, διαχρονική και δημιουργημένη με αγάπη, για να φοριέται εύκολα από όλες.</p>
+    <p class="about-sign">— Αναστασία, THILIKON</p>
+  </div>
+  <div class="fade-up" style="position:relative;z-index:1;display:flex;align-items:center;justify-content:center">
+    <div style="position:relative;max-width:420px;width:100%">
+      <div class="about-frame">
+        <video autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;opacity:.82">
+          <source src="https://i.imgur.com/gBkRhb8.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="about-pill">✦ Packaged with Love</div>
+    </div>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz" class="quiz-section">
+  <div class="quiz-inner">
+    <p class="quiz-eyebrow">Just for You</p>
+    <h2 class="quiz-title">Find <em>Your</em><br>Perfect Bag</h2>
+    <p class="quiz-subtitle">Answer 3 quick questions and we'll match you with your bag.</p>
+
+    <div class="quiz-progress" id="quizProgress">
+      <div class="quiz-progress-dot active"></div>
+      <div class="quiz-progress-dot"></div>
+      <div class="quiz-progress-dot"></div>
+    </div>
+
+    <div id="quizQuestions">
+      <p class="quiz-q" id="quizQ"></p>
+      <div class="quiz-options" id="quizOptions"></div>
+    </div>
+
+    <div class="quiz-result" id="quizResult">
+      <p class="quiz-result-label">Your perfect match</p>
+      <img id="quizResultImg" src="" alt="" class="quiz-result-img">
+      <div class="quiz-result-name" id="quizResultName"></div>
+      <p class="quiz-result-desc" id="quizResultDesc"></p>
+      <div class="quiz-result-actions">
+        <a href="#collection" class="btn-white" id="quizResultCta">See the collection</a>
+        <button class="btn-ghost" onclick="restartQuiz()">Try again</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-top">
+    <div>
+      <img class="footer-logo" src="https://i.imgur.com/xAANrPo.png" alt="Thilikon">
+      <p class="footer-tagline">Handcrafted bags &amp; accessories, made with love by Anastasia.</p>
+    </div>
+    <div>
+      <p class="footer-col-title">Anasa Collection</p>
+      <ul class="footer-links" id="footerLinks"></ul>
+    </div>
+    <div>
+      <p class="footer-col-title">Thilikon</p>
+      <ul class="footer-links">
+        <li><a href="#about">About Anasa</a></li>
+        <li><a href="#quiz">Find Your Bag</a></li>
+        <li><a href="#creations">Custom Creations</a></li>
+        <li><a href="https://www.instagram.com/thilikon.gr/" target="_blank">Instagram ↗</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 THILIKON. All rights reserved.</span>
+    <div class="footer-ig"><a href="https://www.instagram.com/thilikon.gr/" target="_blank">@thilikón ↗</a></div>
+  </div>
+</footer>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-bag-name" id="modalBagName"></div>
+        <div class="modal-bag-cat" id="modalBagCat"></div>
+      </div>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="modalToggle" style="display:none" class="modal-toggle"></div>
+      <p class="modal-label">Available Colours</p>
+      <div class="modal-colors-grid" id="modalColorsGrid"></div>
+      <div id="modalLifestyle"></div>
+      <p class="modal-note" id="modalNote"></p>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lb-overlay" id="lbOverlay">
+  <button class="lb-close" id="lbClose">✕</button>
+  <img class="lb-img" id="lbImg" src="" alt="">
+</div>
+
+<script>
+const CATS={
+  marshmallow:{label:'Marshmallow',desc:'Fluffy yarn with a metallic sheen. 70+ colours.'},
+  tshirt:{label:'T-Shirt Yarn',desc:'Durable cotton yarn. Casual & timeless.'},
+  acrylic:{label:'Acrylic Beads',desc:'Acrylic beads in a pearl finish.'},
+  crystal:{label:'Crystal Beads',desc:'Crystal beads with a glossy sparkle.'},
+  accessories:{label:'Accessories',desc:'Small accessories, big style.'}
+};
+
+const MM=[
+  {code:'#01',label:'White',img:'https://i.imgur.com/h9mbVOF.png'},
+  {code:'#02',label:'Black',img:'https://i.imgur.com/AQEmpQg.png'},
+  {code:'#03',label:'Cream',img:'https://i.imgur.com/ruFksKb.png'},
+  {code:'#04',label:'Terracotta',img:'https://i.imgur.com/20utZCN.png'},
+  {code:'#05',label:'Burgundy',img:'https://i.imgur.com/u5qGXO6.png'},
+  {code:'#06',label:'Brown',img:'https://i.imgur.com/Sve64B7.png'},
+  {code:'#07',label:'Light Grey',img:'https://i.imgur.com/hVxgfQO.png'},
+  {code:'#08',label:'Mauve',img:'https://i.imgur.com/V2LvQMe.png'},
+];
+const TS=[
+  {code:'#01',label:'Black',img:'https://i.imgur.com/3OZAPli.png'},
+  {code:'#02',label:'White',img:'https://i.imgur.com/mavfTcb.png'},
+  {code:'#03',label:'Grey',img:'https://i.imgur.com/hnjJV4u.png'},
+  {code:'#04',label:'Cream',img:'https://i.imgur.com/jV45xXB.png'},
+  {code:'#05',label:'Taupe',img:'https://i.imgur.com/U7PKitu.png'},
+  {code:'#06',label:'Dark Brown',img:'https://i.imgur.com/D6Acmb6.png'},
+];
+const AC=[
+  {code:'#01',label:'White',img:'https://i.imgur.com/KP6lYnG.png'},
+  {code:'#02',label:'Black',img:'https://i.imgur.com/Yd5h203.png'},
+  {code:'#03',label:'Red',img:'https://i.imgur.com/QFGm8SO.png'},
+  {code:'#04',label:'Yellow',img:'https://i.imgur.com/1TCwxFU.png'},
+  {code:'#05',label:'Light Blue',img:'https://i.imgur.com/gnIgJDS.png'},
+  {code:'#06',label:'Blue',img:'https://i.imgur.com/mjjNfoq.png'},
+  {code:'#07',label:'Pearl Cream',img:'https://i.imgur.com/p8OGagM.png'},
+  {code:'#08',label:'Pearl White',img:'https://i.imgur.com/8cdH9OE.png'},
+];
+const CR=[
+  {code:'#01',label:'White',img:'https://i.imgur.com/fZiXpX9.png'},
+  {code:'#02',label:'Opal',img:'https://i.imgur.com/14ys499.png'},
+  {code:'#03',label:'Black',img:'https://i.imgur.com/qHUy7wW.png'},
+  {code:'#04',label:'Silver',img:'https://i.imgur.com/9LB0LKF.png'},
+  {code:'#05',label:'Gunmetal',img:'https://i.imgur.com/ufIY8Qt.png'},
+];
+const colorsByCat={marshmallow:MM,tshirt:TS,acrylic:AC,crystal:CR,accessories:AC};
+
+const bags=[
+  {id:'loopi',name:'Loopi',cat:'marshmallow',desc:'Υπάρχουν τσάντες που απλά κρατάς, και υπάρχει η Loopi που θέλεις να την αγγίζεις συνέχεια! Με chunky πλέξη και σύννεφο-soft υφή, μεταμορφώνει ακόμα και το πιο απλό look.',img:'https://i.imgur.com/4H32v0k.png',lifestyle:['https://i.imgur.com/PSjUNoW.jpeg','https://i.imgur.com/8GRo0TW.jpeg','https://i.imgur.com/xkkMykf.jpeg'],note:'Top-handle bag. Dimensions: 30×20cm.'},
+  {id:'hug',name:'Hug',cat:'marshmallow',desc:'Μαλακή, γεμάτη και απίστευτα χαριτωμένη — η Hug είναι η ιδανική συντροφιά για κάθε σου βόλτα. Μια μικρή αγκαλιά που χωράει όλα τα απαραίτητα.',img:'https://i.imgur.com/P8iXkZS.png',lifestyle:['https://i.imgur.com/Ed8Mcn9.jpeg','https://i.imgur.com/RdsPN5z.jpeg','https://i.imgur.com/cUG79YO.jpeg'],note:'Knitted tote. Dimensions: 24×18cm.'},
+  {id:'grace',name:'Grace',cat:'tshirt',desc:'Η Grace δεν ακολουθεί τα trends, τα δημιουργεί. Με τη signature crochet πλέξη της και το επιβλητικό σχήμα της, αναβαθμίζει κάθε outfit από το πρωινό coffee run μέχρι τη βραδινή έξοδο.',img:'https://i.imgur.com/0RWHLZd.png',note:'Tote with short handle. Dimensions: 25×18cm.'},
+  {id:'bella',name:'Bella',cat:'tshirt',desc:'Κομψή, διαχρονική και με τις πιο θηλυκές λεπτομέρειες. Η Bella είναι η αγαπημένη σου "baguette" τσάντα με το ιδανικό μέγεθος για τις βόλτες σου και τα χαρακτηριστικά πλαϊνά δεσίματα.',img:'https://i.imgur.com/w5xTAYJ.png',note:'Shoulder bag with bow closure. Dimensions: 28×18cm.'},
+  {id:'kelly',name:'Kelly',cat:'tshirt',desc:'Minimal, σοφιστικέ και ακαταμάχητα chic. Η Kelly είναι το clutch bag που συνοδεύει από τις business συναντήσεις μέχρι τις πιο ιδιαίτερες βραδινές εξόδους.',img:'https://i.imgur.com/DZp7X0K.png',note:'Clutch bag. Dimensions: 26×18cm.'},
+  {id:'nicole',name:'Nicole',cat:'tshirt',desc:'Με "baguette" σιλουέτα και chunky shoulder strap, η Nicole συνδυάζει retro αισθητική με σύγχρονο design. Φοριέται άνετα στον ώμο και δίνει αμέσως το "effortless cool" vibe.',img:'https://i.imgur.com/oWKEiNp.png',note:'Shoulder bag. Dimensions coming soon.'},
+  {id:'perla',name:'Perla',cat:'acrylic',cats:['acrylic','crystal'],desc:'Υπάρχει κάτι πιο ονειρικό από μια τσάντα γεμάτη πέρλες; Η Perla δίνει το luxury feel που αναζητάς. Διάλεξε γυάλινες ή ακρυλικές χάντρες στην αγαπημένη σου απόχρωση.',img:'https://i.imgur.com/zBxPh48.png',note:'Detachable long strap. Dimensions: 20×12cm.'},
+  {id:'laluna',name:'Laluna',cat:'crystal',cats:['acrylic','crystal'],desc:'Φτιαγμένη από εκατοντάδες κρυστάλλινες χάντρες που αντανακλούν το φως σε κάθε κίνηση — η Laluna είναι η τσάντα που θα σε κάνει πρωταγωνίστρια της βραδιάς.',img:'https://i.imgur.com/bV80dHm.png',note:'Stainless steel rings. Dimensions: 16×14cm.'},
+  {id:'cardholder',name:'Cardholder',cat:'accessories',cats:['acrylic','crystal'],desc:'Γιατί ακόμα και τα essentials σου αξίζουν μια δόση πολυτέλειας. Το beaded cardholder είναι η λεπτομέρεια που αναβαθμίζει την καθημερινότητά σου.',img:'https://i.imgur.com/K2nwZ3v.png',note:'Holds 4-6 cards. Also available with a small wrist strap.'},
+];
+
+// render bags
+const grid=document.getElementById('bagGrid');
+const flinks=document.getElementById('footerLinks');
+bags.forEach((b,i)=>{
+  const card=document.createElement('div');
+  card.className='bag-card fade-up';
+  card.id=`bag-${b.id}`;
+  card.dataset.cat=b.cat;
+  card.dataset.cats=(b.cats||[b.cat]).join(',');
+  card.style.transitionDelay=(i%3*.08)+'s';
+  card.innerHTML=`<div class="bag-img-wrap"><img src="${b.img}" alt="${b.name}" loading="lazy" onerror="this.parentElement.style.background='#e8e4de';this.style.display='none'"><div class="bag-overlay"></div></div><div class="bag-info"><span class="bag-cat-tag">${CATS[b.cat].label}</span><h3 class="bag-name">${b.name}</h3><p class="bag-desc">${b.desc}</p><p class="bag-ooakline">Delivered within 20 days</p><span class="bag-see">See colours</span></div>`;
+  card.addEventListener('click',()=>openModal(b));
+  grid.appendChild(card);
+  flinks.innerHTML+=`<li><a href="#collection" onclick="event.preventDefault();scrollToBag('${b.id}')">${b.name}</a></li>`;
+});
+
+function scrollToBag(id) {
+  const card = document.getElementById('bag-'+id);
+  if (!card) return;
+  // reset filter to all so the card is visible
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.filter-btn[data-filter="all"]').classList.add('active');
+  document.querySelectorAll('.bag-card').forEach(c=>c.classList.remove('hidden'));
+  // scroll to card then open modal
+  card.scrollIntoView({behavior:'smooth', block:'center'});
+  const bag = bags.find(b=>b.id===id);
+  setTimeout(()=>openModal(bag), 600);
+}
+
+// filter
+document.querySelectorAll('.filter-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const f=btn.dataset.filter;
+    document.querySelectorAll('.bag-card').forEach(c=>{
+      const cats=c.dataset.cats.split(',');
+      c.classList.toggle('hidden', f!=='all' && !cats.includes(f));
+    });
+  });
+});
+
+// modal
+const overlay=document.getElementById('modalOverlay');
+
+function renderModalColors(catKey) {
+  const colors = colorsByCat[catKey] || [];
+  document.getElementById('modalColorsGrid').innerHTML = colors.map(c=>`
+    <div class="modal-color-item">
+      <div class="modal-color-swatch" style="${c.img?'':'background:'+c.hex}">
+        ${c.img?`<img src="${c.img}" alt="${c.label}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:''}
+      </div>
+      <span class="modal-color-code">${c.code}</span>
+      <span class="modal-color-name">${c.label}</span>
+    </div>`).join('');
+  // update toggle active state
+  document.querySelectorAll('.modal-toggle-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.cat === catKey);
+  });
+}
+
+function openModal(b){
+  document.getElementById('modalBagName').textContent=b.name;
+
+  // toggle — show only if multiple material categories
+  const toggleEl = document.getElementById('modalToggle');
+  if (b.cats && b.cats.length > 1) {
+    toggleEl.style.display = 'flex';
+    toggleEl.innerHTML = b.cats.map(c =>
+      `<button class="modal-toggle-btn${c===b.cat?' active':''}" data-cat="${c}" onclick="renderModalColors('${c}')">${CATS[c].label}</button>`
+    ).join('');
+    document.getElementById('modalBagCat').textContent = 'Available in multiple materials';
+  } else {
+    toggleEl.style.display = 'none';
+    document.getElementById('modalBagCat').textContent = CATS[b.cat].label+' — '+CATS[b.cat].desc;
+  }
+
+  renderModalColors(b.cat);
+
+  // lifestyle gallery
+  const lifestyleHtml = b.lifestyle && b.lifestyle.length ? `
+    <p class="modal-label" style="margin-top:24px">Styled Looks</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:24px">
+      ${b.lifestyle.map(src=>{
+        const escaped = src.replace(/'/g,"\\'");
+        return `<div style="aspect-ratio:1;overflow:hidden;border-radius:4px;background:var(--gl);cursor:zoom-in" onclick="openLightbox('${escaped}')"><img src="${src}" style="width:100%;height:100%;object-fit:cover" loading="lazy"></div>`;
+      }).join('')}
+    </div>` : '';
+  document.getElementById('modalLifestyle').innerHTML = lifestyleHtml;
+  document.getElementById('modalNote').innerHTML=`<strong>Note:</strong> ${b.note}<br><br>To place an order, <a href="https://www.instagram.com/thilikon.gr/" target="_blank" style="color:var(--black);font-weight:500"><strong>DM us on Instagram</strong></a> with the model name and colour code.`;
+  overlay.classList.add('open');document.body.style.overflow='hidden';
+}
+function closeModal(){overlay.classList.remove('open');document.body.style.overflow='';}
+document.getElementById('modalClose').addEventListener('click',closeModal);
+overlay.addEventListener('click',e=>{if(e.target===overlay)closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+// cursor
+const cur=document.getElementById('cursor'),ring=document.getElementById('cursorRing');
+let rx=0,ry=0,mx=window.innerWidth/2,my=window.innerHeight/2;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
+(function anim(){rx+=(mx-rx)*.14;ry+=(my-ry)*.14;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(anim)})();
+document.querySelectorAll('a,button,.bag-card,.filter-btn').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.style.width='5px';cur.style.height='5px';ring.style.width='52px';ring.style.height='52px';});
+  el.addEventListener('mouseleave',()=>{cur.style.width='10px';cur.style.height='10px';ring.style.width='36px';ring.style.height='36px';});
+});
+
+// cursor colour — white on dark sections
+function updateCursorColor(){
+  const els=document.elementsFromPoint(mx,my);
+  const onDark=els.some(el=>el.closest('.about-section,.marquee-bar,footer,.how-to-wrap'));
+  const color=onDark?'#ffffff':'#0a0a0a';
+  cur.style.background=color;
+  ring.style.borderColor=color;
+}
+document.addEventListener('mousemove',updateCursorColor);
+
+// ============================================================
+// QUIZ
+// ============================================================
+const questions = [
+  {
+    q: "How would you describe your daily vibe?",
+    opts: [
+      { icon: '🌸', text: 'Soft & cosy — I love touchable, cloud-like textures', tags: {loopi:3, hug:3, bella:1} },
+      { icon: '🎀', text: 'Feminine & elegant — details and polish matter to me',  tags: {bella:3, perla:2, kelly:2} },
+      { icon: '🖤', text: 'Bold & structured — clean lines, strong silhouette',    tags: {grace:3, kelly:2, nicole:2} },
+      { icon: '✨', text: 'Glamorous — I want to shine and be noticed',            tags: {laluna:3, perla:2, cardholder:1} },
+    ]
+  },
+  {
+    q: "What's a typical day for you?",
+    opts: [
+      { icon: '☕', text: 'Casual outings — coffee, errands, everyday life',    tags: {loopi:3, hug:2, bella:2} },
+      { icon: '💼', text: 'On the go — meetings, work, busy schedule',          tags: {grace:3, nicole:2, kelly:2} },
+      { icon: '🥂', text: 'Special occasions — dinners out, evenings, events',  tags: {laluna:3, perla:2, cardholder:2} },
+      { icon: '🌀', text: 'Mixed — I need a bag that handles everything',        tags: {grace:2, hug:3, nicole:2} },
+    ]
+  },
+  {
+    q: "How much do you carry?",
+    opts: [
+      { icon: '🪭', text: 'Just cards & phone — the bare minimum',             tags: {cardholder:3, laluna:2, kelly:1} },
+      { icon: '👛', text: 'Wallet, phone, keys, a bit of makeup',              tags: {perla:2, bella:2, loopi:2, kelly:2} },
+      { icon: '🎒', text: 'Quite a lot — I always seem to need everything',    tags: {grace:3, hug:3, nicole:2} },
+      { icon: '🌙', text: 'Almost nothing — it\'s evening, I travel light',    tags: {laluna:3, perla:2, cardholder:2} },
+    ]
+  }
+];
+
+const bagResults = {
+  loopi:      { desc: 'You need something that matches your energy — soft, cloud-like and impossible not to touch. The Loopi\'s chunky marshmallow texture turns even the simplest outfit into a Pinterest moment. 30×20cm.' },
+  hug:        { desc: 'You\'re the kind of person who wants their bag to feel as good as it looks. The Hug is round, soft and full — the perfect everyday companion that fits all your essentials with a warm touch. 24×18cm.' },
+  grace:      { desc: 'You\'re structured, confident and always on the move. The Grace\'s signature crochet silhouette goes from your morning coffee run straight to an evening out without missing a beat. 25×18cm.' },
+  bella:      { desc: 'Feminine, effortless and full of character. The Bella\'s baguette shape and signature side bows make it the piece you reach for without thinking — and never want to put down. 28×18cm.' },
+  kelly:      { desc: 'Minimal, sophisticated and quietly striking. The Kelly is the clutch that takes you from business meetings to the most special evenings — no effort required. 26×18cm.' },
+  nicole:     { desc: 'Retro silhouette, modern attitude. The Nicole\'s chunky shoulder strap and baguette shape give you that effortless cool vibe from morning to night. Made to be worn, made to be noticed.' },
+  perla:      { desc: 'There\'s nothing more dreamy than a bag full of pearls. The Perla brings the luxury feel you\'ve been looking for — choose acrylic or crystal beads in any shade you love. 20×12cm.' },
+  laluna:     { desc: 'You\'re the protagonist of the evening. Hundreds of crystal beads catching every light with every move — the Laluna is the bag that makes the night yours. 16×14cm.' },
+  cardholder: { desc: 'You believe in the power of the small statement. The beaded cardholder is the luxurious detail that upgrades your everyday — because even your essentials deserve a touch of glamour.' },
+};
+
+let quizAnswers = [];
+let currentQ = 0;
+
+function renderQuestion() {
+  const q = questions[currentQ];
+  const qEl = document.getElementById('quizQ');
+  const optsEl = document.getElementById('quizOptions');
+  qEl.style.opacity = '0';
+  optsEl.style.opacity = '0';
+  setTimeout(() => {
+    qEl.textContent = q.q;
+    optsEl.innerHTML = q.opts.map((o,i) =>
+      `<button class="quiz-opt" onclick="selectOpt(${i})">
+        <span class="quiz-opt-icon">${o.icon}</span>${o.text}
+      </button>`
+    ).join('');
+    qEl.style.transition = 'opacity .35s';
+    optsEl.style.transition = 'opacity .35s';
+    qEl.style.opacity = '1';
+    optsEl.style.opacity = '1';
+  }, 200);
+  document.querySelectorAll('.quiz-progress-dot').forEach((d,i) => {
+    d.classList.toggle('active', i === currentQ);
+    d.classList.toggle('done', i < currentQ);
+  });
+}
+
+function selectOpt(idx) {
+  const opts = document.querySelectorAll('.quiz-opt');
+  opts[idx].classList.add('selected');
+  quizAnswers.push(questions[currentQ].opts[idx].tags);
+  setTimeout(() => {
+    currentQ++;
+    if (currentQ < questions.length) {
+      renderQuestion();
+    } else {
+      showResult();
+    }
+  }, 380);
+}
+
+function showResult() {
+  // tally weighted scores
+  const scores = {};
+  quizAnswers.forEach(tagObj => {
+    Object.entries(tagObj).forEach(([bag, pts]) => {
+      scores[bag] = (scores[bag] || 0) + pts;
+    });
+  });
+  const winner = Object.entries(scores).sort((a,b) => b[1]-a[1])[0][0];
+  const bag = bags.find(b => b.id === winner);
+  const extra = bagResults[winner];
+
+  document.getElementById('quizQuestions').style.display = 'none';
+  document.getElementById('quizProgress').style.display = 'none';
+
+  const res = document.getElementById('quizResult');
+  document.getElementById('quizResultImg').src = bag.img;
+  document.getElementById('quizResultImg').alt = bag.name;
+  document.getElementById('quizResultName').textContent = bag.name;
+  document.getElementById('quizResultDesc').textContent = extra.desc;
+  document.getElementById('quizResultCta').href = '#collection';
+  res.style.display = 'block';
+
+  document.querySelectorAll('.quiz-progress-dot').forEach(d => {
+    d.classList.remove('active');
+    d.classList.add('done');
+  });
+  document.getElementById('quizProgress').style.display = 'flex';
+}
+
+function restartQuiz() {
+  quizAnswers = [];
+  currentQ = 0;
+  document.getElementById('quizResult').style.display = 'none';
+  document.getElementById('quizQuestions').style.display = 'block';
+  renderQuestion();
+}
+
+// init
+renderQuestion();
+
+// ============================================================
+// LIGHTBOX
+// ============================================================
+const lbOverlay = document.getElementById('lbOverlay');
+const lbImg     = document.getElementById('lbImg');
+const lbClose   = document.getElementById('lbClose');
+
+function openLightbox(src, alt) {
+  lbImg.src = src;
+  lbImg.alt = alt || '';
+  lbOverlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  lbOverlay.classList.remove('open');
+  document.body.style.overflow = '';
+}
+lbClose.addEventListener('click', closeLightbox);
+lbOverlay.addEventListener('click', e => { if (e.target === lbOverlay || e.target === lbImg) closeLightbox(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+// make editorial images clickable
+document.querySelectorAll('.ce-main img, .ce-small img, .ce-half img').forEach(img => {
+  img.style.cursor = 'zoom-in';
+  img.addEventListener('click', () => openLightbox(img.src, img.alt));
+});
+
+// fallback: make all fade-up visible after 800ms in case observer misses them
+setTimeout(()=>{ document.querySelectorAll('.fade-up').forEach(el=>el.classList.add('visible')); }, 800);
+
+// nav + fade
+window.addEventListener('scroll',()=>document.getElementById('mainNav').classList.toggle('scrolled',scrollY>40));
+const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')}),{threshold:.08});
+document.querySelectorAll('.fade-up').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
