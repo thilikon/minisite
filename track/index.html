@@ -121,6 +121,8 @@
   .order-head{margin-bottom:6px}
   .order-head h1{font-size:33px;font-weight:600;line-height:1.12;letter-spacing:.005em}
   .order-head .who{color:var(--ink-soft);font-size:14px;margin-top:6px}
+  .order-summary{font-size:14px;color:var(--ink-soft);margin-top:8px;line-height:1.5}
+  .order-summary .pill{display:inline-block;font-size:12px;font-weight:600;background:var(--stone);color:var(--ink-soft);border-radius:var(--pill);padding:3px 10px}
   .meta-row{
     display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;
   }
@@ -266,6 +268,7 @@
   .order-row .r-prod{font-size:13px;color:var(--ink-soft);margin-top:1px}
   .order-row .r-fb{font-size:12px;color:#a07b1e;margin-top:6px}
   .order-row .r-money{font-size:12.5px;margin-top:6px;font-weight:600;color:var(--ink)}
+  .order-row .r-hint{font-size:12px;color:#2f5d8a;background:#eef3f8;border-radius:9px;padding:8px 11px;margin-top:9px}
   .order-row .r-money .pay-ok{color:#2c6e49;font-weight:600}
   .order-row .r-money .pay-due{color:#b06a1e;font-weight:600}
   .order-row .r-stage{
@@ -273,6 +276,7 @@
     background:var(--ink);color:#fff;border-radius:var(--pill);padding:5px 11px;
   }
   .order-row .r-stage.done{background:#1d3b2a}
+  .order-row .r-stage.ready{background:#2f5d8a}
   .order-row .r-stage.ret{background:#8a5a1e}
   .order-row.is-return{border-color:#e0cdb0;background:#fffdf9}
   .order-row .r-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
@@ -341,6 +345,7 @@
   .ie-row{display:flex;gap:8px}
   .ie-row select{flex:1}
   .ie-flow{max-width:42%}
+  .ro-field{background:var(--stone);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14px;color:var(--ink-soft);font-weight:600;min-height:45px;display:flex;align-items:center}
   .stage-picker button{
     flex:1;min-width:64px;border:1px solid var(--line);background:var(--cream);
     border-radius:12px;padding:9px 6px;cursor:pointer;font-family:'Inter';
@@ -403,6 +408,7 @@
           <p class="eyebrow" id="tOrderNo"></p>
           <h1 class="serif" id="tHello"></h1>
         </div>
+        <div class="order-summary" id="tSummary"></div>
         <div class="meta-row" id="tMeta"></div>
 
         <div id="tItems"></div>
@@ -414,7 +420,7 @@
 
         <div class="ship-box hidden" id="tShip">
           <div class="si">
-            <div class="e">Αποστολή</div>
+            <div class="e" id="tShipE">Αποστολή</div>
             <div class="v" id="tShipV"></div>
           </div>
           <a id="tShipBtn" class="btn ghost sm" target="_blank" rel="noopener">Εντόπισε το δέμα σου</a>
@@ -540,7 +546,7 @@
 
     <div style="display:flex;gap:10px">
       <label class="fld" style="flex:1"><span>Όνομα πελάτη *</span><input id="fName"></label>
-      <label class="fld" style="flex:1"><span>Αρ. παραγγελίας</span><input id="fOrderNo" placeholder="π.χ. 1, TH-001"></label>
+      <label class="fld" style="flex:1"><span>Αρ. παραγγελίας</span><div id="fOrderNoView" class="ro-field">αυτόματο</div></label>
     </div>
 
     <div style="display:flex;justify-content:space-between;align-items:center;margin:4px 0 8px">
@@ -785,16 +791,27 @@ function renderTracking(o){
   const items = getItems(o);
   const method = o.delivery_method === "pickup" ? "pickup" : "shipping";
   const everyDone = items.every(itemDone);
+  const everyReady = items.every(it => itemStage(it) >= itemN(it)-1); // όλα έτοιμα για αποστολή/παραλαβή
+  const doneCount = items.filter(itemDone).length;
+  const retCount = items.filter(it=>itemFlow(it)==="return" && !itemDone(it)).length;
 
   // header
   document.getElementById("tOrderNo").textContent = o.order_number ? ("Παραγγελία " + o.order_number) : "Παραγγελία";
   document.getElementById("tHello").textContent = o.customer_name ? ("Γεια σου " + o.customer_name + " 👋") : "Η παραγγελία σου";
 
+  // σύνοψη κατάστασης
+  let summary;
+  if(everyDone) summary = items.length>1 ? "Όλα τα προϊόντα σου ολοκληρώθηκαν 🤍" : "Η παραγγελία σου ολοκληρώθηκε 🤍";
+  else if(everyReady) summary = method==="pickup" ? "Η παραγγελία σου είναι έτοιμη για παραλαβή ✨" : "Η παραγγελία σου ετοιμάζεται για αποστολή ✨";
+  else if(doneCount>0 && items.length>1) summary = `${doneCount} από ${items.length} προϊόντα ολοκληρώθηκαν · η υπόλοιπη παραγγελία είναι σε εξέλιξη`;
+  else summary = "Η παραγγελία σου είναι σε εξέλιξη";
+  if(retCount>0) summary += ` <span class="pill">♻ ${retCount} σε επανακατασκευή</span>`;
+  document.getElementById("tSummary").innerHTML = summary;
+
   // meta tags
   const meta = document.getElementById("tMeta"); meta.innerHTML="";
   const addTag=(txt,cls)=>{ const s=document.createElement("span"); s.className="tag"+(cls?(" "+cls):""); s.textContent=txt; meta.appendChild(s); };
   addTag(items.length>1 ? (items.length+" προϊόντα") : "1 προϊόν");
-  if(everyDone) addTag("Ολοκληρώθηκε ✓","tag-done");
   if(o.created_at) addTag("Καταχωρήθηκε " + new Date(o.created_at).toLocaleDateString("el-GR"));
 
   // per-item cards
@@ -805,21 +822,22 @@ function renderTracking(o){
   if(o.note && o.note.trim()){ nb.classList.remove("hidden"); document.getElementById("tNote").textContent = o.note; }
   else nb.classList.add("hidden");
 
-  // delivery/courier box (order-level)
+  // delivery/courier box — ΜΟΝΟ όταν όλα τα προϊόντα είναι έτοιμα για αποστολή/παραλαβή
   const ship = document.getElementById("tShip");
+  const shipE = document.getElementById("tShipE");
   const shipV = document.getElementById("tShipV");
   const btn = document.getElementById("tShipBtn");
   if(method === "pickup"){
-    // δείξε όταν τουλάχιστον ένα προϊόν έφτασε σε αποστολή/παραλαβή
-    const anyShip = items.some(it=> itemStage(it) >= itemN(it)-1 );
-    if(anyShip){
+    if(everyReady && !everyDone){
       ship.classList.remove("hidden");
-      shipV.textContent = "Παραλαβή διά ζώσης" + (everyDone ? " — παραλήφθηκε" : " — έτοιμο για παραλαβή");
+      shipE.textContent = "Παραλαβή";
+      shipV.textContent = "Έτοιμο για παραλαβή — θα συνεννοηθούμε για το πότε & πού.";
       btn.classList.add("hidden");
     } else ship.classList.add("hidden");
   } else {
-    if(o.courier || o.tracking_number){
+    if(everyReady && (o.courier || o.tracking_number)){
       ship.classList.remove("hidden");
+      shipE.textContent = "Αποστολή";
       const parts=[]; if(o.courier) parts.push(o.courier); if(o.tracking_number) parts.push("#"+o.tracking_number);
       shipV.textContent = parts.join("  ·  ");
       const isBox = /box\s*now/i.test(o.courier||"");
@@ -1111,9 +1129,11 @@ function renderOrders(){
     const items = getItems(o);
     const pickup = o.delivery_method === "pickup";
     const everyDone = items.every(itemDone);
-    const orderBadge = everyDone
-      ? `<span class="r-stage done">${pickup?'Παραλήφθηκε':'Παραδόθηκε'}</span>`
-      : `<span class="r-stage">${items.length} προϊόντα</span>`;
+    const everyReady = items.every(it=> itemStage(it) >= itemN(it)-1);
+    let orderBadge;
+    if(everyDone) orderBadge = `<span class="r-stage done">${pickup?'Παραλήφθηκε':'Παραδόθηκε'}</span>`;
+    else if(everyReady) orderBadge = `<span class="r-stage ready">${pickup?'Έτοιμη για παραλαβή':'Έτοιμη για αποστολή'}</span>`;
+    else orderBadge = `<span class="r-stage">Σε εξέλιξη</span>`;
 
     const itemsHtml = items.map(it=>{
       const flow=itemFlow(it), N=itemN(it), s=itemStage(it), d=itemDone(it);
@@ -1141,6 +1161,8 @@ function renderOrders(){
         ${orderBadge}
       </div>
       <div class="order-items">${itemsHtml}</div>
+      ${everyReady && !everyDone && !pickup && !o.tracking_number ? `<div class="r-hint">📦 Όλα έτοιμα — πρόσθεσε courier/tracking από «Επεξεργασία» και προχώρα τα στάδια.</div>` : ""}
+      ${everyReady && !everyDone && pickup ? `<div class="r-hint">🤝 Όλα έτοιμα — κανόνισε παραλαβή με τον πελάτη.</div>` : ""}
       ${o.feedback_rating?`<div class="r-fb">★ ${o.feedback_rating}/5 αξιολόγηση${o.feedback_comment?` — «${esc(o.feedback_comment)}»`:""}</div>`:""}
       ${moneyLine(o)}
       <div class="r-actions">
@@ -1296,8 +1318,9 @@ function pickMethod(m){
 function openOrderModal(){
   editingId=null; pickedMethod="shipping";
   document.getElementById("modalTitle").textContent="Νέα παραγγελία";
-  ["fName","fOrderNo","fNote","fTrackNo","fTrackUrl","fPrice","fCost","fPaid"].forEach(id=>document.getElementById(id).value="");
+  ["fName","fNote","fTrackNo","fTrackUrl","fPrice","fCost","fPaid"].forEach(id=>document.getElementById(id).value="");
   document.getElementById("fCourier").value="BoxNow";
+  document.getElementById("fOrderNoView").textContent="θα δημιουργηθεί αυτόματα";
   document.getElementById("moneyHint").textContent="";
   document.getElementById("modalLinkWrap").classList.add("hidden");
   document.getElementById("fbReadout").classList.add("hidden");
@@ -1314,7 +1337,7 @@ function editOrder(id){
   pickedMethod = o.delivery_method === "pickup" ? "pickup" : "shipping";
   document.getElementById("modalTitle").textContent="Επεξεργασία";
   document.getElementById("fName").value=o.customer_name||"";
-  document.getElementById("fOrderNo").value=o.order_number||"";
+  document.getElementById("fOrderNoView").textContent=o.order_number||"—";
   document.getElementById("fNote").value=o.note||"";
   document.getElementById("fCourier").value=o.courier||"";
   document.getElementById("fTrackNo").value=o.tracking_number||"";
@@ -1362,7 +1385,6 @@ async function saveOrder(){
   const payload={
     customer_name,
     product_name: items.map(i=>i.name).join(", ").slice(0,180),  // για αναζήτηση/συμβατότητα
-    order_number: document.getElementById("fOrderNo").value.trim() || null,
     note: document.getElementById("fNote").value.trim() || null,
     delivery_method: isPickup ? "pickup" : "shipping",
     courier: isPickup ? null : (courier || null),
@@ -1390,6 +1412,7 @@ async function saveOrder(){
     const data = await res.json();
     if(!res.ok) throw new Error(data.message || "Σφάλμα");
     const row = Array.isArray(data)?data[0]:data;
+    document.getElementById("fOrderNoView").textContent = row.order_number || "—";
     // show link
     const lw=document.getElementById("modalLinkWrap"); lw.classList.remove("hidden");
     document.getElementById("modalLink").textContent=linkFor(row.track_token);
