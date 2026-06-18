@@ -276,6 +276,18 @@
   .order-row .r-stage.ret{background:#8a5a1e}
   .order-row.is-return{border-color:#e0cdb0;background:#fffdf9}
   .order-row .r-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+  /* items inside an order row */
+  .order-items{margin-top:11px;display:flex;flex-direction:column;gap:7px}
+  .oi{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--cream);border:1px solid var(--line);border-radius:11px;padding:9px 11px}
+  .oi.i-done{background:#eef4ef;border-color:#cfe0d3}
+  .oi.i-ret{background:#fbf3e7;border-color:#e6d4b4}
+  .oi-name{font-size:13.5px;font-weight:600}
+  .oi-rt{color:#8a5a1e}
+  .oi-stage{font-size:12px;color:var(--ink-soft);margin-top:1px}
+  .oi-note{font-size:12px;color:#8a5a1e;margin-top:3px}
+  .oi-act{display:flex;gap:6px;align-items:center;flex:none}
+  .oi-act .btn.sm{padding:7px 11px}
+  .oi-ok{color:#2c6e49;font-weight:700;font-size:15px;padding:0 6px}
   .fb-readout{background:var(--cream);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:13px}
   .fb-readout b{color:#a07b1e}
   /* stats */
@@ -604,16 +616,18 @@ const STAGES = {
     shipping:{
       1:{title:"Αναμονή Επιστροφής Προϊόντος", dur:"περιμένουμε να λάβουμε πίσω το προϊόν"},
       2:{title:"Παραλαβή Επιστροφής",          dur:"λάβαμε το προϊόν για επανακατασκευή"},
-      3:{title:"Εκ Νέου Δημιουργία",           dur:"φτιάχνουμε ξανά τη δημιουργία σου"},
-      4:{title:"Συσκευασία & Αποστολή",        dur:"συνήθως ~1 μέρα"},
-      5:{title:"Παραδόθηκε",                   dur:"η παραγγελία ολοκληρώθηκε"}
+      3:{title:"Παραλαβή Υλικών",              dur:"αναμονή υλικών από προμηθευτή"},
+      4:{title:"Εκ Νέου Δημιουργία",           dur:"φτιάχνουμε ξανά τη δημιουργία σου"},
+      5:{title:"Συσκευασία & Αποστολή",        dur:"συνήθως ~1 μέρα"},
+      6:{title:"Παραδόθηκε",                   dur:"η παραγγελία ολοκληρώθηκε"}
     },
     pickup:{
       1:{title:"Αναμονή Επιστροφής Προϊόντος", dur:"θα συνεννοηθούμε για την επιστροφή"},
       2:{title:"Παραλαβή Επιστροφής",          dur:"λάβαμε το προϊόν για επανακατασκευή"},
-      3:{title:"Εκ Νέου Δημιουργία",           dur:"φτιάχνουμε ξανά τη δημιουργία σου"},
-      4:{title:"Συσκευασία & Έτοιμο για Παραλαβή", dur:"θα συνεννοηθούμε για ραντεβού"},
-      5:{title:"Παραλήφθηκε",                  dur:"η παραγγελία ολοκληρώθηκε"}
+      3:{title:"Παραλαβή Υλικών",              dur:"αναμονή υλικών από προμηθευτή"},
+      4:{title:"Εκ Νέου Δημιουργία",           dur:"φτιάχνουμε ξανά τη δημιουργία σου"},
+      5:{title:"Συσκευασία & Έτοιμο για Παραλαβή", dur:"θα συνεννοηθούμε για ραντεβού"},
+      6:{title:"Παραλήφθηκε",                  dur:"η παραγγελία ολοκληρώθηκε"}
     }
   }
 };
@@ -621,13 +635,13 @@ function flowOf(o){ return (o==="return"||(o&&o.flow==="return"))?"return":"norm
 function stagesFor(flow, method){
   return STAGES[flow==="return"?"return":"normal"][method==="pickup"?"pickup":"shipping"];
 }
-function stageCount(flow){ return flow==="return"?5:4; }
+function stageCount(flow){ return flow==="return"?6:4; }
 // φάση για στατιστικά (λειτουργεί και για κανονική και για επιστροφή)
 function phaseIndex(o){
   const flow=flowOf(o); const N=stageCount(flow);
   const s=Math.min(Math.max(o.stage||1,1),N);
   if(s>=N) return 3;                       // Ολοκληρωμένες
-  if(flow==="return") return s<=2?0 : (s===3?1:2);
+  if(flow==="return") return s>=5?2 : (s===4?1:0);
   return s===1?0 : (s===2?1:2);
 }
 
@@ -648,7 +662,7 @@ function allDelivered(o){ return getItems(o).every(itemDone); }
 function phaseIndexItem(it){
   const flow=itemFlow(it), N=itemN(it), s=itemStage(it);
   if(s>=N) return 3;
-  if(flow==="return") return s<=2?0:(s===3?1:2);
+  if(flow==="return") return s>=5?2:(s===4?1:0);
   return s===1?0:(s===2?1:2);
 }
 // σύντομες ετικέτες για τον stage picker του admin
@@ -990,14 +1004,21 @@ async function loadOrders(){
 function renderStats(){
   const all = ordersCache;
   const total = all.length;
-  const byStage = [0,0,0,0];
+  const byStage = [0,0,0,0];   // ΠΡΟΪΟΝΤΑ ανά φάση
   let ship=0, pickup=0, monthCount=0, ratingSum=0, ratingN=0;
+  let activeOrders=0, doneOrders=0, returnActive=0, returnTotal=0, totalItems=0;
   // financials
   let revMonth=0, profitMonth=0, outstanding=0, priceSum=0, priceN=0;
   const now = new Date(); const ymNow = now.getFullYear()+"-"+now.getMonth();
   const monthly = {}; // "YYYY-M" -> revenue
   all.forEach(o=>{
-    byStage[phaseIndex(o)]++;
+    const items = getItems(o);
+    totalItems += items.length;
+    items.forEach(it=>{
+      byStage[phaseIndexItem(it)]++;
+      if(itemFlow(it)==="return"){ returnTotal++; if(!itemDone(it)) returnActive++; }
+    });
+    if(allDelivered(o)) doneOrders++; else activeOrders++;
     if(o.delivery_method==="pickup") pickup++; else ship++;
     const c = new Date(o.created_at);
     const ym = c.getFullYear()+"-"+c.getMonth();
@@ -1014,11 +1035,11 @@ function renderStats(){
       if(rem>0) outstanding += rem;
     }
   });
-  const active = byStage[0]+byStage[1]+byStage[2];
-  const done = byStage[3];
+  const active = activeOrders;
+  const done = doneOrders;
   const avg = ratingN ? (ratingSum/ratingN).toFixed(1) : "—";
   const avgOrder = priceN ? priceSum/priceN : null;
-  const labels = ["Αναμονή / Υλικά","Δημιουργία","Αποστολή / Παραλαβή","Ολοκληρωμένες"];
+  const labels = ["Αναμονή / Υλικά","Δημιουργία","Αποστολή / Παραλαβή","Παραδόθηκαν"];
   const maxStage = Math.max(1, ...byStage);
 
   const tiles = [
@@ -1062,8 +1083,10 @@ function renderStats(){
     <div class="stat-grid">${tiles}</div>
     <div class="stat-row">
       <span class="stat-pill">⭐ Μ.Ο. αξιολόγησης: <b>${avg}</b>${ratingN?` (${ratingN})`:""}</span>
-      <span class="stat-pill">📦 Courier: ${ship}</span>
-      <span class="stat-pill">🤝 Διά ζώσης: ${pickup}</span>
+      <span class="stat-pill">🧶 Προϊόντα: ${totalItems}</span>
+      ${returnTotal?`<span class="stat-pill" style="background:#efe6da;color:#8a5a1e">♻ Επιστροφές: ${returnTotal} (${Math.round(returnTotal/Math.max(totalItems,1)*100)}%)${returnActive?` · ${returnActive} σε εξέλιξη`:""}</span>`:""}
+      <span class="stat-pill">📦 ${ship}</span>
+      <span class="stat-pill">🤝 ${pickup}</span>
     </div>
 
     <div class="stats-sub">💶 Οικονομικά</div>
@@ -1071,7 +1094,7 @@ function renderStats(){
     <div class="stats-sub">Τζίρος ανά μήνα</div>
     <div class="stage-bars">${revBars}</div>
 
-    <div class="stats-sub">Παραγγελίες ανά στάδιο</div>
+    <div class="stats-sub">Προϊόντα ανά φάση</div>
     <div class="stage-bars">${bars}</div>`;
 }
 
@@ -1079,50 +1102,54 @@ function renderOrders(){
   const q = (document.getElementById("search").value||"").toLowerCase();
   const list = document.getElementById("ordersList");
   const filtered = ordersCache.filter(o=>{
-    const hay = [o.customer_name,o.product_name,o.order_number,o.product_details].join(" ").toLowerCase();
+    const itemNames = getItems(o).map(i=>i.name).join(" ");
+    const hay = [o.customer_name,o.product_name,o.order_number,itemNames].join(" ").toLowerCase();
     return hay.includes(q);
   });
   if(!filtered.length){ list.innerHTML='<p style="text-align:center;color:var(--muted);padding:24px 0;font-size:13px">Καμία παραγγελία ακόμη. Πάτησε «+ Νέα».</p>'; return; }
   list.innerHTML = filtered.map(o=>{
-    const flow = flowOf(o);
-    const N = stageCount(flow);
-    const stage = Math.min(Math.max(o.stage||1,1),N);
-    const done = stage>=N;
+    const items = getItems(o);
     const pickup = o.delivery_method === "pickup";
-    const doneLabel = pickup ? "Παραλήφθηκε" : "Παραδόθηκε";
-    const isReturn = flow==="return";
-    const stageLabel = done ? doneLabel : (isReturn ? ("Επιστροφή "+stage+"/"+N) : ("Στάδιο "+stage));
-    return `<div class="order-row${isReturn?' is-return':''}">
+    const everyDone = items.every(itemDone);
+    const orderBadge = everyDone
+      ? `<span class="r-stage done">${pickup?'Παραλήφθηκε':'Παραδόθηκε'}</span>`
+      : `<span class="r-stage">${items.length} προϊόντα</span>`;
+
+    const itemsHtml = items.map(it=>{
+      const flow=itemFlow(it), N=itemN(it), s=itemStage(it), d=itemDone(it);
+      const STG=stagesFor(flow, pickup?"pickup":"shipping");
+      const ret = flow==="return";
+      const statusCls = d?'i-done':(ret?'i-ret':'');
+      return `<div class="oi ${statusCls}">
+        <div class="oi-info">
+          <div class="oi-name">${esc(it.name)}${ret?' <span class="oi-rt">♻</span>':''}</div>
+          <div class="oi-stage">${STG[s].title}${ret?` · επιστροφή ${s}/${N}`:` · ${s}/${N}`}</div>
+          ${it.note?`<div class="oi-note">📝 ${esc(it.note)}</div>`:""}
+        </div>
+        <div class="oi-act">
+          ${!d?`<button class="btn solid sm" title="Επόμενο στάδιο" onclick="advanceItem('${o.id}','${it.id}')">→</button>`:`<span class="oi-ok">✓</span>`}
+          ${!ret?`<button class="btn ghost sm" title="Δήλωση επιστροφής" onclick="declareReturnItem('${o.id}','${it.id}','${esc(it.name)}')">♻</button>`:""}
+        </div>
+      </div>`;
+    }).join("");
+
+    return `<div class="order-row${!everyDone&&items.some(it=>itemFlow(it)==='return')?' is-return':''}">
       <div class="r-top">
         <div>
-          <div class="r-name">${esc(o.customer_name)} ${o.order_number?`<span style="color:var(--muted);font-weight:400">· ${esc(o.order_number)}</span>`:""} <span title="${pickup?'Παραλαβή διά ζώσης':'Αποστολή με courier'}" style="opacity:.6">${pickup?'🤝':'📦'}</span>${isReturn?' <span title="Επιστροφή / Επανακατασκευή" style="opacity:.7">♻</span>':''}</div>
-          <div class="r-prod">${esc(o.product_name)}</div>
+          <div class="r-name">${esc(o.customer_name)} ${o.order_number?`<span style="color:var(--muted);font-weight:400">· ${esc(o.order_number)}</span>`:""} <span title="${pickup?'Παραλαβή διά ζώσης':'Αποστολή με courier'}" style="opacity:.6">${pickup?'🤝':'📦'}</span></div>
         </div>
-        <span class="r-stage ${done?'done':''} ${isReturn&&!done?'ret':''}">${stageLabel}</span>
+        ${orderBadge}
       </div>
+      <div class="order-items">${itemsHtml}</div>
       ${o.feedback_rating?`<div class="r-fb">★ ${o.feedback_rating}/5 αξιολόγηση${o.feedback_comment?` — «${esc(o.feedback_comment)}»`:""}</div>`:""}
       ${moneyLine(o)}
       <div class="r-actions">
         <button class="btn ghost sm" onclick="copyLinkFor('${o.track_token}')">📋 Link</button>
-        ${stage<N?`<button class="btn solid sm" onclick="advance('${o.id}',${stage})">Επόμενο στάδιο →</button>`:""}
         <button class="btn ghost sm" onclick="editOrder('${o.id}')">Επεξεργασία</button>
-        ${!isReturn?`<button class="btn ghost sm" onclick="declareReturn('${o.id}','${esc(o.customer_name)}')">♻ Επιστροφή</button>`:""}
         <button class="btn danger sm" onclick="delOrder('${o.id}','${esc(o.customer_name)}')">Διαγραφή</button>
       </div>
     </div>`;
   }).join("");
-}
-
-async function declareReturn(id,name){
-  if(!confirm("Δήλωση επιστροφής/επανακατασκευής για «"+name+"»;\nΗ παραγγελία θα ξεκινήσει από το στάδιο «Αναμονή Επιστροφής Προϊόντος».")) return;
-  try{
-    const res = await fetch(REST + "/orders?id=eq."+id, {
-      method:"PATCH", headers:{...authHeaders(),"Prefer":"return=representation"},
-      body: JSON.stringify({ flow:"return", stage:1 })
-    });
-    if(!res.ok) throw new Error();
-    await loadOrders(); adminFlash("Δηλώθηκε επιστροφή ✓");
-  }catch(e){ adminFlash("Σφάλμα ενημέρωσης."); }
 }
 
 function esc(s){ return (s||"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -1153,14 +1180,36 @@ async function copyLinkFor(token){
   catch(e){ prompt("Αντίγραψε το link:", linkFor(token)); }
 }
 
-async function advance(id, cur){
+async function patchItems(orderId, newItems, extra){
+  const body = Object.assign({ items: newItems }, extra||{});
+  const res = await fetch(REST + "/orders?id=eq."+orderId, {
+    method:"PATCH", headers:{...authHeaders(),"Prefer":"return=representation"},
+    body: JSON.stringify(body)
+  });
+  if(!res.ok) throw new Error();
+}
+
+async function advanceItem(orderId, itemId){
+  const o = ordersCache.find(x=>x.id===orderId); if(!o) return;
+  const items = getItems(o).map(it=>({...it}));
+  const it = items.find(x=>x.id===itemId); if(!it) return;
+  const N = itemN(it);
+  if(itemStage(it) >= N) return;
+  it.stage = itemStage(it) + 1;
+  try{ await patchItems(orderId, items); await loadOrders(); adminFlash("Στάδιο ενημερώθηκε ✓"); }
+  catch(e){ adminFlash("Σφάλμα ενημέρωσης."); }
+}
+
+async function declareReturnItem(orderId, itemId, name){
+  if(!confirm("Δήλωση επιστροφής/επανακατασκευής για «"+name+"»;\nΘα ξεκινήσει από «Αναμονή Επιστροφής Προϊόντος».")) return;
+  const o = ordersCache.find(x=>x.id===orderId); if(!o) return;
+  const items = getItems(o).map(it=>({...it}));
+  const it = items.find(x=>x.id===itemId); if(!it) return;
+  it.flow = "return"; it.stage = 1;
+  // η επιστροφή ξεκλειδώνει ξανά το feedback (θα δοθεί μετά τη νέα παράδοση)
   try{
-    const res = await fetch(REST + "/orders?id=eq."+id, {
-      method:"PATCH", headers:{...authHeaders(),"Prefer":"return=representation"},
-      body: JSON.stringify({ stage: cur+1 })
-    });
-    if(!res.ok) throw new Error();
-    await loadOrders(); adminFlash("Στάδιο ενημερώθηκε ✓");
+    await patchItems(orderId, items, { feedback_rating:null, feedback_comment:null, feedback_at:null });
+    await loadOrders(); adminFlash("Δηλώθηκε επιστροφή ✓");
   }catch(e){ adminFlash("Σφάλμα ενημέρωσης."); }
 }
 
