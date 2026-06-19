@@ -217,8 +217,11 @@
     margin-top:14px;border:1px solid var(--ink);border-radius:14px;padding:15px 18px;
     display:flex;flex-wrap:wrap;align-items:center;gap:12px;justify-content:space-between;
   }
+  #tShipments{display:flex;flex-direction:column}
   .ship-box .si .e{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:600}
   .ship-box .si .v{font-weight:600;font-size:14px;margin-top:3px}
+  .ship-scope{font-size:12.5px;color:var(--ink-soft);margin-top:5px}
+  .ship-scope b{color:var(--ink)}
 
   .updated{margin-top:18px;text-align:center;font-size:11px;color:var(--muted);letter-spacing:.04em}
 
@@ -311,6 +314,11 @@
   .stat.dark .l{color:rgba(255,255,255,.6)}
   .stat-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;font-size:12.5px;color:var(--ink-soft)}
   .stats-sub{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:18px 0 9px}
+  .year-tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+  .ytab{font-family:'Inter';font-size:12px;font-weight:600;letter-spacing:.02em;padding:7px 14px;border-radius:var(--pill);border:1px solid var(--line);background:var(--cream);color:var(--ink-soft);cursor:pointer;transition:.15s}
+  .ytab.sel{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .year-total{margin-top:10px;font-size:13px;color:var(--ink-soft);text-align:right}
+  .year-total b{color:var(--ink);font-size:15px}
   .stat-pill{background:var(--stone);border-radius:var(--pill);padding:6px 12px}
   .stage-bars{margin-top:14px;display:flex;flex-direction:column;gap:7px}
   .sbar{display:flex;align-items:center;gap:10px;font-size:12px}
@@ -418,13 +426,7 @@
           <p id="tNote"></p>
         </div>
 
-        <div class="ship-box hidden" id="tShip">
-          <div class="si">
-            <div class="e" id="tShipE">Αποστολή</div>
-            <div class="v" id="tShipV"></div>
-          </div>
-          <a id="tShipBtn" class="btn ghost sm" target="_blank" rel="noopener">Εντόπισε το δέμα σου</a>
-        </div>
+        <div id="tShipments"></div>
 
         <div class="updated" id="tUpdated"></div>
       </div>
@@ -715,6 +717,7 @@ const store = {
 
 let adminToken = store.get("th_admin_token") || null;
 let ordersCache = [];
+let statsYear = new Date().getFullYear();
 let editingId = null;
 let pickedStage = 1;
 let pickedMethod = "shipping";
@@ -822,31 +825,8 @@ function renderTracking(o){
   if(o.note && o.note.trim()){ nb.classList.remove("hidden"); document.getElementById("tNote").textContent = o.note; }
   else nb.classList.add("hidden");
 
-  // delivery/courier box — ΜΟΝΟ όταν όλα τα προϊόντα είναι έτοιμα για αποστολή/παραλαβή
-  const ship = document.getElementById("tShip");
-  const shipE = document.getElementById("tShipE");
-  const shipV = document.getElementById("tShipV");
-  const btn = document.getElementById("tShipBtn");
-  if(method === "pickup"){
-    if(everyReady && !everyDone){
-      ship.classList.remove("hidden");
-      shipE.textContent = "Παραλαβή";
-      shipV.textContent = "Έτοιμο για παραλαβή — θα συνεννοηθούμε για το πότε & πού.";
-      btn.classList.add("hidden");
-    } else ship.classList.add("hidden");
-  } else {
-    if(everyReady && (o.courier || o.tracking_number)){
-      ship.classList.remove("hidden");
-      shipE.textContent = "Αποστολή";
-      const parts=[]; if(o.courier) parts.push(o.courier); if(o.tracking_number) parts.push("#"+o.tracking_number);
-      shipV.textContent = parts.join("  ·  ");
-      const isBox = /box\s*now/i.test(o.courier||"");
-      let url = isBox && o.tracking_number ? boxnowUrl(o.tracking_number) : (o.tracking_url||"").trim();
-      btn.textContent = isBox ? "BoxNow — Εντόπισε το δέμα σου" : "Εντόπισε το δέμα σου";
-      if(url){ btn.href=url; btn.classList.remove("hidden"); }
-      else btn.classList.add("hidden");
-    } else ship.classList.add("hidden");
-  }
+  // αποστολές: εμφανίζονται μόλις ≥1 προϊόν φτάσει στην αποστολή, με «Αφορά: …»
+  document.getElementById("tShipments").innerHTML = renderShipments(o, items, method);
 
   document.getElementById("tUpdated").textContent = "Τελευταία ενημέρωση: " + fmtDate(o.updated_at);
 
@@ -892,6 +872,47 @@ function renderItemCard(it, method){
     <div class="dots">${dots}</div>
     <div class="item-cur"><span class="lbl">${STG[s].title}</span> <span class="dur">· ${STG[s].dur}</span></div>
     ${it.note&&it.note.trim()?`<div class="item-note">${esc(it.note)}</div>`:""}
+  </div>`;
+}
+
+// Αποστολές: ομαδοποίηση όσων προϊόντων έφτασαν στην αποστολή, ανά tracking,
+// με ένδειξη «Αφορά: …» ώστε να φαίνεται ποιο πακέτο αφορά το κάθε tracking.
+function renderShipments(o, items, method){
+  const shipped = items.filter(it=> itemStage(it) >= itemN(it)-1);
+  if(!shipped.length) return "";
+  const showScope = items.length > 1;
+  if(method === "pickup"){
+    const names = shipped.map(it=>esc(it.name)).join(", ");
+    const allDone = shipped.every(itemDone);
+    return shipBox("Παραλαβή", allDone ? "Παραλήφθηκε" : "Έτοιμο για παραλαβή — θα συνεννοηθούμε για το πότε & πού.", showScope?names:"", null, null);
+  }
+  // shipping → ομαδοποίηση ανά αριθμό αποστολής (per-item αν υπάρχει, αλλιώς γενικό)
+  const groups = {};
+  shipped.forEach(it=>{
+    const no = (it.trackNo && String(it.trackNo).trim()) || (o.tracking_number||"");
+    const key = no || "__none__";
+    (groups[key] = groups[key] || {no, items:[]}).items.push(it);
+  });
+  const courier = o.courier || "BoxNow";
+  const isBox = /box\s*now/i.test(courier);
+  return Object.values(groups).map(g=>{
+    const names = g.items.map(it=>esc(it.name)).join(", ");
+    if(!g.no) return shipBox("Αποστολή", "Ετοιμάζεται για αποστολή", showScope?names:"", null, null);
+    const val = courier + "  ·  #" + g.no;
+    const url = isBox ? boxnowUrl(g.no) : ((g.no===o.tracking_number && o.tracking_url) ? o.tracking_url : "");
+    return shipBox("Αποστολή", val, showScope?names:"", url, isBox ? "BoxNow — Εντόπισε το δέμα σου" : "Εντόπισε το δέμα σου");
+  }).join("");
+}
+function shipBox(eyebrow, value, scopeNames, url, btnTxt){
+  const btn = url ? `<a class="btn ghost sm" href="${url}" target="_blank" rel="noopener">${btnTxt}</a>` : "";
+  const scope = scopeNames ? `<div class="ship-scope">Αφορά: <b>${scopeNames}</b></div>` : "";
+  return `<div class="ship-box">
+    <div class="si">
+      <div class="e">${eyebrow}</div>
+      <div class="v">${esc(value)}</div>
+      ${scope}
+    </div>
+    ${btn}
   </div>`;
 }
 
@@ -1019,6 +1040,8 @@ async function loadOrders(){
   }
 }
 
+function setStatsYear(y){ statsYear = y; renderStats(); }
+
 function renderStats(){
   const all = ordersCache;
   const total = all.length;
@@ -1074,21 +1097,30 @@ function renderStats(){
     {n:avgOrder!=null?fmtMoney(avgOrder):"—", l:"Μέση αξία"}
   ].map(t=>`<div class="stat ${t.dark?'dark':''}"><div class="n" style="font-size:23px">${t.n}</div><div class="l">${t.l}</div></div>`).join("");
 
-  // monthly revenue bars (τελευταίοι 6 μήνες)
+  // ---- Τζίρος ανά μήνα, ανά έτος (με κουμπιά έτους) ----
   const mNames = ["Ιαν","Φεβ","Μαρ","Απρ","Μάι","Ιουν","Ιουλ","Αυγ","Σεπ","Οκτ","Νοε","Δεκ"];
-  const months=[];
-  for(let i=5;i>=0;i--){
-    const d=new Date(now.getFullYear(), now.getMonth()-i, 1);
-    const key=d.getFullYear()+"-"+d.getMonth();
-    months.push({key, label:mNames[d.getMonth()], val:monthly[key]||0});
-  }
-  const maxRev = Math.max(1, ...months.map(m=>m.val));
-  const revBars = months.map(m=>`
+  // πρώτη παραγγελία (ξεκινάμε από εκεί — όχι κενοί προηγούμενοι μήνες)
+  let earliest = now;
+  all.forEach(o=>{ const c=new Date(o.created_at); if(c<earliest) earliest=c; });
+  const startYear = earliest.getFullYear(), curYear = now.getFullYear();
+  if(statsYear < startYear) statsYear = startYear;
+  if(statsYear > curYear) statsYear = curYear;
+  const fromM = (statsYear===startYear) ? earliest.getMonth() : 0;
+  const toM   = (statsYear===curYear)   ? now.getMonth()      : 11;
+  const yMonths=[]; let yearTotal=0;
+  for(let mo=fromM; mo<=toM; mo++){ const v=monthly[statsYear+"-"+mo]||0; yearTotal+=v; yMonths.push({label:mNames[mo], val:v}); }
+  const maxRev = Math.max(1, ...yMonths.map(m=>m.val));
+  const yearBtns = [];
+  for(let y=startYear; y<=curYear; y++) yearBtns.push(`<button class="ytab ${y===statsYear?'sel':''}" onclick="setStatsYear(${y})">${y}</button>`);
+  const revBars = yMonths.map(m=>`
     <div class="sbar">
       <span class="lbl" style="width:42px">${m.label}</span>
       <span class="track"><span class="fill" style="width:${Math.round(m.val/maxRev*100)}%"></span></span>
-      <span class="cnt" style="width:64px">${fmtMoney(m.val)}</span>
+      <span class="cnt" style="width:74px">${fmtMoney(m.val)}</span>
     </div>`).join("");
+  const revBlock = `<div class="year-tabs">${yearBtns.join("")}</div>
+    <div class="stage-bars">${revBars}</div>
+    <div class="year-total">Σύνολο ${statsYear}: <b>${fmtMoney(yearTotal)}</b></div>`;
 
   const bars = byStage.map((c,i)=>`
     <div class="sbar">
@@ -1110,7 +1142,7 @@ function renderStats(){
     <div class="stats-sub">💶 Οικονομικά</div>
     <div class="stat-grid">${money}</div>
     <div class="stats-sub">Τζίρος ανά μήνα</div>
-    <div class="stage-bars">${revBars}</div>
+    ${revBlock}
 
     <div class="stats-sub">Προϊόντα ανά φάση</div>
     <div class="stage-bars">${bars}</div>`;
@@ -1272,10 +1304,12 @@ function addItemRow(item){
       <select class="ie-flow"><option value="normal">Κανονική</option><option value="return">♻ Επιστροφή</option></select>
       <select class="ie-stage"></select>
     </div>
+    <input class="ie-track" placeholder="ξεχωριστό tracking γι' αυτό (αν στέλνεται μόνο του)">
     <input class="ie-note" placeholder="σημείωση προϊόντος (π.χ. αναμονή υλικού από προμηθευτή)">`;
   wrap.appendChild(row);
   row.querySelector(".ie-name").value=item.name||"";
   row.querySelector(".ie-details").value=item.details||"";
+  row.querySelector(".ie-track").value=item.trackNo||"";
   row.querySelector(".ie-note").value=item.note||"";
   const flowSel=row.querySelector(".ie-flow"); flowSel.value=item.flow==="return"?"return":"normal";
   const stageSel=row.querySelector(".ie-stage");
@@ -1302,6 +1336,7 @@ function collectItems(){
       details: row.querySelector(".ie-details").value.trim()||null,
       flow: row.querySelector(".ie-flow").value==="return"?"return":"normal",
       stage: +row.querySelector(".ie-stage").value||1,
+      trackNo: row.querySelector(".ie-track").value.trim()||null,
       note: row.querySelector(".ie-note").value.trim()||null
     });
   });
