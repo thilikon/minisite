@@ -2,7 +2,9 @@
 <html lang="el">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
+<meta name="HandheldFriendly" content="true">
 <meta name="robots" content="noindex">
 <title>THILIKON · Παρακολούθηση Παραγγελίας</title>
 <link rel="icon" href="https://i.imgur.com/TbSGZu5.png">
@@ -42,7 +44,7 @@
     --pill:999px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html{-webkit-text-size-adjust:100%}
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overflow-x:hidden}
   body{
     font-family:'Inter',system-ui,sans-serif;
     background:var(--cream);
@@ -50,6 +52,11 @@
     line-height:1.6;
     -webkit-font-smoothing:antialiased;
     min-height:100vh;
+    min-height:100dvh;
+    overflow-x:hidden;
+    overscroll-behavior-y:none;
+    touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;
   }
   /* display headings (high-contrast editorial serif) */
   .serif{font-family:'Cormorant',Georgia,serif;font-weight:600;letter-spacing:.005em}
@@ -101,7 +108,7 @@
     color:var(--muted);margin-bottom:6px;font-weight:600;
   }
   input,textarea,select{
-    width:100%;font-family:'Inter';font-size:14px;color:var(--ink);
+    width:100%;font-family:'Inter';font-size:16px;color:var(--ink);
     background:var(--cream);border:1px solid var(--line);
     border-radius:12px;padding:12px 14px;outline:none;transition:.15s;
   }
@@ -335,7 +342,7 @@
   .overlay{
     position:fixed;inset:0;background:rgba(20,20,20,.55);backdrop-filter:blur(3px);
     display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;
-    overflow:auto;z-index:50;
+    overflow:auto;z-index:50;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
   }
   .modal{background:#fff;border-radius:var(--radius);max-width:520px;width:100%;padding:26px 24px;margin:auto}
   .modal h2{font-size:22px;font-weight:600;margin-bottom:4px;letter-spacing:-.01em}
@@ -535,7 +542,6 @@
 <footer>
   <img src="https://i.imgur.com/TbSGZu5.png" alt="THILIKON">
   <div class="fl">Handcrafted with love</div>
-  <div style="margin-top:14px"><span class="adm-link" id="footAdmin">διαχείριση</span></div>
 </footer>
 
 <!-- ============ NOTIFY MODAL (admin) ============ -->
@@ -545,7 +551,8 @@
       <h2>📣 Ειδοποίηση πελάτη</h2>
       <button class="x" onclick="closeNotify()">✕</button>
     </div>
-    <p style="font-size:12.5px;color:var(--muted);margin:0 0 10px">Διάλεξε τρόπο — ανοίγει με έτοιμο μήνυμα, εσύ το στέλνεις. Δωρεάν, χωρίς υπηρεσία.</p>
+    <p style="font-size:12.5px;color:var(--muted);margin:0 0 10px">Διάλεξε τι ενημέρωση στέλνεις — φτιάχνεται έτοιμο μήνυμα, εσύ το στέλνεις. Δωρεάν, χωρίς υπηρεσία.</p>
+    <label class="fld"><span>Τι ενημέρωση;</span><select id="notifyType" onchange="refreshNotifyMsg()"></select></label>
     <label class="fld"><span>Μήνυμα (μπορείς να το αλλάξεις)</span><textarea id="notifyMsg" style="min-height:150px"></textarea></label>
     <div class="notify-btns">
       <button class="btn solid" id="nbWa" onclick="sendVia('wa')">🟢 WhatsApp</button>
@@ -764,7 +771,6 @@ function route(){
   show("view-landing");
 }
 window.addEventListener("hashchange", route);
-document.getElementById("footAdmin").onclick = ()=>{ location.hash = "#admin"; };
 
 /* ============================================================
    LANDING
@@ -1304,7 +1310,7 @@ async function copyLinkFor(token){
 }
 
 /* ---- Ειδοποίηση πελάτη (WhatsApp/Viber/Email — χωρίς υπηρεσία) ---- */
-let notifyCtx = { phone:"", email:"" };
+let notifyCtx = { phone:"", email:"", orderId:null };
 function intlPhone(raw){
   let d = (raw||"").replace(/[^\d]/g,"");
   if(!d) return "";
@@ -1312,27 +1318,94 @@ function intlPhone(raw){
   if(d.length===10 && (d[0]==="6"||d[0]==="2")) d = "30"+d; // ελληνικός αριθμός
   return d;
 }
-function buildNotifyMsg(o){
-  const items = getItems(o);
-  const method = o.delivery_method === "pickup" ? "pickup" : "shipping";
-  const lines = items.map(it=>{
-    const STG = stagesFor(itemFlow(it), method);
-    return "• " + it.name + ": " + STG[itemStage(it)].title + (itemDone(it) ? " ✓" : "");
-  }).join("\n");
-  const hello = o.customer_name ? ("Γεια σου " + o.customer_name + "! 🤍") : "Γεια σου! 🤍";
-  return hello + "\n\nΕνημέρωση για την παραγγελία σου" + (o.order_number?(" " + o.order_number):"") + ":\n" +
-         lines + "\n\nΔες αναλυτικά εδώ:\n" + linkFor(o.track_token) + "\n\n— THILIKON";
+const _hello = o => o.customer_name ? ("Γεια σου " + o.customer_name + "! 🤍") : "Γεια σου! 🤍";
+const _sig = "\n\n— THILIKON";
+
+// φιλικό μήνυμα ανά στάδιο για ένα συγκεκριμένο προϊόν (τι αλλάζει)
+function itemUpdateLine(o, it){
+  const flow=itemFlow(it), s=itemStage(it), method=o.delivery_method==="pickup"?"pickup":"shipping", n="«"+it.name+"»";
+  if(flow==="normal"){
+    if(s===1) return "Ξεκινήσαμε την παραγγελία σου και ετοιμάζουμε τα υλικά για τη "+n+"! ✨";
+    if(s===2) return "Η "+n+" μπήκε στο εργαστήρι — τη φτιάχνουμε στο χέρι αυτές τις μέρες! 🧶";
+    if(s===3) return method==="pickup" ? "Η "+n+" είναι έτοιμη για παραλαβή! 🤍" : "Η "+n+" ταξιδεύει προς εσένα! 📦";
+    return method==="pickup" ? "Η "+n+" παραλήφθηκε! Ελπίζουμε να τη λατρέψεις 🤍" : "Η "+n+" παραδόθηκε! Ελπίζουμε να τη λατρέψεις 🤍";
+  } else {
+    if(s===1) return "Περιμένουμε να λάβουμε πίσω τη "+n+" για να τη φτιάξουμε ξανά. ♻";
+    if(s===2) return "Λάβαμε πίσω τη "+n+" — ξεκινάμε την επανακατασκευή. ♻";
+    if(s===3) return "Για τη "+n+" περιμένουμε υλικά από τον προμηθευτή. ⏳";
+    if(s===4) return "Φτιάχνουμε ξανά τη "+n+" σου! 🧶";
+    if(s===5) return method==="pickup" ? "Η "+n+" (επανακατασκευή) είναι έτοιμη για παραλαβή! 🤍" : "Η "+n+" (επανακατασκευή) ταξιδεύει προς εσένα! 📦";
+    return "Η "+n+" παραδόθηκε ξανά! 🤍";
+  }
+}
+function trackingLineFor(o, it){
+  const method=o.delivery_method==="pickup"?"pickup":"shipping";
+  if(method==="pickup") return "";
+  const shipStage = itemN(it)-1;
+  if(itemStage(it) < shipStage) return "";
+  const no = (it.trackNo && String(it.trackNo).trim()) || o.tracking_number;
+  if(!no) return "";
+  const isBox = /box\s*now/i.test(o.courier||"BoxNow");
+  const url = isBox ? boxnowUrl(no) : (o.tracking_url||"");
+  return "\nΠαρακολούθησε το δέμα: " + (url || ((o.courier||"")+" #"+no));
+}
+function buildItemMsg(o, it){
+  return _hello(o) + "\n\n" + itemUpdateLine(o, it) + trackingLineFor(o, it) +
+         "\n\nΔες αναλυτικά εδώ:\n" + linkFor(o.track_token) + _sig;
+}
+function buildSummaryMsg(o){
+  const items = getItems(o), method = o.delivery_method==="pickup"?"pickup":"shipping";
+  const lines = items.map(it=> "• " + it.name + ": " + stagesFor(itemFlow(it),method)[itemStage(it)].title + (itemDone(it)?" ✓":"")).join("\n");
+  return _hello(o) + "\n\nΕνημέρωση για την παραγγελία σου" + (o.order_number?(" "+o.order_number):"") + ":\n" +
+         lines + "\n\nΔες αναλυτικά εδώ:\n" + linkFor(o.track_token) + _sig;
+}
+function buildFeedbackMsg(o){
+  return _hello(o) + "\n\nΗ παραγγελία σου παραδόθηκε και ελπίζουμε να τη λάτρεψες! 🤍\n" +
+         "Θα χαρόμασταν πολύ να μας αφήσεις την αξιολόγησή σου εδώ:\n" + linkFor(o.track_token) +
+         "\n\nΚι αν την ανεβάσεις στα social, κάνε μας tag @thilikon.gr — θα την αναδημοσιεύσουμε με χαρά! 📸" + _sig;
+}
+function notifyMsgFor(o, val){
+  if(val==="feedback") return buildFeedbackMsg(o);
+  if(val==="summary")  return buildSummaryMsg(o);
+  if(val && val.indexOf("item:")===0){
+    const it = getItems(o).find(x=>x.id===val.slice(5));
+    if(it) return buildItemMsg(o, it);
+  }
+  return buildSummaryMsg(o);
+}
+function refreshNotifyMsg(){
+  const o = ordersCache.find(x=>x.id===notifyCtx.orderId); if(!o) return;
+  document.getElementById("notifyMsg").value = notifyMsgFor(o, document.getElementById("notifyType").value);
 }
 function notifyCustomer(orderId){
   const o = ordersCache.find(x=>x.id===orderId); if(!o) return;
-  notifyCtx = { phone: intlPhone(o.customer_phone), email: o.customer_email||"" };
-  document.getElementById("notifyMsg").value = buildNotifyMsg(o);
+  notifyCtx = { phone: intlPhone(o.customer_phone), email: o.customer_email||"", orderId };
+  const items = getItems(o), method = o.delivery_method==="pickup"?"pickup":"shipping";
+  const everyDone = items.every(itemDone);
+
+  // επιλογές ενημέρωσης
+  const opts=[];
+  if(everyDone) opts.push(`<option value="feedback">💬 Ζήτα αξιολόγηση & κοινοποίηση</option>`);
+  items.forEach(it=>{
+    const lbl = it.name + " — " + stagesFor(itemFlow(it),method)[itemStage(it)].title + (itemDone(it)?" ✓":"");
+    opts.push(`<option value="item:${it.id}">${esc(lbl)}</option>`);
+  });
+  if(items.length>1) opts.push(`<option value="summary">Σύνοψη όλης της παραγγελίας</option>`);
+  const sel = document.getElementById("notifyType");
+  sel.innerHTML = opts.join("");
+  // προεπιλογή: feedback αν παραδόθηκε· αλλιώς το πρώτο προϊόν που δεν ολοκληρώθηκε
+  let def;
+  if(everyDone) def = "feedback";
+  else { const pend = items.find(it=>!itemDone(it)); def = pend ? ("item:"+pend.id) : ("item:"+items[0].id); }
+  sel.value = def;
+  refreshNotifyMsg();
+
   document.getElementById("nbWa").style.display    = notifyCtx.phone ? "" : "none";
   document.getElementById("nbViber").style.display = notifyCtx.phone ? "" : "none";
   document.getElementById("nbEmail").style.display = notifyCtx.email ? "" : "none";
   const hint = document.getElementById("notifyHint");
   if(!notifyCtx.phone && !notifyCtx.email){
-    hint.textContent = "Δεν έχεις βάλει τηλέφωνο/email σε αυτή την παραγγελία — πρόσθεσέ τα από «Επεξεργασία» για WhatsApp/Viber/Email. Μπορείς πάντως να αντιγράψεις το μήνυμα.";
+    hint.textContent = "Δεν έχεις βάλει τηλέφωνο/email σε αυτή την παραγγελία — πρόσθεσέ τα από «Επεξεργασία». Μπορείς πάντως να αντιγράψεις το μήνυμα.";
     hint.classList.remove("hidden");
   } else hint.classList.add("hidden");
   document.getElementById("notifyModal").classList.remove("hidden");
@@ -1348,8 +1421,13 @@ async function sendVia(how){
   }
   let url="";
   if(how==="wa")    url = "https://wa.me/" + notifyCtx.phone + "?text=" + enc;
-  if(how==="viber") url = "viber://forward?text=" + enc;
   if(how==="email") url = "mailto:" + encodeURIComponent(notifyCtx.email) + "?subject=" + encodeURIComponent("Η παραγγελία σου στο THILIKON") + "&body=" + enc;
+  if(how==="viber"){
+    // Viber: άνοιγμα συνομιλίας κατευθείαν με τον αριθμό (το text δεν προ-συμπληρώνεται,
+    // οπότε αντιγράφουμε το μήνυμα για να το επικολλήσεις).
+    try{ await navigator.clipboard.writeText(msg); adminFlash("Το μήνυμα αντιγράφηκε — επικόλλησέ το στη συνομιλία ✓"); }catch(e){}
+    url = "viber://chat?number=" + encodeURIComponent("+" + notifyCtx.phone);
+  }
   if(url) window.open(url, "_blank");
 }
 
