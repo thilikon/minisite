@@ -354,6 +354,8 @@
   .ie-row select{flex:1}
   .ie-flow{max-width:42%}
   .ro-field{background:var(--stone);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14px;color:var(--ink-soft);font-weight:600;min-height:45px;display:flex;align-items:center}
+  .notify-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+  .notify-btns .btn{flex:1;min-width:120px;justify-content:center}
   .stage-picker button{
     flex:1;min-width:64px;border:1px solid var(--line);background:var(--cream);
     border-radius:12px;padding:9px 6px;cursor:pointer;font-family:'Inter';
@@ -536,6 +538,25 @@
   <div style="margin-top:14px"><span class="adm-link" id="footAdmin">διαχείριση</span></div>
 </footer>
 
+<!-- ============ NOTIFY MODAL (admin) ============ -->
+<div id="notifyModal" class="overlay hidden">
+  <div class="modal">
+    <div class="mh">
+      <h2>📣 Ειδοποίηση πελάτη</h2>
+      <button class="x" onclick="closeNotify()">✕</button>
+    </div>
+    <p style="font-size:12.5px;color:var(--muted);margin:0 0 10px">Διάλεξε τρόπο — ανοίγει με έτοιμο μήνυμα, εσύ το στέλνεις. Δωρεάν, χωρίς υπηρεσία.</p>
+    <label class="fld"><span>Μήνυμα (μπορείς να το αλλάξεις)</span><textarea id="notifyMsg" style="min-height:150px"></textarea></label>
+    <div class="notify-btns">
+      <button class="btn solid" id="nbWa" onclick="sendVia('wa')">🟢 WhatsApp</button>
+      <button class="btn ghost" id="nbViber" onclick="sendVia('viber')">🟣 Viber</button>
+      <button class="btn ghost" id="nbEmail" onclick="sendVia('email')">✉️ Email</button>
+      <button class="btn ghost" onclick="sendVia('copy')">📋 Αντιγραφή</button>
+    </div>
+    <p id="notifyHint" class="hidden" style="font-size:12px;color:var(--muted);margin-top:10px"></p>
+  </div>
+</div>
+
 <!-- ============ ORDER MODAL (admin) ============ -->
 <div id="orderModal" class="overlay hidden">
   <div class="modal">
@@ -549,6 +570,10 @@
     <div style="display:flex;gap:10px">
       <label class="fld" style="flex:1"><span>Όνομα πελάτη *</span><input id="fName"></label>
       <label class="fld" style="flex:1"><span>Αρ. παραγγελίας</span><div id="fOrderNoView" class="ro-field">αυτόματο</div></label>
+    </div>
+    <div style="display:flex;gap:10px">
+      <label class="fld" style="flex:1"><span>Τηλέφωνο (για WhatsApp/Viber)</span><input id="fPhone" placeholder="π.χ. 6971234567"></label>
+      <label class="fld" style="flex:1"><span>Email (προαιρετικό)</span><input id="fEmail" placeholder="π.χ. maria@email.com"></label>
     </div>
 
     <div style="display:flex;justify-content:space-between;align-items:center;margin:4px 0 8px">
@@ -708,14 +733,14 @@ function updateMoneyHint(){
   document.getElementById("moneyHint").textContent = bits.join("   ·   ");
 }
 
-/* small storage helper (no crash if blocked) */
+/* small storage helper (persists across sessions; no crash if blocked) */
 const store = {
-  get(k){try{return sessionStorage.getItem(k)}catch(e){return null}},
-  set(k,v){try{sessionStorage.setItem(k,v)}catch(e){}},
-  del(k){try{sessionStorage.removeItem(k)}catch(e){}}
+  get(k){try{return localStorage.getItem(k)}catch(e){return null}},
+  set(k,v){try{localStorage.setItem(k,v)}catch(e){}},
+  del(k){try{localStorage.removeItem(k)}catch(e){}}
 };
 
-let adminToken = store.get("th_admin_token") || null;
+let adminToken = store.get("th_admin_at") || null;
 let ordersCache = [];
 let statsYear = new Date().getFullYear();
 let editingId = null;
@@ -1000,8 +1025,7 @@ async function adminLogin(){
     });
     const data = await res.json();
     if(!res.ok || !data.access_token){ throw new Error(data.error_description || data.msg || "Λάθος στοιχεία"); }
-    adminToken = data.access_token;
-    store.set("th_admin_token", adminToken);
+    saveSession(data);
     document.getElementById("loginPass").value="";
     enterPanel();
   }catch(e){
@@ -1010,8 +1034,52 @@ async function adminLogin(){
   }
 }
 
+// Αποθήκευση session (access + refresh token) ώστε να μένει συνδεμένη
+function saveSession(data){
+  adminToken = data.access_token;
+  store.set("th_admin_at", data.access_token);
+  if(data.refresh_token) store.set("th_admin_rt", data.refresh_token);
+  store.set("th_admin_exp", String(Date.now() + ((data.expires_in||3600)*1000)));
+}
+async function refreshSession(){
+  const rt = store.get("th_admin_rt");
+  if(!rt) return false;
+  try{
+    const res = await fetch(AUTH + "/token?grant_type=refresh_token", {
+      method:"POST", headers:{ "apikey":SUPABASE_ANON, "Content-Type":"application/json" },
+      body: JSON.stringify({ refresh_token: rt })
+    });
+    const data = await res.json();
+    if(!res.ok || !data.access_token) return false;
+    saveSession(data); return true;
+  }catch(e){ return false; }
+}
+async function ensureToken(){
+  if(!adminToken) adminToken = store.get("th_admin_at");
+  const exp = parseInt(store.get("th_admin_exp")||"0",10);
+  if(adminToken && exp && Date.now() > exp - 60000){
+    const ok = await refreshSession();
+    if(!ok){ adminLogout(); return false; }
+  }
+  return !!adminToken;
+}
+// Authenticated fetch με auto-refresh σε λήξη/401
+async function authFetch(url, opts){
+  await ensureToken();
+  opts = opts || {};
+  opts.headers = Object.assign({}, opts.headers||{}, authHeaders());
+  let res = await fetch(url, opts);
+  if(res.status===401){
+    const ok = await refreshSession();
+    if(ok){ opts.headers = Object.assign({}, opts.headers, authHeaders()); res = await fetch(url, opts); }
+    else { adminLogout(); }
+  }
+  return res;
+}
+
 function adminLogout(){
-  adminToken=null; store.del("th_admin_token");
+  adminToken=null;
+  store.del("th_admin_at"); store.del("th_admin_rt"); store.del("th_admin_exp");
   document.getElementById("adminPanel").classList.add("hidden");
   document.getElementById("adminLogin").classList.remove("hidden");
 }
@@ -1030,7 +1098,7 @@ async function loadOrders(){
   const list = document.getElementById("ordersList");
   list.innerHTML='<div class="spinner"></div>';
   try{
-    const res = await fetch(REST + "/orders?select=*&order=created_at.desc", { headers: authHeaders() });
+    const res = await authFetch(REST + "/orders?select=*&order=created_at.desc", {});
     if(res.status===401){ adminLogout(); return; }
     ordersCache = await res.json();
     renderStats();
@@ -1199,6 +1267,7 @@ function renderOrders(){
       ${moneyLine(o)}
       <div class="r-actions">
         <button class="btn ghost sm" onclick="copyLinkFor('${o.track_token}')">📋 Link</button>
+        <button class="btn ghost sm" onclick="notifyCustomer('${o.id}')">📣 Ειδοποίηση</button>
         <button class="btn ghost sm" onclick="editOrder('${o.id}')">Επεξεργασία</button>
         <button class="btn danger sm" onclick="delOrder('${o.id}','${esc(o.customer_name)}')">Διαγραφή</button>
       </div>
@@ -1234,10 +1303,60 @@ async function copyLinkFor(token){
   catch(e){ prompt("Αντίγραψε το link:", linkFor(token)); }
 }
 
+/* ---- Ειδοποίηση πελάτη (WhatsApp/Viber/Email — χωρίς υπηρεσία) ---- */
+let notifyCtx = { phone:"", email:"" };
+function intlPhone(raw){
+  let d = (raw||"").replace(/[^\d]/g,"");
+  if(!d) return "";
+  if(d.startsWith("00")) d = d.slice(2);
+  if(d.length===10 && (d[0]==="6"||d[0]==="2")) d = "30"+d; // ελληνικός αριθμός
+  return d;
+}
+function buildNotifyMsg(o){
+  const items = getItems(o);
+  const method = o.delivery_method === "pickup" ? "pickup" : "shipping";
+  const lines = items.map(it=>{
+    const STG = stagesFor(itemFlow(it), method);
+    return "• " + it.name + ": " + STG[itemStage(it)].title + (itemDone(it) ? " ✓" : "");
+  }).join("\n");
+  const hello = o.customer_name ? ("Γεια σου " + o.customer_name + "! 🤍") : "Γεια σου! 🤍";
+  return hello + "\n\nΕνημέρωση για την παραγγελία σου" + (o.order_number?(" " + o.order_number):"") + ":\n" +
+         lines + "\n\nΔες αναλυτικά εδώ:\n" + linkFor(o.track_token) + "\n\n— THILIKON";
+}
+function notifyCustomer(orderId){
+  const o = ordersCache.find(x=>x.id===orderId); if(!o) return;
+  notifyCtx = { phone: intlPhone(o.customer_phone), email: o.customer_email||"" };
+  document.getElementById("notifyMsg").value = buildNotifyMsg(o);
+  document.getElementById("nbWa").style.display    = notifyCtx.phone ? "" : "none";
+  document.getElementById("nbViber").style.display = notifyCtx.phone ? "" : "none";
+  document.getElementById("nbEmail").style.display = notifyCtx.email ? "" : "none";
+  const hint = document.getElementById("notifyHint");
+  if(!notifyCtx.phone && !notifyCtx.email){
+    hint.textContent = "Δεν έχεις βάλει τηλέφωνο/email σε αυτή την παραγγελία — πρόσθεσέ τα από «Επεξεργασία» για WhatsApp/Viber/Email. Μπορείς πάντως να αντιγράψεις το μήνυμα.";
+    hint.classList.remove("hidden");
+  } else hint.classList.add("hidden");
+  document.getElementById("notifyModal").classList.remove("hidden");
+}
+function closeNotify(){ document.getElementById("notifyModal").classList.add("hidden"); }
+async function sendVia(how){
+  const msg = document.getElementById("notifyMsg").value;
+  const enc = encodeURIComponent(msg);
+  if(how==="copy"){
+    try{ await navigator.clipboard.writeText(msg); adminFlash("Το μήνυμα αντιγράφηκε ✓"); }
+    catch(e){ prompt("Αντίγραψε το μήνυμα:", msg); }
+    return;
+  }
+  let url="";
+  if(how==="wa")    url = "https://wa.me/" + notifyCtx.phone + "?text=" + enc;
+  if(how==="viber") url = "viber://forward?text=" + enc;
+  if(how==="email") url = "mailto:" + encodeURIComponent(notifyCtx.email) + "?subject=" + encodeURIComponent("Η παραγγελία σου στο THILIKON") + "&body=" + enc;
+  if(url) window.open(url, "_blank");
+}
+
 async function patchItems(orderId, newItems, extra){
   const body = Object.assign({ items: newItems }, extra||{});
-  const res = await fetch(REST + "/orders?id=eq."+orderId, {
-    method:"PATCH", headers:{...authHeaders(),"Prefer":"return=representation"},
+  const res = await authFetch(REST + "/orders?id=eq."+orderId, {
+    method:"PATCH", headers:{ "Prefer":"return=representation" },
     body: JSON.stringify(body)
   });
   if(!res.ok) throw new Error();
@@ -1270,7 +1389,7 @@ async function declareReturnItem(orderId, itemId, name){
 async function delOrder(id,name){
   if(!confirm("Διαγραφή παραγγελίας για «"+name+"»; Δεν αναιρείται.")) return;
   try{
-    const res = await fetch(REST + "/orders?id=eq."+id, { method:"DELETE", headers: authHeaders() });
+    const res = await authFetch(REST + "/orders?id=eq."+id, { method:"DELETE" });
     if(!res.ok) throw new Error();
     await loadOrders(); adminFlash("Διαγράφηκε.");
   }catch(e){ adminFlash("Σφάλμα διαγραφής."); }
@@ -1353,7 +1472,7 @@ function pickMethod(m){
 function openOrderModal(){
   editingId=null; pickedMethod="shipping";
   document.getElementById("modalTitle").textContent="Νέα παραγγελία";
-  ["fName","fNote","fTrackNo","fTrackUrl","fPrice","fCost","fPaid"].forEach(id=>document.getElementById(id).value="");
+  ["fName","fNote","fTrackNo","fTrackUrl","fPrice","fCost","fPaid","fPhone","fEmail"].forEach(id=>document.getElementById(id).value="");
   document.getElementById("fCourier").value="BoxNow";
   document.getElementById("fOrderNoView").textContent="θα δημιουργηθεί αυτόματα";
   document.getElementById("moneyHint").textContent="";
@@ -1373,6 +1492,8 @@ function editOrder(id){
   document.getElementById("modalTitle").textContent="Επεξεργασία";
   document.getElementById("fName").value=o.customer_name||"";
   document.getElementById("fOrderNoView").textContent=o.order_number||"—";
+  document.getElementById("fPhone").value=o.customer_phone||"";
+  document.getElementById("fEmail").value=o.customer_email||"";
   document.getElementById("fNote").value=o.note||"";
   document.getElementById("fCourier").value=o.courier||"";
   document.getElementById("fTrackNo").value=o.tracking_number||"";
@@ -1419,6 +1540,8 @@ async function saveOrder(){
   if(!items.length){ msg.textContent="Πρόσθεσε τουλάχιστον ένα προϊόν (με όνομα)."; msg.classList.remove("hidden"); return; }
   const payload={
     customer_name,
+    customer_phone: document.getElementById("fPhone").value.trim() || null,
+    customer_email: document.getElementById("fEmail").value.trim() || null,
     product_name: items.map(i=>i.name).join(", ").slice(0,180),  // για αναζήτηση/συμβατότητα
     note: document.getElementById("fNote").value.trim() || null,
     delivery_method: isPickup ? "pickup" : "shipping",
@@ -1434,13 +1557,13 @@ async function saveOrder(){
   try{
     let res;
     if(editingId){
-      res = await fetch(REST + "/orders?id=eq."+editingId, {
-        method:"PATCH", headers:{...authHeaders(),"Prefer":"return=representation"},
+      res = await authFetch(REST + "/orders?id=eq."+editingId, {
+        method:"PATCH", headers:{ "Prefer":"return=representation" },
         body: JSON.stringify(payload)
       });
     }else{
-      res = await fetch(REST + "/orders", {
-        method:"POST", headers:{...authHeaders(),"Prefer":"return=representation"},
+      res = await authFetch(REST + "/orders", {
+        method:"POST", headers:{ "Prefer":"return=representation" },
         body: JSON.stringify(payload)
       });
     }
