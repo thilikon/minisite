@@ -457,14 +457,14 @@
           <span class="ico">🔒</span>
           <div>
             <div class="pl-t">Θα ξεκλειδώσει μόλις παραλάβεις τη δημιουργία σου</div>
-            <div class="pl-s">Με το που ολοκληρωθεί η παραγγελία σου, εδώ θα μπορείς να μας αφήσεις την αξιολόγησή σου και να δεις πώς να μας κάνεις tag. Γύρνα να μας πεις τη γνώμη σου όταν τη φορέσεις! 🤍</div>
+            <div class="pl-s">Μόλις παραλάβεις την παραγγελία σου, εδώ θα μπορείς να μας αφήσεις την αξιολόγησή σου 🤍</div>
           </div>
         </div>
 
         <div class="pcard">
           <div class="pe">Η εμπειρία σου</div>
           <h3 id="fbTitle">Πώς σου φάνηκε;</h3>
-          <p class="pb">Η γνώμη σου μετράει πολύ για εμάς. Πες μας πώς σου φάνηκε η δημιουργία σου και η όλη εμπειρία — μας βοηθάει να γινόμαστε καλύτεροι.</p>
+          <p class="pb">Η γνώμη σου μετράει πολύ για εμάς. Πες μας πώς σου φάνηκε η δημιουργία σου και η όλη εμπειρία , μας βοηθάει να γινόμαστε καλύτεροι.</p>
           <div class="fb-locked hidden" id="fbLocked"><span>🔒</span> Διαθέσιμο μόλις παραλάβεις τη δημιουργία σου</div>
           <div id="fbForm">
             <div class="stars" id="fbStars">
@@ -484,14 +484,14 @@
         <div class="pcard dark">
           <div class="pe">Δείξε μας</div>
           <h3>Φόρεσέ τη και κάνε μας tag</h3>
-          <p class="pb">Θα χαρούμε πολύ να δούμε τη δημιουργία σου σε δράση! Ανέβασε μια φωτογραφία και κάνε μας tag ή στείλε τη στο DM — μπορεί να την αναδημοσιεύσουμε στο προφίλ μας.</p>
+          <p class="pb">Θα χαρούμε πολύ να δούμε τη δημιουργία σου σε δράση! Ανέβασε μια φωτογραφία και κάνε μας tag ή στείλε τη σε DM , μπορεί να την αναδημοσιεύσουμε στο προφίλ μας.</p>
           <div class="pbtn"><a class="btn ghost" href="https://www.instagram.com/thilikon.gr/" target="_blank" rel="noopener">@thilikon.gr στο Instagram</a></div>
         </div>
 
         <div class="pcard">
           <div class="pe">Είμαστε εδώ</div>
           <h3>Χρειάζεσαι κάτι;</h3>
-          <p class="pb">Για οτιδήποτε προκύψει με την παραγγελία σου, μη διστάσεις να μας γράψεις. Στείλε μας ένα DM στο Instagram και θα σου απαντήσουμε το συντομότερο.</p>
+          <p class="pb">Για οτιδήποτε προκύψει με την παραγγελία σου, στείλε μας ένα DM στο Instagram και θα σου απαντήσουμε το συντομότερο.</p>
           <div class="pbtn"><a class="btn ghost" href="https://www.instagram.com/thilikon.gr/" target="_blank" rel="noopener">Στείλε μας μήνυμα</a></div>
         </div>
       </div>
@@ -561,7 +561,7 @@
       <h2>📣 Ειδοποίηση πελάτη</h2>
       <button class="x" onclick="closeNotify()">✕</button>
     </div>
-    <p style="font-size:12.5px;color:var(--muted);margin:0 0 10px">Διάλεξε τι ενημέρωση στέλνεις — φτιάχνεται έτοιμο μήνυμα, εσύ το στέλνεις. Δωρεάν, χωρίς υπηρεσία.</p>
+    <p style="font-size:12.5px;color:var(--muted);margin:0 0 10px">Διάλεξε τι ενημέρωση στέλνεις , φτιάχνεται έτοιμο μήνυμα, εσύ το στέλνεις.</p>
     <label class="fld"><span>Τι ενημέρωση;</span><select id="notifyType" onchange="refreshNotifyMsg()"></select></label>
     <label class="fld"><span>Μήνυμα (μπορείς να το αλλάξεις)</span><textarea id="notifyMsg" style="min-height:150px"></textarea></label>
     <div class="notify-btns">
@@ -876,8 +876,11 @@ function renderTracking(o){
     const price = Number(o.price);
     const paid  = o.amount_paid!=null ? Number(o.amount_paid) : 0;
     const rem   = Math.round((price - paid)*100)/100;
-    // badge μόνο όταν υπάρχει υπόλοιπο· αν έχει εξοφληθεί, δεν δείχνουμε badge
-    const status = rem>0 ? `<span class="ps due">Υπόλοιπο ${fmtMoney(rem)}</span>` : "";
+    // badge ΜΟΝΟ αν έχει καταχωρηθεί πληρωμή (paid>0): «Υπόλοιπο» αν μένει, «Εξοφλήθηκε» αν καλύφθηκε
+    let status = "";
+    if(paid > 0) status = rem>0
+      ? `<span class="ps due">Υπόλοιπο ${fmtMoney(rem)}</span>`
+      : `<span class="ps ok">Εξοφλήθηκε ✓</span>`;
     pay.innerHTML = `<div><div class="pe">Αξία παραγγελίας</div><div class="pv">${fmtMoney(price)}</div></div>${status}`;
     pay.classList.remove("hidden");
   } else pay.classList.add("hidden");
