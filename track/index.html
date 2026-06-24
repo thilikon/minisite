@@ -137,6 +137,7 @@
   }
   .tag-return{background:#efe6da;color:#8a5a1e;font-weight:600}
   .tag-done{background:#e3efe7;color:#2c6e49;font-weight:600}
+  .tag-eta{background:#eef3f8;color:#2f5d8a;font-weight:600}
 
   /* ---------- per-item cards ---------- */
   #tItems{margin-top:18px;display:flex;flex-direction:column;gap:12px}
@@ -614,6 +615,7 @@
       <label class="fld"><span>Link courier (προαιρετικό)</span><input id="fTrackUrl" placeholder="αυτόματο για BoxNow — άστο κενό"></label>
     </div>
 
+    <label class="fld"><span>Πιθανή ημ/νία παράδοσης (προαιρετικό)</span><input id="fEstDelivery" type="date"></label>
     <label class="fld"><span>Σημείωση προς πελάτη (όλη η παραγγελία)</span><textarea id="fNote" placeholder="προαιρετικό μήνυμα που θα δει ο πελάτης"></textarea></label>
 
     <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:6px 0 8px">💶 Οικονομικά <span style="text-transform:none;letter-spacing:0">(ο πελάτης βλέπει τις τιμές & αν εξοφλήθηκε — το κόστος υλικών μένει κρυφό)</span></p>
@@ -866,6 +868,7 @@ function renderTracking(o){
   const addTag=(txt,cls)=>{ const s=document.createElement("span"); s.className="tag"+(cls?(" "+cls):""); s.textContent=txt; meta.appendChild(s); };
   addTag(items.length>1 ? (items.length+" προϊόντα") : "1 προϊόν");
   if(o.created_at) addTag("Καταχωρήθηκε " + new Date(o.created_at).toLocaleDateString("el-GR"));
+  if(o.est_delivery && !everyDone) addTag("📅 Πιθανή παράδοση: " + new Date(o.est_delivery+"T00:00:00").toLocaleDateString("el-GR"), "tag-eta");
 
   // per-item cards
   document.getElementById("tItems").innerHTML = items.map(it=>renderItemCard(it, method, items.length>1)).join("");
@@ -1567,7 +1570,7 @@ function pickMethod(m){
 function openOrderModal(){
   editingId=null; pickedMethod="shipping";
   document.getElementById("modalTitle").textContent="Νέα παραγγελία";
-  ["fName","fNote","fTrackNo","fTrackUrl","fCost","fPaid","fPhone","fEmail"].forEach(id=>document.getElementById(id).value="");
+  ["fName","fNote","fTrackNo","fTrackUrl","fCost","fPaid","fPhone","fEmail","fEstDelivery"].forEach(id=>document.getElementById(id).value="");
   document.getElementById("fCourier").value="BoxNow";
   document.getElementById("fTotalView").textContent="€0,00";
   document.getElementById("fOrderNoView").textContent="θα δημιουργηθεί αυτόματα";
@@ -1591,6 +1594,7 @@ function editOrder(id){
   document.getElementById("fPhone").value=o.customer_phone||"";
   document.getElementById("fEmail").value=o.customer_email||"";
   document.getElementById("fNote").value=o.note||"";
+  document.getElementById("fEstDelivery").value=o.est_delivery||"";
   document.getElementById("fCourier").value=o.courier||"";
   document.getElementById("fTrackNo").value=o.tracking_number||"";
   document.getElementById("fTrackUrl").value=o.tracking_url||"";
@@ -1641,6 +1645,7 @@ async function saveOrder(){
     customer_email: document.getElementById("fEmail").value.trim() || null,
     product_name: items.map(i=>i.name).join(", ").slice(0,180),  // για αναζήτηση/συμβατότητα
     note: document.getElementById("fNote").value.trim() || null,
+    est_delivery: document.getElementById("fEstDelivery").value || null,
     delivery_method: isPickup ? "pickup" : "shipping",
     courier: isPickup ? null : (courier || null),
     tracking_number: isPickup ? null : (trackNo || null),
