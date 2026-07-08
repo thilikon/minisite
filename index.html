@@ -2,1696 +2,813 @@
 <html lang="el">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="format-detection" content="telephone=no">
-<meta name="HandheldFriendly" content="true">
-<meta name="robots" content="noindex">
-<title>THILIKON · Παρακολούθηση Παραγγελίας</title>
-<link rel="icon" href="https://i.imgur.com/TbSGZu5.png">
-
-<!-- ===== Share preview (Open Graph / Twitter) =====
-     ΑΛΛΑΞΕ το YOUR-DOMAIN παρακάτω με το πραγματικό σου domain/path,
-     και ανέβασε το thilikon-og.png δίπλα σε αυτό το αρχείο (ίδιος φάκελος).
-     π.χ. https://thilikon.gr/track/  ή  https://kostism900.github.io/thilikon/track/ -->
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="THILIKON">
-<meta property="og:title" content="Παρακολούθηση Παραγγελίας · THILIKON">
-<meta property="og:description" content="Δες σε ποια φάση βρίσκεται η χειροποίητη δημιουργία σου, βήμα-βήμα. 🤍">
-<meta property="og:image" content="https://YOUR-DOMAIN/thilikon-og.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:url" content="https://YOUR-DOMAIN/">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Παρακολούθηση Παραγγελίας · THILIKON">
-<meta name="twitter:description" content="Δες σε ποια φάση βρίσκεται η χειροποίητη δημιουργία σου, βήμα-βήμα. 🤍">
-<meta name="twitter:image" content="https://YOUR-DOMAIN/thilikon-og.png">
-<meta name="theme-color" content="#141414">
-<!-- ===== /Share preview ===== -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THILIKON — Handcrafted with Love</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --ink:#141414;
-    --ink-soft:#4a4843;
-    --paper:#ffffff;
-    --cream:#f4f3f1;
-    --stone:#eae8e3;
-    --line:#e4e1db;
-    --muted:#928d84;
-    --ok:#1f1f1d;
-    --radius:18px;
-    --pill:999px;
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overflow-x:hidden}
-  body{
-    font-family:'Inter',system-ui,sans-serif;
-    background:var(--cream);
-    color:var(--ink);
-    line-height:1.6;
-    -webkit-font-smoothing:antialiased;
-    min-height:100vh;
-    min-height:100dvh;
-    overflow-x:hidden;
-    overscroll-behavior-y:none;
-    touch-action:manipulation;
-    -webkit-tap-highlight-color:transparent;
-  }
-  /* display headings (high-contrast editorial serif) */
-  .serif{font-family:'Cormorant',Georgia,serif;font-weight:600;letter-spacing:.005em}
-  .eyebrow{
-    font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;
-    color:var(--muted);font-weight:600;
-  }
-  .wrap{max-width:600px;margin:0 auto;padding:0 22px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--black:#0a0a0a;--white:#fafaf8;--gl:#f0eeeb;--gm:#c8c4be;--gd:#6b6560}
+html{scroll-behavior:smooth}
+body{background:var(--white);color:var(--black);font-family:'Montserrat',sans-serif;font-weight:300;overflow-x:hidden;cursor:none}
+.cursor{width:10px;height:10px;background:var(--black);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .25s,height .25s}
+.cursor-ring{width:36px;height:36px;border:1px solid var(--black);border-radius:50%;position:fixed;pointer-events:none;z-index:9998;transform:translate(-50%,-50%)}
+nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:22px 48px;background:rgba(250,250,248,.94);backdrop-filter:blur(14px);border-bottom:1px solid transparent;transition:border-color .4s}
+.nav-actions{display:flex;align-items:center;gap:10px}
+.nav-btn-ghost{font-size:10px;letter-spacing:.15em;text-transform:uppercase;font-weight:500;color:var(--gd);text-decoration:none;padding:9px 18px;border-radius:100px;border:1px solid var(--gm);transition:all .3s}
+.nav-btn-ghost:hover{border-color:var(--black);color:var(--black)}
+@media(max-width:900px){.nav-btn-ghost{display:none}}
+.nav-logo img{height:34px}
+.nav-links{display:flex;gap:36px;list-style:none}
+.nav-links a{text-decoration:none;color:var(--black);font-size:10px;letter-spacing:.2em;text-transform:uppercase;font-weight:500;position:relative}
+.nav-links a::after{content:'';position:absolute;bottom:-3px;left:0;right:0;height:1px;background:var(--black);transform:scaleX(0);transform-origin:left;transition:transform .3s}
+.nav-links a:hover::after{transform:scaleX(1)}
+.nav-cta{font-size:10px;letter-spacing:.15em;text-transform:uppercase;font-weight:500;color:var(--black);border:1px solid var(--black);padding:9px 22px;text-decoration:none;border-radius:100px;transition:background .3s,color .3s}
+.nav-cta:hover{background:var(--black);color:var(--white)}
+.hero{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:120px 48px 60px;gap:60px;position:relative;overflow:hidden}
+.hero::before{content:'THILIKON';position:absolute;font-family:'Cormorant Garamond',serif;font-size:clamp(80px,18vw,260px);font-weight:300;color:transparent;-webkit-text-stroke:1px var(--gm);top:50%;left:50%;transform:translate(-50%,-50%);white-space:nowrap;pointer-events:none;opacity:.22;z-index:0}
+.hero-text{position:relative;z-index:1}
+.eyebrow{font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--gd);margin-bottom:24px;display:flex;align-items:center;gap:16px}
+.eyebrow::before{content:'';display:block;width:40px;height:1px;background:var(--gd)}
+.eyebrow-center{justify-content:center}
+.eyebrow-center::before,.eyebrow-center::after{content:'';display:block;width:40px;height:1px;background:var(--gm)}
+h1.hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(50px,5.5vw,88px);font-weight:300;line-height:1.05;margin-bottom:32px}
+h1.hero-title em,h2 em{font-style:italic}
+.hero-body{font-size:14px;line-height:1.9;color:var(--gd);max-width:400px;margin-bottom:48px}
+.hero-actions{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.btn-primary{background:var(--black);color:var(--white);padding:13px 34px;text-decoration:none;font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:500;border-radius:100px;transition:opacity .3s,transform .3s;display:inline-block;border:none;cursor:none}
+.btn-primary:hover{opacity:.78;transform:translateY(-2px)}
+.btn-outline{border:1px solid var(--black);color:var(--black);padding:13px 34px;text-decoration:none;font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:500;border-radius:100px;transition:background .3s,color .3s,transform .3s;display:inline-block}
+.btn-outline:hover{background:var(--black);color:var(--white);transform:translateY(-2px)}
+.hero-visual{position:relative;z-index:1;display:flex;justify-content:center}
+.img-frame{width:100%;max-width:460px;aspect-ratio:3/4;background:var(--gl);border-radius:8px;overflow:hidden;position:relative}
+.img-frame img{width:100%;height:100%;object-fit:cover;transition:transform .6s}
+.img-frame:hover img{transform:scale(1.04)}
+.hero-badge{position:absolute;bottom:24px;left:-20px;background:var(--white);border:1px solid var(--black);border-radius:100px;padding:9px 20px;font-size:9px;letter-spacing:.15em;text-transform:uppercase;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,.08)}
+.marquee-bar{border-top:1px solid var(--black);border-bottom:1px solid var(--black);padding:14px 0;overflow:hidden;background:var(--black)}
+.marquee-track{display:flex;animation:marquee 30s linear infinite;white-space:nowrap}
+.marquee-item{display:inline-flex;align-items:center;gap:20px;padding:0 36px;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--white)}
+.marquee-dot{width:3px;height:3px;background:var(--gm);border-radius:50%;flex-shrink:0}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.sec-hdr{text-align:center;padding:90px 48px 0}
+h2.sec-title{font-family:'Cormorant Garamond',serif;font-size:clamp(38px,5vw,68px);font-weight:300;line-height:1.1;margin-bottom:18px}
+.sec-sub{font-size:13px;color:var(--gd);line-height:1.85;max-width:520px;margin:0 auto}
+/* FILTERS */
+.filter-wrap{padding:44px 48px 0;display:flex;justify-content:center}
+.filter-bar{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.filter-btn{font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:500;padding:10px 24px;border-radius:100px;border:1px solid var(--gm);background:transparent;color:var(--gd);cursor:none;transition:all .3s}
+.filter-btn:hover{border-color:var(--black);color:var(--black)}
+.filter-btn.active{background:var(--black);color:var(--white);border-color:var(--black)}
+/* GRID */
+.bags-wrap{padding:44px 48px 100px}
+.bag-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.bag-card{position:relative;overflow:hidden;background:var(--white);cursor:none;transition:opacity .35s}
+.bag-card.hidden{display:none}
+.bag-card:nth-child(3n+2){margin-top:40px}
+.bag-img-wrap{aspect-ratio:3/4;overflow:hidden;position:relative;background:var(--white)}
+.bag-img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform .7s;filter:grayscale(6%)}
+.bag-card:hover .bag-img-wrap img{transform:scale(1.06);filter:grayscale(0%)}
+.bag-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.5),transparent 55%);opacity:0;transition:opacity .4s}
+.bag-card:hover .bag-overlay{opacity:1}
+.bag-info{padding:22px 20px 26px;border-top:1px solid var(--gm);background:var(--white)}
+.bag-cat-tag{display:inline-block;font-size:9px;letter-spacing:.2em;text-transform:uppercase;border:1px solid var(--gm);color:var(--gd);padding:4px 12px;border-radius:100px;margin-bottom:12px}
+.bag-name{font-family:'Cormorant Garamond',serif;font-size:28px;font-style:italic;margin-bottom:8px}
+.bag-desc{font-size:12px;color:var(--gd);line-height:1.7;margin-bottom:14px}
+.bag-see{font-size:10px;letter-spacing:.15em;text-transform:uppercase;font-weight:500;display:flex;align-items:center;gap:8px}
+.bag-see::after{content:'→';transition:transform .2s}
+.bag-card:hover .bag-see::after{transform:translateX(4px)}
+.bag-ooakline{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--gm);margin-bottom:14px}
+/* ABOUT */
+.about-section{padding:100px 48px;background:var(--black);color:var(--white);display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;position:relative;overflow:hidden}
+.about-section::before{content:'ANASA';position:absolute;right:-60px;top:50%;transform:translateY(-50%) rotate(90deg);font-family:'Cormorant Garamond',serif;font-size:200px;font-weight:300;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.06);pointer-events:none;white-space:nowrap}
+.about-ey{font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--gm);margin-bottom:28px;display:flex;align-items:center;gap:16px}
+.about-ey::before{content:'';width:40px;height:1px;background:var(--gm);display:block}
+h2.about-title{font-family:'Cormorant Garamond',serif;font-size:clamp(38px,4.5vw,64px);font-weight:300;line-height:1.1;margin-bottom:32px}
+.about-body{font-size:14px;line-height:2;color:rgba(255,255,255,.65);margin-bottom:14px}
+.about-sign{font-family:'Cormorant Garamond',serif;font-size:20px;font-style:italic;color:var(--gm);margin-top:28px}
+.about-frame{aspect-ratio:3/4;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;overflow:hidden;position:relative}
+.about-frame img{width:100%;height:100%;object-fit:cover;opacity:.82}
+.about-pill{position:absolute;top:28px;right:-16px;background:var(--white);color:var(--black);border-radius:100px;padding:11px 20px;font-size:9px;letter-spacing:.2em;text-transform:uppercase;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.35)}
+/* CUSTOM CREATIONS */
+.creations-section{padding:100px 48px;border-top:1px solid var(--gm)}
+.custom-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-top:56px}
+.custom-item{aspect-ratio:1;overflow:hidden;background:var(--gl);cursor:none;position:relative}
+.custom-item img{width:100%;height:100%;object-fit:cover;transition:transform .6s,filter .4s;filter:grayscale(8%)}
+.custom-item:hover img{transform:scale(1.08);filter:grayscale(0%)}
+.custom-placeholder{aspect-ratio:1;background:var(--gl);display:flex;align-items:center;justify-content:center;border:1px dashed var(--gm)}
+.custom-placeholder span{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--gm)}
+/* CUSTOM EDITORIAL GRID */
+.custom-editorial{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+.ce-item{aspect-ratio:1/1;overflow:hidden;background:var(--gl)}
+.ce-item.tall{aspect-ratio:1/1;grid-row:span 2}
+.ce-item img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .7s;cursor:zoom-in}
+.ce-item img:hover{transform:scale(1.05)}
+@media(max-width:700px){
+  .custom-editorial{grid-template-columns:repeat(2,1fr)}
+  .ce-item.tall{grid-row:span 1}
+}
 
-  /* ---------- top bar ---------- */
-  header{
-    padding:30px 0 14px;text-align:center;
-  }
-  header img{height:46px;width:auto;filter:brightness(0)}
-  header .sub{
-    margin-top:10px;font-size:11px;letter-spacing:.3em;
-    text-transform:uppercase;color:var(--muted);
-  }
-
-  /* ---------- generic card ---------- */
-  .card{
-    background:var(--paper);
-    border:1px solid var(--line);
-    border-radius:var(--radius);
-    padding:28px 24px;
-  }
-  .center{text-align:center}
-
-  /* ---------- buttons / fields ---------- */
-  .btn{
-    display:inline-flex;align-items:center;justify-content:center;gap:8px;
-    font-family:'Inter';font-size:11.5px;font-weight:600;
-    letter-spacing:.08em;text-transform:uppercase;
-    padding:13px 22px;border-radius:var(--pill);
-    border:1px solid var(--ink);cursor:pointer;
-    transition:.18s ease;text-decoration:none;background:transparent;color:var(--ink);
-  }
-  .btn.solid{background:var(--ink);color:#fff}
-  .btn.solid:hover{background:#000}
-  .btn.ghost:hover{background:var(--ink);color:#fff}
-  .btn.sm{padding:9px 15px;font-size:10.5px;letter-spacing:.06em}
-  .btn:disabled{opacity:.45;cursor:not-allowed}
-  .btn.danger{border-color:#b54b3a;color:#b54b3a}
-  .btn.danger:hover{background:#b54b3a;color:#fff}
-
-  label.fld{display:block;margin-bottom:14px}
-  label.fld span{
-    display:block;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
-    color:var(--muted);margin-bottom:6px;font-weight:600;
-  }
-  input,textarea,select{
-    width:100%;font-family:'Inter';font-size:16px;color:var(--ink);
-    background:var(--cream);border:1px solid var(--line);
-    border-radius:12px;padding:12px 14px;outline:none;transition:.15s;
-  }
-  textarea{resize:vertical;min-height:70px}
-  input:focus,textarea:focus,select:focus{border-color:var(--ink);background:#fff}
-
-  .hidden{display:none!important}
-
-  /* ---------- landing ---------- */
-  #view-landing{padding-top:6px}
-  #view-landing h1{font-size:36px;font-weight:600;line-height:1.1;margin:14px 0 10px;letter-spacing:.005em}
-  #view-landing p.lead{color:var(--ink-soft);font-size:14px;margin-bottom:24px}
-  .code-row{display:flex;gap:10px;margin-top:6px}
-  .code-row input{text-align:center;letter-spacing:.08em}
-
-  /* ---------- tracking ---------- */
-  .order-head{margin-bottom:6px}
-  .order-head h1{font-size:33px;font-weight:600;line-height:1.12;letter-spacing:.005em}
-  .order-head .who{color:var(--ink-soft);font-size:14px;margin-top:6px}
-  .order-summary{font-size:14px;color:var(--ink-soft);margin-top:8px;line-height:1.5}
-  .order-summary .pill{display:inline-block;font-size:12px;font-weight:600;background:var(--stone);color:var(--ink-soft);border-radius:var(--pill);padding:3px 10px}
-  .meta-row{
-    display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;
-  }
-  .tag{
-    font-size:11.5px;letter-spacing:.01em;color:var(--ink-soft);
-    background:var(--stone);border-radius:var(--pill);padding:6px 13px;
-  }
-  .tag-return{background:#efe6da;color:#8a5a1e;font-weight:600}
-  .tag-done{background:#e3efe7;color:#2c6e49;font-weight:600}
-
-  /* ---------- per-item cards ---------- */
-  #tItems{margin-top:18px;display:flex;flex-direction:column;gap:12px}
-  .pay-box{margin-top:14px;border:1px solid var(--line);border-radius:14px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--paper)}
-  .pay-box .pe{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:600}
-  .pay-box .pv{font-size:19px;font-weight:700;margin-top:2px}
-  .pay-box .ps{font-size:12px;font-weight:600;border-radius:var(--pill);padding:6px 12px;white-space:nowrap}
-  .pay-box .ps.ok{background:#e3efe7;color:#2c6e49}
-  .pay-box .ps.due{background:#f6ead6;color:#8a5a1e}
-  .item{border:1px solid var(--line);border-radius:14px;padding:16px 16px;background:var(--paper)}
-  .item.is-done{border-color:#cfe0d3}
-  .item.is-return{border-color:#e6d4b4;background:#fffdf9}
-  .item-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-  .item-name{font-size:19px;font-weight:600;line-height:1.18}
-  .item-badge{font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;white-space:nowrap;border-radius:var(--pill);padding:5px 10px;background:var(--ink);color:#fff;flex:none}
-  .item-badge.done{background:#1d3b2a}
-  .item-badge.ret{background:#8a5a1e}
-  .item-sub{font-size:12.5px;color:var(--muted);margin-top:5px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-  .item-sub .rtag{background:#efe6da;color:#8a5a1e;border-radius:var(--pill);padding:2px 9px;font-weight:600}
-  .item-sub .iprice{background:var(--ink);color:#fff;border-radius:var(--pill);padding:2px 9px;font-weight:700}
-  .dots{display:flex;align-items:center;margin:14px 2px 11px}
-  .dots .d{width:21px;height:21px;border-radius:50%;border:2px dashed var(--line);background:var(--paper);flex:none;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:var(--muted);font-weight:600}
-  .dots .d.done{background:var(--ink);border:2px solid var(--ink);color:#fff}
-  .dots .d.active{border:2px solid var(--ink);color:var(--ink);box-shadow:0 0 0 0 rgba(20,20,20,.3);animation:pulse 2s infinite}
-  .dots .seg{flex:1;height:0;border-top:2px dashed var(--line);margin:0 3px}
-  .dots .seg.done{border-top:2px solid var(--ink)}
-  .item-cur{font-size:14px}
-  .item-cur .lbl{font-weight:600}
-  .item-cur .dur{color:var(--muted)}
-  .item-note{margin-top:10px;font-size:13px;color:var(--ink-soft);background:var(--cream);border-radius:10px;padding:9px 12px;border-left:3px solid var(--ink)}
-
-  /* stage banner */
-  .banner{
-    margin:24px 0 6px;padding:18px 20px;border-radius:16px;
-    background:var(--ink);color:#fff;display:flex;align-items:center;gap:16px;
-  }
-  .banner.done{background:#1d3b2a}
-  .banner .pct{
-    flex:none;width:52px;height:52px;border-radius:50%;
-    display:flex;align-items:center;justify-content:center;
-    border:1.5px solid rgba(255,255,255,.5);font-size:13px;letter-spacing:.02em;font-weight:500;
-  }
-  .banner .b-txt .e{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;opacity:.6;font-weight:600}
-  .banner .b-txt .t{font-family:'Cormorant',Georgia,serif;font-size:24px;font-weight:600;line-height:1.1;margin-top:2px}
-
-  /* ---------- stitch timeline (signature) ---------- */
-  .timeline{margin-top:28px;position:relative}
-  .step{position:relative;padding:0 0 28px 50px;}
-  .step:last-child{padding-bottom:0}
-  /* the stitched thread */
-  .step::before{
-    content:"";position:absolute;left:16px;top:30px;bottom:-4px;width:0;
-    border-left:2px dashed var(--line);
-  }
-  .step:last-child::before{display:none}
-  .step.done::before{border-left:2px solid var(--ink)}
-  .dot{
-    position:absolute;left:0;top:0;width:33px;height:33px;border-radius:50%;
-    background:var(--paper);border:2px dashed var(--line);
-    display:flex;align-items:center;justify-content:center;
-    font-size:12px;color:var(--muted);font-weight:600;
-  }
-  .step.done .dot{background:var(--ink);border:2px solid var(--ink);color:#fff}
-  .step.active .dot{
-    border:2px solid var(--ink);color:var(--ink);
-    box-shadow:0 0 0 0 rgba(20,20,20,.35);animation:pulse 2s infinite;
-  }
-  @keyframes pulse{
-    0%{box-shadow:0 0 0 0 rgba(20,20,20,.30)}
-    70%{box-shadow:0 0 0 9px rgba(20,20,20,0)}
-    100%{box-shadow:0 0 0 0 rgba(20,20,20,0)}
-  }
-  .step h3{font-size:20px;font-weight:600;line-height:1.18}
-  .step .dur{font-size:12.5px;color:var(--muted);margin-top:3px}
-  .step.active h3::after{
-    content:"σε εξέλιξη";font-family:'Inter',sans-serif;font-size:9px;letter-spacing:.12em;font-weight:600;
-    text-transform:uppercase;color:#fff;background:var(--ink);
-    border-radius:var(--pill);padding:3px 9px;margin-left:9px;vertical-align:middle;
-  }
-  .step.pending h3{color:var(--muted);font-weight:500}
-
-  .note-box{
-    margin-top:24px;background:var(--paper);border:1px solid var(--line);
-    border-left:3px solid var(--ink);border-radius:12px;padding:15px 18px;
-  }
-  .note-box .e{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:600}
-  .note-box p{font-size:14.5px;margin-top:6px;color:var(--ink-soft);line-height:1.55}
-
-  .ship-box{
-    margin-top:14px;border:1px solid var(--ink);border-radius:14px;padding:15px 18px;
-    display:flex;flex-wrap:wrap;align-items:center;gap:12px;justify-content:space-between;
-  }
-  #tShipments{display:flex;flex-direction:column}
-  .ship-box .si .e{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:600}
-  .ship-box .si .v{font-weight:600;font-size:14px;margin-top:3px}
-  .ship-scope{font-size:12.5px;color:var(--ink-soft);margin-top:5px}
-  .ship-scope b{color:var(--ink)}
-
-  .updated{margin-top:18px;text-align:center;font-size:11px;color:var(--muted);letter-spacing:.04em}
-
-  .contact{
-    margin-top:24px;text-align:center;
-  }
-  .contact p{font-size:13.5px;color:var(--ink-soft);margin-bottom:12px}
-
-  /* ---------- post-delivery (feedback + reminders) ---------- */
-  .post{margin-top:18px;display:flex;flex-direction:column;gap:14px}
-  .post-lock{
-    display:flex;gap:12px;align-items:flex-start;
-    background:var(--stone);border:1px dashed #c9c4ba;border-radius:14px;padding:14px 16px;
-  }
-  .post-lock .ico{font-size:18px;line-height:1.3;flex:none}
-  .post-lock .pl-t{font-weight:600;font-size:13.5px}
-  .post-lock .pl-s{font-size:13px;color:var(--ink-soft);margin-top:3px;line-height:1.5}
-  .post.locked .pcard{opacity:.5;filter:grayscale(.35)}
-  .post.locked .pcard .btn,
-  .post.locked .pcard .stars button,
-  .post.locked .pcard textarea{pointer-events:none}
-  .fb-locked{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:13.5px;color:var(--muted);font-weight:500}
-  .pcard{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:22px 22px}
-  .pcard.dark{background:var(--ink);color:#fff;border-color:var(--ink)}
-  .pcard .pe{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:600}
-  .pcard.dark .pe{color:rgba(255,255,255,.55)}
-  .pcard h3{font-family:'Cormorant',Georgia,serif;font-size:24px;font-weight:600;line-height:1.12;margin-top:6px}
-  .pcard p.pb{font-size:14px;line-height:1.6;color:var(--ink-soft);margin-top:8px}
-  .pcard.dark p.pb{color:rgba(255,255,255,.8)}
-  .pcard .pbtn{margin-top:16px}
-  .pcard.dark .btn{border-color:#fff;color:#fff}
-  .pcard.dark .btn:hover{background:#fff;color:var(--ink)}
-  /* star rating */
-  .stars{display:flex;gap:6px;margin:14px 0 4px}
-  .stars button{background:none;border:none;cursor:pointer;font-size:30px;line-height:1;color:var(--line);transition:.12s;padding:0}
-  .stars button.on{color:#e8b23a}
-  .fb-thanks{font-size:14px;color:var(--ink-soft);margin-top:6px}
-
-  /* ---------- admin ---------- */
-  .admin-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-  .admin-bar .e{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:600}
-  .order-row{
-    border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px;background:#fff;
-  }
-  .order-row .r-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-  .order-row .r-name{font-weight:600;font-size:15px}
-  .order-row .r-prod{font-size:13px;color:var(--ink-soft);margin-top:1px}
-  .order-row .r-fb{font-size:12px;color:#a07b1e;margin-top:6px}
-  .order-row .r-money{font-size:12.5px;margin-top:6px;font-weight:600;color:var(--ink)}
-  .order-row .r-hint{font-size:12px;color:#2f5d8a;background:#eef3f8;border-radius:9px;padding:8px 11px;margin-top:9px}
-  .order-row .r-money .pay-ok{color:#2c6e49;font-weight:600}
-  .order-row .r-money .pay-due{color:#b06a1e;font-weight:600}
-  .order-row .r-stage{
-    font-size:10px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;font-weight:600;
-    background:var(--ink);color:#fff;border-radius:var(--pill);padding:5px 11px;
-  }
-  .order-row .r-stage.done{background:#1d3b2a}
-  .order-row .r-stage.ready{background:#2f5d8a}
-  .order-row .r-stage.ret{background:#8a5a1e}
-  .order-row.is-return{border-color:#e0cdb0;background:#fffdf9}
-  .order-row .r-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
-  /* items inside an order row */
-  .order-items{margin-top:11px;display:flex;flex-direction:column;gap:7px}
-  .oi{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--cream);border:1px solid var(--line);border-radius:11px;padding:9px 11px}
-  .oi.i-done{background:#eef4ef;border-color:#cfe0d3}
-  .oi.i-ret{background:#fbf3e7;border-color:#e6d4b4}
-  .oi-name{font-size:13.5px;font-weight:600}
-  .oi-rt{color:#8a5a1e}
-  .oi-stage{font-size:12px;color:var(--ink-soft);margin-top:1px}
-  .oi-note{font-size:12px;color:#8a5a1e;margin-top:3px}
-  .oi-act{display:flex;gap:6px;align-items:center;flex:none}
-  .oi-act .btn.sm{padding:7px 11px}
-  .oi-ok{color:#2c6e49;font-weight:700;font-size:15px;padding:0 6px}
-  .fb-readout{background:var(--cream);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:13px}
-  .fb-readout b{color:#a07b1e}
-  /* stats */
-  .stats{margin-bottom:16px;border:1px solid var(--line);border-radius:16px;background:#fff;overflow:hidden}
-  .stats-h{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;cursor:pointer;user-select:none}
-  .stats-h .e{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:600}
-  .stats-h .chev{color:var(--muted);font-size:13px;transition:.2s}
-  .stats.open .chev{transform:rotate(180deg)}
-  .stats-body{display:none;padding:4px 16px 18px}
-  .stats.open .stats-body{display:block}
-  .stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-  @media(min-width:480px){.stat-grid{grid-template-columns:repeat(4,1fr)}}
-  .stat{background:var(--cream);border:1px solid var(--line);border-radius:12px;padding:13px 14px}
-  .stat .n{font-family:'Cormorant',Georgia,serif;font-size:30px;font-weight:600;line-height:1}
-  .stat .l{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:5px;font-weight:600}
-  .stat.dark{background:var(--ink);border-color:var(--ink);color:#fff}
-  .stat.dark .l{color:rgba(255,255,255,.6)}
-  .stat-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;font-size:12.5px;color:var(--ink-soft)}
-  .stats-sub{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:18px 0 9px}
-  .year-tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
-  .ytab{font-family:'Inter';font-size:12px;font-weight:600;letter-spacing:.02em;padding:7px 14px;border-radius:var(--pill);border:1px solid var(--line);background:var(--cream);color:var(--ink-soft);cursor:pointer;transition:.15s}
-  .ytab.sel{background:var(--ink);color:#fff;border-color:var(--ink)}
-  .year-total{margin-top:10px;font-size:13px;color:var(--ink-soft);text-align:right}
-  .year-total b{color:var(--ink);font-size:15px}
-  .stat-pill{background:var(--stone);border-radius:var(--pill);padding:6px 12px}
-  .stage-bars{margin-top:14px;display:flex;flex-direction:column;gap:7px}
-  .sbar{display:flex;align-items:center;gap:10px;font-size:12px}
-  .sbar .lbl{width:108px;color:var(--ink-soft);flex:none}
-  .sbar .track{flex:1;height:8px;background:var(--stone);border-radius:6px;overflow:hidden}
-  .sbar .fill{display:block;height:100%;background:var(--ink);border-radius:6px;min-width:0}
-  .sbar .cnt{width:24px;text-align:right;font-weight:600;flex:none}
-  .feed{margin-top:14px}
-  .msg{font-size:13px;padding:11px 14px;border-radius:12px;margin-bottom:12px}
-  .msg.err{background:#fbeae6;color:#9b3b29}
-  .msg.ok{background:#e9f1ea;color:#26452f}
-
-  /* modal */
-  .overlay{
-    position:fixed;inset:0;background:rgba(20,20,20,.55);backdrop-filter:blur(3px);
-    display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;
-    overflow:auto;z-index:50;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
-  }
-  .modal{background:#fff;border-radius:var(--radius);max-width:520px;width:100%;padding:26px 24px;margin:0 auto}
-  .modal h2{font-size:22px;font-weight:600;margin-bottom:4px;letter-spacing:-.01em}
-  .modal .mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-  .x{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1}
-
-  .stage-picker{display:flex;gap:8px;flex-wrap:wrap}
-  /* items editor (admin) */
-  .ie-item{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;background:var(--cream)}
-  .ie-top{display:flex;gap:8px;align-items:center;margin-bottom:8px}
-  .ie-top input{flex:1}
-  .ie-del{flex:none;width:34px;height:34px;border:1px solid var(--line);background:#fff;border-radius:10px;cursor:pointer;color:#b54b3a;font-size:14px}
-  .ie-del:hover{background:#b54b3a;color:#fff;border-color:#b54b3a}
-  .ie-item input,.ie-item select{margin-bottom:8px}
-  .ie-row{display:flex;gap:8px}
-  .ie-row select{flex:1}
-  .ie-septoggle{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-soft);margin:2px 0 0;cursor:pointer;user-select:none}
-  .ie-septoggle input{width:auto;margin:0;accent-color:var(--ink);flex:none}
-  .ie-track{margin-top:8px}
-  .ie-flow{max-width:42%}
-  .ro-field{background:var(--stone);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14px;color:var(--ink-soft);font-weight:600;min-height:45px;display:flex;align-items:center}
-  .notify-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
-  .notify-btns .btn{flex:1;min-width:120px;justify-content:center}
-  .stage-picker button{
-    flex:1;min-width:64px;border:1px solid var(--line);background:var(--cream);
-    border-radius:12px;padding:9px 6px;cursor:pointer;font-family:'Inter';
-    font-size:11px;color:var(--ink-soft);transition:.15s;text-align:center;
-  }
-  .stage-picker button.sel{background:var(--ink);color:#fff;border-color:var(--ink)}
-  .stage-picker button .n{display:block;font-size:15px;margin-bottom:2px;font-weight:600}
-
-  .link-box{
-    display:flex;gap:8px;margin-top:10px;background:var(--cream);
-    border:1px solid var(--line);border-radius:14px;padding:8px 8px 8px 14px;align-items:center;
-  }
-  .link-box code{flex:1;font-size:12px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
-  footer{padding:36px 0 30px;text-align:center}
-  footer img{height:24px;filter:brightness(0);opacity:.55}
-  footer .fl{margin-top:10px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
-  .adm-link{color:var(--muted);text-decoration:underline;cursor:pointer;font-size:11px;letter-spacing:.1em}
-
-  .spinner{width:30px;height:30px;border:2px solid var(--line);border-top-color:var(--ink);border-radius:50%;animation:spin .8s linear infinite;margin:30px auto}
-  @keyframes spin{to{transform:rotate(360deg)}}
-
-  @media (prefers-reduced-motion:reduce){
-    *{animation:none!important;transition:none!important}
-  }
-  @media(min-width:560px){
-    .order-head h1{font-size:37px}
-  }
+/* LIGHTBOX */
+.lb-overlay{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .35s;cursor:zoom-out}
+.lb-overlay.open{opacity:1;pointer-events:all}
+.lb-img{max-width:92vw;max-height:92vh;object-fit:contain;border-radius:4px;transform:scale(.96);transition:transform .35s}
+.lb-overlay.open .lb-img{transform:scale(1)}
+.lb-close{position:absolute;top:20px;right:24px;background:none;border:none;color:white;font-size:28px;cursor:pointer;opacity:.7;transition:opacity .2s;line-height:1}
+.lb-close:hover{opacity:1}
+/* HOW TO CUSTOMIZE */
+.how-to-wrap{background:var(--gl);margin-top:80px;padding:90px 48px;text-align:center}
+.how-to-inner{max-width:680px;margin:0 auto}
+.how-to-inner .eyebrow{color:var(--gd)}
+.how-to-inner h2{color:var(--black)}
+/* CUSTOM ORDER */
+.order-section{padding:100px 48px;background:var(--gl);text-align:center}
+.order-inner{max-width:660px;margin:0 auto}
+.steps{display:flex;justify-content:center;gap:40px;margin:50px 0;flex-wrap:wrap}
+.step{display:flex;flex-direction:column;align-items:center;gap:12px;max-width:160px;text-align:center}
+.step-num{width:40px;height:40px;border:1px solid var(--black);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:20px;font-style:italic}
+.step-label{font-size:10px;letter-spacing:.15em;text-transform:uppercase;font-weight:500}
+.step-desc{font-size:12px;color:var(--gd);line-height:1.65}
+/* FOOTER */
+footer{background:var(--black);color:var(--white);padding:80px 48px 40px}
+.footer-top{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:60px;padding-bottom:60px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:40px}
+footer img.footer-logo{height:30px;filter:invert(1);margin-bottom:18px;display:block}
+.footer-tagline{font-size:12px;color:rgba(255,255,255,.4);line-height:1.85;max-width:240px}
+.footer-col-title{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:20px;font-weight:500}
+.footer-links{list-style:none;display:flex;flex-direction:column;gap:12px}
+.footer-links a{text-decoration:none;color:rgba(255,255,255,.6);font-size:12px;transition:color .2s}
+.footer-links a:hover{color:var(--white)}
+.footer-bottom{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:rgba(255,255,255,.22);letter-spacing:.1em}
+.footer-ig a{color:rgba(255,255,255,.3);text-decoration:none;font-size:10px;letter-spacing:.15em;text-transform:uppercase;transition:color .2s}
+.footer-ig a:hover{color:var(--white)}
+/* FADE */
+.fade-up{opacity:0;transform:translateY(26px);transition:opacity .75s ease,transform .75s ease}
+.fade-up.visible{opacity:1;transform:translateY(0)}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.72);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .4s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--white);width:min(660px,92vw);max-height:88vh;border-radius:6px;overflow:hidden;display:flex;flex-direction:column;transform:translateY(18px);transition:transform .4s}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-header{padding:30px 32px 18px;border-bottom:1px solid var(--gl);display:flex;justify-content:space-between;align-items:flex-start;flex-shrink:0}
+.modal-bag-name{font-family:'Cormorant Garamond',serif;font-size:36px;font-style:italic}
+.modal-bag-cat{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--gd);margin-top:4px}
+.modal-close{background:none;border:none;cursor:none;font-size:20px;color:var(--gd);transition:color .2s;line-height:1;padding:4px}
+.modal-close:hover{color:var(--black)}
+.modal-body{padding:22px 32px 30px;overflow-y:auto}
+.modal-label{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gd);margin-bottom:18px;font-weight:500}
+.modal-colors-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:14px;margin-bottom:26px}
+.modal-color-item{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:none}
+.modal-color-swatch{width:50px;height:50px;border-radius:50%;border:1.5px solid rgba(0,0,0,.1);transition:transform .2s;box-shadow:0 2px 8px rgba(0,0,0,.09)}
+.modal-color-item:hover .modal-color-swatch{transform:scale(1.12)}
+.modal-color-code{font-size:9px;letter-spacing:.08em;font-weight:500;color:var(--black)}
+.modal-color-name{font-size:9px;color:var(--gm);text-align:center;line-height:1.3}
+.modal-note{font-size:12px;color:var(--gd);line-height:1.85;border-top:1px solid var(--gl);padding-top:18px}
+.modal-note strong{color:var(--black);font-weight:500}
+/* MATERIAL TOGGLE */
+.modal-toggle{display:flex;gap:8px;margin-bottom:22px}
+.modal-toggle-btn{font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:500;padding:8px 20px;border-radius:100px;border:1px solid var(--gm);background:transparent;color:var(--gd);cursor:none;transition:all .25s}
+.modal-toggle-btn:hover{border-color:var(--black);color:var(--black)}
+.modal-toggle-btn.active{background:var(--black);color:var(--white);border-color:var(--black)}
+/* QUIZ */
+.quiz-section{padding:100px 48px;background:var(--black);color:var(--white);position:relative;overflow:hidden}
+.quiz-section::before{content:'FIND\AYOUR\ABAG';white-space:pre;position:absolute;font-family:'Cormorant Garamond',serif;font-size:clamp(60px,12vw,160px);font-weight:300;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.05);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;line-height:1;text-align:center}
+.quiz-inner{max-width:680px;margin:0 auto;text-align:center;position:relative;z-index:1}
+.quiz-eyebrow{font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--gm);margin-bottom:20px;display:flex;align-items:center;justify-content:center;gap:16px}
+.quiz-eyebrow::before,.quiz-eyebrow::after{content:'';display:block;width:40px;height:1px;background:rgba(255,255,255,.2)}
+.quiz-title{font-family:'Cormorant Garamond',serif;font-size:clamp(38px,5vw,68px);font-weight:300;line-height:1.1;margin-bottom:12px;color:var(--white)}
+.quiz-title em{font-style:italic}
+.quiz-subtitle{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:56px;line-height:1.7}
+/* progress */
+.quiz-progress{display:flex;gap:8px;justify-content:center;margin-bottom:48px}
+.quiz-progress-dot{width:28px;height:2px;background:rgba(255,255,255,.15);border-radius:2px;transition:background .4s}
+.quiz-progress-dot.active{background:var(--white)}
+.quiz-progress-dot.done{background:rgba(255,255,255,.45)}
+/* question */
+.quiz-q{font-family:'Cormorant Garamond',serif;font-size:clamp(22px,3vw,32px);font-style:italic;color:var(--white);margin-bottom:36px;min-height:44px;transition:opacity .3s}
+/* options */
+.quiz-options{display:flex;flex-direction:column;gap:12px;margin-bottom:0}
+.quiz-opt{background:transparent;border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.8);padding:16px 28px;border-radius:100px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:400;cursor:none;transition:all .3s;text-align:left;display:flex;align-items:center;gap:16px}
+.quiz-opt:hover{border-color:var(--white);color:var(--white);background:rgba(255,255,255,.05)}
+.quiz-opt.selected{border-color:var(--white);background:var(--white);color:var(--black)}
+.quiz-opt-icon{font-size:18px;flex-shrink:0;width:24px;text-align:center}
+/* result */
+.quiz-result{display:none;animation:fadeInUp .6s ease forwards}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.quiz-result-img{width:180px;height:220px;object-fit:cover;border-radius:4px;margin:0 auto 28px;display:block;filter:brightness(.95)}
+.quiz-result-label{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gm);margin-bottom:12px}
+.quiz-result-name{font-family:'Cormorant Garamond',serif;font-size:52px;font-style:italic;color:var(--white);margin-bottom:8px}
+.quiz-result-desc{font-size:13px;color:rgba(255,255,255,.6);line-height:1.8;max-width:420px;margin:0 auto 32px}
+.quiz-result-actions{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.btn-white{background:var(--white);color:var(--black);padding:13px 34px;text-decoration:none;font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:500;border-radius:100px;transition:opacity .3s;border:none;cursor:none;display:inline-block}
+.btn-white:hover{opacity:.85}
+.btn-ghost{background:transparent;color:rgba(255,255,255,.7);padding:13px 34px;font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:500;border-radius:100px;border:1px solid rgba(255,255,255,.25);cursor:none;transition:all .3s}
+.btn-ghost:hover{border-color:var(--white);color:var(--white)}
+/* RESPONSIVE */
+@media(max-width:900px){
+  nav{padding:18px 24px}.nav-links{display:none}
+  /* hero: text first, image below */
+  .hero{grid-template-columns:1fr;padding:100px 24px 60px;gap:32px}
+  .hero-text{order:1}
+  .hero-visual{order:2}
+  .bag-grid{grid-template-columns:1fr 1fr}.bag-card:nth-child(3n+2){margin-top:0}.bag-card:nth-child(2n){margin-top:28px}
+  .about-section{grid-template-columns:1fr;padding:60px 24px}.about-section::before{display:none}
+  .bags-wrap,.filter-wrap,.sec-hdr{padding-left:24px;padding-right:24px}
+  .creations-section{padding:60px 24px}
+  .how-to-wrap{padding:60px 24px;margin-top:60px}
+  .custom-editorial{grid-template-columns:1fr!important}
+  .custom-editorial-main{aspect-ratio:4/3!important}
+  .custom-editorial-side{grid-template-columns:1fr 1fr!important;gap:8px!important}
+  .footer-top{grid-template-columns:1fr;gap:36px}.footer-bottom{flex-direction:column;gap:10px;text-align:center}
+  .quiz-section{padding:60px 24px}
+  .quiz-opt{padding:14px 20px;font-size:11px}
+}
+@media(max-width:560px){
+  .bag-grid{grid-template-columns:1fr}.bag-card:nth-child(2n){margin-top:0}
+  .hero-actions{flex-direction:column;align-items:flex-start}
+  .custom-editorial-side{grid-template-columns:1fr 1fr!important}
+  .filter-bar{gap:8px}
+  .filter-btn{padding:8px 16px;font-size:9px}
+}
+/* hide cursor on touch devices */
+@media(hover:none){
+  .cursor,.cursor-ring{display:none!important}
+  *{cursor:auto!important}
+  .quiz-opt,.filter-btn,.bag-card,a,button{cursor:pointer!important}
+}
 </style>
 </head>
 <body>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
 
-<header>
-  <img src="https://i.imgur.com/TbSGZu5.png" alt="THILIKON">
-  <div class="sub">Order Tracking</div>
-</header>
+<nav id="mainNav">
+  <a class="nav-logo" href="#"><img src="https://i.imgur.com/xAANrPo.png" alt="Thilikon"></a>
+  <ul class="nav-links">
+    <li><a href="#collection">Collection</a></li>
+    <li><a href="#creations">Custom</a></li>
+    <li><a href="#quiz">Find Your Bag</a></li>
+    <li><a href="#about">Anasa</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a class="nav-btn-ghost" href="https://thilikon.github.io/minisite/track/#feedback" target="_blank">Feedback</a>
+    <a class="nav-btn-ghost" href="https://thilikon.github.io/minisite/track/" target="_blank">Track Order</a>
+    <a class="nav-cta" href="https://www.instagram.com/thilikon.gr/" target="_blank">DM to Order</a>
+  </div>
+</nav>
 
-<main class="wrap" style="padding-bottom:20px">
-
-  <!-- ============ LANDING ============ -->
-  <section id="view-landing" class="hidden">
-    <div class="card center">
-      <p class="eyebrow">Παρακολούθηση</p>
-      <h1 class="serif">Πού βρίσκεται<br>η παραγγελία σου;</h1>
-      <p class="lead">Βάλε τον κωδικό, τον αριθμό παραγγελίας ή επικόλλησε το link που σου στείλαμε.</p>
-      <div class="code-row">
-        <input id="codeInput" placeholder="κωδικός ή αρ. παραγγελίας" autocomplete="off" spellcheck="false">
-        <button class="btn solid" onclick="goTrack()">Δες</button>
-      </div>
-      <p id="landErr" class="msg err hidden" style="margin-top:14px"></p>
+<section class="hero">
+  <div class="hero-text fade-up">
+    <p class="eyebrow">Collection — Anasa</p>
+    <h1 class="hero-title">Handcrafted<br><em>with love,</em><br>for you.</h1>
+    <p class="hero-body">Every bag is a small story. Made with patience, love and attention to detail — to become your favourite accessory.</p>
+    <div class="hero-actions">
+      <a href="#collection" class="btn-primary">Explore the Collection</a>
+      <a href="#about" class="btn-outline">About Anasa</a>
     </div>
-  </section>
-
-  <!-- ============ TRACKING ============ -->
-  <section id="view-track" class="hidden">
-    <div id="trackLoading"><div class="spinner"></div></div>
-    <div id="trackContent" class="hidden">
-      <div class="card">
-        <div class="order-head">
-          <p class="eyebrow" id="tOrderNo"></p>
-          <h1 class="serif" id="tHello"></h1>
-        </div>
-        <div class="order-summary" id="tSummary"></div>
-        <div class="meta-row" id="tMeta"></div>
-
-        <div id="tItems"></div>
-
-        <div class="pay-box hidden" id="tPay"></div>
-
-        <div class="note-box hidden" id="tNoteBox">
-          <div class="e">Σημείωση από το THILIKON</div>
-          <p id="tNote"></p>
-        </div>
-
-        <div id="tShipments"></div>
-
-        <div class="updated" id="tUpdated"></div>
-      </div>
-
-      <!-- post-delivery: feedback + reminders (visible from start, locked until ready) -->
-      <div class="post hidden" id="tPost">
-
-        <div class="post-lock hidden" id="postLock">
-          <span class="ico">🔒</span>
-          <div>
-            <div class="pl-t">Θα ξεκλειδώσει μόλις παραλάβεις τη δημιουργία σου</div>
-            <div class="pl-s">Με το που ολοκληρωθεί η παραγγελία σου, εδώ θα μπορείς να μας αφήσεις την αξιολόγησή σου και να δεις πώς να μας κάνεις tag. Γύρνα να μας πεις τη γνώμη σου όταν τη φορέσεις! 🤍</div>
-          </div>
-        </div>
-
-        <div class="pcard">
-          <div class="pe">Η εμπειρία σου</div>
-          <h3 id="fbTitle">Πώς σου φάνηκε;</h3>
-          <p class="pb">Η γνώμη σου μετράει πολύ για εμάς. Πες μας πώς σου φάνηκε η δημιουργία σου και η όλη εμπειρία — μας βοηθάει να γινόμαστε καλύτεροι.</p>
-          <div class="fb-locked hidden" id="fbLocked"><span>🔒</span> Διαθέσιμο μόλις παραλάβεις τη δημιουργία σου</div>
-          <div id="fbForm">
-            <div class="stars" id="fbStars">
-              <button data-v="1" aria-label="1">★</button>
-              <button data-v="2" aria-label="2">★</button>
-              <button data-v="3" aria-label="3">★</button>
-              <button data-v="4" aria-label="4">★</button>
-              <button data-v="5" aria-label="5">★</button>
-            </div>
-            <textarea id="fbComment" placeholder="Πες μας δυο λόγια (προαιρετικό)…" style="margin-top:10px"></textarea>
-            <p id="fbMsg" class="msg err hidden" style="margin-top:10px"></p>
-            <div class="pbtn"><button class="btn solid" onclick="submitFeedback()">Στείλε την αξιολόγηση</button></div>
-          </div>
-          <div id="fbDone" class="hidden"><p class="fb-thanks">Ευχαριστούμε για την αξιολόγησή σου! 🤍</p></div>
-        </div>
-
-        <div class="pcard dark">
-          <div class="pe">Δείξε μας</div>
-          <h3>Φόρεσέ τη και κάνε μας tag</h3>
-          <p class="pb">Θα χαρούμε πολύ να δούμε τη δημιουργία σου σε δράση! Ανέβασε μια φωτογραφία και κάνε μας tag ή στείλε τη στο DM — μπορεί να την αναδημοσιεύσουμε στο προφίλ μας.</p>
-          <div class="pbtn"><a class="btn ghost" href="https://www.instagram.com/thilikon.gr/" target="_blank" rel="noopener">@thilikon.gr στο Instagram</a></div>
-        </div>
-
-        <div class="pcard">
-          <div class="pe">Είμαστε εδώ</div>
-          <h3>Χρειάζεσαι κάτι;</h3>
-          <p class="pb">Για οτιδήποτε προκύψει με την παραγγελία σου, μη διστάσεις να μας γράψεις. Στείλε μας ένα DM στο Instagram και θα σου απαντήσουμε το συντομότερο.</p>
-          <div class="pbtn"><a class="btn ghost" href="https://www.instagram.com/thilikon.gr/" target="_blank" rel="noopener">Στείλε μας μήνυμα</a></div>
-        </div>
-      </div>
-
-      <div class="contact" id="tContact">
-        <p>Έχεις απορία για την παραγγελία σου;</p>
-        <a class="btn ghost" href="https://www.instagram.com/thilikon.gr/" target="_blank" rel="noopener">Στείλε μας DM στο Instagram</a>
-      </div>
+  </div>
+  <div class="hero-visual fade-up">
+    <div class="img-frame">
+      <video autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover">
+        <source src="https://i.imgur.com/obNi4Jp.mp4" type="video/mp4">
+      </video>
+      <div class="hero-badge">✦ Anasa Collection</div>
     </div>
+  </div>
+</section>
 
-    <div id="trackError" class="hidden">
-      <div class="card center">
-        <p class="eyebrow">Ωχ</p>
-        <h1 class="serif" style="font-size:28px;font-weight:500;margin:12px 0 6px">Δεν βρέθηκε παραγγελία</h1>
-        <p style="color:var(--ink-soft);font-size:14px;margin-bottom:20px">Ο κωδικός μάλλον δεν είναι σωστός. Έλεγξε το link ή στείλε μας ένα μήνυμα.</p>
-        <a class="btn ghost" href="https://www.instagram.com/thilikon.gr/" target="_blank" rel="noopener">Επικοινωνία</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ ADMIN ============ -->
-  <section id="view-admin" class="hidden">
-
-    <!-- login -->
-    <div id="adminLogin" class="card">
-      <p class="eyebrow center">Διαχείριση</p>
-      <h1 class="serif center" style="font-size:28px;font-weight:500;margin:10px 0 20px">Σύνδεση</h1>
-      <label class="fld"><span>Email</span><input id="loginEmail" type="email" autocomplete="username"></label>
-      <label class="fld"><span>Κωδικός</span><input id="loginPass" type="password" autocomplete="current-password"></label>
-      <p id="loginMsg" class="msg err hidden"></p>
-      <button class="btn solid" style="width:100%" onclick="adminLogin()">Σύνδεση</button>
-    </div>
-
-    <!-- panel -->
-    <div id="adminPanel" class="hidden">
-      <div class="admin-bar">
-        <span class="e">Παραγγελίες</span>
-        <div style="display:flex;gap:8px">
-          <button class="btn solid sm" onclick="openOrderModal()">+ Νέα</button>
-          <button class="btn ghost sm" onclick="adminLogout()">Έξοδος</button>
-        </div>
-      </div>
-      <div class="stats open" id="statsBox">
-        <div class="stats-h" onclick="document.getElementById('statsBox').classList.toggle('open')">
-          <span class="e">📊 Στατιστικά</span>
-          <span class="chev">▾</span>
-        </div>
-        <div class="stats-body" id="statsBody"></div>
-      </div>
-      <input id="search" placeholder="Αναζήτηση (όνομα, προϊόν, κωδικός…)" oninput="renderOrders()" style="margin-bottom:14px">
-      <div id="adminMsg" class="msg ok hidden"></div>
-      <div id="ordersList"><div class="spinner"></div></div>
-    </div>
-  </section>
-
-</main>
-
-<footer>
-  <img src="https://i.imgur.com/TbSGZu5.png" alt="THILIKON">
-  <div class="fl">Handcrafted with love</div>
-</footer>
-
-<!-- ============ NOTIFY MODAL (admin) ============ -->
-<div id="notifyModal" class="overlay hidden">
-  <div class="modal">
-    <div class="mh">
-      <h2>📣 Ειδοποίηση πελάτη</h2>
-      <button class="x" onclick="closeNotify()">✕</button>
-    </div>
-    <p style="font-size:12.5px;color:var(--muted);margin:0 0 10px">Διάλεξε τι ενημέρωση στέλνεις — φτιάχνεται έτοιμο μήνυμα, εσύ το στέλνεις. Δωρεάν, χωρίς υπηρεσία.</p>
-    <label class="fld"><span>Τι ενημέρωση;</span><select id="notifyType" onchange="refreshNotifyMsg()"></select></label>
-    <label class="fld"><span>Μήνυμα (μπορείς να το αλλάξεις)</span><textarea id="notifyMsg" style="min-height:150px"></textarea></label>
-    <div class="notify-btns">
-      <button class="btn solid" id="nbWa" onclick="sendVia('wa')">🟢 WhatsApp</button>
-      <button class="btn ghost" id="nbViber" onclick="sendVia('viber')">🟣 Viber</button>
-      <button class="btn ghost" id="nbEmail" onclick="sendVia('email')">✉️ Email</button>
-      <button class="btn ghost" onclick="sendVia('copy')">📋 Αντιγραφή</button>
-    </div>
-    <p id="notifyHint" class="hidden" style="font-size:12px;color:var(--muted);margin-top:10px"></p>
+<div class="marquee-bar">
+  <div class="marquee-track">
+    <span class="marquee-item">Handcrafted with Love<span class="marquee-dot"></span></span>
+    <span class="marquee-item">Custom Orders Available<span class="marquee-dot"></span></span>
+    <span class="marquee-item">Collection Anasa<span class="marquee-dot"></span></span>
+    <span class="marquee-item">Delivered within 20 days<span class="marquee-dot"></span></span>
+    <span class="marquee-item">Minimal &amp; Timeless<span class="marquee-dot"></span></span>
+    <span class="marquee-item">Handcrafted with Love<span class="marquee-dot"></span></span>
+    <span class="marquee-item">Custom Orders Available<span class="marquee-dot"></span></span>
+    <span class="marquee-item">Collection Anasa<span class="marquee-dot"></span></span>
+    <span class="marquee-item">Delivered within 20 days<span class="marquee-dot"></span></span>
+    <span class="marquee-item">Minimal &amp; Timeless<span class="marquee-dot"></span></span>
   </div>
 </div>
 
-<!-- ============ ORDER MODAL (admin) ============ -->
-<div id="orderModal" class="overlay hidden">
-  <div class="modal">
-    <div class="mh">
-      <h2 id="modalTitle">Νέα παραγγελία</h2>
-      <button class="x" onclick="closeOrderModal()">✕</button>
-    </div>
-
-    <div id="fbReadout" class="fb-readout hidden"></div>
-
-    <div style="display:flex;gap:10px">
-      <label class="fld" style="flex:1"><span>Όνομα πελάτη *</span><input id="fName"></label>
-      <label class="fld" style="flex:1"><span>Αρ. παραγγελίας</span><div id="fOrderNoView" class="ro-field">αυτόματο</div></label>
-    </div>
-    <div style="display:flex;gap:10px">
-      <label class="fld" style="flex:1"><span>Τηλέφωνο (για WhatsApp/Viber)</span><input id="fPhone" placeholder="π.χ. 6971234567"></label>
-      <label class="fld" style="flex:1"><span>Email (προαιρετικό)</span><input id="fEmail" placeholder="π.χ. maria@email.com"></label>
-    </div>
-
-    <div style="display:flex;justify-content:space-between;align-items:center;margin:4px 0 8px">
-      <span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)">Προϊόντα</span>
-      <button class="btn ghost sm" onclick="addItemRow()">+ Προσθήκη προϊόντος</button>
-    </div>
-    <div id="itemsEditor"></div>
-
-    <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:14px 0 8px">Τρόπος παράδοσης</p>
-    <div class="stage-picker" id="methodPicker" style="margin-bottom:16px">
-      <button data-m="shipping" onclick="pickMethod('shipping')"><span class="n">📦</span>Courier</button>
-      <button data-m="pickup" onclick="pickMethod('pickup')"><span class="n">🤝</span>Διά ζώσης</button>
-    </div>
-
-    <div id="courierFields">
-      <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:2px 0 8px">Αποστολή <span style="text-transform:none;letter-spacing:0">(κοινό tracking για όσα προϊόντα φεύγουν μαζί)</span></p>
-      <div style="display:flex;gap:10px">
-        <label class="fld" style="flex:1"><span>Courier</span><input id="fCourier" placeholder="BoxNow"></label>
-        <label class="fld" style="flex:1"><span>Αρ. αποστολής</span><input id="fTrackNo" placeholder="π.χ. 0001"></label>
-      </div>
-      <label class="fld"><span>Link courier (προαιρετικό)</span><input id="fTrackUrl" placeholder="αυτόματο για BoxNow — άστο κενό"></label>
-    </div>
-
-    <label class="fld"><span>Σημείωση προς πελάτη (όλη η παραγγελία)</span><textarea id="fNote" placeholder="προαιρετικό μήνυμα που θα δει ο πελάτης"></textarea></label>
-
-    <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:6px 0 8px">💶 Οικονομικά <span style="text-transform:none;letter-spacing:0">(ο πελάτης βλέπει τις τιμές & αν εξοφλήθηκε — το κόστος υλικών μένει κρυφό)</span></p>
-    <div style="display:flex;gap:10px">
-      <label class="fld" style="flex:1"><span>Σύνολο € 👁</span><div id="fTotalView" class="ro-field">€0,00</div></label>
-      <label class="fld" style="flex:1"><span>Κόστος υλ. € 🔒</span><input id="fCost" inputmode="decimal" placeholder="0"></label>
-      <label class="fld" style="flex:1"><span>Πληρωμένο € 👁</span><input id="fPaid" inputmode="decimal" placeholder="0"></label>
-    </div>
-    <div id="moneyHint" style="font-size:12.5px;color:var(--ink-soft);margin:-4px 0 10px"></div>
-
-    <p id="modalMsg" class="msg err hidden"></p>
-
-    <div id="modalLinkWrap" class="hidden">
-      <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Link για τον πελάτη</p>
-      <div class="link-box"><code id="modalLink"></code><button class="btn solid sm" onclick="copyLink()">Copy</button></div>
-    </div>
-
-    <div style="display:flex;gap:10px;margin-top:18px">
-      <button class="btn solid" style="flex:1" id="saveBtn" onclick="saveOrder()">Αποθήκευση</button>
-      <button class="btn ghost" onclick="closeOrderModal()">Κλείσιμο</button>
+<section id="collection">
+  <div class="sec-hdr fade-up">
+    <p class="eyebrow eyebrow-center">Anasa Collection</p>
+    <h2 class="sec-title">The Collection</h2>
+    <p class="sec-sub">Choose a category and discover the available colours for each bag.</p>
+  </div>
+  <div class="filter-wrap fade-up">
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="marshmallow">Marshmallow</button>
+      <button class="filter-btn" data-filter="tshirt">T-Shirt Yarn</button>
+      <button class="filter-btn" data-filter="acrylic">Acrylic Beads</button>
+      <button class="filter-btn" data-filter="crystal">Crystal Beads</button>
+      <button class="filter-btn" data-filter="accessories">Accessories</button>
     </div>
   </div>
+  <div class="bags-wrap">
+    <div class="bag-grid" id="bagGrid"></div>
+  </div>
+</section>
+
+<section id="creations" class="creations-section">
+
+  <div class="sec-hdr fade-up" style="padding:0 0 52px">
+    <p class="eyebrow eyebrow-center">Handcrafted for You</p>
+    <h2 class="sec-title">Custom Creations</h2>
+    <p class="sec-sub">Every piece is built to order. Tell us what you want — we'll make it happen.</p>
+  </div>
+
+  <!-- EDITORIAL LAYOUT — all square, 3-col grid -->
+  <div class="custom-editorial fade-up">
+    <div class="ce-item"><img src="https://i.imgur.com/GiCBOv8.jpeg" alt="Custom creation" onclick="openLightbox('https://i.imgur.com/GiCBOv8.jpeg')"></div>
+    <div class="ce-item"><img src="https://i.imgur.com/WTXTQ8g.jpeg" alt="Custom creation" onclick="openLightbox('https://i.imgur.com/WTXTQ8g.jpeg')"></div>
+    <div class="ce-item"><img src="https://i.imgur.com/I7JcRT5.jpeg" alt="Custom creation" onclick="openLightbox('https://i.imgur.com/I7JcRT5.jpeg')"></div>
+    <div class="ce-item"><img src="https://i.imgur.com/cLpTlGs.jpeg" alt="Custom creation" onclick="openLightbox('https://i.imgur.com/cLpTlGs.jpeg')"></div>
+    <div class="ce-item"><img src="https://i.imgur.com/ufVGlVV.jpeg" alt="Custom creation" onclick="openLightbox('https://i.imgur.com/ufVGlVV.jpeg')"></div>
+    <div class="ce-item"><img src="https://i.imgur.com/aIOzlYM.jpeg" alt="Custom creation" onclick="openLightbox('https://i.imgur.com/aIOzlYM.jpeg')"></div>
+  </div>
+
+  <!-- black strip -->
+  <div style="background:var(--black);padding:18px 32px;display:flex;align-items:center;justify-content:center;gap:40px;flex-wrap:wrap;margin-top:52px">
+    <span style="font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.55)">✦ Built to order</span>
+    <span style="font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.55)">✦ Delivered within 20 days</span>
+    <span style="font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.55)">✦ Fully customisable</span>
+  </div>
+
+  <!-- HOW TO CUSTOMIZE -->
+  <div class="how-to-wrap fade-up">
+    <div class="how-to-inner">
+      <p class="eyebrow eyebrow-center">Custom Orders</p>
+      <h2 class="sec-title">How to<br><em>Customize Yours</em></h2>
+      <p class="sec-sub" style="margin-bottom:52px">Build something entirely your own — pick your design, find your shade and leave the rest to us.</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-label">Select Your Design</div>
+          <div class="step-desc">You can find all our available designs in our feed</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-label">Find Your Perfect Shade</div>
+          <div class="step-desc">Explore our color palettes in highlights</div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-label">DM Us</div>
+          <div class="step-desc">We will craft it just for you — delivered within 20 days</div>
+        </div>
+      </div>
+      <a href="https://www.instagram.com/thilikon.gr/" target="_blank" class="btn-primary" style="margin-top:48px;display:inline-block">DM us on Instagram</a>
+    </div>
+  </div>
+</section>
+
+<section id="about" class="about-section">
+  <div class="about-text fade-up">
+    <p class="about-ey">The Anasa Collection</p>
+    <h2 class="about-title">A small<br><em>ANASA</em><br>of creation.</h2>
+    <p class="about-body">Το THILIKON ξεκίνησε σαν μια μικρή ανάγκη για ηρεμία και δημιουργία μέσα στην καθημερινότητά μου. Με τον καιρό έγινε κάτι πολύ περισσότερο — μια πηγή έμπνευσης, χαλάρωσης και μια πραγματική Ανάσα.</p>
+    <p class="about-body">Γι' αυτό και η πρώτη μας συλλογή ονομάστηκε Anasa. Minimal, διαχρονική και δημιουργημένη με αγάπη, για να φοριέται εύκολα από όλες.</p>
+    <p class="about-sign">— Αναστασία, THILIKON</p>
+  </div>
+  <div class="fade-up" style="position:relative;z-index:1;display:flex;align-items:center;justify-content:center">
+    <div style="position:relative;max-width:420px;width:100%">
+      <div class="about-frame">
+        <video autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;opacity:.82">
+          <source src="https://i.imgur.com/gBkRhb8.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="about-pill">✦ Packaged with Love</div>
+    </div>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz" class="quiz-section">
+  <div class="quiz-inner">
+    <p class="quiz-eyebrow">Just for You</p>
+    <h2 class="quiz-title">Find <em>Your</em><br>Perfect Bag</h2>
+    <p class="quiz-subtitle">Answer 3 quick questions and we'll match you with your bag.</p>
+
+    <div class="quiz-progress" id="quizProgress">
+      <div class="quiz-progress-dot active"></div>
+      <div class="quiz-progress-dot"></div>
+      <div class="quiz-progress-dot"></div>
+    </div>
+
+    <div id="quizQuestions">
+      <p class="quiz-q" id="quizQ"></p>
+      <div class="quiz-options" id="quizOptions"></div>
+    </div>
+
+    <div class="quiz-result" id="quizResult">
+      <p class="quiz-result-label">Your perfect match</p>
+      <img id="quizResultImg" src="" alt="" class="quiz-result-img">
+      <div class="quiz-result-name" id="quizResultName"></div>
+      <p class="quiz-result-desc" id="quizResultDesc"></p>
+      <div class="quiz-result-actions">
+        <a href="#collection" class="btn-white" id="quizResultCta">See the collection</a>
+        <button class="btn-ghost" onclick="restartQuiz()">Try again</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-top">
+    <div>
+      <img class="footer-logo" src="https://i.imgur.com/xAANrPo.png" alt="Thilikon">
+      <p class="footer-tagline">Handcrafted bags &amp; accessories, made with love by Anastasia.</p>
+    </div>
+    <div>
+      <p class="footer-col-title">Anasa Collection</p>
+      <ul class="footer-links" id="footerLinks"></ul>
+    </div>
+    <div>
+      <p class="footer-col-title">Thilikon</p>
+      <ul class="footer-links">
+        <li><a href="#about">About Anasa</a></li>
+        <li><a href="#quiz">Find Your Bag</a></li>
+        <li><a href="#creations">Custom Creations</a></li>
+        <li><a href="https://www.instagram.com/thilikon.gr/" target="_blank">Instagram ↗</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 THILIKON. All rights reserved.</span>
+    <div class="footer-ig"><a href="https://www.instagram.com/thilikon.gr/" target="_blank">@thilikón ↗</a></div>
+  </div>
+</footer>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-bag-name" id="modalBagName"></div>
+        <div class="modal-bag-cat" id="modalBagCat"></div>
+      </div>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="modalToggle" style="display:none" class="modal-toggle"></div>
+      <p class="modal-label">Available Colours</p>
+      <div class="modal-colors-grid" id="modalColorsGrid"></div>
+      <div id="modalLifestyle"></div>
+      <p class="modal-note" id="modalNote"></p>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lb-overlay" id="lbOverlay">
+  <button class="lb-close" id="lbClose">✕</button>
+  <img class="lb-img" id="lbImg" src="" alt="">
 </div>
 
 <script>
-/* ============================================================
-   CONFIG
-============================================================ */
-const SUPABASE_URL  = "https://bmdwlckzzpxjjfcvyiui.supabase.co";
-const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtZHdsY2t6enB4ampmY3Z5aXVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MjQyNjgsImV4cCI6MjA5NzIwMDI2OH0.JADjEDrk1Yflimp3ZEzXOpG-IE3_7xyL2jCoG38XNmU";
-const REST = SUPABASE_URL + "/rest/v1";
-const AUTH = SUPABASE_URL + "/auth/v1";
+const CATS={
+  marshmallow:{label:'Marshmallow',desc:'Fluffy yarn with a metallic sheen. 70+ colours.'},
+  tshirt:{label:'T-Shirt Yarn',desc:'Durable cotton yarn. Casual & timeless.'},
+  acrylic:{label:'Acrylic Beads',desc:'Acrylic beads in a pearl finish.'},
+  crystal:{label:'Crystal Beads',desc:'Crystal beads with a glossy sparkle.'},
+  accessories:{label:'Accessories',desc:'Small accessories, big style.'}
+};
 
-// Στάδια ανά ροή (normal/return) και τρόπο παράδοσης (shipping/pickup).
-const STAGES = {
-  normal:{
-    shipping:{
-      1:{title:"Παραγγελία & Παραλαβή Υλικών", dur:"συνήθως 3–7 μέρες"},
-      2:{title:"Δημιουργία Προϊόντος",         dur:"συνήθως 1–7 μέρες"},
-      3:{title:"Συσκευασία & Αποστολή",        dur:"συνήθως ~1 μέρα"},
-      4:{title:"Παραδόθηκε",                   dur:"η παραγγελία ολοκληρώθηκε"}
-    },
-    pickup:{
-      1:{title:"Παραγγελία & Παραλαβή Υλικών", dur:"συνήθως 3–7 μέρες"},
-      2:{title:"Δημιουργία Προϊόντος",         dur:"συνήθως 1–7 μέρες"},
-      3:{title:"Συσκευασία & Έτοιμο για Παραλαβή", dur:"θα συνεννοηθούμε για ραντεβού"},
-      4:{title:"Παραλήφθηκε",                  dur:"η παραγγελία ολοκληρώθηκε"}
-    }
+const MM=[
+  {code:'#01',label:'White',img:'https://i.imgur.com/h9mbVOF.png'},
+  {code:'#02',label:'Black',img:'https://i.imgur.com/AQEmpQg.png'},
+  {code:'#03',label:'Cream',img:'https://i.imgur.com/ruFksKb.png'},
+  {code:'#04',label:'Terracotta',img:'https://i.imgur.com/20utZCN.png'},
+  {code:'#05',label:'Burgundy',img:'https://i.imgur.com/u5qGXO6.png'},
+  {code:'#06',label:'Brown',img:'https://i.imgur.com/Sve64B7.png'},
+  {code:'#07',label:'Light Grey',img:'https://i.imgur.com/hVxgfQO.png'},
+  {code:'#08',label:'Mauve',img:'https://i.imgur.com/V2LvQMe.png'},
+];
+const TS=[
+  {code:'#01',label:'Black',img:'https://i.imgur.com/3OZAPli.png'},
+  {code:'#02',label:'White',img:'https://i.imgur.com/mavfTcb.png'},
+  {code:'#03',label:'Grey',img:'https://i.imgur.com/hnjJV4u.png'},
+  {code:'#04',label:'Cream',img:'https://i.imgur.com/jV45xXB.png'},
+  {code:'#05',label:'Taupe',img:'https://i.imgur.com/U7PKitu.png'},
+  {code:'#06',label:'Dark Brown',img:'https://i.imgur.com/D6Acmb6.png'},
+  {code:'#07',label:'Light Blue',img:'https://i.imgur.com/Ce32b2m.png'},
+  {code:'#08',label:'Blue',img:'https://i.imgur.com/Tsadj5z.png'},
+  {code:'#09',label:'Slate Blue',img:'https://i.imgur.com/ZDDY5nL.png'},
+  {code:'#10',label:'Mint',img:'https://i.imgur.com/Z7q7BNX.png'},
+  {code:'#11',label:'Teal',img:'https://i.imgur.com/vQ6XjYp.png'},
+  {code:'#12',label:'Royal Blue',img:'https://i.imgur.com/PM6B7wi.png'},
+  {code:'#13',label:'Navy',img:'https://i.imgur.com/tJ2pRTJ.png'},
+];
+const AC=[
+  {code:'#01',label:'White',img:'https://i.imgur.com/KP6lYnG.png'},
+  {code:'#02',label:'Black',img:'https://i.imgur.com/Yd5h203.png'},
+  {code:'#03',label:'Red',img:'https://i.imgur.com/QFGm8SO.png'},
+  {code:'#04',label:'Yellow',img:'https://i.imgur.com/1TCwxFU.png'},
+  {code:'#05',label:'Light Blue',img:'https://i.imgur.com/gnIgJDS.png'},
+  {code:'#06',label:'Blue',img:'https://i.imgur.com/mjjNfoq.png'},
+  {code:'#07',label:'Pearl Cream',img:'https://i.imgur.com/p8OGagM.png'},
+  {code:'#08',label:'Pearl White',img:'https://i.imgur.com/8cdH9OE.png'},
+];
+const CR=[
+  {code:'#01',label:'White',img:'https://i.imgur.com/fZiXpX9.png'},
+  {code:'#02',label:'Opal',img:'https://i.imgur.com/14ys499.png'},
+  {code:'#03',label:'Black',img:'https://i.imgur.com/qHUy7wW.png'},
+  {code:'#04',label:'Silver',img:'https://i.imgur.com/9LB0LKF.png'},
+  {code:'#05',label:'Gunmetal',img:'https://i.imgur.com/ufIY8Qt.png'},
+];
+const colorsByCat={marshmallow:MM,tshirt:TS,acrylic:AC,crystal:CR,accessories:AC};
+
+const bags=[
+  {id:'loopi',name:'Loopi',cat:'marshmallow',desc:'Υπάρχουν τσάντες που απλά κρατάς, και υπάρχει η Loopi που θέλεις να την αγγίζεις συνέχεια! Με chunky πλέξη και σύννεφο-soft υφή, μεταμορφώνει ακόμα και το πιο απλό look.',img:'https://i.imgur.com/4H32v0k.png',lifestyle:['https://i.imgur.com/PSjUNoW.jpeg','https://i.imgur.com/8GRo0TW.jpeg','https://i.imgur.com/xkkMykf.jpeg'],note:'Top-handle bag. Dimensions: 30×20cm.'},
+  {id:'hug',name:'Hug',cat:'marshmallow',desc:'Μαλακή, γεμάτη και απίστευτα χαριτωμένη — η Hug είναι η ιδανική συντροφιά για κάθε σου βόλτα. Μια μικρή αγκαλιά που χωράει όλα τα απαραίτητα.',img:'https://i.imgur.com/P8iXkZS.png',lifestyle:['https://i.imgur.com/Ed8Mcn9.jpeg','https://i.imgur.com/RdsPN5z.jpeg','https://i.imgur.com/cUG79YO.jpeg'],note:'Knitted tote. Dimensions: 24×18cm.'},
+  {id:'grace',name:'Grace',cat:'tshirt',desc:'Η Grace δεν ακολουθεί τα trends, τα δημιουργεί. Με τη signature crochet πλέξη της και το επιβλητικό σχήμα της, αναβαθμίζει κάθε outfit από το πρωινό coffee run μέχρι τη βραδινή έξοδο.',img:'https://i.imgur.com/0RWHLZd.png',note:'Tote with short handle. Dimensions: 25×18cm.'},
+  {id:'bella',name:'Bella',cat:'tshirt',desc:'Κομψή, διαχρονική και με τις πιο θηλυκές λεπτομέρειες. Η Bella είναι η αγαπημένη σου "baguette" τσάντα με το ιδανικό μέγεθος για τις βόλτες σου και τα χαρακτηριστικά πλαϊνά δεσίματα.',img:'https://i.imgur.com/w5xTAYJ.png',note:'Shoulder bag with bow closure. Dimensions: 28×18cm.'},
+  {id:'kelly',name:'Kelly',cat:'tshirt',desc:'Minimal, σοφιστικέ και ακαταμάχητα chic. Η Kelly είναι το clutch bag που συνοδεύει από τις business συναντήσεις μέχρι τις πιο ιδιαίτερες βραδινές εξόδους.',img:'https://i.imgur.com/DZp7X0K.png',note:'Clutch bag. Dimensions: 26×18cm.'},
+  {id:'nicole',name:'Nicole',cat:'tshirt',desc:'Με "baguette" σιλουέτα και chunky shoulder strap, η Nicole συνδυάζει retro αισθητική με σύγχρονο design. Φοριέται άνετα στον ώμο και δίνει αμέσως το "effortless cool" vibe.',img:'https://i.imgur.com/oWKEiNp.png',note:'Shoulder bag. Dimensions coming soon.'},
+  {id:'perla',name:'Perla',cat:'acrylic',cats:['acrylic','crystal'],desc:'Υπάρχει κάτι πιο ονειρικό από μια τσάντα γεμάτη πέρλες; Η Perla δίνει το luxury feel που αναζητάς. Διάλεξε γυάλινες ή ακρυλικές χάντρες στην αγαπημένη σου απόχρωση.',img:'https://i.imgur.com/zBxPh48.png',note:'Detachable long strap. Dimensions: 20×12cm.'},
+  {id:'laluna',name:'Laluna',cat:'crystal',cats:['acrylic','crystal'],desc:'Φτιαγμένη από εκατοντάδες κρυστάλλινες χάντρες που αντανακλούν το φως σε κάθε κίνηση — η Laluna είναι η τσάντα που θα σε κάνει πρωταγωνίστρια της βραδιάς.',img:'https://i.imgur.com/bV80dHm.png',note:'Stainless steel rings. Dimensions: 16×14cm.'},
+  {id:'cardholder',name:'Cardholder',cat:'accessories',cats:['acrylic','crystal'],desc:'Γιατί ακόμα και τα essentials σου αξίζουν μια δόση πολυτέλειας. Το beaded cardholder είναι η λεπτομέρεια που αναβαθμίζει την καθημερινότητά σου.',img:'https://i.imgur.com/K2nwZ3v.png',note:'Holds 4-6 cards. Also available with a small wrist strap.'},
+];
+
+// render bags
+const grid=document.getElementById('bagGrid');
+const flinks=document.getElementById('footerLinks');
+bags.forEach((b,i)=>{
+  const card=document.createElement('div');
+  card.className='bag-card fade-up';
+  card.id=`bag-${b.id}`;
+  card.dataset.cat=b.cat;
+  card.dataset.cats=(b.cats||[b.cat]).join(',');
+  card.style.transitionDelay=(i%3*.08)+'s';
+  card.innerHTML=`<div class="bag-img-wrap"><img src="${b.img}" alt="${b.name}" loading="lazy" onerror="this.parentElement.style.background='#e8e4de';this.style.display='none'"><div class="bag-overlay"></div></div><div class="bag-info"><span class="bag-cat-tag">${CATS[b.cat].label}</span><h3 class="bag-name">${b.name}</h3><p class="bag-desc">${b.desc}</p><p class="bag-ooakline">Delivered within 20 days</p><span class="bag-see">See colours</span></div>`;
+  card.addEventListener('click',()=>openModal(b));
+  grid.appendChild(card);
+  flinks.innerHTML+=`<li><a href="#collection" onclick="event.preventDefault();scrollToBag('${b.id}')">${b.name}</a></li>`;
+});
+
+function scrollToBag(id) {
+  const card = document.getElementById('bag-'+id);
+  if (!card) return;
+  // reset filter to all so the card is visible
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.filter-btn[data-filter="all"]').classList.add('active');
+  document.querySelectorAll('.bag-card').forEach(c=>c.classList.remove('hidden'));
+  // scroll to card then open modal
+  card.scrollIntoView({behavior:'smooth', block:'center'});
+  const bag = bags.find(b=>b.id===id);
+  setTimeout(()=>openModal(bag), 600);
+}
+
+// filter
+document.querySelectorAll('.filter-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const f=btn.dataset.filter;
+    document.querySelectorAll('.bag-card').forEach(c=>{
+      const cats=c.dataset.cats.split(',');
+      c.classList.toggle('hidden', f!=='all' && !cats.includes(f));
+    });
+  });
+});
+
+// modal
+const overlay=document.getElementById('modalOverlay');
+
+function renderModalColors(catKey) {
+  const colors = colorsByCat[catKey] || [];
+  document.getElementById('modalColorsGrid').innerHTML = colors.map(c=>`
+    <div class="modal-color-item">
+      <div class="modal-color-swatch" style="${c.img?'':'background:'+c.hex}">
+        ${c.img?`<img src="${c.img}" alt="${c.label}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:''}
+      </div>
+      <span class="modal-color-code">${c.code}</span>
+      <span class="modal-color-name">${c.label}</span>
+    </div>`).join('');
+  // update toggle active state
+  document.querySelectorAll('.modal-toggle-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.cat === catKey);
+  });
+}
+
+function openModal(b){
+  document.getElementById('modalBagName').textContent=b.name;
+
+  // toggle — show only if multiple material categories
+  const toggleEl = document.getElementById('modalToggle');
+  if (b.cats && b.cats.length > 1) {
+    toggleEl.style.display = 'flex';
+    toggleEl.innerHTML = b.cats.map(c =>
+      `<button class="modal-toggle-btn${c===b.cat?' active':''}" data-cat="${c}" onclick="renderModalColors('${c}')">${CATS[c].label}</button>`
+    ).join('');
+    document.getElementById('modalBagCat').textContent = 'Available in multiple materials';
+  } else {
+    toggleEl.style.display = 'none';
+    document.getElementById('modalBagCat').textContent = CATS[b.cat].label+' — '+CATS[b.cat].desc;
+  }
+
+  renderModalColors(b.cat);
+
+  // lifestyle gallery
+  const lifestyleHtml = b.lifestyle && b.lifestyle.length ? `
+    <p class="modal-label" style="margin-top:24px">Styled Looks</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:24px">
+      ${b.lifestyle.map(src=>{
+        const escaped = src.replace(/'/g,"\\'");
+        return `<div style="aspect-ratio:1;overflow:hidden;border-radius:4px;background:var(--gl);cursor:zoom-in" onclick="openLightbox('${escaped}')"><img src="${src}" style="width:100%;height:100%;object-fit:cover" loading="lazy"></div>`;
+      }).join('')}
+    </div>` : '';
+  document.getElementById('modalLifestyle').innerHTML = lifestyleHtml;
+  document.getElementById('modalNote').innerHTML=`<strong>Note:</strong> ${b.note}<br><br>To place an order, <a href="https://www.instagram.com/thilikon.gr/" target="_blank" style="color:var(--black);font-weight:500"><strong>DM us on Instagram</strong></a> with the model name and colour code.`;
+  overlay.classList.add('open');document.body.style.overflow='hidden';
+}
+function closeModal(){overlay.classList.remove('open');document.body.style.overflow='';}
+document.getElementById('modalClose').addEventListener('click',closeModal);
+overlay.addEventListener('click',e=>{if(e.target===overlay)closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+// cursor
+const cur=document.getElementById('cursor'),ring=document.getElementById('cursorRing');
+let rx=0,ry=0,mx=window.innerWidth/2,my=window.innerHeight/2;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
+(function anim(){rx+=(mx-rx)*.14;ry+=(my-ry)*.14;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(anim)})();
+document.querySelectorAll('a,button,.bag-card,.filter-btn').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.style.width='5px';cur.style.height='5px';ring.style.width='52px';ring.style.height='52px';});
+  el.addEventListener('mouseleave',()=>{cur.style.width='10px';cur.style.height='10px';ring.style.width='36px';ring.style.height='36px';});
+});
+
+// cursor colour — white on dark sections
+function updateCursorColor(){
+  const els=document.elementsFromPoint(mx,my);
+  const onDark=els.some(el=>el.closest('.about-section,.marquee-bar,footer,.how-to-wrap'));
+  const color=onDark?'#ffffff':'#0a0a0a';
+  cur.style.background=color;
+  ring.style.borderColor=color;
+}
+document.addEventListener('mousemove',updateCursorColor);
+
+// ============================================================
+// QUIZ
+// ============================================================
+const questions = [
+  {
+    q: "How would you describe your daily vibe?",
+    opts: [
+      { icon: '🌸', text: 'Soft & cosy — I love touchable, cloud-like textures', tags: {loopi:3, hug:3, bella:1} },
+      { icon: '🎀', text: 'Feminine & elegant — details and polish matter to me',  tags: {bella:3, perla:2, kelly:2} },
+      { icon: '🖤', text: 'Bold & structured — clean lines, strong silhouette',    tags: {grace:3, kelly:2, nicole:2} },
+      { icon: '✨', text: 'Glamorous — I want to shine and be noticed',            tags: {laluna:3, perla:2, cardholder:1} },
+    ]
   },
-  return:{
-    shipping:{
-      1:{title:"Αναμονή Επιστροφής Προϊόντος", dur:"περιμένουμε να λάβουμε πίσω το προϊόν"},
-      2:{title:"Παραλαβή Επιστροφής",          dur:"λάβαμε το προϊόν για επανακατασκευή"},
-      3:{title:"Παραλαβή Υλικών",              dur:"αναμονή υλικών από προμηθευτή"},
-      4:{title:"Εκ Νέου Δημιουργία",           dur:"φτιάχνουμε ξανά τη δημιουργία σου"},
-      5:{title:"Συσκευασία & Αποστολή",        dur:"συνήθως ~1 μέρα"},
-      6:{title:"Παραδόθηκε",                   dur:"η παραγγελία ολοκληρώθηκε"}
-    },
-    pickup:{
-      1:{title:"Αναμονή Επιστροφής Προϊόντος", dur:"θα συνεννοηθούμε για την επιστροφή"},
-      2:{title:"Παραλαβή Επιστροφής",          dur:"λάβαμε το προϊόν για επανακατασκευή"},
-      3:{title:"Παραλαβή Υλικών",              dur:"αναμονή υλικών από προμηθευτή"},
-      4:{title:"Εκ Νέου Δημιουργία",           dur:"φτιάχνουμε ξανά τη δημιουργία σου"},
-      5:{title:"Συσκευασία & Έτοιμο για Παραλαβή", dur:"θα συνεννοηθούμε για ραντεβού"},
-      6:{title:"Παραλήφθηκε",                  dur:"η παραγγελία ολοκληρώθηκε"}
-    }
+  {
+    q: "What's a typical day for you?",
+    opts: [
+      { icon: '☕', text: 'Casual outings — coffee, errands, everyday life',    tags: {loopi:3, hug:2, bella:2} },
+      { icon: '💼', text: 'On the go — meetings, work, busy schedule',          tags: {grace:3, nicole:2, kelly:2} },
+      { icon: '🥂', text: 'Special occasions — dinners out, evenings, events',  tags: {laluna:3, perla:2, cardholder:2} },
+      { icon: '🌀', text: 'Mixed — I need a bag that handles everything',        tags: {grace:2, hug:3, nicole:2} },
+    ]
+  },
+  {
+    q: "How much do you carry?",
+    opts: [
+      { icon: '🪭', text: 'Just cards & phone — the bare minimum',             tags: {cardholder:3, laluna:2, kelly:1} },
+      { icon: '👛', text: 'Wallet, phone, keys, a bit of makeup',              tags: {perla:2, bella:2, loopi:2, kelly:2} },
+      { icon: '🎒', text: 'Quite a lot — I always seem to need everything',    tags: {grace:3, hug:3, nicole:2} },
+      { icon: '🌙', text: 'Almost nothing — it\'s evening, I travel light',    tags: {laluna:3, perla:2, cardholder:2} },
+    ]
   }
-};
-function flowOf(o){ return (o==="return"||(o&&o.flow==="return"))?"return":"normal"; }
-function stagesFor(flow, method){
-  return STAGES[flow==="return"?"return":"normal"][method==="pickup"?"pickup":"shipping"];
-}
-function stageCount(flow){ return flow==="return"?6:4; }
-// φάση για στατιστικά (λειτουργεί και για κανονική και για επιστροφή)
-function phaseIndex(o){
-  const flow=flowOf(o); const N=stageCount(flow);
-  const s=Math.min(Math.max(o.stage||1,1),N);
-  if(s>=N) return 3;                       // Ολοκληρωμένες
-  if(flow==="return") return s>=5?2 : (s===4?1:0);
-  return s===1?0 : (s===2?1:2);
-}
+];
 
-// ---- items helpers (multi-product) ----
-let _iid = 0;
-function newItemId(){ return "i" + (Date.now().toString(36)) + (_iid++); }
-function getItems(o){
-  if(Array.isArray(o.items) && o.items.length) return o.items;
-  // fallback σε παλιό μοντέλο (1 προϊόν)
-  return [{ id:"i1", name:o.product_name||"Προϊόν", details:o.product_details||null,
-            stage:o.stage||1, flow:o.flow==="return"?"return":"normal", note:null }];
-}
-function itemFlow(it){ return it.flow==="return"?"return":"normal"; }
-function itemN(it){ return stageCount(itemFlow(it)); }
-function itemStage(it){ return Math.min(Math.max(it.stage||1,1), itemN(it)); }
-function itemDone(it){ return itemStage(it) >= itemN(it); }
-function allDelivered(o){ return getItems(o).every(itemDone); }
-function phaseIndexItem(it){
-  const flow=itemFlow(it), N=itemN(it), s=itemStage(it);
-  if(s>=N) return 3;
-  if(flow==="return") return s>=5?2:(s===4?1:0);
-  return s===1?0:(s===2?1:2);
-}
-// σύντομες ετικέτες για τον stage picker του admin
-function shortLabels(flow, method){
-  const pk = method==="pickup";
-  if(flow==="return") return ["Αναμονή","Παρέλαβα","Δημιουργία", pk?"Έτοιμο":"Αποστολή", pk?"Παραλήφθηκε":"Παραδόθηκε"];
-  return ["Υλικά","Δημιουργία", pk?"Έτοιμο":"Αποστολή", pk?"Παραλήφθηκε":"Παραδόθηκε"];
-}
-
-// BoxNow tracking link builder
-function boxnowUrl(num){ return num ? ("https://boxnow.gr/?track=" + encodeURIComponent(num)) : ""; }
-
-// money helpers (Greek decimals: δέχεται κόμμα ή τελεία)
-function parseMoney(v){
-  if(v===null||v===undefined) return null;
-  const s = String(v).trim().replace(/€/g,"").replace(",",".").replace(/\s/g,"");
-  if(s==="") return null;
-  const n = parseFloat(s);
-  return isNaN(n) ? null : Math.round(n*100)/100;
-}
-function fmtMoney(n){
-  if(n===null||n===undefined||isNaN(n)) return "—";
-  return "€" + Number(n).toLocaleString("el-GR",{minimumFractionDigits:2,maximumFractionDigits:2});
-}
-function itemsTotal(){
-  let sum=0, any=false;
-  document.querySelectorAll("#itemsEditor .ie-price").forEach(inp=>{
-    const v=parseMoney(inp.value); if(v!=null){ sum+=v; any=true; }
-  });
-  return any ? Math.round(sum*100)/100 : null;
-}
-function updateMoneyHint(){
-  const price=itemsTotal();
-  const cost=parseMoney(document.getElementById("fCost").value);
-  const paid=parseMoney(document.getElementById("fPaid").value);
-  document.getElementById("fTotalView").textContent = fmtMoney(price!=null?price:0);
-  const bits=[];
-  if(price!=null && paid!=null){
-    const rem=Math.round((price-paid)*100)/100;
-    bits.push(rem>0?`Υπόλοιπο: ${fmtMoney(rem)}`:(rem<0?`Ρέστα: ${fmtMoney(-rem)}`:"Εξοφλημένο ✓"));
-  }
-  if(price!=null && cost!=null) bits.push(`Κέρδος: ${fmtMoney(Math.round((price-cost)*100)/100)}`);
-  document.getElementById("moneyHint").textContent = bits.join("   ·   ");
-}
-
-/* small storage helper (persists across sessions; no crash if blocked) */
-const store = {
-  get(k){try{return localStorage.getItem(k)}catch(e){return null}},
-  set(k,v){try{localStorage.setItem(k,v)}catch(e){}},
-  del(k){try{localStorage.removeItem(k)}catch(e){}}
+const bagResults = {
+  loopi:      { desc: 'You need something that matches your energy — soft, cloud-like and impossible not to touch. The Loopi\'s chunky marshmallow texture turns even the simplest outfit into a Pinterest moment. 30×20cm.' },
+  hug:        { desc: 'You\'re the kind of person who wants their bag to feel as good as it looks. The Hug is round, soft and full — the perfect everyday companion that fits all your essentials with a warm touch. 24×18cm.' },
+  grace:      { desc: 'You\'re structured, confident and always on the move. The Grace\'s signature crochet silhouette goes from your morning coffee run straight to an evening out without missing a beat. 25×18cm.' },
+  bella:      { desc: 'Feminine, effortless and full of character. The Bella\'s baguette shape and signature side bows make it the piece you reach for without thinking — and never want to put down. 28×18cm.' },
+  kelly:      { desc: 'Minimal, sophisticated and quietly striking. The Kelly is the clutch that takes you from business meetings to the most special evenings — no effort required. 26×18cm.' },
+  nicole:     { desc: 'Retro silhouette, modern attitude. The Nicole\'s chunky shoulder strap and baguette shape give you that effortless cool vibe from morning to night. Made to be worn, made to be noticed.' },
+  perla:      { desc: 'There\'s nothing more dreamy than a bag full of pearls. The Perla brings the luxury feel you\'ve been looking for — choose acrylic or crystal beads in any shade you love. 20×12cm.' },
+  laluna:     { desc: 'You\'re the protagonist of the evening. Hundreds of crystal beads catching every light with every move — the Laluna is the bag that makes the night yours. 16×14cm.' },
+  cardholder: { desc: 'You believe in the power of the small statement. The beaded cardholder is the luxurious detail that upgrades your everyday — because even your essentials deserve a touch of glamour.' },
 };
 
-let adminToken = store.get("th_admin_at") || null;
-let ordersCache = [];
-let statsYear = new Date().getFullYear();
-let editingId = null;
-let pickedStage = 1;
-let pickedMethod = "shipping";
-let pickedFlow = "normal";
+let quizAnswers = [];
+let currentQ = 0;
 
-/* ============================================================
-   ROUTER
-============================================================ */
-function show(id){
-  ["view-landing","view-track","view-admin"].forEach(v=>{
-    document.getElementById(v).classList.toggle("hidden", v!==id);
+function renderQuestion() {
+  const q = questions[currentQ];
+  const qEl = document.getElementById('quizQ');
+  const optsEl = document.getElementById('quizOptions');
+  qEl.style.opacity = '0';
+  optsEl.style.opacity = '0';
+  setTimeout(() => {
+    qEl.textContent = q.q;
+    optsEl.innerHTML = q.opts.map((o,i) =>
+      `<button class="quiz-opt" onclick="selectOpt(${i})">
+        <span class="quiz-opt-icon">${o.icon}</span>${o.text}
+      </button>`
+    ).join('');
+    qEl.style.transition = 'opacity .35s';
+    optsEl.style.transition = 'opacity .35s';
+    qEl.style.opacity = '1';
+    optsEl.style.opacity = '1';
+  }, 200);
+  document.querySelectorAll('.quiz-progress-dot').forEach((d,i) => {
+    d.classList.toggle('active', i === currentQ);
+    d.classList.toggle('done', i < currentQ);
   });
 }
-function route(){
-  const params = new URLSearchParams(location.search);
-  const t = params.get("t");
-  if(location.hash === "#admin"){ openAdmin(); return; }
-  if(t){ show("view-track"); loadTracking(t); return; }
-  show("view-landing");
-}
-window.addEventListener("hashchange", route);
 
-/* ============================================================
-   LANDING
-============================================================ */
-function extractCode(raw){
-  raw = (raw||"").trim();
-  // αν έβαλε ολόκληρο link, βγάλε το ?t=...
-  const m = raw.match(/[?&]t=([^&\s#]+)/i) || raw.match(/^t=([^&\s#]+)/i);
-  if(m) { try { return decodeURIComponent(m[1]); } catch(e){ return m[1]; } }
-  return raw;
-}
-function goTrack(){
-  const code = extractCode(document.getElementById("codeInput").value);
-  const err = document.getElementById("landErr");
-  if(!code){ err.textContent="Βάλε τον κωδικό ή τον αριθμό παραγγελίας σου."; err.classList.remove("hidden"); return; }
-  location.search = "?t=" + encodeURIComponent(code);
-}
-document.getElementById("codeInput")?.addEventListener("keydown",e=>{ if(e.key==="Enter") goTrack(); });
-
-/* ============================================================
-   TRACKING (public, via RPC)
-============================================================ */
-async function loadTracking(token){
-  try{
-    const res = await fetch(REST + "/rpc/lookup_order", {
-      method:"POST",
-      headers:{ "apikey":SUPABASE_ANON, "Authorization":"Bearer "+SUPABASE_ANON, "Content-Type":"application/json" },
-      body: JSON.stringify({ p_code: token })
-    });
-    const rows = await res.json();
-    const o = Array.isArray(rows) ? rows[0] : null;
-    document.getElementById("trackLoading").classList.add("hidden");
-    if(!o){ document.getElementById("trackError").classList.remove("hidden"); return; }
-    renderTracking(o);
-  }catch(e){
-    document.getElementById("trackLoading").classList.add("hidden");
-    document.getElementById("trackError").classList.remove("hidden");
-  }
-}
-
-function fmtDate(iso){
-  if(!iso) return "";
-  const d = new Date(iso);
-  return d.toLocaleDateString("el-GR",{day:"numeric",month:"long",year:"numeric"}) +
-         " · " + d.toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit"});
-}
-
-function renderTracking(o){
-  currentToken = o.track_token || new URLSearchParams(location.search).get("t");
-  document.getElementById("trackContent").classList.remove("hidden");
-
-  const items = getItems(o);
-  const method = o.delivery_method === "pickup" ? "pickup" : "shipping";
-  const everyDone = items.every(itemDone);
-  const everyReady = items.every(it => itemStage(it) >= itemN(it)-1); // όλα έτοιμα για αποστολή/παραλαβή
-  const doneCount = items.filter(itemDone).length;
-  const retCount = items.filter(it=>itemFlow(it)==="return" && !itemDone(it)).length;
-
-  // header
-  document.getElementById("tOrderNo").textContent = o.order_number ? ("Παραγγελία " + o.order_number) : "Παραγγελία";
-  document.getElementById("tHello").textContent = o.customer_name ? ("Γεια σου " + o.customer_name + " 👋") : "Η παραγγελία σου";
-
-  // σύνοψη κατάστασης
-  let summary;
-  if(everyDone) summary = items.length>1 ? "Όλα τα προϊόντα σου ολοκληρώθηκαν 🤍" : "Η παραγγελία σου ολοκληρώθηκε 🤍";
-  else if(everyReady) summary = method==="pickup" ? "Η παραγγελία σου είναι έτοιμη για παραλαβή ✨" : "Η παραγγελία σου ετοιμάζεται για αποστολή ✨";
-  else if(doneCount>0 && items.length>1) summary = `${doneCount} από ${items.length} προϊόντα ολοκληρώθηκαν · η υπόλοιπη παραγγελία είναι σε εξέλιξη`;
-  else summary = "Η παραγγελία σου είναι σε εξέλιξη";
-  if(retCount>0) summary += ` <span class="pill">♻ ${retCount} σε επανακατασκευή</span>`;
-  document.getElementById("tSummary").innerHTML = summary;
-
-  // meta tags
-  const meta = document.getElementById("tMeta"); meta.innerHTML="";
-  const addTag=(txt,cls)=>{ const s=document.createElement("span"); s.className="tag"+(cls?(" "+cls):""); s.textContent=txt; meta.appendChild(s); };
-  addTag(items.length>1 ? (items.length+" προϊόντα") : "1 προϊόν");
-  if(o.created_at) addTag("Καταχωρήθηκε " + new Date(o.created_at).toLocaleDateString("el-GR"));
-
-  // per-item cards
-  document.getElementById("tItems").innerHTML = items.map(it=>renderItemCard(it, method, items.length>1)).join("");
-
-  // τιμή & κατάσταση πληρωμής (χωρίς κόστος υλικών)
-  const pay = document.getElementById("tPay");
-  if(o.price!=null){
-    const price = Number(o.price);
-    const paid  = o.amount_paid!=null ? Number(o.amount_paid) : 0;
-    const rem   = Math.round((price - paid)*100)/100;
-    // badge μόνο όταν υπάρχει υπόλοιπο· αν έχει εξοφληθεί, δεν δείχνουμε badge
-    const status = rem>0 ? `<span class="ps due">Υπόλοιπο ${fmtMoney(rem)}</span>` : "";
-    pay.innerHTML = `<div><div class="pe">Αξία παραγγελίας</div><div class="pv">${fmtMoney(price)}</div></div>${status}`;
-    pay.classList.remove("hidden");
-  } else pay.classList.add("hidden");
-
-  // note (order-level)
-  const nb = document.getElementById("tNoteBox");
-  if(o.note && o.note.trim()){ nb.classList.remove("hidden"); document.getElementById("tNote").textContent = o.note; }
-  else nb.classList.add("hidden");
-
-  // αποστολές: εμφανίζονται μόλις ≥1 προϊόν φτάσει στην αποστολή, με «Αφορά: …»
-  document.getElementById("tShipments").innerHTML = renderShipments(o, items, method);
-
-  document.getElementById("tUpdated").textContent = "Τελευταία ενημέρωση: " + fmtDate(o.updated_at);
-
-  // post-delivery block: ξεκλειδώνει όταν ΟΛΑ τα προϊόντα έχουν παραδοθεί
-  const post = document.getElementById("tPost");
-  const contact = document.getElementById("tContact");
-  const unlocked = everyDone;
-  post.classList.remove("hidden");
-  post.classList.toggle("locked", !unlocked);
-  document.getElementById("postLock").classList.toggle("hidden", unlocked);
-  contact.classList.toggle("hidden", unlocked);
-  setupFeedback(o, unlocked);
-}
-
-function renderItemCard(it, method, showPrice){
-  const flow = itemFlow(it), N = itemN(it), s = itemStage(it), done = itemDone(it);
-  const STG = stagesFor(flow, method);
-  const isReturn = flow==="return";
-
-  // dots + connectors (οριζόντιο "ραφτό" stepper)
-  let dots = "";
-  for(let i=1;i<=N;i++){
-    const st = (i<s) ? "done" : (i===s ? (done?"done":"active") : "pending");
-    dots += `<span class="d ${st}">${st==="done"?"✓":i}</span>`;
-    if(i<N) dots += `<span class="seg ${i<s?'done':''}"></span>`;
-  }
-
-  const badge = done
-    ? `<span class="item-badge done">✓ Ολοκληρώθηκε</span>`
-    : (isReturn ? `<span class="item-badge ret">♻ Επανακατασκευή</span>`
-                : `<span class="item-badge">Σε εξέλιξη</span>`);
-
-  const sub = [];
-  if(it.details) sub.push(`<span>${esc(it.details)}</span>`);
-  if(showPrice && it.price!=null) sub.push(`<span class="iprice">${fmtMoney(Number(it.price))}</span>`);
-  if(isReturn) sub.push(`<span class="rtag">♻ Επιστροφή</span>`);
-
-  return `<div class="item ${done?'is-done':''} ${isReturn?'is-return':''}">
-    <div class="item-h">
-      <div class="item-name serif">${esc(it.name||"Προϊόν")}</div>
-      ${badge}
-    </div>
-    ${sub.length?`<div class="item-sub">${sub.join("")}</div>`:""}
-    <div class="dots">${dots}</div>
-    <div class="item-cur"><span class="lbl">${STG[s].title}</span> <span class="dur">· ${STG[s].dur}</span></div>
-    ${it.note&&it.note.trim()?`<div class="item-note">${esc(it.note)}</div>`:""}
-  </div>`;
-}
-
-// Αποστολές: ομαδοποίηση όσων προϊόντων έφτασαν στην αποστολή, ανά tracking,
-// με ένδειξη «Αφορά: …» ώστε να φαίνεται ποιο πακέτο αφορά το κάθε tracking.
-function renderShipments(o, items, method){
-  const shipped = items.filter(it=> itemStage(it) >= itemN(it)-1);
-  if(!shipped.length) return "";
-  const showScope = items.length > 1;
-  if(method === "pickup"){
-    const names = shipped.map(it=>esc(it.name)).join(", ");
-    const allDone = shipped.every(itemDone);
-    return shipBox("Παραλαβή", allDone ? "Παραλήφθηκε" : "Έτοιμο για παραλαβή — θα συνεννοηθούμε για το πότε & πού.", showScope?names:"", null, null);
-  }
-  // shipping → ομαδοποίηση ανά αριθμό αποστολής (per-item αν υπάρχει, αλλιώς γενικό)
-  const groups = {};
-  shipped.forEach(it=>{
-    const no = (it.trackNo && String(it.trackNo).trim()) || (o.tracking_number||"");
-    const key = no || "__none__";
-    (groups[key] = groups[key] || {no, items:[]}).items.push(it);
-  });
-  const courier = o.courier || "BoxNow";
-  const isBox = /box\s*now/i.test(courier);
-  return Object.values(groups).map(g=>{
-    const names = g.items.map(it=>esc(it.name)).join(", ");
-    if(!g.no) return shipBox("Αποστολή", "Ετοιμάζεται για αποστολή", showScope?names:"", null, null);
-    const val = courier + "  ·  #" + g.no;
-    const url = isBox ? boxnowUrl(g.no) : ((g.no===o.tracking_number && o.tracking_url) ? o.tracking_url : "");
-    return shipBox("Αποστολή", val, showScope?names:"", url, isBox ? "BoxNow — Εντόπισε το δέμα σου" : "Εντόπισε το δέμα σου");
-  }).join("");
-}
-function shipBox(eyebrow, value, scopeNames, url, btnTxt){
-  const btn = url ? `<a class="btn ghost sm" href="${url}" target="_blank" rel="noopener">${btnTxt}</a>` : "";
-  const scope = scopeNames ? `<div class="ship-scope">Αφορά: <b>${scopeNames}</b></div>` : "";
-  return `<div class="ship-box">
-    <div class="si">
-      <div class="e">${eyebrow}</div>
-      <div class="v">${esc(value)}</div>
-      ${scope}
-    </div>
-    ${btn}
-  </div>`;
-}
-
-/* ---- feedback ---- */
-let fbRating = 0;
-let currentToken = null;
-function setupFeedback(o, unlocked){
-  const form = document.getElementById("fbForm");
-  const doneBox = document.getElementById("fbDone");
-  const locked = document.getElementById("fbLocked");
-  if(!unlocked){                 // not ready yet — locked
-    locked.classList.remove("hidden");
-    form.classList.add("hidden");
-    doneBox.classList.add("hidden");
-    return;
-  }
-  locked.classList.add("hidden");
-  if(o.feedback_at){             // already submitted
-    form.classList.add("hidden");
-    doneBox.classList.remove("hidden");
-    return;
-  }
-  form.classList.remove("hidden");
-  doneBox.classList.add("hidden");
-  fbRating = 0;
-  document.getElementById("fbComment").value = "";
-  document.getElementById("fbMsg").classList.add("hidden");
-  paintStars(0);
-  document.querySelectorAll("#fbStars button").forEach(b=>{
-    b.onclick = ()=>{ fbRating = +b.dataset.v; paintStars(fbRating); };
-  });
-}
-function paintStars(n){
-  document.querySelectorAll("#fbStars button").forEach(b=>b.classList.toggle("on", +b.dataset.v <= n));
-}
-async function submitFeedback(){
-  const msg = document.getElementById("fbMsg");
-  msg.classList.add("hidden");
-  if(!fbRating){ msg.textContent="Διάλεξε πόσα αστέρια θα έδινες."; msg.classList.remove("hidden"); return; }
-  const token = currentToken || new URLSearchParams(location.search).get("t");
-  const comment = document.getElementById("fbComment").value.trim();
-  try{
-    const res = await fetch(REST + "/rpc/submit_feedback", {
-      method:"POST",
-      headers:{ "apikey":SUPABASE_ANON, "Authorization":"Bearer "+SUPABASE_ANON, "Content-Type":"application/json" },
-      body: JSON.stringify({ p_token: token, p_rating: fbRating, p_comment: comment })
-    });
-    if(!res.ok) throw new Error();
-    document.getElementById("fbForm").classList.add("hidden");
-    document.getElementById("fbDone").classList.remove("hidden");
-  }catch(e){
-    msg.textContent="Κάτι πήγε στραβά. Δοκίμασε ξανά σε λίγο."; msg.classList.remove("hidden");
-  }
-}
-
-function stepHtml(num,title,dur,state){
-  const icon = state==="done" ? "✓" : num;
-  return `<div class="step ${state}">
-    <div class="dot">${icon}</div>
-    <h3 class="serif">${title}</h3>
-    <div class="dur">${dur}</div>
-  </div>`;
-}
-
-/* ============================================================
-   ADMIN
-============================================================ */
-function openAdmin(){
-  show("view-admin");
-  if(adminToken){ enterPanel(); }
-  else{ document.getElementById("adminLogin").classList.remove("hidden"); document.getElementById("adminPanel").classList.add("hidden"); }
-}
-
-async function adminLogin(){
-  const email = document.getElementById("loginEmail").value.trim();
-  const pass  = document.getElementById("loginPass").value;
-  const msg   = document.getElementById("loginMsg");
-  msg.classList.add("hidden");
-  if(!email||!pass){ msg.textContent="Συμπλήρωσε email και κωδικό."; msg.classList.remove("hidden"); return; }
-  try{
-    const res = await fetch(AUTH + "/token?grant_type=password", {
-      method:"POST",
-      headers:{ "apikey":SUPABASE_ANON, "Content-Type":"application/json" },
-      body: JSON.stringify({ email, password: pass })
-    });
-    const data = await res.json();
-    if(!res.ok || !data.access_token){ throw new Error(data.error_description || data.msg || "Λάθος στοιχεία"); }
-    saveSession(data);
-    document.getElementById("loginPass").value="";
-    enterPanel();
-  }catch(e){
-    msg.textContent = "Αποτυχία σύνδεσης: " + e.message;
-    msg.classList.remove("hidden");
-  }
-}
-
-// Αποθήκευση session (access + refresh token) ώστε να μένει συνδεμένη
-function saveSession(data){
-  adminToken = data.access_token;
-  store.set("th_admin_at", data.access_token);
-  if(data.refresh_token) store.set("th_admin_rt", data.refresh_token);
-  store.set("th_admin_exp", String(Date.now() + ((data.expires_in||3600)*1000)));
-}
-async function refreshSession(){
-  const rt = store.get("th_admin_rt");
-  if(!rt) return false;
-  try{
-    const res = await fetch(AUTH + "/token?grant_type=refresh_token", {
-      method:"POST", headers:{ "apikey":SUPABASE_ANON, "Content-Type":"application/json" },
-      body: JSON.stringify({ refresh_token: rt })
-    });
-    const data = await res.json();
-    if(!res.ok || !data.access_token) return false;
-    saveSession(data); return true;
-  }catch(e){ return false; }
-}
-async function ensureToken(){
-  if(!adminToken) adminToken = store.get("th_admin_at");
-  const exp = parseInt(store.get("th_admin_exp")||"0",10);
-  if(adminToken && exp && Date.now() > exp - 60000){
-    const ok = await refreshSession();
-    if(!ok){ adminLogout(); return false; }
-  }
-  return !!adminToken;
-}
-// Authenticated fetch με auto-refresh σε λήξη/401
-async function authFetch(url, opts){
-  await ensureToken();
-  opts = opts || {};
-  opts.headers = Object.assign({}, opts.headers||{}, authHeaders());
-  let res = await fetch(url, opts);
-  if(res.status===401){
-    const ok = await refreshSession();
-    if(ok){ opts.headers = Object.assign({}, opts.headers, authHeaders()); res = await fetch(url, opts); }
-    else { adminLogout(); }
-  }
-  return res;
-}
-
-function adminLogout(){
-  adminToken=null;
-  store.del("th_admin_at"); store.del("th_admin_rt"); store.del("th_admin_exp");
-  document.getElementById("adminPanel").classList.add("hidden");
-  document.getElementById("adminLogin").classList.remove("hidden");
-}
-
-function authHeaders(){
-  return { "apikey":SUPABASE_ANON, "Authorization":"Bearer "+adminToken, "Content-Type":"application/json" };
-}
-
-async function enterPanel(){
-  document.getElementById("adminLogin").classList.add("hidden");
-  document.getElementById("adminPanel").classList.remove("hidden");
-  await loadOrders();
-}
-
-async function loadOrders(){
-  const list = document.getElementById("ordersList");
-  list.innerHTML='<div class="spinner"></div>';
-  try{
-    const res = await authFetch(REST + "/orders?select=*&order=created_at.desc", {});
-    if(res.status===401){ adminLogout(); return; }
-    ordersCache = await res.json();
-    renderStats();
-    renderOrders();
-  }catch(e){
-    list.innerHTML='<div class="msg err">Σφάλμα φόρτωσης. Δοκίμασε ξανά.</div>';
-  }
-}
-
-function setStatsYear(y){ statsYear = y; renderStats(); }
-
-function renderStats(){
-  const all = ordersCache;
-  const total = all.length;
-  const byStage = [0,0,0,0];   // ΠΡΟΪΟΝΤΑ ανά φάση
-  let ship=0, pickup=0, monthCount=0, ratingSum=0, ratingN=0;
-  let activeOrders=0, doneOrders=0, returnActive=0, returnTotal=0, totalItems=0;
-  // financials
-  let revMonth=0, profitMonth=0, outstanding=0, priceSum=0, priceN=0;
-  const now = new Date(); const ymNow = now.getFullYear()+"-"+now.getMonth();
-  const monthly = {}; // "YYYY-M" -> revenue
-  all.forEach(o=>{
-    const items = getItems(o);
-    totalItems += items.length;
-    items.forEach(it=>{
-      byStage[phaseIndexItem(it)]++;
-      if(itemFlow(it)==="return"){ returnTotal++; if(!itemDone(it)) returnActive++; }
-    });
-    if(allDelivered(o)) doneOrders++; else activeOrders++;
-    if(o.delivery_method==="pickup") pickup++; else ship++;
-    const c = new Date(o.created_at);
-    const ym = c.getFullYear()+"-"+c.getMonth();
-    if(ym===ymNow) monthCount++;
-    if(o.feedback_rating){ ratingSum+=o.feedback_rating; ratingN++; }
-    const price = o.price!=null ? Number(o.price) : null;
-    const cost  = o.cost!=null ? Number(o.cost) : null;
-    const paid  = o.amount_paid!=null ? Number(o.amount_paid) : 0;
-    if(price!=null){
-      priceSum+=price; priceN++;
-      monthly[ym] = (monthly[ym]||0) + price;
-      if(ym===ymNow){ revMonth+=price; if(cost!=null) profitMonth += (price-cost); }
-      const rem = price - paid;
-      if(rem>0) outstanding += rem;
+function selectOpt(idx) {
+  const opts = document.querySelectorAll('.quiz-opt');
+  opts[idx].classList.add('selected');
+  quizAnswers.push(questions[currentQ].opts[idx].tags);
+  setTimeout(() => {
+    currentQ++;
+    if (currentQ < questions.length) {
+      renderQuestion();
+    } else {
+      showResult();
     }
-  });
-  const active = activeOrders;
-  const done = doneOrders;
-  const avg = ratingN ? (ratingSum/ratingN).toFixed(1) : "—";
-  const avgOrder = priceN ? priceSum/priceN : null;
-  const labels = ["Αναμονή / Υλικά","Δημιουργία","Αποστολή / Παραλαβή","Παραδόθηκαν"];
-  const maxStage = Math.max(1, ...byStage);
-
-  const tiles = [
-    {n:total, l:"Σύνολο"},
-    {n:active, l:"Σε εξέλιξη"},
-    {n:done, l:"Ολοκληρωμένες", dark:true},
-    {n:monthCount, l:"Αυτόν τον μήνα"}
-  ].map(t=>`<div class="stat ${t.dark?'dark':''}"><div class="n">${t.n}</div><div class="l">${t.l}</div></div>`).join("");
-
-  const money = [
-    {n:fmtMoney(revMonth), l:"Τζίρος μήνα", dark:true},
-    {n:fmtMoney(profitMonth), l:"Κέρδος μήνα"},
-    {n:fmtMoney(outstanding), l:"Εκκρεμείς εισπράξεις"},
-    {n:avgOrder!=null?fmtMoney(avgOrder):"—", l:"Μέση αξία"}
-  ].map(t=>`<div class="stat ${t.dark?'dark':''}"><div class="n" style="font-size:23px">${t.n}</div><div class="l">${t.l}</div></div>`).join("");
-
-  // ---- Τζίρος ανά μήνα, ανά έτος (με κουμπιά έτους) ----
-  const mNames = ["Ιαν","Φεβ","Μαρ","Απρ","Μάι","Ιουν","Ιουλ","Αυγ","Σεπ","Οκτ","Νοε","Δεκ"];
-  // πρώτη παραγγελία (ξεκινάμε από εκεί — όχι κενοί προηγούμενοι μήνες)
-  let earliest = now;
-  all.forEach(o=>{ const c=new Date(o.created_at); if(c<earliest) earliest=c; });
-  const startYear = earliest.getFullYear(), curYear = now.getFullYear();
-  if(statsYear < startYear) statsYear = startYear;
-  if(statsYear > curYear) statsYear = curYear;
-  const fromM = (statsYear===startYear) ? earliest.getMonth() : 0;
-  const toM   = (statsYear===curYear)   ? now.getMonth()      : 11;
-  const yMonths=[]; let yearTotal=0;
-  for(let mo=fromM; mo<=toM; mo++){ const v=monthly[statsYear+"-"+mo]||0; yearTotal+=v; yMonths.push({label:mNames[mo], val:v}); }
-  const maxRev = Math.max(1, ...yMonths.map(m=>m.val));
-  const yearBtns = [];
-  for(let y=startYear; y<=curYear; y++) yearBtns.push(`<button class="ytab ${y===statsYear?'sel':''}" onclick="setStatsYear(${y})">${y}</button>`);
-  const revBars = yMonths.map(m=>`
-    <div class="sbar">
-      <span class="lbl" style="width:42px">${m.label}</span>
-      <span class="track"><span class="fill" style="width:${Math.round(m.val/maxRev*100)}%"></span></span>
-      <span class="cnt" style="width:74px">${fmtMoney(m.val)}</span>
-    </div>`).join("");
-  const revBlock = `<div class="year-tabs">${yearBtns.join("")}</div>
-    <div class="stage-bars">${revBars}</div>
-    <div class="year-total">Σύνολο ${statsYear}: <b>${fmtMoney(yearTotal)}</b></div>`;
-
-  const bars = byStage.map((c,i)=>`
-    <div class="sbar">
-      <span class="lbl">${labels[i]}</span>
-      <span class="track"><span class="fill" style="width:${Math.round(c/maxStage*100)}%"></span></span>
-      <span class="cnt">${c}</span>
-    </div>`).join("");
-
-  document.getElementById("statsBody").innerHTML = `
-    <div class="stat-grid">${tiles}</div>
-    <div class="stat-row">
-      <span class="stat-pill">⭐ Μ.Ο. αξιολόγησης: <b>${avg}</b>${ratingN?` (${ratingN})`:""}</span>
-      <span class="stat-pill">🧶 Προϊόντα: ${totalItems}</span>
-      ${returnTotal?`<span class="stat-pill" style="background:#efe6da;color:#8a5a1e">♻ Επιστροφές: ${returnTotal} (${Math.round(returnTotal/Math.max(totalItems,1)*100)}%)${returnActive?` · ${returnActive} σε εξέλιξη`:""}</span>`:""}
-      <span class="stat-pill">📦 ${ship}</span>
-      <span class="stat-pill">🤝 ${pickup}</span>
-    </div>
-
-    <div class="stats-sub">💶 Οικονομικά</div>
-    <div class="stat-grid">${money}</div>
-    <div class="stats-sub">Τζίρος ανά μήνα</div>
-    ${revBlock}
-
-    <div class="stats-sub">Προϊόντα ανά φάση</div>
-    <div class="stage-bars">${bars}</div>`;
+  }, 380);
 }
 
-function renderOrders(){
-  const q = (document.getElementById("search").value||"").toLowerCase();
-  const list = document.getElementById("ordersList");
-  const filtered = ordersCache.filter(o=>{
-    const itemNames = getItems(o).map(i=>i.name).join(" ");
-    const hay = [o.customer_name,o.product_name,o.order_number,itemNames].join(" ").toLowerCase();
-    return hay.includes(q);
-  });
-  if(!filtered.length){ list.innerHTML='<p style="text-align:center;color:var(--muted);padding:24px 0;font-size:13px">Καμία παραγγελία ακόμη. Πάτησε «+ Νέα».</p>'; return; }
-  list.innerHTML = filtered.map(o=>{
-    const items = getItems(o);
-    const pickup = o.delivery_method === "pickup";
-    const everyDone = items.every(itemDone);
-    const everyReady = items.every(it=> itemStage(it) >= itemN(it)-1);
-    let orderBadge;
-    if(everyDone) orderBadge = `<span class="r-stage done">${pickup?'Παραλήφθηκε':'Παραδόθηκε'}</span>`;
-    else if(everyReady) orderBadge = `<span class="r-stage ready">${pickup?'Έτοιμη για παραλαβή':'Έτοιμη για αποστολή'}</span>`;
-    else orderBadge = `<span class="r-stage">Σε εξέλιξη</span>`;
-
-    const itemsHtml = items.map(it=>{
-      const flow=itemFlow(it), N=itemN(it), s=itemStage(it), d=itemDone(it);
-      const STG=stagesFor(flow, pickup?"pickup":"shipping");
-      const ret = flow==="return";
-      const statusCls = d?'i-done':(ret?'i-ret':'');
-      return `<div class="oi ${statusCls}">
-        <div class="oi-info">
-          <div class="oi-name">${esc(it.name)}${ret?' <span class="oi-rt">♻</span>':''}</div>
-          <div class="oi-stage">${STG[s].title}${ret?` · επιστροφή ${s}/${N}`:` · ${s}/${N}`}</div>
-          ${it.note?`<div class="oi-note">📝 ${esc(it.note)}</div>`:""}
-        </div>
-        <div class="oi-act">
-          ${!d?`<button class="btn solid sm" title="Επόμενο στάδιο" onclick="advanceItem('${o.id}','${it.id}')">→</button>`:`<span class="oi-ok">✓</span>`}
-          ${!ret?`<button class="btn ghost sm" title="Δήλωση επιστροφής" onclick="declareReturnItem('${o.id}','${it.id}','${esc(it.name)}')">♻</button>`:""}
-        </div>
-      </div>`;
-    }).join("");
-
-    return `<div class="order-row${!everyDone&&items.some(it=>itemFlow(it)==='return')?' is-return':''}">
-      <div class="r-top">
-        <div>
-          <div class="r-name">${esc(o.customer_name)} ${o.order_number?`<span style="color:var(--muted);font-weight:400">· ${esc(o.order_number)}</span>`:""} <span title="${pickup?'Παραλαβή διά ζώσης':'Αποστολή με courier'}" style="opacity:.6">${pickup?'🤝':'📦'}</span></div>
-        </div>
-        ${orderBadge}
-      </div>
-      <div class="order-items">${itemsHtml}</div>
-      ${everyReady && !everyDone && !pickup && !o.tracking_number ? `<div class="r-hint">📦 Όλα έτοιμα — πρόσθεσε courier/tracking από «Επεξεργασία» και προχώρα τα στάδια.</div>` : ""}
-      ${everyReady && !everyDone && pickup ? `<div class="r-hint">🤝 Όλα έτοιμα — κανόνισε παραλαβή με τον πελάτη.</div>` : ""}
-      ${o.feedback_rating?`<div class="r-fb">★ ${o.feedback_rating}/5 αξιολόγηση${o.feedback_comment?` — «${esc(o.feedback_comment)}»`:""}</div>`:""}
-      ${moneyLine(o)}
-      <div class="r-actions">
-        <button class="btn ghost sm" onclick="copyLinkFor('${o.track_token}')">📋 Link</button>
-        <button class="btn ghost sm" onclick="notifyCustomer('${o.id}')">📣 Ειδοποίηση</button>
-        <button class="btn ghost sm" onclick="editOrder('${o.id}')">Επεξεργασία</button>
-        <button class="btn danger sm" onclick="delOrder('${o.id}','${esc(o.customer_name)}')">Διαγραφή</button>
-      </div>
-    </div>`;
-  }).join("");
-}
-
-function esc(s){ return (s||"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-
-function moneyLine(o){
-  if(o.price==null && o.amount_paid==null) return "";
-  const price = o.price!=null ? o.price : null;
-  const paid  = o.amount_paid!=null ? o.amount_paid : 0;
-  let status="";
-  if(price!=null){
-    const rem = Math.round((price-paid)*100)/100;
-    if(rem<=0) status = `<span class="pay-ok">Εξοφλημένο</span>`;
-    else status = `<span class="pay-due">Υπόλοιπο ${fmtMoney(rem)}</span>`;
-  }
-  const priceTxt = price!=null ? fmtMoney(price) : "";
-  return `<div class="r-money">${priceTxt}${priceTxt&&status?" · ":""}${status}</div>`;
-}
-
-function adminFlash(text){
-  const m=document.getElementById("adminMsg"); m.textContent=text; m.classList.remove("hidden");
-  setTimeout(()=>m.classList.add("hidden"),2500);
-}
-
-function linkFor(token){ return location.origin + location.pathname + "?t=" + token; }
-
-async function copyLinkFor(token){
-  try{ await navigator.clipboard.writeText(linkFor(token)); adminFlash("Το link αντιγράφηκε ✓"); }
-  catch(e){ prompt("Αντίγραψε το link:", linkFor(token)); }
-}
-
-/* ---- Ειδοποίηση πελάτη (WhatsApp/Viber/Email — χωρίς υπηρεσία) ---- */
-let notifyCtx = { phone:"", email:"", orderId:null };
-function intlPhone(raw){
-  let d = (raw||"").replace(/[^\d]/g,"");
-  if(!d) return "";
-  if(d.startsWith("00")) d = d.slice(2);
-  if(d.length===10 && (d[0]==="6"||d[0]==="2")) d = "30"+d; // ελληνικός αριθμός
-  return d;
-}
-const _hello = o => o.customer_name ? ("Γεια σου " + o.customer_name + "! 🤍") : "Γεια σου! 🤍";
-const _sig = "\n\n— THILIKON";
-
-// φιλικό μήνυμα ανά στάδιο για ένα συγκεκριμένο προϊόν (τι αλλάζει)
-// tracking lines για όσα προϊόντα είναι σε αποστολή (ομαδοποίηση ανά κωδικό)
-function shippedTrackingLines(o){
-  const method = o.delivery_method==="pickup"?"pickup":"shipping";
-  if(method==="pickup") return "";
-  const shipped = getItems(o).filter(it=> itemStage(it) >= itemN(it)-1);
-  if(!shipped.length) return "";
-  const groups={};
-  shipped.forEach(it=>{ const no=(it.trackNo&&String(it.trackNo).trim())||o.tracking_number; if(!no) return; (groups[no]=groups[no]||[]).push(it.name); });
-  const isBox=/box\s*now/i.test(o.courier||"BoxNow");
-  const lines=Object.keys(groups).map(no=>{
-    const url=isBox?boxnowUrl(no):(o.tracking_url||("#"+no));
-    return "📦 " + groups[no].join(", ") + ": " + url;
-  });
-  return lines.length ? ("\n\n" + lines.join("\n")) : "";
-}
-// Ενιαίο μήνυμα εξέλιξης (ίδια δομή κάθε φορά — δείχνει ότι υπάρχει πρόοδος)
-function buildSummaryMsg(o){
-  const items = getItems(o), method = o.delivery_method==="pickup"?"pickup":"shipping";
-  const lines = items.map(it=> "- " + it.name + ": " + stagesFor(itemFlow(it),method)[itemStage(it)].title + (itemDone(it)?" ✓":"")).join("\n");
-  return _hello(o) +
-    "\n\nΜικρή ενημέρωση για την παραγγελία σου" + (o.order_number?(" "+o.order_number):"") + " — όλα προχωράνε! 🤍\n\n" +
-    lines + shippedTrackingLines(o) +
-    "\n\nΜπορείς να δεις αναλυτικά την πορεία της εδώ:\n" + linkFor(o.track_token) +
-    "\n\nΘα σε ενημερώσουμε ξανά στο επόμενο βήμα." + _sig;
-}
-function buildFeedbackMsg(o){
-  return _hello(o) + "\n\nΗ παραγγελία σου παραδόθηκε και ελπίζουμε να τη λάτρεψες! 🤍\n" +
-         "Θα χαρόμασταν πολύ να μας αφήσεις την αξιολόγησή σου εδώ:\n" + linkFor(o.track_token) +
-         "\n\nΚι αν την ανεβάσεις στα social, κάνε μας tag @thilikon.gr — θα την αναδημοσιεύσουμε με χαρά! 📸" + _sig;
-}
-function notifyMsgFor(o, val){
-  return val==="feedback" ? buildFeedbackMsg(o) : buildSummaryMsg(o);
-}
-function refreshNotifyMsg(){
-  const o = ordersCache.find(x=>x.id===notifyCtx.orderId); if(!o) return;
-  document.getElementById("notifyMsg").value = notifyMsgFor(o, document.getElementById("notifyType").value);
-}
-function notifyCustomer(orderId){
-  const o = ordersCache.find(x=>x.id===orderId); if(!o) return;
-  notifyCtx = { phone: intlPhone(o.customer_phone), email: o.customer_email||"", orderId };
-  const everyDone = getItems(o).every(itemDone);
-
-  const opts=[`<option value="summary">📦 Ενημέρωση εξέλιξης</option>`];
-  if(everyDone) opts.unshift(`<option value="feedback">💬 Ζήτα αξιολόγηση & κοινοποίηση</option>`);
-  const sel = document.getElementById("notifyType");
-  sel.innerHTML = opts.join("");
-  sel.value = everyDone ? "feedback" : "summary";
-  refreshNotifyMsg();
-
-  document.getElementById("nbWa").style.display    = notifyCtx.phone ? "" : "none";
-  document.getElementById("nbViber").style.display = notifyCtx.phone ? "" : "none";
-  document.getElementById("nbEmail").style.display = notifyCtx.email ? "" : "none";
-  const hint = document.getElementById("notifyHint");
-  if(!notifyCtx.phone && !notifyCtx.email){
-    hint.textContent = "Δεν έχεις βάλει τηλέφωνο/email σε αυτή την παραγγελία — πρόσθεσέ τα από «Επεξεργασία». Μπορείς πάντως να αντιγράψεις το μήνυμα.";
-    hint.classList.remove("hidden");
-  } else hint.classList.add("hidden");
-  document.getElementById("notifyModal").classList.remove("hidden");
-}
-function closeNotify(){ document.getElementById("notifyModal").classList.add("hidden"); }
-async function sendVia(how){
-  const msg = document.getElementById("notifyMsg").value;
-  const enc = encodeURIComponent(msg);
-  if(how==="copy"){
-    try{ await navigator.clipboard.writeText(msg); adminFlash("Το μήνυμα αντιγράφηκε ✓"); }
-    catch(e){ prompt("Αντίγραψε το μήνυμα:", msg); }
-    return;
-  }
-  let url="";
-  if(how==="wa")    url = "https://wa.me/" + notifyCtx.phone + "?text=" + enc;
-  if(how==="email") url = "mailto:" + encodeURIComponent(notifyCtx.email) + "?subject=" + encodeURIComponent("Η παραγγελία σου στο THILIKON") + "&body=" + enc;
-  if(how==="viber"){
-    // Viber: άνοιγμα συνομιλίας κατευθείαν με τον αριθμό (το text δεν προ-συμπληρώνεται,
-    // οπότε αντιγράφουμε το μήνυμα για να το επικολλήσεις).
-    try{ await navigator.clipboard.writeText(msg); adminFlash("Το μήνυμα αντιγράφηκε — επικόλλησέ το στη συνομιλία ✓"); }catch(e){}
-    url = "viber://chat?number=" + encodeURIComponent("+" + notifyCtx.phone);
-  }
-  if(url) window.open(url, "_blank");
-}
-
-async function patchItems(orderId, newItems, extra){
-  const body = Object.assign({ items: newItems }, extra||{});
-  const res = await authFetch(REST + "/orders?id=eq."+orderId, {
-    method:"PATCH", headers:{ "Prefer":"return=representation" },
-    body: JSON.stringify(body)
-  });
-  if(!res.ok) throw new Error();
-}
-
-async function advanceItem(orderId, itemId){
-  const o = ordersCache.find(x=>x.id===orderId); if(!o) return;
-  const items = getItems(o).map(it=>({...it}));
-  const it = items.find(x=>x.id===itemId); if(!it) return;
-  const N = itemN(it);
-  if(itemStage(it) >= N) return;
-  it.stage = itemStage(it) + 1;
-  try{ await patchItems(orderId, items); await loadOrders(); adminFlash("Στάδιο ενημερώθηκε ✓"); }
-  catch(e){ adminFlash("Σφάλμα ενημέρωσης."); }
-}
-
-async function declareReturnItem(orderId, itemId, name){
-  if(!confirm("Δήλωση επιστροφής/επανακατασκευής για «"+name+"»;\nΘα ξεκινήσει από «Αναμονή Επιστροφής Προϊόντος».")) return;
-  const o = ordersCache.find(x=>x.id===orderId); if(!o) return;
-  const items = getItems(o).map(it=>({...it}));
-  const it = items.find(x=>x.id===itemId); if(!it) return;
-  it.flow = "return"; it.stage = 1;
-  // η επιστροφή ξεκλειδώνει ξανά το feedback (θα δοθεί μετά τη νέα παράδοση)
-  try{
-    await patchItems(orderId, items, { feedback_rating:null, feedback_comment:null, feedback_at:null });
-    await loadOrders(); adminFlash("Δηλώθηκε επιστροφή ✓");
-  }catch(e){ adminFlash("Σφάλμα ενημέρωσης."); }
-}
-
-async function delOrder(id,name){
-  if(!confirm("Διαγραφή παραγγελίας για «"+name+"»; Δεν αναιρείται.")) return;
-  try{
-    const res = await authFetch(REST + "/orders?id=eq."+id, { method:"DELETE" });
-    if(!res.ok) throw new Error();
-    await loadOrders(); adminFlash("Διαγράφηκε.");
-  }catch(e){ adminFlash("Σφάλμα διαγραφής."); }
-}
-
-/* ---- modal: items editor ---- */
-function fillStageSelect(sel, flow, method, stage){
-  const STG=stagesFor(flow,method); const N=stageCount(flow);
-  sel.innerHTML="";
-  for(let i=1;i<=N;i++){ const op=document.createElement("option"); op.value=i; op.textContent=i+". "+STG[i].title; sel.appendChild(op); }
-  sel.value=Math.min(Math.max(stage||1,1),N);
-}
-function methodLabelsRefresh(){
-  document.querySelectorAll("#itemsEditor .ie-item").forEach(row=>{
-    const flow=row.querySelector(".ie-flow").value;
-    const sel=row.querySelector(".ie-stage");
-    fillStageSelect(sel, flow, pickedMethod, +sel.value||1);
-  });
-}
-function addItemRow(item){
-  item = item || {name:"",details:"",stage:1,flow:"normal",note:""};
-  const wrap=document.getElementById("itemsEditor");
-  const row=document.createElement("div"); row.className="ie-item"; row.dataset.id=item.id||newItemId();
-  row.innerHTML=`
-    <div class="ie-top">
-      <input class="ie-name" placeholder="Προϊόν (π.χ. Laluna — Μαύρο)">
-      <input class="ie-price" inputmode="decimal" placeholder="€ τιμή" style="max-width:90px">
-      <button class="ie-del" title="Αφαίρεση" type="button">✕</button>
-    </div>
-    <input class="ie-details" placeholder="λεπτομέρειες (χρώμα, υλικό…)">
-    <div class="ie-row">
-      <select class="ie-flow"><option value="normal">Κανονική</option><option value="return">♻ Επιστροφή</option></select>
-      <select class="ie-stage"></select>
-    </div>
-    <input class="ie-note" placeholder="σημείωση προϊόντος (π.χ. αναμονή υλικού από προμηθευτή)">
-    <label class="ie-septoggle"><input type="checkbox" class="ie-sepchk"> Στέλνεται χωριστά (δικό του tracking)</label>
-    <input class="ie-track" placeholder="αρ. αποστολής γι' αυτό το προϊόν" style="display:none">`;
-  wrap.appendChild(row);
-  row.querySelector(".ie-name").value=item.name||"";
-  row.querySelector(".ie-price").value=(item.price!=null?item.price:"");
-  row.querySelector(".ie-details").value=item.details||"";
-  row.querySelector(".ie-track").value=item.trackNo||"";
-  row.querySelector(".ie-note").value=item.note||"";
-  row.querySelector(".ie-price").addEventListener("input", updateMoneyHint);
-  // toggle ξεχωριστού tracking
-  const sepChk=row.querySelector(".ie-sepchk"), trackInp=row.querySelector(".ie-track");
-  const syncSep=()=>{ trackInp.style.display = sepChk.checked ? "block" : "none"; if(!sepChk.checked) trackInp.value=""; };
-  sepChk.checked = !!(item.trackNo && String(item.trackNo).trim());
-  syncSep();
-  sepChk.addEventListener("change", syncSep);
-  const flowSel=row.querySelector(".ie-flow"); flowSel.value=item.flow==="return"?"return":"normal";
-  const stageSel=row.querySelector(".ie-stage");
-  fillStageSelect(stageSel, flowSel.value, pickedMethod, item.stage||1);
-  flowSel.addEventListener("change", ()=> fillStageSelect(stageSel, flowSel.value, pickedMethod, +stageSel.value||1));
-  row.querySelector(".ie-del").addEventListener("click", ()=>removeItemRow(row));
-}
-function removeItemRow(row){
-  if(document.querySelectorAll("#itemsEditor .ie-item").length<=1){ adminFlash("Πρέπει να υπάρχει τουλάχιστον ένα προϊόν."); return; }
-  row.remove();
-}
-function buildItemsEditor(items){
-  const wrap=document.getElementById("itemsEditor"); wrap.innerHTML="";
-  (items&&items.length?items:[null]).forEach(it=>addItemRow(it||undefined));
-}
-function collectItems(){
-  const out=[];
-  document.querySelectorAll("#itemsEditor .ie-item").forEach(row=>{
-    const name=row.querySelector(".ie-name").value.trim();
-    if(!name) return;
-    out.push({
-      id: row.dataset.id || newItemId(),
-      name,
-      price: parseMoney(row.querySelector(".ie-price").value),
-      details: row.querySelector(".ie-details").value.trim()||null,
-      flow: row.querySelector(".ie-flow").value==="return"?"return":"normal",
-      stage: +row.querySelector(".ie-stage").value||1,
-      trackNo: row.querySelector(".ie-track").value.trim()||null,
-      note: row.querySelector(".ie-note").value.trim()||null
+function showResult() {
+  // tally weighted scores
+  const scores = {};
+  quizAnswers.forEach(tagObj => {
+    Object.entries(tagObj).forEach(([bag, pts]) => {
+      scores[bag] = (scores[bag] || 0) + pts;
     });
   });
-  return out;
+  const winner = Object.entries(scores).sort((a,b) => b[1]-a[1])[0][0];
+  const bag = bags.find(b => b.id === winner);
+  const extra = bagResults[winner];
+
+  document.getElementById('quizQuestions').style.display = 'none';
+  document.getElementById('quizProgress').style.display = 'none';
+
+  const res = document.getElementById('quizResult');
+  document.getElementById('quizResultImg').src = bag.img;
+  document.getElementById('quizResultImg').alt = bag.name;
+  document.getElementById('quizResultName').textContent = bag.name;
+  document.getElementById('quizResultDesc').textContent = extra.desc;
+  document.getElementById('quizResultCta').href = '#collection';
+  res.style.display = 'block';
+
+  document.querySelectorAll('.quiz-progress-dot').forEach(d => {
+    d.classList.remove('active');
+    d.classList.add('done');
+  });
+  document.getElementById('quizProgress').style.display = 'flex';
 }
 
-function pickMethod(m){
-  pickedMethod = m;
-  document.querySelectorAll("#methodPicker button").forEach(b=>b.classList.toggle("sel", b.dataset.m===m));
-  document.getElementById("courierFields").style.display = (m==="pickup") ? "none" : "block";
-  methodLabelsRefresh();
+function restartQuiz() {
+  quizAnswers = [];
+  currentQ = 0;
+  document.getElementById('quizResult').style.display = 'none';
+  document.getElementById('quizQuestions').style.display = 'block';
+  renderQuestion();
 }
 
-function openOrderModal(){
-  editingId=null; pickedMethod="shipping";
-  document.getElementById("modalTitle").textContent="Νέα παραγγελία";
-  ["fName","fNote","fTrackNo","fTrackUrl","fCost","fPaid","fPhone","fEmail"].forEach(id=>document.getElementById(id).value="");
-  document.getElementById("fCourier").value="BoxNow";
-  document.getElementById("fTotalView").textContent="€0,00";
-  document.getElementById("fOrderNoView").textContent="θα δημιουργηθεί αυτόματα";
-  document.getElementById("moneyHint").textContent="";
-  document.getElementById("modalLinkWrap").classList.add("hidden");
-  document.getElementById("fbReadout").classList.add("hidden");
-  document.getElementById("modalMsg").classList.add("hidden");
-  document.getElementById("saveBtn").textContent="Δημιουργία";
-  buildItemsEditor(null);
-  pickMethod("shipping");
-  document.getElementById("orderModal").classList.remove("hidden");
+// init
+renderQuestion();
+
+// ============================================================
+// LIGHTBOX
+// ============================================================
+const lbOverlay = document.getElementById('lbOverlay');
+const lbImg     = document.getElementById('lbImg');
+const lbClose   = document.getElementById('lbClose');
+
+function openLightbox(src, alt) {
+  lbImg.src = src;
+  lbImg.alt = alt || '';
+  lbOverlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
-
-function editOrder(id){
-  const o = ordersCache.find(x=>x.id===id); if(!o) return;
-  editingId=id;
-  pickedMethod = o.delivery_method === "pickup" ? "pickup" : "shipping";
-  document.getElementById("modalTitle").textContent="Επεξεργασία";
-  document.getElementById("fName").value=o.customer_name||"";
-  document.getElementById("fOrderNoView").textContent=o.order_number||"—";
-  document.getElementById("fPhone").value=o.customer_phone||"";
-  document.getElementById("fEmail").value=o.customer_email||"";
-  document.getElementById("fNote").value=o.note||"";
-  document.getElementById("fCourier").value=o.courier||"";
-  document.getElementById("fTrackNo").value=o.tracking_number||"";
-  document.getElementById("fTrackUrl").value=o.tracking_url||"";
-  document.getElementById("fCost").value  = o.cost!=null ? o.cost : "";
-  document.getElementById("fPaid").value  = o.amount_paid!=null ? o.amount_paid : "";
-  document.getElementById("saveBtn").textContent="Αποθήκευση";
-  const its = getItems(o).map(it=>({...it}));
-  if(o.price!=null && its.length && its.every(it=>it.price==null)) its[0].price = o.price; // legacy: μετάφερε το σύνολο
-  buildItemsEditor(its);
-  updateMoneyHint();
-  pickMethod(pickedMethod);
-  // feedback readout
-  const fr = document.getElementById("fbReadout");
-  if(o.feedback_rating){
-    fr.innerHTML = `<b>★ ${o.feedback_rating}/5</b> αξιολόγηση από τον πελάτη` +
-      (o.feedback_comment?`<br>«${esc(o.feedback_comment)}»`:"") +
-      (o.feedback_at?`<br><span style="color:var(--muted)">${fmtDate(o.feedback_at)}</span>`:"");
-    fr.classList.remove("hidden");
-  } else fr.classList.add("hidden");
-  const lw=document.getElementById("modalLinkWrap"); lw.classList.remove("hidden");
-  document.getElementById("modalLink").textContent=linkFor(o.track_token);
-  document.getElementById("modalLink").dataset.token=o.track_token;
-  document.getElementById("modalMsg").classList.add("hidden");
-  document.getElementById("orderModal").classList.remove("hidden");
+function closeLightbox() {
+  lbOverlay.classList.remove('open');
+  document.body.style.overflow = '';
 }
+lbClose.addEventListener('click', closeLightbox);
+lbOverlay.addEventListener('click', e => { if (e.target === lbOverlay || e.target === lbImg) closeLightbox(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 
-function closeOrderModal(){ document.getElementById("orderModal").classList.add("hidden"); }
-
-function copyLink(){
-  const t=document.getElementById("modalLink").dataset.token;
-  if(t) copyLinkFor(t);
-}
-
-async function saveOrder(){
-  const msg=document.getElementById("modalMsg"); msg.classList.add("hidden");
-  const isPickup = pickedMethod === "pickup";
-  const courier = document.getElementById("fCourier").value.trim();
-  const trackNo = document.getElementById("fTrackNo").value.trim();
-  let trackUrl = document.getElementById("fTrackUrl").value.trim();
-  if(!isPickup && !trackUrl && trackNo && /box\s*now/i.test(courier)) trackUrl = boxnowUrl(trackNo);
-  const items = collectItems();
-  const customer_name = document.getElementById("fName").value.trim();
-  if(!customer_name){ msg.textContent="Συμπλήρωσε όνομα πελάτη."; msg.classList.remove("hidden"); return; }
-  if(!items.length){ msg.textContent="Πρόσθεσε τουλάχιστον ένα προϊόν (με όνομα)."; msg.classList.remove("hidden"); return; }
-  const payload={
-    customer_name,
-    customer_phone: document.getElementById("fPhone").value.trim() || null,
-    customer_email: document.getElementById("fEmail").value.trim() || null,
-    product_name: items.map(i=>i.name).join(", ").slice(0,180),  // για αναζήτηση/συμβατότητα
-    note: document.getElementById("fNote").value.trim() || null,
-    delivery_method: isPickup ? "pickup" : "shipping",
-    courier: isPickup ? null : (courier || null),
-    tracking_number: isPickup ? null : (trackNo || null),
-    tracking_url: isPickup ? null : (trackUrl || null),
-    price: itemsTotal(),
-    cost: parseMoney(document.getElementById("fCost").value),
-    amount_paid: parseMoney(document.getElementById("fPaid").value),
-    items
-  };
-  const btn=document.getElementById("saveBtn"); btn.disabled=true;
-  try{
-    let res;
-    if(editingId){
-      res = await authFetch(REST + "/orders?id=eq."+editingId, {
-        method:"PATCH", headers:{ "Prefer":"return=representation" },
-        body: JSON.stringify(payload)
-      });
-    }else{
-      res = await authFetch(REST + "/orders", {
-        method:"POST", headers:{ "Prefer":"return=representation" },
-        body: JSON.stringify(payload)
-      });
-    }
-    const data = await res.json();
-    if(!res.ok) throw new Error(data.message || "Σφάλμα");
-    const row = Array.isArray(data)?data[0]:data;
-    document.getElementById("fOrderNoView").textContent = row.order_number || "—";
-    // show link
-    const lw=document.getElementById("modalLinkWrap"); lw.classList.remove("hidden");
-    document.getElementById("modalLink").textContent=linkFor(row.track_token);
-    document.getElementById("modalLink").dataset.token=row.track_token;
-    editingId=row.id;
-    document.getElementById("modalTitle").textContent="Αποθηκεύτηκε ✓";
-    document.getElementById("saveBtn").textContent="Αποθήκευση";
-    await loadOrders();
-  }catch(e){
-    msg.textContent="Σφάλμα: "+e.message; msg.classList.remove("hidden");
-  }finally{ btn.disabled=false; }
-}
-
-/* close modal on overlay click */
-document.getElementById("orderModal").addEventListener("click",e=>{
-  if(e.target.id==="orderModal") closeOrderModal();
+// make editorial images clickable
+document.querySelectorAll('.ce-main img, .ce-small img, .ce-half img').forEach(img => {
+  img.style.cursor = 'zoom-in';
+  img.addEventListener('click', () => openLightbox(img.src, img.alt));
 });
 
-/* live money hint */
-["fCost","fPaid"].forEach(id=>{
-  const el=document.getElementById(id); if(el) el.addEventListener("input", updateMoneyHint);
-});
+// fallback: make all fade-up visible after 800ms in case observer misses them
+setTimeout(()=>{ document.querySelectorAll('.fade-up').forEach(el=>el.classList.add('visible')); }, 800);
 
-/* go */
-route();
+// nav + fade
+window.addEventListener('scroll',()=>document.getElementById('mainNav').classList.toggle('scrolled',scrollY>40));
+const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')}),{threshold:.08});
+document.querySelectorAll('.fade-up').forEach(el=>obs.observe(el));
 </script>
 </body>
 </html>
