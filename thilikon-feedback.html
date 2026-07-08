@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>THILIKON · Πες μας τη γνώμη σου</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#141210;
+    --paper:#F5F2EC;
+    --card:#FFFFFF;
+    --muted:#9A948B;
+    --line:#E5DFD5;
+    --soft:#F0ECE4;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{overflow-x:clip}
+  body{
+    font-family:'Montserrat',sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px 16px;
+    line-height:1.5;
+  }
+  .wrap{width:100%;max-width:480px}
+
+  /* header */
+  .head{text-align:center;margin-bottom:26px}
+  .logo{height:34px;width:auto;margin:0 auto 16px;display:block;opacity:.95}
+  .eyebrow{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);font-weight:500}
+
+  /* progress stitch line */
+  .prog{display:flex;align-items:center;gap:0;margin:0 auto 4px;max-width:220px}
+  .prog-dot{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--line);background:var(--paper);flex:none;transition:.35s}
+  .prog-seg{flex:1;height:0;border-top:1.5px dashed var(--line);transition:.35s}
+  .prog-dot.done,.prog-dot.active{border-color:var(--ink);background:var(--ink)}
+  .prog-dot.active{box-shadow:0 0 0 4px rgba(20,18,16,.08)}
+  .prog-seg.done{border-top-color:var(--ink)}
+  .prog-label{text-align:center;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:22px;font-weight:500}
+
+  /* card */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:30px 26px 26px}
+
+  .step{display:none;animation:fade .4s ease}
+  .step.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  .step-title{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;line-height:1.1;margin-bottom:4px;letter-spacing:.01em}
+  .step-title em{font-style:italic;font-weight:500}
+  .step-sub{font-size:12.5px;color:var(--muted);margin-bottom:24px}
+
+  .q{margin-bottom:24px}
+  .q:last-child{margin-bottom:6px}
+  .q-label{font-size:13.5px;font-weight:500;margin-bottom:12px;display:block}
+  .q-label .opt-tag{color:var(--muted);font-weight:400;font-size:11px}
+
+  /* scale (5 dots) */
+  .scale{display:flex;gap:9px;align-items:center}
+  .scale button{
+    flex:1;height:44px;border:1px solid var(--line);background:var(--card);border-radius:13px;
+    font-family:'Montserrat',sans-serif;font-size:15px;font-weight:500;color:var(--ink);cursor:pointer;transition:.18s;
+  }
+  .scale button:hover{border-color:var(--muted)}
+  .scale button.sel{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .scale-ends{display:flex;justify-content:space-between;margin-top:7px;font-size:10px;color:var(--muted);letter-spacing:.03em}
+
+  /* pill options */
+  .pills{display:flex;flex-wrap:wrap;gap:8px}
+  .pills.col{flex-direction:column}
+  .pill{
+    border:1px solid var(--line);background:var(--card);border-radius:100px;padding:11px 16px;
+    font-family:'Montserrat',sans-serif;font-size:13px;color:var(--ink);cursor:pointer;transition:.18s;text-align:left;line-height:1.35;
+  }
+  .pills.col .pill{border-radius:14px}
+  .pill:hover{border-color:var(--muted)}
+  .pill.sel{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  textarea{
+    width:100%;border:1px solid var(--line);border-radius:14px;padding:14px;
+    font-family:'Montserrat',sans-serif;font-size:16px;color:var(--ink);resize:vertical;min-height:96px;background:var(--card);
+  }
+  textarea:focus{outline:none;border-color:var(--ink)}
+  textarea::placeholder{color:var(--muted)}
+
+  /* nav */
+  .nav{display:flex;gap:12px;margin-top:26px}
+  .btn{
+    flex:1;padding:15px;border-radius:100px;font-family:'Montserrat',sans-serif;font-size:12px;
+    letter-spacing:.14em;text-transform:uppercase;font-weight:600;cursor:pointer;transition:.2s;border:1px solid var(--ink);
+  }
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover{opacity:.88}
+  .btn-primary:disabled{opacity:.35;cursor:not-allowed}
+  .btn-ghost{background:transparent;color:var(--ink);flex:0 0 auto;padding-left:24px;padding-right:24px}
+  .btn-ghost:hover{background:var(--soft)}
+
+  .err{font-size:11.5px;color:#b0432f;text-align:center;margin-top:12px;min-height:14px;letter-spacing:.02em}
+
+  /* thank-you */
+  .done-screen{display:none;text-align:center;padding:40px 24px}
+  .done-screen.on{display:block;animation:fade .5s ease}
+  .done-mark{width:60px;height:60px;margin:0 auto 22px;border:1.5px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px}
+  .done-title{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:600;margin-bottom:10px}
+  .done-title em{font-style:italic}
+  .done-body{font-size:13px;color:var(--muted);max-width:300px;margin:0 auto 24px;line-height:1.6}
+  .done-ig{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line);padding-bottom:3px}
+
+  .foot{text-align:center;margin-top:22px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="head">
+    <img class="logo" src="https://i.imgur.com/TbSGZu5.png" alt="THILIKON">
+    <div class="eyebrow">Πες μας τη γνώμη σου</div>
+  </div>
+
+  <div id="progWrap">
+    <div class="prog" id="prog"></div>
+    <div class="prog-label" id="progLabel">2 λεπτά · ανώνυμα</div>
+  </div>
+
+  <div class="card" id="card">
+
+    <!-- STEP 1 -->
+    <div class="step on" data-step="0">
+      <h2 class="step-title">Η τσάντα <em>σου</em></h2>
+      <p class="step-sub">Ας ξεκινήσουμε από το πιο σημαντικό — το προϊόν.</p>
+
+      <div class="q" data-key="satisfaction" data-req="1">
+        <label class="q-label">Πόσο ευχαριστημένη/ος είσαι συνολικά ;</label>
+        <div class="scale" data-scale></div>
+        <div class="scale-ends"><span>Καθόλου</span><span>Απόλυτα</span></div>
+      </div>
+
+      <div class="q" data-key="quality" data-req="1">
+        <label class="q-label">Πώς θα βαθμολογούσες την ποιότητα κατασκευής ;</label>
+        <div class="scale" data-scale></div>
+        <div class="scale-ends"><span>Μέτρια</span><span>Άψογη</span></div>
+      </div>
+
+      <div class="q" data-key="expectation" data-req="1">
+        <label class="q-label">Ανταποκρίθηκε σε αυτό που περίμενες από τις φωτογραφίες ;</label>
+        <div class="pills col" data-pills>
+          <button class="pill" data-val="Ναι, απόλυτα">Ναι , ήταν ακριβώς όπως το φανταζόμουν</button>
+          <button class="pill" data-val="Περίπου">Περίπου , μικρές διαφορές</button>
+          <button class="pill" data-val="Ήταν διαφορετικό">Ήταν αρκετά διαφορετικό</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step" data-step="1">
+      <h2 class="step-title">Η <em>παραγγελία</em></h2>
+      <p class="step-sub">Από τη στιγμή που μας βρήκες μέχρι να φτάσει σε σένα.</p>
+
+      <div class="q" data-key="discovery" data-req="1">
+        <label class="q-label">Πώς μας ανακάλυψες ;</label>
+        <div class="pills" data-pills>
+          <button class="pill" data-val="Instagram">Instagram</button>
+          <button class="pill" data-val="TikTok">TikTok</button>
+          <button class="pill" data-val="Σύσταση">Μου το πρότεινε κάποια/ος</button>
+          <button class="pill" data-val="Την είδα σε κάποια">Την είδα να τη φοράει κάποια</button>
+          <button class="pill" data-val="Άλλο">Αλλού</button>
+        </div>
+      </div>
+
+      <div class="q" data-key="communication" data-req="1">
+        <label class="q-label">Πώς ήταν η επικοινωνία μαζί μας ( DM , παραγγελία ) ;</label>
+        <div class="scale" data-scale></div>
+        <div class="scale-ends"><span>Δύσκολη</span><span>Άψογη</span></div>
+      </div>
+
+      <div class="q" data-key="delivery" data-req="1">
+        <label class="q-label">Ο χρόνος παράδοσης ;</label>
+        <div class="pills" data-pills>
+          <button class="pill" data-val="Πιο γρήγορα">Πιο γρήγορα απ' ό,τι περίμενα</button>
+          <button class="pill" data-val="Όπως το περίμενα">Όπως το περίμενα</button>
+          <button class="pill" data-val="Άργησε">Άργησε λίγο</button>
+        </div>
+      </div>
+
+      <div class="q" data-key="tracking" data-req="1">
+        <label class="q-label">Χρησιμοποίησες τη σελίδα παρακολούθησης της παραγγελίας ;</label>
+        <div class="pills" data-pills>
+          <button class="pill" data-val="Ναι, με βοήθησε">Ναι , με βοήθησε</button>
+          <button class="pill" data-val="Ναι, αδιάφορη">Ναι , αλλά αδιάφορη</button>
+          <button class="pill" data-val="Δεν τη χρησιμοποίησα">Δεν τη χρησιμοποίησα</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="step" data-step="2">
+      <h2 class="step-title">Η <em>εικόνα</em> μας</h2>
+      <p class="step-sub">Αλλάξαμε πρόσφατα την αισθητική μας — θέλουμε να μάθουμε πώς σου φαίνεται.</p>
+
+      <div class="q" data-key="follows_ig" data-req="1">
+        <label class="q-label">Μας ακολουθείς στο Instagram ;</label>
+        <div class="pills" data-pills>
+          <button class="pill" data-val="Ναι">Ναι</button>
+          <button class="pill" data-val="Όχι">Όχι ακόμα</button>
+        </div>
+      </div>
+
+      <div class="q" data-key="noticed_aesthetic" data-req="1">
+        <label class="q-label">Πρόσεξες την ανανεωμένη μας αισθητική τους τελευταίους μήνες ;</label>
+        <div class="pills col" data-pills>
+          <button class="pill" data-val="Ναι, μου αρέσει πολύ">Ναι , και μου αρέσει πολύ</button>
+          <button class="pill" data-val="Την πρόσεξα">Την πρόσεξα , χωρίς ιδιαίτερη γνώμη</button>
+          <button class="pill" data-val="Δεν το πρόσεξα">Δεν το είχα προσέξει</button>
+        </div>
+      </div>
+
+      <div class="q" data-key="aesthetic_intent" data-req="1">
+        <label class="q-label">Η νέα εικόνα σε κάνει πιο πιθανό να αγοράσεις ;</label>
+        <div class="pills col" data-pills>
+          <button class="pill" data-val="Σαφώς πιο πιθανό">Ναι , σαφώς πιο πιθανό</button>
+          <button class="pill" data-val="Λίγο πιο πιθανό">Λίγο πιο πιθανό</button>
+          <button class="pill" data-val="Δεν άλλαξε κάτι">Δεν άλλαξε κάτι για μένα</button>
+        </div>
+      </div>
+
+      <div class="q" data-key="ai_photos" data-req="1">
+        <label class="q-label">Μερικές φωτογραφίες μας είναι φτιαγμένες με AI. Πώς σου φαίνεται αυτό ;</label>
+        <div class="pills col" data-pills>
+          <button class="pill" data-val="Δεν με πειράζει">Δεν με πειράζει καθόλου</button>
+          <button class="pill" data-val="Δεν το κατάλαβα">Δεν το είχα καταλάβει καν</button>
+          <button class="pill" data-val="Προτιμώ πραγματικές">Προτιμώ πραγματικές φωτογραφίες</button>
+          <button class="pill" data-val="Με ενοχλεί">Με ενοχλεί</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="step" data-step="3">
+      <h2 class="step-title">Θα <em>ξαναρχόσουν</em> ;</h2>
+      <p class="step-sub">Δύο τελευταία και τελειώσαμε.</p>
+
+      <div class="q" data-key="repurchase" data-req="1">
+        <label class="q-label">Πόσο πιθανό είναι να αγοράσεις ξανά από εμάς ;</label>
+        <div class="scale" data-scale></div>
+        <div class="scale-ends"><span>Απίθανο</span><span>Σίγουρα</span></div>
+      </div>
+
+      <div class="q" data-key="recommend" data-req="1">
+        <label class="q-label">Θα μας πρότεινες σε φίλη/φίλο ;</label>
+        <div class="pills" data-pills>
+          <button class="pill" data-val="Σίγουρα">Σίγουρα</button>
+          <button class="pill" data-val="Μάλλον ναι">Μάλλον ναι</button>
+          <button class="pill" data-val="Ίσως">Ίσως</button>
+          <button class="pill" data-val="Όχι">Όχι</button>
+        </div>
+      </div>
+
+      <div class="q" data-key="open">
+        <label class="q-label">Τι θα ήθελες να δεις από το THILIKON ; <span class="opt-tag">( προαιρετικό )</span></label>
+        <textarea data-open placeholder="Ένα χρώμα, ένα σχέδιο, μια ιδέα — ή ο,τιδήποτε θες να μας πεις."></textarea>
+      </div>
+    </div>
+
+    <div class="nav">
+      <button class="btn btn-ghost" id="backBtn" style="display:none">Πίσω</button>
+      <button class="btn btn-primary" id="nextBtn">Συνέχεια</button>
+    </div>
+    <div class="err" id="err"></div>
+  </div>
+
+  <!-- THANK YOU -->
+  <div class="done-screen" id="done">
+    <div class="done-mark">✓</div>
+    <h2 class="done-title">Σ' <em>ευχαριστούμε</em></h2>
+    <p class="done-body">Κάθε τσάντα φτιάχνεται στο χέρι, μία-μία. Η γνώμη σου μας βοηθάει να γινόμαστε καλύτεροι σε κάθε ραφή.</p>
+    <a class="done-ig" href="https://www.instagram.com/thilik_on" target="_blank">@thilik_on ↗</a>
+  </div>
+
+  <div class="foot">THILIKON · Handcrafted with love</div>
+</div>
+
+<script>
+/* ---- Supabase (THILIKON project, anon key — insert-only via RLS) ---- */
+const SB_URL = "https://bmdwlckzzpxjjfcvyiui.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtZHdsY2t6enB4ampmY3Z5aXVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MjQyNjgsImV4cCI6MjA5NzIwMDI2OH0.JADjEDrk1Yflimp3ZEzXOpG-IE3_7xyL2jCoG38XNmU";
+
+const answers = {};
+let step = 0;
+const steps = [...document.querySelectorAll('.step')];
+const TOTAL = steps.length;
+
+/* build progress dots */
+const prog = document.getElementById('prog');
+for(let i=0;i<TOTAL;i++){
+  const d=document.createElement('div');d.className='prog-dot';prog.appendChild(d);
+  if(i<TOTAL-1){const s=document.createElement('div');s.className='prog-seg';prog.appendChild(s);}
+}
+function paintProg(){
+  const dots=[...prog.querySelectorAll('.prog-dot')];
+  const segs=[...prog.querySelectorAll('.prog-seg')];
+  dots.forEach((d,i)=>{d.classList.toggle('done',i<step);d.classList.toggle('active',i===step);});
+  segs.forEach((s,i)=>s.classList.toggle('done',i<step));
+}
+
+/* build 5-point scales */
+document.querySelectorAll('[data-scale]').forEach(sc=>{
+  const key=sc.closest('.q').dataset.key;
+  for(let n=1;n<=5;n++){
+    const b=document.createElement('button');b.textContent=n;b.dataset.val=n;
+    b.onclick=()=>{ [...sc.children].forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); answers[key]=n; clearErr(); };
+    sc.appendChild(b);
+  }
+});
+
+/* pill groups */
+document.querySelectorAll('[data-pills]').forEach(grp=>{
+  const key=grp.closest('.q').dataset.key;
+  grp.querySelectorAll('.pill').forEach(p=>{
+    p.onclick=()=>{ grp.querySelectorAll('.pill').forEach(x=>x.classList.remove('sel')); p.classList.add('sel'); answers[key]=p.dataset.val; clearErr(); };
+  });
+});
+
+/* open text */
+const ta=document.querySelector('[data-open]');
+ta.addEventListener('input',()=>answers.open=ta.value.trim());
+
+const nextBtn=document.getElementById('nextBtn');
+const backBtn=document.getElementById('backBtn');
+const errEl=document.getElementById('err');
+function clearErr(){errEl.textContent='';}
+
+function validateStep(){
+  const cur=steps[step];
+  const reqs=[...cur.querySelectorAll('.q[data-req="1"]')];
+  for(const q of reqs){ if(answers[q.dataset.key]===undefined){ return q; } }
+  return null;
+}
+
+function show(){
+  steps.forEach((s,i)=>s.classList.toggle('on',i===step));
+  backBtn.style.display = step===0 ? 'none':'block';
+  nextBtn.textContent = step===TOTAL-1 ? 'Στείλε τη γνώμη μου' : 'Συνέχεια';
+  paintProg();
+  document.getElementById('card').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+backBtn.onclick=()=>{ if(step>0){step--;show();clearErr();} };
+
+nextBtn.onclick=async()=>{
+  const miss=validateStep();
+  if(miss){ errEl.textContent='Διάλεξε μια απάντηση για να συνεχίσεις.'; miss.scrollIntoView({behavior:'smooth',block:'center'}); return; }
+  if(step<TOTAL-1){ step++; show(); return; }
+  await submit();
+};
+
+async function submit(){
+  nextBtn.disabled=true; nextBtn.textContent='Στέλνουμε…';
+  const payload={
+    q_satisfaction:answers.satisfaction, q_quality:answers.quality, q_expectation:answers.expectation,
+    q_discovery:answers.discovery, q_communication:answers.communication, q_delivery:answers.delivery, q_tracking:answers.tracking,
+    q_follows_ig:answers.follows_ig, q_noticed_aesthetic:answers.noticed_aesthetic, q_aesthetic_intent:answers.aesthetic_intent, q_ai_photos:answers.ai_photos,
+    q_repurchase:answers.repurchase, q_recommend:answers.recommend, q_open:answers.open||null
+  };
+  try{
+    const r=await fetch(SB_URL+"/rest/v1/thilikon_feedback",{
+      method:"POST",
+      headers:{ "apikey":SB_KEY, "Authorization":"Bearer "+SB_KEY, "Content-Type":"application/json", "Prefer":"return=minimal" },
+      body:JSON.stringify(payload)
+    });
+    if(!r.ok){ throw new Error(await r.text()); }
+    document.getElementById('card').style.display='none';
+    document.getElementById('progWrap').style.display='none';
+    document.getElementById('done').classList.add('on');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }catch(e){
+    nextBtn.disabled=false; nextBtn.textContent='Στείλε τη γνώμη μου';
+    errEl.textContent='Κάτι πήγε στραβά — δοκίμασε ξανά σε λίγο.';
+    console.error(e);
+  }
+}
+
+show();
+</script>
+</body>
+</html>
