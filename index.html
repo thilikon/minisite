@@ -476,7 +476,43 @@ const CATS={
   accessories:{label:'Accessories',desc:'Small accessories, big style.'}
 };
 
-const MM=[
+// Marshmallow — Cotton
+const MM_COTTON=[
+  {code:'#01',label:'White',img:'https://i.imgur.com/YNn6Lju.png'},
+  {code:'#02',label:'Black',img:'https://i.imgur.com/eGITcAl.png'},
+  {code:'#03',label:'Light Grey',img:'https://i.imgur.com/wAF8GVX.png'},
+  {code:'#04',label:'Grey',img:'https://i.imgur.com/3SnMn3Q.png'},
+  {code:'#05',label:'Cream',img:'https://i.imgur.com/sfXPPW1.png'},
+  {code:'#06',label:'Beige',img:'https://i.imgur.com/QKR5log.png'},
+  {code:'#07',label:'Camel',img:'https://i.imgur.com/s9dNIj1.png'},
+  {code:'#08',label:'Taupe',img:'https://i.imgur.com/sFRiY9c.png'},
+  {code:'#09',label:'Brown',img:'https://i.imgur.com/n9OuWuf.png'},
+  {code:'#10',label:'Shade 10',img:'https://i.imgur.com/PiDB9QU.png'},
+  {code:'#11',label:'Shade 11',img:'https://i.imgur.com/WgszE0y.png'},
+  {code:'#12',label:'Shade 12',img:'https://i.imgur.com/a7pEuqJ.png'},
+  {code:'#13',label:'Shade 13',img:'https://i.imgur.com/aluIHNz.png'},
+  {code:'#14',label:'Shade 14',img:'https://i.imgur.com/AUfvREU.png'},
+  {code:'#15',label:'Shade 15',img:'https://i.imgur.com/d7lAsOt.png'},
+  {code:'#16',label:'Shade 16',img:'https://i.imgur.com/MjKjnis.png'},
+  {code:'#17',label:'Shade 17',img:'https://i.imgur.com/KzSgO3J.png'},
+  {code:'#18',label:'Shade 18',img:'https://i.imgur.com/WLTgjpr.png'},
+  {code:'#19',label:'Shade 19',img:'https://i.imgur.com/pZhRo8t.png'},
+  {code:'#20',label:'Shade 20',img:'https://i.imgur.com/BbFCJMZ.png'},
+  {code:'#21',label:'Shade 21',img:'https://i.imgur.com/qIR2LGF.png'},
+  {code:'#22',label:'Shade 22',img:'https://i.imgur.com/vGcWYSg.png'},
+  {code:'#23',label:'Shade 23',img:'https://i.imgur.com/swNyHJd.png'},
+  {code:'#24',label:'Shade 24',img:'https://i.imgur.com/atY2mos.png'},
+  {code:'#25',label:'Shade 25',img:'https://i.imgur.com/nO5yjlq.png'},
+  {code:'#26',label:'Shade 26',img:'https://i.imgur.com/dM1JoKd.png'},
+  {code:'#27',label:'Shade 27',img:'https://i.imgur.com/H9DIjvg.png'},
+  {code:'#28',label:'Shade 28',img:'https://i.imgur.com/GGpiCKv.png'},
+  {code:'#29',label:'Shade 29',img:'https://i.imgur.com/x36Jpox.png'},
+  {code:'#30',label:'Shade 30',img:'https://i.imgur.com/h6D5j3h.png'},
+  {code:'#31',label:'Shade 31',img:'https://i.imgur.com/279v2gC.png'},
+];
+
+// Marshmallow — Metallic
+const MM_METALLIC=[
   {code:'#01',label:'White',img:'https://i.imgur.com/h9mbVOF.png'},
   {code:'#02',label:'Black',img:'https://i.imgur.com/AQEmpQg.png'},
   {code:'#03',label:'Cream',img:'https://i.imgur.com/ruFksKb.png'},
@@ -486,6 +522,12 @@ const MM=[
   {code:'#07',label:'Light Grey',img:'https://i.imgur.com/hVxgfQO.png'},
   {code:'#08',label:'Mauve',img:'https://i.imgur.com/V2LvQMe.png'},
 ];
+
+// Marshmallow — Velvet (coming soon)
+const MM_VELVET=[];
+
+// default MM used where a single list is needed
+const MM=MM_COTTON;
 const TS=[
   {code:'#01',label:'Black',img:'https://i.imgur.com/3OZAPli.png'},
   {code:'#02',label:'White',img:'https://i.imgur.com/mavfTcb.png'},
@@ -544,6 +586,13 @@ const CR=[
 ];
 const colorsByCat={marshmallow:MM,tshirt:TS,acrylic:AC,crystal:CR,accessories:AC};
 
+// Marshmallow sub-materials
+const MM_MATERIALS={
+  'mm-cotton':{label:'Cotton',colors:MM_COTTON},
+  'mm-metallic':{label:'Metallic',colors:MM_METALLIC},
+  'mm-velvet':{label:'Velvet',colors:MM_VELVET},
+};
+
 const bags=[
   {id:'loopi',name:'Loopi',cat:'marshmallow',desc:'Υπάρχουν τσάντες που απλά κρατάς, και υπάρχει η Loopi που θέλεις να την αγγίζεις συνέχεια! Με chunky πλέξη και σύννεφο-soft υφή, μεταμορφώνει ακόμα και το πιο απλό look.',img:'https://i.imgur.com/4H32v0k.png',lifestyle:['https://i.imgur.com/PSjUNoW.jpeg','https://i.imgur.com/8GRo0TW.jpeg','https://i.imgur.com/xkkMykf.jpeg'],note:'Top-handle bag. Dimensions: 30×20cm.'},
   {id:'hug',name:'Hug',cat:'marshmallow',desc:'Μαλακή, γεμάτη και απίστευτα χαριτωμένη — η Hug είναι η ιδανική συντροφιά για κάθε σου βόλτα. Μια μικρή αγκαλιά που χωράει όλα τα απαραίτητα.',img:'https://i.imgur.com/P8iXkZS.png',lifestyle:['https://i.imgur.com/Ed8Mcn9.jpeg','https://i.imgur.com/RdsPN5z.jpeg','https://i.imgur.com/cUG79YO.jpeg'],note:'Knitted tote. Dimensions: 24×18cm.'},
@@ -601,39 +650,59 @@ document.querySelectorAll('.filter-btn').forEach(btn=>{
 // modal
 const overlay=document.getElementById('modalOverlay');
 
-function renderModalColors(catKey) {
-  const colors = colorsByCat[catKey] || [];
-  document.getElementById('modalColorsGrid').innerHTML = colors.map(c=>`
-    <div class="modal-color-item">
-      <div class="modal-color-swatch" style="${c.img?'':'background:'+c.hex}">
-        ${c.img?`<img src="${c.img}" alt="${c.label}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:''}
-      </div>
-      <span class="modal-color-code">${c.code}</span>
-      <span class="modal-color-name">${c.label}</span>
-    </div>`).join('');
+function renderModalColors(key) {
+  // key can be a category (acrylic, crystal, tshirt...) or a marshmallow material (mm-cotton...)
+  let colors;
+  if (MM_MATERIALS[key]) {
+    colors = MM_MATERIALS[key].colors;
+  } else {
+    colors = colorsByCat[key] || [];
+  }
+  const grid = document.getElementById('modalColorsGrid');
+  if (!colors.length) {
+    grid.innerHTML = `<p style="font-size:12px;color:var(--gd);grid-column:1/-1">Coming soon — DM us for details.</p>`;
+  } else {
+    grid.innerHTML = colors.map(c=>`
+      <div class="modal-color-item">
+        <div class="modal-color-swatch" style="${c.img?'':'background:'+c.hex}">
+          ${c.img?`<img src="${c.img}" alt="${c.label}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:''}
+        </div>
+        <span class="modal-color-code">${c.code}</span>
+        <span class="modal-color-name">${c.label}</span>
+      </div>`).join('');
+  }
   // update toggle active state
   document.querySelectorAll('.modal-toggle-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.cat === catKey);
+    btn.classList.toggle('active', btn.dataset.cat === key);
   });
 }
 
 function openModal(b){
   document.getElementById('modalBagName').textContent=b.name;
-
-  // toggle — show only if multiple material categories
   const toggleEl = document.getElementById('modalToggle');
-  if (b.cats && b.cats.length > 1) {
+
+  if (b.cat === 'marshmallow') {
+    // marshmallow: sub-material toggle (Cotton / Metallic / Velvet)
+    toggleEl.style.display = 'flex';
+    const materials = Object.keys(MM_MATERIALS);
+    toggleEl.innerHTML = materials.map((m,i) =>
+      `<button class="modal-toggle-btn${i===0?' active':''}" data-cat="${m}" onclick="renderModalColors('${m}')">${MM_MATERIALS[m].label}</button>`
+    ).join('');
+    document.getElementById('modalBagCat').textContent = 'Marshmallow — Cotton, Metallic & Velvet';
+    renderModalColors('mm-cotton');
+  } else if (b.cats && b.cats.length > 1) {
+    // multi material (Perla, Laluna, Cardholder)
     toggleEl.style.display = 'flex';
     toggleEl.innerHTML = b.cats.map(c =>
       `<button class="modal-toggle-btn${c===b.cat?' active':''}" data-cat="${c}" onclick="renderModalColors('${c}')">${CATS[c].label}</button>`
     ).join('');
     document.getElementById('modalBagCat').textContent = 'Available in multiple materials';
+    renderModalColors(b.cat);
   } else {
     toggleEl.style.display = 'none';
     document.getElementById('modalBagCat').textContent = CATS[b.cat].label+' — '+CATS[b.cat].desc;
+    renderModalColors(b.cat);
   }
-
-  renderModalColors(b.cat);
 
   // lifestyle gallery
   const lifestyleHtml = b.lifestyle && b.lifestyle.length ? `
