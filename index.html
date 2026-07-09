@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>THILIKON — Handcrafted with Love</title>
+<title>THILIKON | Handcrafted with Love</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -15,9 +15,13 @@ body{background:var(--white);color:var(--black);font-family:'Montserrat',sans-se
 .cursor-ring{width:36px;height:36px;border:1px solid var(--black);border-radius:50%;position:fixed;pointer-events:none;z-index:9998;transform:translate(-50%,-50%)}
 nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:22px 48px;background:rgba(250,250,248,.94);backdrop-filter:blur(14px);border-bottom:1px solid transparent;transition:border-color .4s}
 .nav-actions{display:flex;align-items:center;gap:10px}
-.nav-btn-ghost{font-size:10px;letter-spacing:.15em;text-transform:uppercase;font-weight:500;color:var(--gd);text-decoration:none;padding:9px 18px;border-radius:100px;border:1px solid var(--gm);transition:all .3s}
+.nav-btn-ghost{font-size:10px;letter-spacing:.15em;text-transform:uppercase;font-weight:500;color:var(--gd);text-decoration:none;padding:9px 18px;border-radius:100px;border:1px solid var(--gm);transition:all .3s;white-space:nowrap}
 .nav-btn-ghost:hover{border-color:var(--black);color:var(--black)}
-@media(max-width:900px){.nav-btn-ghost{display:none}}
+@media(max-width:560px){
+  .nav-actions{gap:6px}
+  .nav-cta{padding:8px 14px;font-size:9px}
+  .nav-btn-ghost{padding:8px 14px;font-size:9px}
+}
 .nav-logo img{height:34px}
 .nav-links{display:flex;gap:36px;list-style:none}
 .nav-links a{text-decoration:none;color:var(--black);font-size:10px;letter-spacing:.2em;text-transform:uppercase;font-weight:500;position:relative}
@@ -115,6 +119,10 @@ h2.about-title{font-family:'Cormorant Garamond',serif;font-size:clamp(38px,4.5vw
 .lb-overlay.open .lb-img{transform:scale(1)}
 .lb-close{position:absolute;top:20px;right:24px;background:none;border:none;color:white;font-size:28px;cursor:pointer;opacity:.7;transition:opacity .2s;line-height:1}
 .lb-close:hover{opacity:1}
+/* FEEDBACK */
+.feedback-section{padding:100px 48px;text-align:center;border-top:1px solid var(--gm)}
+.feedback-inner{max-width:600px;margin:0 auto}
+@media(max-width:900px){.feedback-section{padding:70px 24px}}
 /* HOW TO CUSTOMIZE */
 .how-to-wrap{background:var(--gl);margin-top:80px;padding:90px 48px;text-align:center}
 .how-to-inner{max-width:680px;margin:0 auto}
@@ -249,17 +257,16 @@ footer img.footer-logo{height:30px;filter:invert(1);margin-bottom:18px;display:b
     <li><a href="#about">Anasa</a></li>
   </ul>
   <div class="nav-actions">
-    <a class="nav-btn-ghost" href="https://thilikon.github.io/minisite/track/#feedback" target="_blank">Feedback</a>
-    <a class="nav-btn-ghost" href="https://thilikon.github.io/minisite/track/" target="_blank">Track Order</a>
     <a class="nav-cta" href="https://www.instagram.com/thilikon.gr/" target="_blank">DM to Order</a>
+    <a class="nav-btn-ghost" href="https://thilikon.github.io/minisite/track/" target="_blank">Track Order</a>
   </div>
 </nav>
 
 <section class="hero">
   <div class="hero-text fade-up">
-    <p class="eyebrow">Collection — Anasa</p>
+    <p class="eyebrow">Collection Anasa</p>
     <h1 class="hero-title">Handcrafted<br><em>with love,</em><br>for you.</h1>
-    <p class="hero-body">Every bag is a small story. Made with patience, love and attention to detail — to become your favourite accessory.</p>
+    <p class="hero-body">Every bag is a small story. Made with patience, love and attention to detail, to become your favourite accessory.</p>
     <div class="hero-actions">
       <a href="#collection" class="btn-primary">Explore the Collection</a>
       <a href="#about" class="btn-outline">About Anasa</a>
@@ -316,7 +323,7 @@ footer img.footer-logo{height:30px;filter:invert(1);margin-bottom:18px;display:b
   <div class="sec-hdr fade-up" style="padding:0 0 52px">
     <p class="eyebrow eyebrow-center">Handcrafted for You</p>
     <h2 class="sec-title">Custom Creations</h2>
-    <p class="sec-sub">Every piece is built to order. Tell us what you want — we'll make it happen.</p>
+    <p class="sec-sub">Every piece is built to order. Tell us what you want and we'll make it happen.</p>
   </div>
 
   <!-- EDITORIAL LAYOUT — all square, 3-col grid -->
@@ -341,7 +348,7 @@ footer img.footer-logo{height:30px;filter:invert(1);margin-bottom:18px;display:b
     <div class="how-to-inner">
       <p class="eyebrow eyebrow-center">Custom Orders</p>
       <h2 class="sec-title">How to<br><em>Customize Yours</em></h2>
-      <p class="sec-sub" style="margin-bottom:52px">Build something entirely your own — pick your design, find your shade and leave the rest to us.</p>
+      <p class="sec-sub" style="margin-bottom:52px">Build something entirely your own. Pick your design, find your shade and leave the rest to us.</p>
       <div class="steps">
         <div class="step">
           <div class="step-num">1</div>
@@ -356,7 +363,7 @@ footer img.footer-logo{height:30px;filter:invert(1);margin-bottom:18px;display:b
         <div class="step">
           <div class="step-num">3</div>
           <div class="step-label">DM Us</div>
-          <div class="step-desc">We will craft it just for you — delivered within 20 days</div>
+          <div class="step-desc">We will craft it just for you, delivered within 20 days</div>
         </div>
       </div>
       <a href="https://www.instagram.com/thilikon.gr/" target="_blank" class="btn-primary" style="margin-top:48px;display:inline-block">DM us on Instagram</a>
@@ -368,9 +375,9 @@ footer img.footer-logo{height:30px;filter:invert(1);margin-bottom:18px;display:b
   <div class="about-text fade-up">
     <p class="about-ey">The Anasa Collection</p>
     <h2 class="about-title">A small<br><em>ANASA</em><br>of creation.</h2>
-    <p class="about-body">Το THILIKON ξεκίνησε σαν μια μικρή ανάγκη για ηρεμία και δημιουργία μέσα στην καθημερινότητά μου. Με τον καιρό έγινε κάτι πολύ περισσότερο — μια πηγή έμπνευσης, χαλάρωσης και μια πραγματική Ανάσα.</p>
+    <p class="about-body">Το THILIKON ξεκίνησε σαν μια μικρή ανάγκη για ηρεμία και δημιουργία μέσα στην καθημερινότητά μου. Με τον καιρό έγινε κάτι πολύ περισσότερο, μια πηγή έμπνευσης, χαλάρωσης και μια πραγματική Ανάσα.</p>
     <p class="about-body">Γι' αυτό και η πρώτη μας συλλογή ονομάστηκε Anasa. Minimal, διαχρονική και δημιουργημένη με αγάπη, για να φοριέται εύκολα από όλες.</p>
-    <p class="about-sign">— Αναστασία, THILIKON</p>
+    <p class="about-sign">Αναστασία, THILIKON</p>
   </div>
   <div class="fade-up" style="position:relative;z-index:1;display:flex;align-items:center;justify-content:center">
     <div style="position:relative;max-width:420px;width:100%">
@@ -415,6 +422,16 @@ footer img.footer-logo{height:30px;filter:invert(1);margin-bottom:18px;display:b
   </div>
 </section>
 
+<!-- FEEDBACK -->
+<section id="feedback" class="feedback-section">
+  <div class="feedback-inner fade-up">
+    <p class="eyebrow eyebrow-center">Your Voice</p>
+    <h2 class="sec-title">We'd love<br><em>your feedback</em></h2>
+    <p class="sec-sub" style="margin-bottom:40px">Already have a THILIKON piece? Tell us what you think. Your experience helps us craft even better.</p>
+    <a href="https://thilikon.github.io/minisite/track/#feedback" target="_blank" class="btn-primary">Share your feedback</a>
+  </div>
+</section>
+
 <footer>
   <div class="footer-top">
     <div>
@@ -431,6 +448,8 @@ footer img.footer-logo{height:30px;filter:invert(1);margin-bottom:18px;display:b
         <li><a href="#about">About Anasa</a></li>
         <li><a href="#quiz">Find Your Bag</a></li>
         <li><a href="#creations">Custom Creations</a></li>
+        <li><a href="https://thilikon.github.io/minisite/track/" target="_blank">Track Order ↗</a></li>
+        <li><a href="#feedback">Feedback</a></li>
         <li><a href="https://www.instagram.com/thilikon.gr/" target="_blank">Instagram ↗</a></li>
       </ul>
     </div>
@@ -453,7 +472,7 @@ footer img.footer-logo{height:30px;filter:invert(1);margin-bottom:18px;display:b
     <div class="modal-body">
       <div id="modalToggle" style="display:none" class="modal-toggle"></div>
       <p class="modal-label">Available Colours</p>
-      <p style="font-size:11px;color:var(--gd);margin-bottom:16px;line-height:1.7">These are sample shades from our palette. More colours available — <a href="https://www.instagram.com/thilikon.gr/" target="_blank" style="color:var(--black);font-weight:500;text-decoration:underline">DM us</a> to find your perfect shade.</p>
+      <p style="font-size:11px;color:var(--gd);margin-bottom:16px;line-height:1.7">These are sample shades from our palette. More colours available. <a href="https://www.instagram.com/thilikon.gr/" target="_blank" style="color:var(--black);font-weight:500;text-decoration:underline">DM us</a> to find your perfect shade.</p>
       <div class="modal-colors-grid" id="modalColorsGrid"></div>
       <div id="modalLifestyle"></div>
       <p class="modal-note" id="modalNote"></p>
@@ -595,13 +614,13 @@ const MM_MATERIALS={
 
 const bags=[
   {id:'loopi',name:'Loopi',cat:'marshmallow',desc:'Υπάρχουν τσάντες που απλά κρατάς, και υπάρχει η Loopi που θέλεις να την αγγίζεις συνέχεια! Με chunky πλέξη και σύννεφο-soft υφή, μεταμορφώνει ακόμα και το πιο απλό look.',img:'https://i.imgur.com/4H32v0k.png',lifestyle:['https://i.imgur.com/PSjUNoW.jpeg','https://i.imgur.com/8GRo0TW.jpeg','https://i.imgur.com/xkkMykf.jpeg'],note:'Top-handle bag. Dimensions: 30×20cm.'},
-  {id:'hug',name:'Hug',cat:'marshmallow',desc:'Μαλακή, γεμάτη και απίστευτα χαριτωμένη — η Hug είναι η ιδανική συντροφιά για κάθε σου βόλτα. Μια μικρή αγκαλιά που χωράει όλα τα απαραίτητα.',img:'https://i.imgur.com/P8iXkZS.png',lifestyle:['https://i.imgur.com/Ed8Mcn9.jpeg','https://i.imgur.com/RdsPN5z.jpeg','https://i.imgur.com/cUG79YO.jpeg'],note:'Knitted tote. Dimensions: 24×18cm.'},
+  {id:'hug',name:'Hug',cat:'marshmallow',desc:'Μαλακή, γεμάτη και απίστευτα χαριτωμένη. Η Hug είναι η ιδανική συντροφιά για κάθε σου βόλτα. Μια μικρή αγκαλιά που χωράει όλα τα απαραίτητα.',img:'https://i.imgur.com/P8iXkZS.png',lifestyle:['https://i.imgur.com/Ed8Mcn9.jpeg','https://i.imgur.com/RdsPN5z.jpeg','https://i.imgur.com/cUG79YO.jpeg'],note:'Knitted tote. Dimensions: 24×18cm.'},
   {id:'grace',name:'Grace',cat:'tshirt',desc:'Η Grace δεν ακολουθεί τα trends, τα δημιουργεί. Με τη signature crochet πλέξη της και το επιβλητικό σχήμα της, αναβαθμίζει κάθε outfit από το πρωινό coffee run μέχρι τη βραδινή έξοδο.',img:'https://i.imgur.com/0RWHLZd.png',note:'Tote with short handle. Dimensions: 25×18cm.'},
   {id:'bella',name:'Bella',cat:'tshirt',desc:'Κομψή, διαχρονική και με τις πιο θηλυκές λεπτομέρειες. Η Bella είναι η αγαπημένη σου "baguette" τσάντα με το ιδανικό μέγεθος για τις βόλτες σου και τα χαρακτηριστικά πλαϊνά δεσίματα.',img:'https://i.imgur.com/w5xTAYJ.png',note:'Shoulder bag with bow closure. Dimensions: 28×18cm.'},
   {id:'kelly',name:'Kelly',cat:'tshirt',desc:'Minimal, σοφιστικέ και ακαταμάχητα chic. Η Kelly είναι το clutch bag που συνοδεύει από τις business συναντήσεις μέχρι τις πιο ιδιαίτερες βραδινές εξόδους.',img:'https://i.imgur.com/DZp7X0K.png',note:'Clutch bag. Dimensions: 26×18cm.'},
   {id:'nicole',name:'Nicole',cat:'tshirt',desc:'Με "baguette" σιλουέτα και chunky shoulder strap, η Nicole συνδυάζει retro αισθητική με σύγχρονο design. Φοριέται άνετα στον ώμο και δίνει αμέσως το "effortless cool" vibe.',img:'https://i.imgur.com/oWKEiNp.png',note:'Shoulder bag. Dimensions coming soon.'},
   {id:'perla',name:'Perla',cat:'acrylic',cats:['acrylic','crystal'],desc:'Υπάρχει κάτι πιο ονειρικό από μια τσάντα γεμάτη πέρλες; Η Perla δίνει το luxury feel που αναζητάς. Διάλεξε γυάλινες ή ακρυλικές χάντρες στην αγαπημένη σου απόχρωση.',img:'https://i.imgur.com/zBxPh48.png',note:'Detachable long strap. Dimensions: 20×12cm.'},
-  {id:'laluna',name:'Laluna',cat:'crystal',cats:['acrylic','crystal'],desc:'Φτιαγμένη από εκατοντάδες κρυστάλλινες χάντρες που αντανακλούν το φως σε κάθε κίνηση — η Laluna είναι η τσάντα που θα σε κάνει πρωταγωνίστρια της βραδιάς.',img:'https://i.imgur.com/bV80dHm.png',note:'Stainless steel rings. Dimensions: 16×14cm.'},
+  {id:'laluna',name:'Laluna',cat:'crystal',cats:['acrylic','crystal'],desc:'Φτιαγμένη από εκατοντάδες κρυστάλλινες χάντρες που αντανακλούν το φως σε κάθε κίνηση. Η Laluna είναι η τσάντα που θα σε κάνει πρωταγωνίστρια της βραδιάς.',img:'https://i.imgur.com/bV80dHm.png',note:'Stainless steel rings. Dimensions: 16×14cm.'},
   {id:'cardholder',name:'Cardholder',cat:'accessories',materials:['acrylic','crystal'],desc:'Γιατί ακόμα και τα essentials σου αξίζουν μια δόση πολυτέλειας. Το beaded cardholder είναι η λεπτομέρεια που αναβαθμίζει την καθημερινότητά σου.',img:'https://i.imgur.com/K2nwZ3v.png',note:'Holds 4-6 cards. Also available with a small wrist strap.'},
 ];
 
@@ -660,7 +679,7 @@ function renderModalColors(key) {
   }
   const grid = document.getElementById('modalColorsGrid');
   if (!colors.length) {
-    grid.innerHTML = `<p style="font-size:12px;color:var(--gd);grid-column:1/-1">Coming soon — DM us for details.</p>`;
+    grid.innerHTML = `<p style="font-size:12px;color:var(--gd);grid-column:1/-1">Coming soon. DM us for details.</p>`;
   } else {
     grid.innerHTML = colors.map(c=>`
       <div class="modal-color-item">
@@ -688,7 +707,7 @@ function openModal(b){
     toggleEl.innerHTML = materials.map((m,i) =>
       `<button class="modal-toggle-btn${i===0?' active':''}" data-cat="${m}" onclick="renderModalColors('${m}')">${MM_MATERIALS[m].label}</button>`
     ).join('');
-    document.getElementById('modalBagCat').textContent = 'Marshmallow — Cotton, Metallic & Velvet';
+    document.getElementById('modalBagCat').textContent = 'Marshmallow · Cotton, Metallic & Velvet';
     renderModalColors('mm-cotton');
   } else if (b.materials && b.materials.length > 1) {
     // accessory with bead material toggle (Cardholder)
@@ -708,7 +727,7 @@ function openModal(b){
     renderModalColors(b.cat);
   } else {
     toggleEl.style.display = 'none';
-    document.getElementById('modalBagCat').textContent = CATS[b.cat].label+' — '+CATS[b.cat].desc;
+    document.getElementById('modalBagCat').textContent = CATS[b.cat].label+' · '+CATS[b.cat].desc;
     renderModalColors(b.cat);
   }
 
@@ -757,42 +776,42 @@ const questions = [
   {
     q: "How would you describe your daily vibe?",
     opts: [
-      { icon: '🌸', text: 'Soft & cosy — I love touchable, cloud-like textures', tags: {loopi:3, hug:3, bella:1} },
-      { icon: '🎀', text: 'Feminine & elegant — details and polish matter to me',  tags: {bella:3, perla:2, kelly:2} },
-      { icon: '🖤', text: 'Bold & structured — clean lines, strong silhouette',    tags: {grace:3, kelly:2, nicole:2} },
-      { icon: '✨', text: 'Glamorous — I want to shine and be noticed',            tags: {laluna:3, perla:2, cardholder:1} },
+      { icon: '🌸', text: 'Soft & cosy, I love touchable textures', tags: {loopi:3, hug:3, bella:1} },
+      { icon: '🎀', text: 'Feminine & elegant, details matter to me',  tags: {bella:3, perla:2, kelly:2} },
+      { icon: '🖤', text: 'Bold & structured, clean lines',    tags: {grace:3, kelly:2, nicole:2} },
+      { icon: '✨', text: 'Glamorous, I want to shine and be noticed',            tags: {laluna:3, perla:2, cardholder:1} },
     ]
   },
   {
     q: "What's a typical day for you?",
     opts: [
-      { icon: '☕', text: 'Casual outings — coffee, errands, everyday life',    tags: {loopi:3, hug:2, bella:2} },
-      { icon: '💼', text: 'On the go — meetings, work, busy schedule',          tags: {grace:3, nicole:2, kelly:2} },
-      { icon: '🥂', text: 'Special occasions — dinners out, evenings, events',  tags: {laluna:3, perla:2, cardholder:2} },
-      { icon: '🌀', text: 'Mixed — I need a bag that handles everything',        tags: {grace:2, hug:3, nicole:2} },
+      { icon: '☕', text: 'Casual outings, coffee, errands, everyday life',    tags: {loopi:3, hug:2, bella:2} },
+      { icon: '💼', text: 'On the go, meetings, work, busy schedule',          tags: {grace:3, nicole:2, kelly:2} },
+      { icon: '🥂', text: 'Special occasions, dinners out, evenings',  tags: {laluna:3, perla:2, cardholder:2} },
+      { icon: '🌀', text: 'Mixed, I need a bag for everything',        tags: {grace:2, hug:3, nicole:2} },
     ]
   },
   {
     q: "How much do you carry?",
     opts: [
-      { icon: '🪭', text: 'Just cards & phone — the bare minimum',             tags: {cardholder:3, laluna:2, kelly:1} },
+      { icon: '🪭', text: 'Just cards & phone, the bare minimum',             tags: {cardholder:3, laluna:2, kelly:1} },
       { icon: '👛', text: 'Wallet, phone, keys, a bit of makeup',              tags: {perla:2, bella:2, loopi:2, kelly:2} },
-      { icon: '🎒', text: 'Quite a lot — I always seem to need everything',    tags: {grace:3, hug:3, nicole:2} },
-      { icon: '🌙', text: 'Almost nothing — it\'s evening, I travel light',    tags: {laluna:3, perla:2, cardholder:2} },
+      { icon: '🎒', text: 'Quite a lot, I always need everything',    tags: {grace:3, hug:3, nicole:2} },
+      { icon: '🌙', text: 'Almost nothing, I travel light',    tags: {laluna:3, perla:2, cardholder:2} },
     ]
   }
 ];
 
 const bagResults = {
-  loopi:      { desc: 'You need something that matches your energy — soft, cloud-like and impossible not to touch. The Loopi\'s chunky marshmallow texture turns even the simplest outfit into a Pinterest moment. 30×20cm.' },
-  hug:        { desc: 'You\'re the kind of person who wants their bag to feel as good as it looks. The Hug is round, soft and full — the perfect everyday companion that fits all your essentials with a warm touch. 24×18cm.' },
+  loopi:      { desc: 'You need something that matches your energy: soft, cloud-like and impossible not to touch. The Loopi\'s chunky marshmallow texture turns even the simplest outfit into a Pinterest moment. 30×20cm.' },
+  hug:        { desc: 'You\'re the kind of person who wants their bag to feel as good as it looks. The Hug is round, soft and full, the perfect everyday companion that fits all your essentials with a warm touch. 24×18cm.' },
   grace:      { desc: 'You\'re structured, confident and always on the move. The Grace\'s signature crochet silhouette goes from your morning coffee run straight to an evening out without missing a beat. 25×18cm.' },
-  bella:      { desc: 'Feminine, effortless and full of character. The Bella\'s baguette shape and signature side bows make it the piece you reach for without thinking — and never want to put down. 28×18cm.' },
-  kelly:      { desc: 'Minimal, sophisticated and quietly striking. The Kelly is the clutch that takes you from business meetings to the most special evenings — no effort required. 26×18cm.' },
+  bella:      { desc: 'Feminine, effortless and full of character. The Bella\'s baguette shape and signature side bows make it the piece you reach for without thinking, and never want to put down. 28×18cm.' },
+  kelly:      { desc: 'Minimal, sophisticated and quietly striking. The Kelly is the clutch that takes you from business meetings to the most special evenings, no effort required. 26×18cm.' },
   nicole:     { desc: 'Retro silhouette, modern attitude. The Nicole\'s chunky shoulder strap and baguette shape give you that effortless cool vibe from morning to night. Made to be worn, made to be noticed.' },
-  perla:      { desc: 'There\'s nothing more dreamy than a bag full of pearls. The Perla brings the luxury feel you\'ve been looking for — choose acrylic or crystal beads in any shade you love. 20×12cm.' },
-  laluna:     { desc: 'You\'re the protagonist of the evening. Hundreds of crystal beads catching every light with every move — the Laluna is the bag that makes the night yours. 16×14cm.' },
-  cardholder: { desc: 'You believe in the power of the small statement. The beaded cardholder is the luxurious detail that upgrades your everyday — because even your essentials deserve a touch of glamour.' },
+  perla:      { desc: 'There\'s nothing more dreamy than a bag full of pearls. The Perla brings the luxury feel you\'ve been looking for. Choose acrylic or crystal beads in any shade you love. 20×12cm.' },
+  laluna:     { desc: 'You\'re the protagonist of the evening. Hundreds of crystal beads catching every light with every move: the Laluna is the bag that makes the night yours. 16×14cm.' },
+  cardholder: { desc: 'You believe in the power of the small statement. The beaded cardholder is the luxurious detail that upgrades your everyday, because even your essentials deserve a touch of glamour.' },
 };
 
 let quizAnswers = [];
