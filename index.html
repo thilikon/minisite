@@ -602,7 +602,7 @@ const bags=[
   {id:'nicole',name:'Nicole',cat:'tshirt',desc:'Με "baguette" σιλουέτα και chunky shoulder strap, η Nicole συνδυάζει retro αισθητική με σύγχρονο design. Φοριέται άνετα στον ώμο και δίνει αμέσως το "effortless cool" vibe.',img:'https://i.imgur.com/oWKEiNp.png',note:'Shoulder bag. Dimensions coming soon.'},
   {id:'perla',name:'Perla',cat:'acrylic',cats:['acrylic','crystal'],desc:'Υπάρχει κάτι πιο ονειρικό από μια τσάντα γεμάτη πέρλες; Η Perla δίνει το luxury feel που αναζητάς. Διάλεξε γυάλινες ή ακρυλικές χάντρες στην αγαπημένη σου απόχρωση.',img:'https://i.imgur.com/zBxPh48.png',note:'Detachable long strap. Dimensions: 20×12cm.'},
   {id:'laluna',name:'Laluna',cat:'crystal',cats:['acrylic','crystal'],desc:'Φτιαγμένη από εκατοντάδες κρυστάλλινες χάντρες που αντανακλούν το φως σε κάθε κίνηση — η Laluna είναι η τσάντα που θα σε κάνει πρωταγωνίστρια της βραδιάς.',img:'https://i.imgur.com/bV80dHm.png',note:'Stainless steel rings. Dimensions: 16×14cm.'},
-  {id:'cardholder',name:'Cardholder',cat:'accessories',cats:['acrylic','crystal'],desc:'Γιατί ακόμα και τα essentials σου αξίζουν μια δόση πολυτέλειας. Το beaded cardholder είναι η λεπτομέρεια που αναβαθμίζει την καθημερινότητά σου.',img:'https://i.imgur.com/K2nwZ3v.png',note:'Holds 4-6 cards. Also available with a small wrist strap.'},
+  {id:'cardholder',name:'Cardholder',cat:'accessories',materials:['acrylic','crystal'],desc:'Γιατί ακόμα και τα essentials σου αξίζουν μια δόση πολυτέλειας. Το beaded cardholder είναι η λεπτομέρεια που αναβαθμίζει την καθημερινότητά σου.',img:'https://i.imgur.com/K2nwZ3v.png',note:'Holds 4-6 cards. Also available with a small wrist strap.'},
 ];
 
 // render bags
@@ -690,8 +690,16 @@ function openModal(b){
     ).join('');
     document.getElementById('modalBagCat').textContent = 'Marshmallow — Cotton, Metallic & Velvet';
     renderModalColors('mm-cotton');
+  } else if (b.materials && b.materials.length > 1) {
+    // accessory with bead material toggle (Cardholder)
+    toggleEl.style.display = 'flex';
+    toggleEl.innerHTML = b.materials.map((c,i) =>
+      `<button class="modal-toggle-btn${i===0?' active':''}" data-cat="${c}" onclick="renderModalColors('${c}')">${CATS[c].label}</button>`
+    ).join('');
+    document.getElementById('modalBagCat').textContent = 'Available in multiple materials';
+    renderModalColors(b.materials[0]);
   } else if (b.cats && b.cats.length > 1) {
-    // multi material (Perla, Laluna, Cardholder)
+    // multi material (Perla, Laluna)
     toggleEl.style.display = 'flex';
     toggleEl.innerHTML = b.cats.map(c =>
       `<button class="modal-toggle-btn${c===b.cat?' active':''}" data-cat="${c}" onclick="renderModalColors('${c}')">${CATS[c].label}</button>`
