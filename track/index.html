@@ -826,7 +826,12 @@ function route(){
   const params = new URLSearchParams(location.search);
   const t = params.get("t");
   if(location.hash === "#admin"){ openAdmin(); return; }
-  if(location.hash === "#feedback"){ show("view-feedback"); renderFeedbackForm(document.getElementById("fbMount"), null); return; }
+  if(location.hash.indexOf("#feedback") === 0){
+    const src = location.hash === "#feedback-card" ? "card"
+              : location.hash === "#feedback-ig"   ? "ig"
+              : "link";
+    show("view-feedback"); renderFeedbackForm(document.getElementById("fbMount"), null, src); return;
+  }
   if(t){ show("view-track"); loadTracking(t); return; }
   show("view-landing");
 }
@@ -945,7 +950,7 @@ function renderTracking(o){
   document.getElementById("postLock").classList.toggle("hidden", unlocked);
   document.getElementById("fbCardOrder").classList.toggle("hidden", !unlocked);
   contact.classList.toggle("hidden", unlocked);
-  if(unlocked) renderFeedbackForm(document.getElementById("fbMountOrder"), currentToken);
+  if(unlocked) renderFeedbackForm(document.getElementById("fbMountOrder"), currentToken, "order");
 }
 
 function renderItemCard(it, method, showPrice){
@@ -1089,7 +1094,7 @@ function fbThanksHtml(){
   </div>`;
 }
 
-function renderFeedbackForm(mount, orderToken){
+function renderFeedbackForm(mount, orderToken, source){
   if(!mount) return;
   if(orderToken){ try{ if(localStorage.getItem(fbGuardKey(orderToken))){ mount.innerHTML = fbThanksHtml(); return; } }catch(e){} }
 
@@ -1147,7 +1152,7 @@ function renderFeedbackForm(mount, orderToken){
     }
     const btn = mount.querySelector("[data-submit]");
     btn.disabled=true; btn.textContent="Στέλνουμε…";
-    const payload = { order_token: orderToken || null };
+    const payload = { order_token: orderToken || null, source: source || (orderToken ? "order" : "link") };
     FB_Q.forEach(it=>{ if(it.k) payload["q_"+it.k] = (it.type==="text" ? (answers.open||null) : answers[it.k]); });
     try{
       const res = await fetch(REST + "/thilikon_feedback", {
@@ -1310,6 +1315,19 @@ function renderFbDashboard(){
   html += `<p style="font-size:11.5px;color:var(--muted);margin-bottom:14px">${rows.length} απαντήσεις · ${fmt(min)} – ${fmt(max)}</p>`;
   html += `<div class="stat-grid">${tiles.join("")}</div>`;
 
+  // προέλευση απαντήσεων (από πού ήρθε το link)
+  const SRC_LABELS = { order:"Παραγγελία (tracking)", card:"Κάρτα (QR)", ig:"Instagram", link:"Link" };
+  const srcCounts = {};
+  rows.forEach(r=>{ const s = r.source || (r.order_token ? "order" : "link"); srcCounts[s] = (srcCounts[s]||0)+1; });
+  const srcOrder = ["order","card","ig","link"].filter(s=>srcCounts[s]);
+  Object.keys(srcCounts).forEach(s=>{ if(!srcOrder.includes(s)) srcOrder.push(s); });
+  const srcMax = Math.max(1, ...srcOrder.map(s=>srcCounts[s]));
+  html += `<div class="stats-sub">Προέλευση</div>`;
+  srcOrder.forEach(s=>{
+    const c = srcCounts[s], pct = Math.round(c/rows.length*100);
+    html += `<div class="fbrow"><div class="fbrow-l"><span>${SRC_LABELS[s]||s}</span><span class="fbrow-c">${c} · ${pct}%</span></div><div class="track"><span class="fill" style="width:${Math.round(c/srcMax*100)}%"></span></div></div>`;
+  });
+
   FB_Q.forEach(q=>{
     if(q.sec){ const hot = /εικόνα/.test(q.sec); html += `<div class="stats-sub" style="${hot?"color:#9b3b29":""}">${q.sec}${hot?" ●":""}</div>`; return; }
     if(q.type!=="pills") return;
@@ -1325,8 +1343,12 @@ function renderFbDashboard(){
   });
 
   const cmts = rows.filter(r=>r.q_open && r.q_open.trim());
+  const cmtSrc = r => r.order_token ? "από παραγγελία"
+                    : r.source==="card" ? "από κάρτα (QR)"
+                    : r.source==="ig"   ? "από Instagram"
+                    : "από link";
   html += `<div class="stats-sub">Σχόλια</div>`;
-  if(cmts.length){ cmts.forEach(r=>{ html += `<div class="fbd-cmt"><div class="t">„${esc(r.q_open)}”</div><div class="d">${fmt(new Date(r.created_at))} · ${r.order_token?"από παραγγελία":"από κάρτα (QR)"}</div></div>`; }); }
+  if(cmts.length){ cmts.forEach(r=>{ html += `<div class="fbd-cmt"><div class="t">„${esc(r.q_open)}”</div><div class="d">${fmt(new Date(r.created_at))} · ${cmtSrc(r)}</div></div>`; }); }
   else html += `<div class="fbd-empty">Κανένα σχόλιο ακόμη.</div>`;
 
   html += `</div></div>`;
