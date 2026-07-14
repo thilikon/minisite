@@ -44,7 +44,7 @@
     --pill:999px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overflow-x:clip}
   body{
     font-family:'Inter',system-ui,sans-serif;
     background:var(--cream);
@@ -53,6 +53,7 @@
     -webkit-font-smoothing:antialiased;
     min-height:100vh;
     min-height:100dvh;
+    overflow-x:clip;
     -webkit-tap-highlight-color:transparent;
   }
   /* display headings (high-contrast editorial serif) */
@@ -61,7 +62,7 @@
     font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;
     color:var(--muted);font-weight:600;
   }
-  .wrap{max-width:600px;margin:0 auto;padding:0 22px;overflow-x:hidden;overflow-x:clip}
+  .wrap{max-width:600px;margin:0 auto;padding:0 22px}
 
   /* ---------- top bar ---------- */
   header{
@@ -252,7 +253,9 @@
   .post-lock .pl-t{font-weight:600;font-size:13.5px}
   .post-lock .pl-s{font-size:13px;color:var(--ink-soft);margin-top:3px;line-height:1.5}
   .post.locked .pcard{opacity:.5;filter:grayscale(.35)}
-  .post.locked .pcard .btn{pointer-events:none}
+  .post.locked .pcard .btn,
+  .post.locked .pcard .stars button,
+  .post.locked .pcard textarea{pointer-events:none}
   .fb-locked{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:13.5px;color:var(--muted);font-weight:500}
   .pcard{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:22px 22px}
   .pcard.dark{background:var(--ink);color:#fff;border-color:var(--ink)}
@@ -264,43 +267,11 @@
   .pcard .pbtn{margin-top:16px}
   .pcard.dark .btn{border-color:#fff;color:#fff}
   .pcard.dark .btn:hover{background:#fff;color:var(--ink)}
-  /* ---------- feedback questionnaire ---------- */
-  .fbform{margin-top:4px}
-  .fb-sec{margin-top:24px}
-  .fb-sec:first-child{margin-top:8px}
-  .fb-sec-t{font-size:20px;font-weight:600;line-height:1.1}
-  .fb-sec-l{height:1px;background:var(--line);margin:9px 0 2px}
-  .fb-q{margin-top:17px}
-  .fb-q .ql{font-size:13.5px;font-weight:500;margin-bottom:9px;line-height:1.45}
-  .fb-q .ql .opt{color:var(--muted);font-weight:400}
-  .fb-scale{display:flex;gap:7px}
-  .fb-scale button{flex:1;height:42px;border:1px solid var(--line);background:var(--cream);border-radius:11px;font-family:'Inter';font-size:15px;font-weight:600;color:var(--ink);cursor:pointer;transition:.15s}
-  .fb-scale button:hover{border-color:var(--muted)}
-  .fb-scale button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
-  .fb-ends{display:flex;justify-content:space-between;margin-top:6px;font-size:10.5px;color:var(--muted)}
-  .fb-opts{display:flex;flex-wrap:wrap;gap:7px}
-  .fb-opts.col{flex-direction:column}
-  .fb-opt{border:1px solid var(--line);background:var(--cream);border-radius:var(--pill);padding:10px 15px;font-family:'Inter';font-size:12.5px;color:var(--ink);cursor:pointer;transition:.15s;text-align:left;line-height:1.35}
-  .fb-opts.col .fb-opt{border-radius:12px}
-  .fb-opt:hover{border-color:var(--muted)}
-  .fb-opt.on{background:var(--ink);color:#fff;border-color:var(--ink)}
-  .fb-err{font-size:12.5px;color:#9b3b29;margin-top:12px}
-  .fb-submit{margin-top:20px}
+  /* star rating */
+  .stars{display:flex;gap:6px;margin:14px 0 4px}
+  .stars button{background:none;border:none;cursor:pointer;font-size:30px;line-height:1;color:var(--line);transition:.12s;padding:0}
+  .stars button.on{color:#e8b23a}
   .fb-thanks{font-size:14px;color:var(--ink-soft);margin-top:6px}
-  /* feedback dashboard (admin) */
-  .fbrow{margin-bottom:10px}
-  .fbrow-l{display:flex;justify-content:space-between;gap:10px;font-size:12px;margin-bottom:5px}
-  .fbrow-c{color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
-  .fbrow .track{height:8px;background:var(--stone);border-radius:6px;overflow:hidden}
-  .fbrow .fill{display:block;height:100%;background:var(--ink);border-radius:6px}
-  .fbq-t{margin:12px 0 6px;font-size:12.5px;font-weight:600}
-  .fbd-cmt{background:var(--cream);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:9px}
-  .fbd-cmt .t{font-size:15px;font-style:italic;line-height:1.45}
-  .fbd-cmt .d{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:7px}
-  .fbd-empty{text-align:center;color:var(--muted);font-size:13px;padding:34px 0}
-  .tabsw{display:flex;gap:7px}
-  .tabsw .tb{font-family:'Inter';font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:8px 15px;border-radius:var(--pill);border:1px solid var(--line);background:var(--cream);color:var(--ink-soft);cursor:pointer;transition:.15s}
-  .tabsw .tb.sel{background:var(--ink);color:#fff;border-color:var(--ink)}
 
   /* ---------- admin ---------- */
   .admin-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
@@ -494,11 +465,24 @@
           </div>
         </div>
 
-        <div class="pcard hidden" id="fbCardOrder">
+        <div class="pcard">
           <div class="pe">Η εμπειρία σου</div>
-          <h3>Πες μας τη γνώμη σου</h3>
-          <p class="pb">Βοήθησέ μας να γίνουμε καλύτεροι. Λίγες ερωτήσεις για το προϊόν και την εμπειρία σου.</p>
-          <div id="fbMountOrder"></div>
+          <h3 id="fbTitle">Πώς σου φάνηκε;</h3>
+          <p class="pb">Η γνώμη σου μετράει πολύ για εμάς. Πες μας πώς σου φάνηκε η δημιουργία σου και η όλη εμπειρία , μας βοηθάει να γινόμαστε καλύτεροι.</p>
+          <div class="fb-locked hidden" id="fbLocked"><span>🔒</span> Διαθέσιμο μόλις παραλάβεις τη δημιουργία σου</div>
+          <div id="fbForm">
+            <div class="stars" id="fbStars">
+              <button data-v="1" aria-label="1">★</button>
+              <button data-v="2" aria-label="2">★</button>
+              <button data-v="3" aria-label="3">★</button>
+              <button data-v="4" aria-label="4">★</button>
+              <button data-v="5" aria-label="5">★</button>
+            </div>
+            <textarea id="fbComment" placeholder="Πες μας δυο λόγια (προαιρετικό)…" style="margin-top:10px"></textarea>
+            <p id="fbMsg" class="msg err hidden" style="margin-top:10px"></p>
+            <div class="pbtn"><button class="btn solid" onclick="submitFeedback()">Στείλε την αξιολόγηση</button></div>
+          </div>
+          <div id="fbDone" class="hidden"><p class="fb-thanks">Ευχαριστούμε για την αξιολόγησή σου! 🤍</p></div>
         </div>
 
         <div class="pcard dark">
@@ -548,12 +532,9 @@
     <!-- panel -->
     <div id="adminPanel" class="hidden">
       <div class="admin-bar">
-        <div class="tabsw">
-          <button class="tb sel" id="tabOrders" onclick="showAdminTab('orders')">Παραγγελίες</button>
-          <button class="tb" id="tabFb" onclick="showAdminTab('feedback')">Feedback</button>
-        </div>
+        <span class="e">Παραγγελίες</span>
         <div style="display:flex;gap:8px">
-          <button class="btn solid sm" id="newOrderBtn" onclick="openOrderModal()">+ Νέα</button>
+          <button class="btn solid sm" onclick="openOrderModal()">+ Νέα</button>
           <button class="btn ghost sm" onclick="adminLogout()">Έξοδος</button>
         </div>
       </div>
@@ -567,19 +548,6 @@
       <input id="search" placeholder="Αναζήτηση (όνομα, προϊόν, κωδικός…)" oninput="renderOrders()" style="margin-bottom:14px">
       <div id="adminMsg" class="msg ok hidden"></div>
       <div id="ordersList"><div class="spinner"></div></div>
-      <div id="fbAdmin" class="hidden"></div>
-    </div>
-  </section>
-
-  <!-- ============ STANDALONE FEEDBACK (QR target: …/track/#feedback) ============ -->
-  <section id="view-feedback" class="hidden">
-    <div class="card">
-      <div class="center" style="margin-bottom:4px">
-        <p class="eyebrow">Η γνώμη σου</p>
-        <h1 class="serif" style="font-size:30px;font-weight:600;margin:9px 0 6px">Πες μας τη γνώμη σου</h1>
-        <p style="color:var(--ink-soft);font-size:14px;max-width:430px;margin:0 auto">Βοήθησέ μας να γίνουμε καλύτεροι. Λίγες ερωτήσεις για το προϊόν και την εμπειρία σου.</p>
-      </div>
-      <div id="fbMount" style="margin-top:6px"></div>
     </div>
   </section>
 
@@ -807,7 +775,6 @@ const store = {
 
 let adminToken = store.get("th_admin_at") || null;
 let ordersCache = [];
-let feedbackCache = [];
 let statsYear = new Date().getFullYear();
 let editingId = null;
 let pickedStage = 1;
@@ -818,7 +785,7 @@ let pickedFlow = "normal";
    ROUTER
 ============================================================ */
 function show(id){
-  ["view-landing","view-track","view-admin","view-feedback"].forEach(v=>{
+  ["view-landing","view-track","view-admin"].forEach(v=>{
     document.getElementById(v).classList.toggle("hidden", v!==id);
   });
 }
@@ -826,12 +793,6 @@ function route(){
   const params = new URLSearchParams(location.search);
   const t = params.get("t");
   if(location.hash === "#admin"){ openAdmin(); return; }
-  if(location.hash.indexOf("#feedback") === 0){
-    const src = location.hash === "#feedback-card" ? "card"
-              : location.hash === "#feedback-ig"   ? "ig"
-              : "link";
-    show("view-feedback"); renderFeedbackForm(document.getElementById("fbMount"), null, src); return;
-  }
   if(t){ show("view-track"); loadTracking(t); return; }
   show("view-landing");
 }
@@ -948,9 +909,8 @@ function renderTracking(o){
   post.classList.remove("hidden");
   post.classList.toggle("locked", !unlocked);
   document.getElementById("postLock").classList.toggle("hidden", unlocked);
-  document.getElementById("fbCardOrder").classList.toggle("hidden", !unlocked);
   contact.classList.toggle("hidden", unlocked);
-  if(unlocked) renderFeedbackForm(document.getElementById("fbMountOrder"), currentToken, "order");
+  setupFeedback(o, unlocked);
 }
 
 function renderItemCard(it, method, showPrice){
@@ -1030,144 +990,56 @@ function shipBox(eyebrow, value, scopeNames, url, btnTxt){
   </div>`;
 }
 
-/* ============================================================
-   FEEDBACK (έρευνα εμπειρίας — κοινή για σελίδα παραγγελίας & QR)
-   Πηγή αλήθειας: FB_Q. Το admin dashboard διαβάζει το ίδιο.
-============================================================ */
+/* ---- feedback ---- */
+let fbRating = 0;
 let currentToken = null;
-
-const FB_Q = [
-  { sec:"Το προϊόν" },
-  { k:"satisfaction", type:"scale", q:"Πόσο ευχαριστημένη/ος είσαι συνολικά ;", lo:"Καθόλου", hi:"Απόλυτα" },
-  { k:"quality", type:"scale", q:"Πώς θα βαθμολογούσες την ποιότητα κατασκευής ;", lo:"Μέτρια", hi:"Άψογη" },
-  { k:"expectation", type:"pills", col:true, q:"Ανταποκρίθηκε σε αυτό που περίμενες από τις φωτογραφίες ;", opts:[
-      ["Ναι, απόλυτα","Ναι , ήταν ακριβώς όπως το φανταζόμουν"],
-      ["Περίπου","Περίπου , μικρές διαφορές"],
-      ["Ήταν διαφορετικό","Ήταν αρκετά διαφορετικό"] ] },
-
-  { sec:"Η παραγγελία" },
-  { k:"discovery", type:"pills", q:"Πώς μας ανακάλυψες ;", opts:[
-      ["Instagram","Instagram"],["TikTok","TikTok"],
-      ["Σύσταση","Μου το πρότεινε κάποια/ος"],
-      ["Την είδα σε κάποια","Την είδα να τη φοράει κάποια"],
-      ["Άλλο","Αλλού"] ] },
-  { k:"communication", type:"scale", q:"Πώς ήταν η επικοινωνία μαζί μας ( DM , παραγγελία ) ;", lo:"Δύσκολη", hi:"Άψογη" },
-  { k:"delivery", type:"pills", q:"Ο χρόνος παράδοσης ;", opts:[
-      ["Πιο γρήγορα","Πιο γρήγορα απ' ό,τι περίμενα"],
-      ["Όπως το περίμενα","Όπως το περίμενα"],
-      ["Άργησε","Άργησε λίγο"] ] },
-  { k:"tracking", type:"pills", q:"Χρησιμοποίησες αυτή τη σελίδα παρακολούθησης της παραγγελίας σου ;", opts:[
-      ["Ναι, με βοήθησε","Ναι , με βοήθησε"],
-      ["Ναι, αδιάφορη","Ναι , αλλά αδιάφορη"],
-      ["Δεν τη χρησιμοποίησα","Δεν τη χρησιμοποίησα"] ] },
-
-  { sec:"Η εικόνα μας" },
-  { k:"follows_ig", type:"pills", q:"Μας ακολουθείς στο Instagram ;", opts:[
-      ["Ναι","Ναι"],["Όχι","Όχι ακόμα"] ] },
-  { k:"noticed_aesthetic", type:"pills", col:true, q:"Πρόσεξες την ανανεωμένη μας αισθητική τους τελευταίους μήνες ;", opts:[
-      ["Ναι, μου αρέσει πολύ","Ναι , και μου αρέσει πολύ"],
-      ["Την πρόσεξα","Την πρόσεξα , χωρίς ιδιαίτερη γνώμη"],
-      ["Δεν το πρόσεξα","Δεν το είχα προσέξει"] ] },
-  { k:"aesthetic_intent", type:"pills", col:true, q:"Η νέα εικόνα σε κάνει πιο πιθανό να αγοράσεις ;", opts:[
-      ["Σαφώς πιο πιθανό","Ναι , σαφώς πιο πιθανό"],
-      ["Λίγο πιο πιθανό","Λίγο πιο πιθανό"],
-      ["Δεν άλλαξε κάτι","Δεν άλλαξε κάτι για μένα"] ] },
-  { k:"ai_photos", type:"pills", col:true, q:"Μερικές φωτογραφίες μας είναι φτιαγμένες με AI. Πώς σου φαίνεται αυτό ;", opts:[
-      ["Δεν με πειράζει","Δεν με πειράζει καθόλου"],
-      ["Δεν το κατάλαβα","Δεν το είχα καταλάβει καν"],
-      ["Προτιμώ πραγματικές","Προτιμώ πραγματικές φωτογραφίες"],
-      ["Με ενοχλεί","Με ενοχλεί"] ] },
-
-  { sec:"Θα ξαναρχόσουν ;" },
-  { k:"repurchase", type:"scale", q:"Πόσο πιθανό είναι να αγοράσεις ξανά από εμάς ;", lo:"Απίθανο", hi:"Σίγουρα" },
-  { k:"recommend", type:"pills", q:"Θα μας πρότεινες σε φίλη/φίλο ;", opts:[
-      ["Σίγουρα","Σίγουρα"],["Μάλλον ναι","Μάλλον ναι"],["Ίσως","Ίσως"],["Όχι","Όχι"] ] },
-  { k:"open", type:"text", optional:true, q:"Τι θα ήθελες να δεις από το THILIKON ;", ph:"Ένα χρώμα, ένα σχέδιο, μια ιδέα — ή ο,τιδήποτε θες να μας πεις." }
-];
-
-function fbGuardKey(t){ return "th_fb_" + t; }
-function fbThanksHtml(){
-  return `<div class="center" style="padding:14px 0 4px">
-    <div class="pe">Ευχαριστούμε</div>
-    <h3 class="serif" style="font-size:24px;font-weight:600;margin:6px 0 6px">Το λάβαμε 🤍</h3>
-    <p class="fb-thanks">Η γνώμη σου μας βοηθάει να γινόμαστε καλύτεροι σε κάθε ραφή.</p>
-  </div>`;
+function setupFeedback(o, unlocked){
+  const form = document.getElementById("fbForm");
+  const doneBox = document.getElementById("fbDone");
+  const locked = document.getElementById("fbLocked");
+  if(!unlocked){                 // not ready yet — locked
+    locked.classList.remove("hidden");
+    form.classList.add("hidden");
+    doneBox.classList.add("hidden");
+    return;
+  }
+  locked.classList.add("hidden");
+  if(o.feedback_at){             // already submitted
+    form.classList.add("hidden");
+    doneBox.classList.remove("hidden");
+    return;
+  }
+  form.classList.remove("hidden");
+  doneBox.classList.add("hidden");
+  fbRating = 0;
+  document.getElementById("fbComment").value = "";
+  document.getElementById("fbMsg").classList.add("hidden");
+  paintStars(0);
+  document.querySelectorAll("#fbStars button").forEach(b=>{
+    b.onclick = ()=>{ fbRating = +b.dataset.v; paintStars(fbRating); };
+  });
 }
-
-function renderFeedbackForm(mount, orderToken, source){
-  if(!mount) return;
-  if(orderToken){ try{ if(localStorage.getItem(fbGuardKey(orderToken))){ mount.innerHTML = fbThanksHtml(); return; } }catch(e){} }
-
-  const answers = {};
-  let html = '<div class="fbform">';
-  FB_Q.forEach(item=>{
-    if(item.sec){ html += `<div class="fb-sec"><div class="fb-sec-t serif">${item.sec}</div><div class="fb-sec-l"></div></div>`; return; }
-    html += `<div class="fb-q" data-key="${item.k}">`;
-    html += `<div class="ql">${item.q}${item.optional?' <span class="opt">( προαιρετικό )</span>':''}</div>`;
-    if(item.type==="scale"){
-      html += `<div class="fb-scale" data-scale>`;
-      for(let n=1;n<=5;n++) html += `<button type="button" data-v="${n}">${n}</button>`;
-      html += `</div><div class="fb-ends"><span>${item.lo}</span><span>${item.hi}</span></div>`;
-    } else if(item.type==="pills"){
-      html += `<div class="fb-opts ${item.col?"col":""}" data-opts>`;
-      item.opts.forEach(([val,label])=> html += `<button type="button" class="fb-opt" data-v="${esc(val)}">${esc(label)}</button>`);
-      html += `</div>`;
-    } else if(item.type==="text"){
-      html += `<textarea data-open placeholder="${esc(item.ph||"")}"></textarea>`;
-    }
-    html += `</div>`;
-  });
-  html += `<p class="fb-err hidden" data-err></p>`;
-  html += `<div class="fb-submit"><button class="btn solid" data-submit style="width:100%">Στείλε τη γνώμη μου</button></div></div>`;
-  mount.innerHTML = html;
-
-  const err = mount.querySelector("[data-err]");
-  const hideErr = ()=> err.classList.add("hidden");
-
-  mount.querySelectorAll("[data-scale]").forEach(row=>{
-    const key = row.closest(".fb-q").dataset.key;
-    row.querySelectorAll("button").forEach(b=> b.onclick=()=>{
-      row.querySelectorAll("button").forEach(x=>x.classList.remove("on"));
-      b.classList.add("on"); answers[key]=+b.dataset.v; hideErr();
+function paintStars(n){
+  document.querySelectorAll("#fbStars button").forEach(b=>b.classList.toggle("on", +b.dataset.v <= n));
+}
+async function submitFeedback(){
+  const msg = document.getElementById("fbMsg");
+  msg.classList.add("hidden");
+  if(!fbRating){ msg.textContent="Διάλεξε πόσα αστέρια θα έδινες."; msg.classList.remove("hidden"); return; }
+  const token = currentToken || new URLSearchParams(location.search).get("t");
+  const comment = document.getElementById("fbComment").value.trim();
+  try{
+    const res = await fetch(REST + "/rpc/submit_feedback", {
+      method:"POST",
+      headers:{ "apikey":SUPABASE_ANON, "Authorization":"Bearer "+SUPABASE_ANON, "Content-Type":"application/json" },
+      body: JSON.stringify({ p_token: token, p_rating: fbRating, p_comment: comment })
     });
-  });
-  mount.querySelectorAll("[data-opts]").forEach(grp=>{
-    const key = grp.closest(".fb-q").dataset.key;
-    grp.querySelectorAll(".fb-opt").forEach(b=> b.onclick=()=>{
-      grp.querySelectorAll(".fb-opt").forEach(x=>x.classList.remove("on"));
-      b.classList.add("on"); answers[key]=b.dataset.v; hideErr();
-    });
-  });
-  const ta = mount.querySelector("[data-open]");
-  if(ta) ta.addEventListener("input", ()=> answers.open = ta.value.trim());
-
-  mount.querySelector("[data-submit]").onclick = async ()=>{
-    const missing = FB_Q.find(it=> it.k && it.type!=="text" && answers[it.k]===undefined);
-    if(missing){
-      err.textContent="Διάλεξε μια απάντηση σε όλα τα πεδία για να συνεχίσεις.";
-      err.classList.remove("hidden");
-      const el = mount.querySelector(`.fb-q[data-key="${missing.k}"]`);
-      if(el) el.scrollIntoView({behavior:"smooth",block:"center"});
-      return;
-    }
-    const btn = mount.querySelector("[data-submit]");
-    btn.disabled=true; btn.textContent="Στέλνουμε…";
-    const payload = { order_token: orderToken || null, source: source || (orderToken ? "order" : "link") };
-    FB_Q.forEach(it=>{ if(it.k) payload["q_"+it.k] = (it.type==="text" ? (answers.open||null) : answers[it.k]); });
-    try{
-      const res = await fetch(REST + "/thilikon_feedback", {
-        method:"POST",
-        headers:{ "apikey":SUPABASE_ANON, "Authorization":"Bearer "+SUPABASE_ANON, "Content-Type":"application/json", "Prefer":"return=minimal" },
-        body: JSON.stringify(payload)
-      });
-      if(!res.ok) throw new Error(await res.text());
-      if(orderToken){ try{ localStorage.setItem(fbGuardKey(orderToken),"1"); }catch(e){} }
-      mount.innerHTML = fbThanksHtml();
-    }catch(e){
-      btn.disabled=false; btn.textContent="Στείλε τη γνώμη μου";
-      err.textContent="Κάτι πήγε στραβά. Δοκίμασε ξανά σε λίγο."; err.classList.remove("hidden");
-    }
-  };
+    if(!res.ok) throw new Error();
+    document.getElementById("fbForm").classList.add("hidden");
+    document.getElementById("fbDone").classList.remove("hidden");
+  }catch(e){
+    msg.textContent="Κάτι πήγε στραβά. Δοκίμασε ξανά σε λίγο."; msg.classList.remove("hidden");
+  }
 }
 
 function stepHtml(num,title,dur,state){
@@ -1268,91 +1140,7 @@ function authHeaders(){
 async function enterPanel(){
   document.getElementById("adminLogin").classList.add("hidden");
   document.getElementById("adminPanel").classList.remove("hidden");
-  showAdminTab("orders");
   await loadOrders();
-  loadFeedback();   // προφόρτωση ώστε το readout ανά παραγγελία να είναι έτοιμο
-}
-
-function showAdminTab(tab){
-  const orders = tab !== "feedback";
-  document.getElementById("tabOrders").classList.toggle("sel", orders);
-  document.getElementById("tabFb").classList.toggle("sel", !orders);
-  ["statsBox","search","ordersList"].forEach(id=> document.getElementById(id).classList.toggle("hidden", !orders));
-  document.getElementById("adminMsg").classList.add("hidden");
-  document.getElementById("newOrderBtn").classList.toggle("hidden", !orders);
-  document.getElementById("fbAdmin").classList.toggle("hidden", orders);
-  if(!orders) renderFbDashboard();
-}
-
-async function loadFeedback(){
-  try{
-    const res = await authFetch(REST + "/thilikon_feedback?select=*&order=created_at.desc", {});
-    if(res.status===401){ return; }
-    feedbackCache = await res.json();
-    if(!document.getElementById("fbAdmin").classList.contains("hidden")) renderFbDashboard();
-  }catch(e){ /* σιωπηλά — το dashboard δείχνει άδειο */ }
-}
-
-const FB_SC_LABELS = { satisfaction:"Ικανοποίηση", quality:"Ποιότητα", communication:"Επικοινωνία", repurchase:"Επαναγορά" };
-function renderFbDashboard(){
-  const rows = feedbackCache || [];
-  const box = document.getElementById("fbAdmin");
-  if(!rows.length){ box.innerHTML = '<div class="fbd-empty">Καμία απάντηση ακόμη.</div>'; return; }
-
-  const dates = rows.map(r=>new Date(r.created_at));
-  const min = new Date(Math.min(...dates)), max = new Date(Math.max(...dates));
-  const fmt = d => d.toLocaleDateString("el-GR",{day:"2-digit",month:"short",year:"numeric"});
-
-  // μέσοι όροι (scales)
-  const tiles = [`<div class="stat dark"><div class="n">${rows.length}</div><div class="l">Απαντήσεις</div></div>`];
-  FB_Q.filter(q=>q.type==="scale").forEach(s=>{
-    const v = rows.map(r=>r["q_"+s.k]).filter(x=>x!=null);
-    const a = v.length ? (v.reduce((x,y)=>x+y,0)/v.length) : 0;
-    tiles.push(`<div class="stat"><div class="n">${a.toFixed(1)}<span style="font-size:15px;color:var(--muted)">/5</span></div><div class="l">${FB_SC_LABELS[s.k]||s.k}</div></div>`);
-  });
-
-  let html = `<div class="stats open"><div class="stats-body" style="display:block;padding:16px 16px 18px">`;
-  html += `<p style="font-size:11.5px;color:var(--muted);margin-bottom:14px">${rows.length} απαντήσεις · ${fmt(min)} – ${fmt(max)}</p>`;
-  html += `<div class="stat-grid">${tiles.join("")}</div>`;
-
-  // προέλευση απαντήσεων (από πού ήρθε το link)
-  const SRC_LABELS = { order:"Παραγγελία (tracking)", card:"Κάρτα (QR)", ig:"Instagram", link:"Link" };
-  const srcCounts = {};
-  rows.forEach(r=>{ const s = r.source || (r.order_token ? "order" : "link"); srcCounts[s] = (srcCounts[s]||0)+1; });
-  const srcOrder = ["order","card","ig","link"].filter(s=>srcCounts[s]);
-  Object.keys(srcCounts).forEach(s=>{ if(!srcOrder.includes(s)) srcOrder.push(s); });
-  const srcMax = Math.max(1, ...srcOrder.map(s=>srcCounts[s]));
-  html += `<div class="stats-sub">Προέλευση</div>`;
-  srcOrder.forEach(s=>{
-    const c = srcCounts[s], pct = Math.round(c/rows.length*100);
-    html += `<div class="fbrow"><div class="fbrow-l"><span>${SRC_LABELS[s]||s}</span><span class="fbrow-c">${c} · ${pct}%</span></div><div class="track"><span class="fill" style="width:${Math.round(c/srcMax*100)}%"></span></div></div>`;
-  });
-
-  FB_Q.forEach(q=>{
-    if(q.sec){ const hot = /εικόνα/.test(q.sec); html += `<div class="stats-sub" style="${hot?"color:#9b3b29":""}">${q.sec}${hot?" ●":""}</div>`; return; }
-    if(q.type!=="pills") return;
-    const counts = {}; rows.forEach(r=>{ const val=r["q_"+q.k]; if(val!=null&&val!=="") counts[val]=(counts[val]||0)+1; });
-    const total = Object.values(counts).reduce((a,b)=>a+b,0) || 1;
-    const order = q.opts.map(o=>o[0]);
-    const maxv = Math.max(1, ...order.map(k=>counts[k]||0));
-    html += `<div class="fbq-t">${q.q}</div>`;
-    order.forEach(k=>{
-      const c = counts[k]||0, pct = Math.round(c/total*100);
-      html += `<div class="fbrow"><div class="fbrow-l"><span>${esc(k)}</span><span class="fbrow-c">${c} · ${pct}%</span></div><div class="track"><span class="fill" style="width:${Math.round(c/maxv*100)}%"></span></div></div>`;
-    });
-  });
-
-  const cmts = rows.filter(r=>r.q_open && r.q_open.trim());
-  const cmtSrc = r => r.order_token ? "από παραγγελία"
-                    : r.source==="card" ? "από κάρτα (QR)"
-                    : r.source==="ig"   ? "από Instagram"
-                    : "από link";
-  html += `<div class="stats-sub">Σχόλια</div>`;
-  if(cmts.length){ cmts.forEach(r=>{ html += `<div class="fbd-cmt"><div class="t">„${esc(r.q_open)}”</div><div class="d">${fmt(new Date(r.created_at))} · ${cmtSrc(r)}</div></div>`; }); }
-  else html += `<div class="fbd-empty">Κανένα σχόλιο ακόμη.</div>`;
-
-  html += `</div></div>`;
-  box.innerHTML = html;
 }
 
 async function loadOrders(){
@@ -1375,7 +1163,7 @@ function renderStats(){
   const all = ordersCache;
   const total = all.length;
   const byStage = [0,0,0,0];   // ΠΡΟΪΟΝΤΑ ανά φάση
-  let ship=0, pickup=0, monthCount=0;
+  let ship=0, pickup=0, monthCount=0, ratingSum=0, ratingN=0;
   let activeOrders=0, doneOrders=0, returnActive=0, returnTotal=0, totalItems=0;
   // financials
   let revMonth=0, profitMonth=0, outstanding=0, priceSum=0, priceN=0;
@@ -1393,6 +1181,7 @@ function renderStats(){
     const c = new Date(o.created_at);
     const ym = c.getFullYear()+"-"+c.getMonth();
     if(ym===ymNow) monthCount++;
+    if(o.feedback_rating){ ratingSum+=o.feedback_rating; ratingN++; }
     const price = o.price!=null ? Number(o.price) : null;
     const cost  = o.cost!=null ? Number(o.cost) : null;
     const paid  = o.amount_paid!=null ? Number(o.amount_paid) : 0;
@@ -1406,6 +1195,7 @@ function renderStats(){
   });
   const active = activeOrders;
   const done = doneOrders;
+  const avg = ratingN ? (ratingSum/ratingN).toFixed(1) : "—";
   const avgOrder = priceN ? priceSum/priceN : null;
   const labels = ["Αναμονή / Υλικά","Δημιουργία","Αποστολή / Παραλαβή","Παραδόθηκαν"];
   const maxStage = Math.max(1, ...byStage);
@@ -1459,6 +1249,7 @@ function renderStats(){
   document.getElementById("statsBody").innerHTML = `
     <div class="stat-grid">${tiles}</div>
     <div class="stat-row">
+      <span class="stat-pill">⭐ Μ.Ο. αξιολόγησης: <b>${avg}</b>${ratingN?` (${ratingN})`:""}</span>
       <span class="stat-pill">🧶 Προϊόντα: ${totalItems}</span>
       ${returnTotal?`<span class="stat-pill" style="background:#efe6da;color:#8a5a1e">♻ Επιστροφές: ${returnTotal} (${Math.round(returnTotal/Math.max(totalItems,1)*100)}%)${returnActive?` · ${returnActive} σε εξέλιξη`:""}</span>`:""}
       <span class="stat-pill">📦 ${ship}</span>
@@ -1521,6 +1312,7 @@ function renderOrders(){
       <div class="order-items">${itemsHtml}</div>
       ${everyReady && !everyDone && !pickup && !o.tracking_number ? `<div class="r-hint">📦 Όλα έτοιμα — πρόσθεσε courier/tracking από «Επεξεργασία» και προχώρα τα στάδια.</div>` : ""}
       ${everyReady && !everyDone && pickup ? `<div class="r-hint">🤝 Όλα έτοιμα — κανόνισε παραλαβή με τον πελάτη.</div>` : ""}
+      ${o.feedback_rating?`<div class="r-fb">★ ${o.feedback_rating}/5 αξιολόγηση${o.feedback_comment?` — «${esc(o.feedback_comment)}»`:""}</div>`:""}
       ${moneyLine(o)}
       <div class="r-actions">
         <button class="btn ghost sm" onclick="copyLinkFor('${o.track_token}')">📋 Link</button>
@@ -1570,9 +1362,8 @@ function intlPhone(raw){
   return d;
 }
 const _hello = o => o.customer_name ? ("Γεια σου " + o.customer_name + "! 🤍") : "Γεια σου! 🤍";
-const _sig = "\n\n— THILIKON";
+const _sig = "\n\nTHILIKON";
 
-// φιλικό μήνυμα ανά στάδιο για ένα συγκεκριμένο προϊόν (τι αλλάζει)
 // tracking lines για όσα προϊόντα είναι σε αποστολή (ομαδοποίηση ανά κωδικό)
 function shippedTrackingLines(o){
   const method = o.delivery_method==="pickup"?"pickup":"shipping";
@@ -1588,23 +1379,42 @@ function shippedTrackingLines(o){
   });
   return lines.length ? ("\n\n" + lines.join("\n")) : "";
 }
-// Ενιαίο μήνυμα εξέλιξης (ίδια δομή κάθε φορά — δείχνει ότι υπάρχει πρόοδος)
-function buildSummaryMsg(o){
-  const items = getItems(o), method = o.delivery_method==="pickup"?"pickup":"shipping";
-  const lines = items.map(it=> "- " + it.name + ": " + stagesFor(itemFlow(it),method)[itemStage(it)].title + (itemDone(it)?" ✓":"")).join("\n");
+// λίστα προϊόντων με στάδιο (+ ημερομηνία παράδοσης όπου υπάρχει)
+function itemLines(o, withEta){
+  const method = o.delivery_method==="pickup"?"pickup":"shipping";
+  return getItems(o).map(it=>{
+    let l = "- " + it.name + ": " + stagesFor(itemFlow(it),method)[itemStage(it)].title + (itemDone(it)?" ✓":"");
+    if(withEta && it.eta && !itemDone(it)) l += "\n  Παράδοση έως " + fmtDateShort(it.eta);
+    return l;
+  }).join("\n");
+}
+// 1) Καλωσόρισμα: πρώτη γνωριμία με το tracker
+function buildWelcomeMsg(o){
   return _hello(o) +
-    "\n\nΜικρή ενημέρωση για την παραγγελία σου" + (o.order_number?(" "+o.order_number):"") + " — όλα προχωράνε! 🤍\n\n" +
-    lines + shippedTrackingLines(o) +
+    "\n\nΕυχαριστούμε πολύ για την παραγγελία σου" + (o.order_number?(" "+o.order_number):"") + "! Την καταχωρήσαμε και ξεκινάμε.\n\n" +
+    "Σου ετοιμάσαμε ένα προσωπικό link για να παρακολουθείς σε ποιο στάδιο βρίσκεται η παραγγελία σου:\n" + linkFor(o.track_token) +
+    "\n\nΕκεί θα βλέπεις κάθε βήμα, από την παραλαβή των υλικών μέχρι την αποστολή, καθώς και το tracking του δέματος όταν φύγει.\n\n" +
+    "Η παραγγελία σου αυτή τη στιγμή:\n" + itemLines(o, true) +
+    "\n\nΚράτησέ το, θα σε ενημερώνουμε σε κάθε στάδιο!" + _sig;
+}
+// 2) Ενιαίο μήνυμα εξέλιξης (ίδια δομή κάθε φορά, δείχνει ότι υπάρχει πρόοδος)
+function buildSummaryMsg(o){
+  return _hello(o) +
+    "\n\nΜικρή ενημέρωση για την παραγγελία σου" + (o.order_number?(" "+o.order_number):"") + ", όλα προχωράνε! 🤍\n\n" +
+    itemLines(o, true) + shippedTrackingLines(o) +
     "\n\nΜπορείς να δεις αναλυτικά την πορεία της εδώ:\n" + linkFor(o.track_token) +
     "\n\nΘα σε ενημερώσουμε ξανά στο επόμενο βήμα." + _sig;
 }
+// 3) Feedback & κοινοποίηση
 function buildFeedbackMsg(o){
   return _hello(o) + "\n\nΗ παραγγελία σου παραδόθηκε και ελπίζουμε να τη λάτρεψες! 🤍\n" +
          "Θα χαρόμασταν πολύ να μας αφήσεις την αξιολόγησή σου εδώ:\n" + linkFor(o.track_token) +
-         "\n\nΚι αν την ανεβάσεις στα social, κάνε μας tag @thilikon.gr — θα την αναδημοσιεύσουμε με χαρά! 📸" + _sig;
+         "\n\nΚι αν την ανεβάσεις στα social, κάνε μας tag @thilikon.gr , μπορεί να την αναδημοσιεύσουμε στο προφίλ μας! 📸" + _sig;
 }
 function notifyMsgFor(o, val){
-  return val==="feedback" ? buildFeedbackMsg(o) : buildSummaryMsg(o);
+  if(val==="welcome")  return buildWelcomeMsg(o);
+  if(val==="feedback") return buildFeedbackMsg(o);
+  return buildSummaryMsg(o);
 }
 function refreshNotifyMsg(){
   const o = ordersCache.find(x=>x.id===notifyCtx.orderId); if(!o) return;
@@ -1613,13 +1423,19 @@ function refreshNotifyMsg(){
 function notifyCustomer(orderId){
   const o = ordersCache.find(x=>x.id===orderId); if(!o) return;
   notifyCtx = { phone: intlPhone(o.customer_phone), email: o.customer_email||"", orderId };
-  const everyDone = getItems(o).every(itemDone);
+  const items = getItems(o);
+  const everyDone = items.every(itemDone);
+  // "νέα" παραγγελία = όλα τα προϊόντα ακόμη στο 1ο στάδιο → προτείνουμε καλωσόρισμα
+  const isFresh = items.every(it=> itemStage(it) <= 1 && itemFlow(it)!=="return");
 
-  const opts=[`<option value="summary">📦 Ενημέρωση εξέλιξης</option>`];
-  if(everyDone) opts.unshift(`<option value="feedback">💬 Ζήτα αξιολόγηση & κοινοποίηση</option>`);
+  const opts=[
+    `<option value="welcome">👋 Καλωσόρισμα &amp; link παρακολούθησης</option>`,
+    `<option value="summary">📦 Ενημέρωση εξέλιξης</option>`
+  ];
+  if(everyDone) opts.push(`<option value="feedback">💬 Ζήτα αξιολόγηση &amp; κοινοποίηση</option>`);
   const sel = document.getElementById("notifyType");
   sel.innerHTML = opts.join("");
-  sel.value = everyDone ? "feedback" : "summary";
+  sel.value = everyDone ? "feedback" : (isFresh ? "welcome" : "summary");
   refreshNotifyMsg();
 
   document.getElementById("nbWa").style.display    = notifyCtx.phone ? "" : "none";
@@ -1681,8 +1497,7 @@ async function declareReturnItem(orderId, itemId, name){
   it.flow = "return"; it.stage = 1;
   // η επιστροφή ξεκλειδώνει ξανά το feedback (θα δοθεί μετά τη νέα παράδοση)
   try{
-    try{ localStorage.removeItem("th_fb_" + o.track_token); }catch(e){}
-    await patchItems(orderId, items);
+    await patchItems(orderId, items, { feedback_rating:null, feedback_comment:null, feedback_at:null });
     await loadOrders(); adminFlash("Δηλώθηκε επιστροφή ✓");
   }catch(e){ adminFlash("Σφάλμα ενημέρωσης."); }
 }
@@ -1823,20 +1638,12 @@ function editOrder(id){
   buildItemsEditor(its);
   updateMoneyHint();
   pickMethod(pickedMethod);
-  // feedback readout (από τον πίνακα thilikon_feedback, ανά order_token)
+  // feedback readout
   const fr = document.getElementById("fbReadout");
-  const fb = (feedbackCache||[]).filter(r=>r.order_token && r.order_token===o.track_token);
-  if(fb.length){
-    fr.innerHTML = fb.map(r=>{
-      const parts = [];
-      if(r.q_satisfaction!=null) parts.push(`Ικανοποίηση <b>${r.q_satisfaction}/5</b>`);
-      if(r.q_quality!=null) parts.push(`Ποιότητα <b>${r.q_quality}/5</b>`);
-      if(r.q_repurchase!=null) parts.push(`Επαναγορά <b>${r.q_repurchase}/5</b>`);
-      if(r.q_recommend) parts.push(`Σύσταση: <b>${esc(r.q_recommend)}</b>`);
-      return `<div>💬 ${parts.join(" · ")}` +
-        (r.q_open?`<br>«${esc(r.q_open)}»`:"") +
-        `<br><span style="color:var(--muted)">${fmtDate(r.created_at)}</span></div>`;
-    }).join('<hr style="border:none;border-top:1px solid var(--line);margin:8px 0">');
+  if(o.feedback_rating){
+    fr.innerHTML = `<b>★ ${o.feedback_rating}/5</b> αξιολόγηση από τον πελάτη` +
+      (o.feedback_comment?`<br>«${esc(o.feedback_comment)}»`:"") +
+      (o.feedback_at?`<br><span style="color:var(--muted)">${fmtDate(o.feedback_at)}</span>`:"");
     fr.classList.remove("hidden");
   } else fr.classList.add("hidden");
   const lw=document.getElementById("modalLinkWrap"); lw.classList.remove("hidden");
