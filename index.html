@@ -112,7 +112,7 @@ h2.about-title{font-family:'Cormorant Garamond',serif;font-size:clamp(38px,4.5vw
 .custom-editorial{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
 .ce-item{aspect-ratio:1/1;overflow:hidden;background:var(--gl)}
 .ce-item.tall{aspect-ratio:1/1;grid-row:span 2}
-.ce-item img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .7s;cursor:zoom-in}
+.ce-item img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .7s;cursor:zoom-in;filter:brightness(1.07) contrast(1.06) saturate(1.04)}
 .ce-item img:hover{transform:scale(1.05)}
 @media(max-width:700px){
   .custom-editorial{grid-template-columns:repeat(2,1fr)}
@@ -337,6 +337,51 @@ footer img.footer-logo{height:30px;filter:invert(1);margin-bottom:18px;display:b
   </div>
 </div>
 
+<!-- MIX & MATCH — Limited Time Event -->
+<section id="mixmatch" class="mixmatch-section">
+  <div class="mm-inner">
+    <div class="mm-head fade-up">
+      <span class="mm-badge">Limited Time Event</span>
+      <img class="mm-logo" src="https://i.imgur.com/BHj4anA.png" alt="Mix & Match">
+      <p class="mm-tagline">while the yarn lasts &nbsp;·&nbsp; <em>-20%</em></p>
+    </div>
+
+    <div class="mm-grid">
+      <div class="mm-steps fade-up">
+        <div class="mm-step">
+          <div class="mm-step-title"><span>1.</span>Διάλεξε σχέδιο</div>
+          <div class="mm-step-desc">Επίλεξε όποιο σχέδιο θέλεις από την <strong>Anasa Collection</strong> ή φτιάχνουμε ένα <strong>custom</strong> μαζί.</div>
+        </div>
+        <div class="mm-step">
+          <div class="mm-step-title"><span>2.</span>Συνδύασε τις αποχρώσεις σου</div>
+          <div class="mm-step-desc">Διάλεξε <strong>2+</strong> αποχρώσεις από την παλέτα και συνδύασέ τες όπως θες. Επιβεβαιώνουμε μαζί τον συνδυασμό και τη διαθεσιμότητα.</div>
+        </div>
+        <div class="mm-step">
+          <div class="mm-step-title"><span>3.</span>Στείλε μας DM</div>
+          <div class="mm-step-desc">Δημιουργούμε την τσάντα σου από τα άμεσα διαθέσιμα νήματα κάθε απόχρωσης τώρα με <strong>-20%</strong>.</div>
+        </div>
+        <div class="mm-cta-row">
+          <a href="https://www.instagram.com/thilikon.gr/" target="_blank" class="mm-cta">DM to Order</a>
+          <span class="mm-discount">-20%</span>
+        </div>
+      </div>
+
+      <div class="fade-up">
+        <p class="mm-yarns-label">Άμεσα διαθέσιμα νήματα</p>
+        <div class="mm-yarns">
+          <div class="mm-yarn" onclick="openLightbox('https://i.imgur.com/Gg9T11h.jpeg','',1)"><img src="https://i.imgur.com/Gg9T11h.jpeg" alt="Available yarns" loading="lazy"></div>
+          <div class="mm-yarn" onclick="openLightbox('https://i.imgur.com/7ocag0T.jpeg','',1)"><img src="https://i.imgur.com/7ocag0T.jpeg" alt="Available yarns" loading="lazy"></div>
+          <div class="mm-yarn" onclick="openLightbox('https://i.imgur.com/AbDSwuZ.jpeg','',1)"><img src="https://i.imgur.com/AbDSwuZ.jpeg" alt="Available yarns" loading="lazy"></div>
+          <div class="mm-yarn" onclick="openLightbox('https://i.imgur.com/PHVTCb3.jpeg','',1)"><img src="https://i.imgur.com/PHVTCb3.jpeg" alt="Available yarns" loading="lazy"></div>
+          <div class="mm-yarn" onclick="openLightbox('https://i.imgur.com/Upq8yPv.jpeg','',1)"><img src="https://i.imgur.com/Upq8yPv.jpeg" alt="Available yarns" loading="lazy"></div>
+          <div class="mm-yarn" onclick="openLightbox('https://i.imgur.com/RKfdEDR.jpeg','',1)"><img src="https://i.imgur.com/RKfdEDR.jpeg" alt="Available yarns" loading="lazy"></div>
+          <div class="mm-yarn" onclick="openLightbox('https://i.imgur.com/vG3SFeD.jpeg','',1)"><img src="https://i.imgur.com/vG3SFeD.jpeg" alt="Available yarns" loading="lazy"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="collection">
   <div class="sec-hdr fade-up">
     <p class="eyebrow eyebrow-center">Anasa Collection</p>
@@ -368,12 +413,14 @@ footer img.footer-logo{height:30px;filter:invert(1);margin-bottom:18px;display:b
 
   <!-- EDITORIAL LAYOUT — all square, 3-col grid -->
   <div class="custom-editorial fade-up">
-    <div class="ce-item"><img src="https://i.imgur.com/GiCBOv8.jpeg" alt="Custom creation" onclick="openLightbox('https://i.imgur.com/GiCBOv8.jpeg')"></div>
-    <div class="ce-item"><img src="https://i.imgur.com/WTXTQ8g.jpeg" alt="Custom creation" onclick="openLightbox('https://i.imgur.com/WTXTQ8g.jpeg')"></div>
-    <div class="ce-item"><img src="https://i.imgur.com/I7JcRT5.jpeg" alt="Custom creation" onclick="openLightbox('https://i.imgur.com/I7JcRT5.jpeg')"></div>
-    <div class="ce-item"><img src="https://i.imgur.com/cLpTlGs.jpeg" alt="Custom creation" onclick="openLightbox('https://i.imgur.com/cLpTlGs.jpeg')"></div>
-    <div class="ce-item"><img src="https://i.imgur.com/ufVGlVV.jpeg" alt="Custom creation" onclick="openLightbox('https://i.imgur.com/ufVGlVV.jpeg')"></div>
-    <div class="ce-item"><img src="https://i.imgur.com/aIOzlYM.jpeg" alt="Custom creation" onclick="openLightbox('https://i.imgur.com/aIOzlYM.jpeg')"></div>
+    <div class="ce-item"><img src="https://i.imgur.com/GiCBOv8.jpeg" alt="Custom creation" onclick="openLightbox('https://i.imgur.com/GiCBOv8.jpeg','',1)"></div>
+    <div class="ce-item"><img src="https://i.imgur.com/WTXTQ8g.jpeg" alt="Custom creation" onclick="openLightbox('https://i.imgur.com/WTXTQ8g.jpeg','',1)"></div>
+    <div class="ce-item"><img src="https://i.imgur.com/I7JcRT5.jpeg" alt="Custom creation" onclick="openLightbox('https://i.imgur.com/I7JcRT5.jpeg','',1)"></div>
+    <div class="ce-item"><img src="https://i.imgur.com/ufVGlVV.jpeg" alt="Custom creation" onclick="openLightbox('https://i.imgur.com/ufVGlVV.jpeg','',1)"></div>
+    <div class="ce-item"><img src="https://i.imgur.com/aIOzlYM.jpeg" alt="Custom creation" onclick="openLightbox('https://i.imgur.com/aIOzlYM.jpeg','',1)"></div>
+    <div class="ce-item"><img src="https://i.imgur.com/yVVDz9o.jpeg" alt="Custom creation" onclick="openLightbox('https://i.imgur.com/yVVDz9o.jpeg','',1)"></div>
+    <div class="ce-item"><img src="https://i.imgur.com/QWKKK6J.jpeg" alt="Custom creation" onclick="openLightbox('https://i.imgur.com/QWKKK6J.jpeg','',1)"></div>
+    <div class="ce-item"><img src="https://i.imgur.com/8sx13rv.jpeg" alt="Custom creation" onclick="openLightbox('https://i.imgur.com/8sx13rv.jpeg','',1)"></div>
   </div>
 
   <!-- black strip -->
@@ -407,52 +454,6 @@ footer img.footer-logo{height:30px;filter:invert(1);margin-bottom:18px;display:b
         </div>
       </div>
       <a href="https://www.instagram.com/thilikon.gr/" target="_blank" class="btn-primary" style="margin-top:48px;display:inline-block">DM us on Instagram</a>
-    </div>
-  </div>
-</section>
-
-<!-- MIX & MATCH — Limited Time Event -->
-<section id="mixmatch" class="mixmatch-section">
-  <div class="mm-inner">
-    <div class="mm-head fade-up">
-      <span class="mm-badge">Limited Time Event</span>
-      <img class="mm-logo" src="https://i.imgur.com/JXzdPOM.png" alt="Mix & Match">
-      <p class="mm-tagline">while the yarn lasts &nbsp;·&nbsp; <em>-20%</em></p>
-    </div>
-
-    <div class="mm-grid">
-      <div class="mm-steps fade-up">
-        <div class="mm-step">
-          <div class="mm-step-title"><span>1.</span>Διάλεξε σχέδιο</div>
-          <div class="mm-step-desc">Επίλεξε όποιο σχέδιο θέλεις από την Anasa Collection ή φτιάχνουμε ένα custom μαζί.</div>
-        </div>
-        <div class="mm-step">
-          <div class="mm-step-title"><span>2.</span>Συνδύασε τις αποχρώσεις σου</div>
-          <div class="mm-step-desc">Διάλεξε <strong>2+</strong> αποχρώσεις από την παλέτα και συνδύασέ τες όπως θες. Επιβεβαιώνουμε μαζί τον συνδυασμό και τη διαθεσιμότητα.</div>
-        </div>
-        <div class="mm-step">
-          <div class="mm-step-title"><span>3.</span>Στείλε μας DM</div>
-          <div class="mm-step-desc">Δημιουργούμε την τσάντα σου από τα άμεσα διαθέσιμα νήματα κάθε απόχρωσης τώρα με <strong>-20%</strong>.</div>
-        </div>
-        <div class="mm-cta-row">
-          <a href="https://www.instagram.com/thilikon.gr/" target="_blank" class="mm-cta">DM to Order</a>
-          <span class="mm-discount">-20%</span>
-        </div>
-      </div>
-
-      <div class="fade-up">
-        <p class="mm-yarns-label">Άμεσα διαθέσιμα νήματα</p>
-        <div class="mm-yarns">
-          <div class="mm-yarn" onclick="openLightbox('https://i.imgur.com/Gg9T11h.jpeg')"><img src="https://i.imgur.com/Gg9T11h.jpeg" alt="Available yarns" loading="lazy"></div>
-          <div class="mm-yarn" onclick="openLightbox('https://i.imgur.com/7ocag0T.jpeg')"><img src="https://i.imgur.com/7ocag0T.jpeg" alt="Available yarns" loading="lazy"></div>
-          <div class="mm-yarn" onclick="openLightbox('https://i.imgur.com/AbDSwuZ.jpeg')"><img src="https://i.imgur.com/AbDSwuZ.jpeg" alt="Available yarns" loading="lazy"></div>
-          <div class="mm-yarn" onclick="openLightbox('https://i.imgur.com/PHVTCb3.jpeg')"><img src="https://i.imgur.com/PHVTCb3.jpeg" alt="Available yarns" loading="lazy"></div>
-          <div class="mm-yarn" onclick="openLightbox('https://i.imgur.com/Upq8yPv.jpeg')"><img src="https://i.imgur.com/Upq8yPv.jpeg" alt="Available yarns" loading="lazy"></div>
-          <div class="mm-yarn" onclick="openLightbox('https://i.imgur.com/RKfdEDR.jpeg')"><img src="https://i.imgur.com/RKfdEDR.jpeg" alt="Available yarns" loading="lazy"></div>
-          <div class="mm-yarn" onclick="openLightbox('https://i.imgur.com/vG3SFeD.jpeg')"><img src="https://i.imgur.com/vG3SFeD.jpeg" alt="Available yarns" loading="lazy"></div>
-        </div>
-        <p class="mm-yarn-note">Οι αποχρώσεις ισχύουν όσο υπάρχουν. Ρώτησέ μας για διαθεσιμότητα.</p>
-      </div>
     </div>
   </div>
 </section>
@@ -861,6 +862,8 @@ const bags=[
   {id:'perla',name:'Perla',cat:'acrylic',cats:['acrylic','crystal'],desc:'Υπάρχει κάτι πιο ονειρικό από μια τσάντα γεμάτη πέρλες; Η Perla δίνει το luxury feel που αναζητάς. Διάλεξε γυάλινες ή ακρυλικές χάντρες στην αγαπημένη σου απόχρωση.',img:'https://i.imgur.com/zBxPh48.png',lifestyle:['https://i.imgur.com/UAlQlSb.jpeg','https://i.imgur.com/NKZ572T.jpeg'],note:'Detachable long strap. Dimensions: 20×12cm.'},
   {id:'laluna',name:'Laluna',cat:'crystal',cats:['acrylic','crystal'],desc:'Φτιαγμένη από εκατοντάδες κρυστάλλινες χάντρες που αντανακλούν το φως σε κάθε κίνηση. Η Laluna είναι η τσάντα που θα σε κάνει πρωταγωνίστρια της βραδιάς.',img:'https://i.imgur.com/bV80dHm.png',lifestyle:['https://i.imgur.com/ccVW10G.jpeg','https://i.imgur.com/394BDkP.jpeg','https://i.imgur.com/NdmmB3g.jpeg'],note:'Stainless steel rings. Dimensions: 16×14cm.'},
   {id:'cardholder',name:'Cardholder',cat:'accessories',materials:['acrylic','crystal'],desc:'Γιατί ακόμα και τα essentials σου αξίζουν μια δόση πολυτέλειας. Το beaded cardholder είναι η λεπτομέρεια που αναβαθμίζει την καθημερινότητά σου.',img:'https://i.imgur.com/K2nwZ3v.png',note:'Holds 4-6 cards. Also available with a small wrist strap.'},
+  {id:'heartkeychain',name:'Heart Keychain',cat:'accessories',materials:['acrylic','crystal'],desc:'Beaded γούρι-καρδιά για τα κλειδιά ή την αγαπημένη σου τσάντα. Διαθέσιμο σε crystal και acrylic beads, σε όποιο χρώμα αγαπάς.',img:'https://i.imgur.com/1JCBvrL.png',note:'Clip-on keychain. Attach it to your keys or your favourite bag.'},
+  {id:'basket',name:'Knit Basket',cat:'accessories',colorCat:'tshirt',desc:'Χειροποίητα πλεκτά καλαθάκια που οργανώνουν με στυλ τα αγαπημένα σου αντικείμενα. Για το κομοδίνο, το μπάνιο ή το γραφείο σου.',img:'https://i.imgur.com/9vbUvbw.jpeg',note:'Handmade knit basket. Available in different sizes and colours.'},
 ];
 
 // render bags
@@ -966,8 +969,13 @@ function openModal(b){
     renderModalColors(b.cat);
   } else {
     toggleEl.style.display = 'none';
-    document.getElementById('modalBagCat').textContent = CATS[b.cat].label+' · '+CATS[b.cat].desc;
-    renderModalColors(b.cat);
+    if (b.colorCat) {
+      document.getElementById('modalBagCat').textContent = CATS[b.cat].label+' · '+CATS[b.colorCat].label+' colours';
+      renderModalColors(b.colorCat);
+    } else {
+      document.getElementById('modalBagCat').textContent = CATS[b.cat].label+' · '+CATS[b.cat].desc;
+      renderModalColors(b.cat);
+    }
   }
 
   // lifestyle gallery
@@ -1146,7 +1154,8 @@ const lbOverlay = document.getElementById('lbOverlay');
 const lbImg     = document.getElementById('lbImg');
 const lbClose   = document.getElementById('lbClose');
 
-function openLightbox(src, alt) {
+function openLightbox(src, alt, enhance) {
+  lbImg.style.filter = enhance ? 'brightness(1.1) contrast(1.08) saturate(1.06)' : '';
   lbImg.src = src;
   lbImg.alt = alt || '';
   lbOverlay.classList.add('open');
