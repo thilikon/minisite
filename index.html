@@ -126,6 +126,38 @@ h2.about-title{font-family:'Cormorant Garamond',serif;font-size:clamp(38px,4.5vw
 .lb-overlay.open .lb-img{transform:scale(1)}
 .lb-close{position:absolute;top:20px;right:24px;background:none;border:none;color:white;font-size:28px;cursor:pointer;opacity:.7;transition:opacity .2s;line-height:1}
 .lb-close:hover{opacity:1}
+/* MIX & MATCH */
+.mixmatch-section{padding:100px 48px;background:var(--white);border-top:1px solid var(--gm);position:relative;overflow:hidden}
+.mm-badge{display:inline-block;background:#c0266c;color:#fff;font-size:9px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;padding:6px 16px;border-radius:100px;margin-bottom:20px}
+.mm-inner{max-width:1000px;margin:0 auto}
+.mm-head{text-align:center;margin-bottom:56px}
+.mm-logo{height:110px;margin:0 auto 24px;display:block}
+.mm-tagline{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--gd);margin-top:8px}
+.mm-tagline em{color:#c0266c;font-style:normal;font-weight:600}
+.mm-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+.mm-steps{display:flex;flex-direction:column;gap:18px}
+.mm-step{border:1px solid var(--gm);border-radius:18px;padding:22px 26px;transition:border-color .3s}
+.mm-step:hover{border-color:#c0266c}
+.mm-step-title{font-size:13px;font-weight:600;margin-bottom:8px;letter-spacing:.02em}
+.mm-step-title span{color:#c0266c;margin-right:6px}
+.mm-step-desc{font-size:13px;color:var(--gd);line-height:1.75}
+.mm-step-desc strong{color:#c0266c;font-weight:600}
+.mm-cta-row{display:flex;gap:14px;align-items:center;margin-top:10px;flex-wrap:wrap}
+.mm-cta{background:#c0266c;color:#fff;padding:13px 34px;text-decoration:none;font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;border-radius:100px;transition:opacity .3s,transform .3s;display:inline-block}
+.mm-cta:hover{opacity:.85;transform:translateY(-2px)}
+.mm-discount{font-family:'Cormorant Garamond',serif;font-size:34px;font-style:italic;color:#c0266c}
+/* yarn gallery */
+.mm-yarns-label{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gd);margin-bottom:16px;font-weight:500}
+.mm-yarns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mm-yarn{aspect-ratio:1;overflow:hidden;border-radius:12px;background:#f6f4f1;cursor:zoom-in}
+.mm-yarn img{width:112%;height:112%;margin:-6%;object-fit:cover;filter:brightness(1.08) contrast(1.06) saturate(1.05);transition:transform .5s}
+.mm-yarn:hover img{transform:scale(1.06)}
+.mm-yarn-note{font-size:10px;color:var(--gm);margin-top:12px;letter-spacing:.05em}
+@media(max-width:900px){
+  .mixmatch-section{padding:64px 24px}
+  .mm-grid{grid-template-columns:1fr;gap:40px}
+  .mm-logo{height:84px}
+}
 /* FEEDBACK */
 .feedback-section{padding:100px 48px;text-align:center;border-top:1px solid var(--gm)}
 .feedback-inner{max-width:600px;margin:0 auto}
@@ -260,6 +292,7 @@ footer img.footer-logo{height:30px;filter:invert(1);margin-bottom:18px;display:b
   <ul class="nav-links">
     <li><a href="#collection">Collection</a></li>
     <li><a href="#creations">Custom</a></li>
+    <li><a href="#mixmatch" style="color:#c0266c">Mix &amp; Match</a></li>
     <li><a href="#quiz">Find Your Bag</a></li>
     <li><a href="#about">Anasa</a></li>
   </ul>
@@ -378,6 +411,52 @@ footer img.footer-logo{height:30px;filter:invert(1);margin-bottom:18px;display:b
   </div>
 </section>
 
+<!-- MIX & MATCH — Limited Time Event -->
+<section id="mixmatch" class="mixmatch-section">
+  <div class="mm-inner">
+    <div class="mm-head fade-up">
+      <span class="mm-badge">Limited Time Event</span>
+      <img class="mm-logo" src="https://i.imgur.com/JXzdPOM.png" alt="Mix & Match">
+      <p class="mm-tagline">while the yarn lasts &nbsp;·&nbsp; <em>-20%</em></p>
+    </div>
+
+    <div class="mm-grid">
+      <div class="mm-steps fade-up">
+        <div class="mm-step">
+          <div class="mm-step-title"><span>1.</span>Διάλεξε σχέδιο</div>
+          <div class="mm-step-desc">Επίλεξε όποιο σχέδιο θέλεις από την Anasa Collection ή φτιάχνουμε ένα custom μαζί.</div>
+        </div>
+        <div class="mm-step">
+          <div class="mm-step-title"><span>2.</span>Συνδύασε τις αποχρώσεις σου</div>
+          <div class="mm-step-desc">Διάλεξε <strong>2+</strong> αποχρώσεις από την παλέτα και συνδύασέ τες όπως θες. Επιβεβαιώνουμε μαζί τον συνδυασμό και τη διαθεσιμότητα.</div>
+        </div>
+        <div class="mm-step">
+          <div class="mm-step-title"><span>3.</span>Στείλε μας DM</div>
+          <div class="mm-step-desc">Δημιουργούμε την τσάντα σου από τα άμεσα διαθέσιμα νήματα κάθε απόχρωσης τώρα με <strong>-20%</strong>.</div>
+        </div>
+        <div class="mm-cta-row">
+          <a href="https://www.instagram.com/thilikon.gr/" target="_blank" class="mm-cta">DM to Order</a>
+          <span class="mm-discount">-20%</span>
+        </div>
+      </div>
+
+      <div class="fade-up">
+        <p class="mm-yarns-label">Άμεσα διαθέσιμα νήματα</p>
+        <div class="mm-yarns">
+          <div class="mm-yarn" onclick="openLightbox('https://i.imgur.com/Gg9T11h.jpeg')"><img src="https://i.imgur.com/Gg9T11h.jpeg" alt="Available yarns" loading="lazy"></div>
+          <div class="mm-yarn" onclick="openLightbox('https://i.imgur.com/7ocag0T.jpeg')"><img src="https://i.imgur.com/7ocag0T.jpeg" alt="Available yarns" loading="lazy"></div>
+          <div class="mm-yarn" onclick="openLightbox('https://i.imgur.com/AbDSwuZ.jpeg')"><img src="https://i.imgur.com/AbDSwuZ.jpeg" alt="Available yarns" loading="lazy"></div>
+          <div class="mm-yarn" onclick="openLightbox('https://i.imgur.com/PHVTCb3.jpeg')"><img src="https://i.imgur.com/PHVTCb3.jpeg" alt="Available yarns" loading="lazy"></div>
+          <div class="mm-yarn" onclick="openLightbox('https://i.imgur.com/Upq8yPv.jpeg')"><img src="https://i.imgur.com/Upq8yPv.jpeg" alt="Available yarns" loading="lazy"></div>
+          <div class="mm-yarn" onclick="openLightbox('https://i.imgur.com/RKfdEDR.jpeg')"><img src="https://i.imgur.com/RKfdEDR.jpeg" alt="Available yarns" loading="lazy"></div>
+          <div class="mm-yarn" onclick="openLightbox('https://i.imgur.com/vG3SFeD.jpeg')"><img src="https://i.imgur.com/vG3SFeD.jpeg" alt="Available yarns" loading="lazy"></div>
+        </div>
+        <p class="mm-yarn-note">Οι αποχρώσεις ισχύουν όσο υπάρχουν. Ρώτησέ μας για διαθεσιμότητα.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="about" class="about-section">
   <div class="about-text fade-up">
     <p class="about-ey">The Anasa Collection</p>
@@ -453,6 +532,7 @@ footer img.footer-logo{height:30px;filter:invert(1);margin-bottom:18px;display:b
       <p class="footer-col-title">Thilikon</p>
       <ul class="footer-links">
         <li><a href="#about">About Anasa</a></li>
+        <li><a href="#mixmatch">Mix &amp; Match</a></li>
         <li><a href="#quiz">Find Your Bag</a></li>
         <li><a href="#creations">Custom Creations</a></li>
         <li><a href="https://thilikon.github.io/minisite/track/" target="_blank">Track Order ↗</a></li>
