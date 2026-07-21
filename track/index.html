@@ -471,12 +471,12 @@
   .stock-cat{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:18px 0 8px}
   .stock-item{display:flex;align-items:center;gap:12px;background:var(--card,#fff);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:9px}
   .stock-item.low{border-color:#e6a23c;background:#fff9f0}
-  .stock-item.out{border-color:#c0266c;background:#fdf1f6}
+  .stock-item.out{border-color:#c98a2e;background:#fdf3e6}
   .si-img{width:42px;height:42px;border-radius:10px;object-fit:cover;background:var(--stone);flex:none}
   .si-info{flex:1;min-width:0}
   .si-name{font-size:14px;font-weight:600}
   .si-meta{font-size:11.5px;color:var(--muted);margin-top:2px}
-  .si-low{color:#c0266c;font-weight:600}
+  .si-low{color:#9a6a1e;font-weight:600}
   .si-qty{display:flex;align-items:center;gap:8px}
   .si-count{min-width:30px;text-align:center;font-weight:700;font-size:16px}
   .sell-m.sel{background:var(--ink);color:#fff;border-color:var(--ink)}
@@ -1707,8 +1707,8 @@ function renderStats(){
 
     <div class="stats-sub">Οικονομικά — τρέχων μήνας</div>
     <div class="stat-grid">${money}</div>
-    ${readyRevMonth>0?`<div class="split-bar"><div class="split-seg" style="width:${Math.round(customRevMonth/revMonth*100)}%;background:var(--ink)"></div><div class="split-seg" style="width:${Math.round(readyRevMonth/revMonth*100)}%;background:#c0266c"></div></div>
-    <div class="split-leg"><span>Custom <b>${fmtMoney(customRevMonth)}</b></span><span>Ραφιού <b style="color:#c0266c">${fmtMoney(readyRevMonth)}</b></span></div>`:""}
+    ${readyRevMonth>0?`<div class="split-bar"><div class="split-seg" style="width:${Math.round(customRevMonth/revMonth*100)}%;background:var(--ink)"></div><div class="split-seg" style="width:${Math.round(readyRevMonth/revMonth*100)}%;background:#2f5d8a"></div></div>
+    <div class="split-leg"><span>Custom <b>${fmtMoney(customRevMonth)}</b></span><span>Ραφιού <b style="color:#2f5d8a">${fmtMoney(readyRevMonth)}</b></span></div>`:""}
 
     <div class="stats-sub">Τζίρος ανά μήνα</div>
     ${revBlock}
@@ -2281,7 +2281,7 @@ function renderStock(){
     <div class="stat"><div class="n">${isMM?fmtMoney(totalVal):rows.length}</div><div class="l">${isMM?"Αξία (κόστος)":(stockView==="product"?"Προϊόντα":"Είδη")}</div></div>
   </div>`;
   if(lowItems.length){
-    html+=`<div class="r-hint" style="color:#c0266c;background:#fdf1f6;margin-bottom:14px">${stockView==="product"?"Λίγα κομμάτια":"Τελειώνουν"}: ${lowItems.map(it=>esc(it.name)+(stockState(it)==="out"?" (0)":` (${fmtNum(it.qty)})`)).join(" · ")}</div>`;
+    html+=`<div class="r-hint" style="color:#8a5a1e;background:#fdf6ea;margin-bottom:14px">${stockView==="product"?"Λίγα κομμάτια":"Τελειώνουν"}: ${lowItems.map(it=>esc(it.name)+(stockState(it)==="out"?" (0)":` (${fmtNum(it.qty)})`)).join(" · ")}</div>`;
   }
   const cats={}; rows.forEach(it=>{ const c=it.category||"Άλλο"; (cats[c]=cats[c]||[]).push(it); });
   Object.keys(cats).forEach(cat=>{
@@ -2302,7 +2302,7 @@ function renderStock(){
           <span class="si-count">${fmtNum(it.qty)}</span>
           <button class="stepper-btn" onclick="adjustStock('${it.id}',1)">+</button>
         </div>
-        ${stockView==="product"?`<button class="btn solid sm" ${Number(it.qty)>0?"":"disabled"} onclick="openSellModal('${it.id}')" style="background:#c0266c;border-color:#c0266c">Πούλησέ το</button>`:""}
+        ${stockView==="product"?`<button class="btn solid sm" ${Number(it.qty)>0?"":"disabled"} onclick="openSellModal('${it.id}')">Πούλησέ το</button>`:""}
         <button class="btn ghost sm" onclick="openStockModal('${it.id}')">✎</button>
       </div>`;
     });
