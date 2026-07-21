@@ -432,6 +432,47 @@
   @media(min-width:560px){
     .order-head h1{font-size:37px}
   }
+  /* ---------- Mix & Match + Στοκ ---------- */
+  .mm-toggle{display:flex;align-items:center;gap:9px;border:1px solid var(--line);background:var(--cream);border-radius:14px;padding:11px 14px;cursor:pointer;margin:2px 0 12px;transition:.15s;user-select:none}
+  .mm-toggle input{width:18px;height:18px;accent-color:#c0266c;cursor:pointer}
+  .mm-toggle .mm-l{font-size:13px;font-weight:600}
+  .mm-toggle .mm-s{font-size:11.5px;color:var(--muted)}
+  .mm-toggle.on{border-color:#c0266c;background:#fdf1f6}
+  .mm-toggle.on .mm-l{color:#c0266c}
+  .mm-badge{display:inline-block;background:#c0266c;color:#fff;font-size:10px;font-weight:700;letter-spacing:.04em;padding:3px 9px;border-radius:var(--pill);vertical-align:middle}
+  .mm-pill{display:inline-block;background:#fdf1f6;color:#c0266c;border:1px solid #f0c4d8;font-size:10px;font-weight:700;padding:2px 8px;border-radius:var(--pill);margin-left:6px}
+  .pv-orig{text-decoration:line-through;color:var(--muted);font-weight:500;margin-right:8px}
+  .pv-mm{color:#c0266c}
+  /* materials picker */
+  .mat-block{border:1px dashed var(--line);border-radius:14px;padding:12px 14px;margin:2px 0 12px;background:var(--cream)}
+  .mat-line{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;padding:4px 0}
+  .mat-line .q{color:var(--muted)}
+  .mat-total{display:flex;justify-content:space-between;font-weight:700;font-size:13px;border-top:1px solid var(--line);margin-top:8px;padding-top:8px}
+  .mat-applied{font-size:11.5px;color:#2c6e49;font-weight:600;margin-top:6px}
+  .mat-empty{font-size:12px;color:var(--muted)}
+  .picker-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .picker-row:last-child{border-bottom:none}
+  .picker-row .pr-info{flex:1;min-width:0}
+  .picker-row .pr-name{font-size:13px;font-weight:600}
+  .picker-row .pr-meta{font-size:11px;color:var(--muted)}
+  .picker-row .pr-stepper{display:flex;align-items:center;gap:8px}
+  .stepper-btn{width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:var(--cream);font-size:17px;cursor:pointer;line-height:1;color:var(--ink)}
+  .stepper-btn:active{background:var(--stone)}
+  .stepper-val{min-width:24px;text-align:center;font-weight:700;font-size:14px}
+  /* stock tab */
+  .stock-sum{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+  .stock-cat{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:18px 0 8px}
+  .stock-item{display:flex;align-items:center;gap:12px;background:var(--card,#fff);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:9px}
+  .stock-item.low{border-color:#e6a23c;background:#fff9f0}
+  .stock-item.out{border-color:#c0266c;background:#fdf1f6}
+  .si-img{width:42px;height:42px;border-radius:10px;object-fit:cover;background:var(--stone);flex:none}
+  .si-info{flex:1;min-width:0}
+  .si-name{font-size:14px;font-weight:600}
+  .si-meta{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .si-low{color:#c0266c;font-weight:600}
+  .si-qty{display:flex;align-items:center;gap:8px}
+  .si-count{min-width:30px;text-align:center;font-weight:700;font-size:16px}
+  .sell-m.sel{background:var(--ink);color:#fff;border-color:var(--ink)}
 </style>
 </head>
 <body>
@@ -550,10 +591,12 @@
       <div class="admin-bar">
         <div class="tabsw">
           <button class="tb sel" id="tabOrders" onclick="showAdminTab('orders')">Παραγγελίες</button>
+          <button class="tb" id="tabStock" onclick="showAdminTab('stock')">Στοκ</button>
           <button class="tb" id="tabFb" onclick="showAdminTab('feedback')">Feedback</button>
         </div>
         <div style="display:flex;gap:8px">
           <button class="btn solid sm" id="newOrderBtn" onclick="openOrderModal()">+ Νέα</button>
+          <button class="btn solid sm hidden" id="newStockBtn" onclick="openStockModal()">+ Είδος</button>
           <button class="btn ghost sm" onclick="adminLogout()">Έξοδος</button>
         </div>
       </div>
@@ -568,6 +611,7 @@
       <div id="adminMsg" class="msg ok hidden"></div>
       <div id="ordersList"><div class="spinner"></div></div>
       <div id="fbAdmin" class="hidden"></div>
+      <div id="stockAdmin" class="hidden"></div>
     </div>
   </section>
 
@@ -652,12 +696,26 @@
 
     <label class="fld"><span>Σημείωση προς πελάτη (όλη η παραγγελία)</span><textarea id="fNote" placeholder="προαιρετικό μήνυμα που θα δει ο πελάτης"></textarea></label>
 
+    <label class="mm-toggle" id="mmToggle" onclick="setTimeout(onMixToggle,0)">
+      <input type="checkbox" id="fMix">
+      <span><span class="mm-l">Mix &amp; Match</span> <span class="mm-s">— εφαρμόζει αυτόματα −20% στη συνολική τιμή</span></span>
+    </label>
+
     <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:6px 0 8px">💶 Οικονομικά <span style="text-transform:none;letter-spacing:0">(ο πελάτης βλέπει τις τιμές & αν εξοφλήθηκε — το κόστος υλικών μένει κρυφό)</span></p>
     <div style="display:flex;gap:10px">
       <label class="fld" style="flex:1"><span>Σύνολο € 👁</span><div id="fTotalView" class="ro-field">€0,00</div></label>
       <label class="fld" style="flex:1"><span>Κόστος υλ. € 🔒</span><input id="fCost" inputmode="decimal" placeholder="0"></label>
       <label class="fld" style="flex:1"><span>Πληρωμένο € 👁</span><input id="fPaid" inputmode="decimal" placeholder="0"></label>
     </div>
+
+    <div class="mat-block" id="matBlock">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <span style="font-size:12px;font-weight:600">🧵 Υλικά από την αποθήκη</span>
+        <button type="button" class="btn ghost sm" id="matBtn" onclick="openMatPicker()">Επίλεξε</button>
+      </div>
+      <div id="matList" style="margin-top:8px"><div class="mat-empty">Δεν έχουν δηλωθεί υλικά. Διάλεξε για να υπολογιστεί το κόστος και να αφαιρεθούν από το στοκ.</div></div>
+    </div>
+
     <div id="moneyHint" style="font-size:12.5px;color:var(--ink-soft);margin:-4px 0 10px"></div>
 
     <p id="modalMsg" class="msg err hidden"></p>
@@ -674,11 +732,104 @@
   </div>
 </div>
 
+<!-- ============ SELL (πώληση ραφιού) ============ -->
+<div id="sellModal" class="overlay hidden">
+  <div class="modal">
+    <div class="mh">
+      <h2 class="serif">Πώληση προϊόντος</h2>
+      <button class="x" onclick="closeSellModal()">✕</button>
+    </div>
+    <div id="sellProdName" style="font-size:14px;font-weight:600;margin-bottom:2px"></div>
+    <div id="sellProdMeta" style="font-size:12px;color:var(--muted);margin-bottom:14px"></div>
+    <label class="fld"><span>Όνομα πελάτη (προαιρετικό)</span><input id="sellName" placeholder="π.χ. Μαρία"></label>
+    <div style="display:flex;gap:10px">
+      <label class="fld" style="flex:1"><span>Τηλέφωνο (προαιρετικό)</span><input id="sellPhone" placeholder="για Viber/SMS"></label>
+      <label class="fld" style="flex:1"><span>Τιμή πώλησης €</span><input id="sellPrice" inputmode="decimal" placeholder="0"></label>
+    </div>
+    <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:6px 0 8px">Τρόπος</p>
+    <div class="seg" id="sellMethodSeg" style="display:flex;gap:8px;margin-bottom:12px">
+      <button type="button" class="btn ghost sm sell-m sel" data-m="pickup" onclick="pickSellMethod('pickup')">🤝 Παραλαβή</button>
+      <button type="button" class="btn ghost sm sell-m" data-m="shipping" onclick="pickSellMethod('shipping')">📦 Αποστολή</button>
+    </div>
+    <label class="mm-toggle" id="sellPaidToggle" onclick="setTimeout(()=>document.getElementById('sellPaidToggle').classList.toggle('on',document.getElementById('sellPaid').checked),0)" style="border-radius:14px">
+      <input type="checkbox" id="sellPaid" checked style="accent-color:var(--ink)">
+      <span><span class="mm-l" style="color:var(--ink)">Εξοφλήθηκε</span> <span class="mm-s">— καταχωρείται ως πληρωμένη</span></span>
+    </label>
+    <p id="sellMsg" class="msg err hidden"></p>
+    <div id="sellLinkWrap" class="hidden">
+      <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Link για τον πελάτη</p>
+      <div class="link-box"><code id="sellLink"></code><button class="btn solid sm" onclick="copySellLink()">Copy</button></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn solid" style="flex:1" id="sellBtn" onclick="sellProduct()">Καταχώρησε πώληση</button>
+      <button class="btn ghost" onclick="closeSellModal()">Κλείσιμο</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MATERIALS PICKER ============ -->
+<div id="matModal" class="overlay hidden">
+  <div class="modal">
+    <div class="mh">
+      <h2 class="serif">Υλικά από την αποθήκη</h2>
+      <button class="x" onclick="closeMatPicker()">✕</button>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:6px">Διάλεξε ποσότητες. Στην επιβεβαίωση, το κόστος μπαίνει στην παραγγελία και οι ποσότητες αφαιρούνται από το στοκ.</p>
+    <div id="matPickerList"><div class="spinner"></div></div>
+    <div class="mat-total" id="matPickerTotal" style="margin-top:12px">Σύνολο: €0,00</div>
+    <p id="matPickerMsg" class="msg err hidden" style="margin-top:10px"></p>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn solid" style="flex:1" id="matApplyBtn" onclick="applyMaterials()">Επιβεβαίωση & αφαίρεση από στοκ</button>
+      <button class="btn ghost" onclick="closeMatPicker()">Άκυρο</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ STOCK ITEM MODAL ============ -->
+<div id="stockModal" class="overlay hidden">
+  <div class="modal">
+    <div class="mh">
+      <h2 class="serif" id="stockModalTitle">Νέο είδος</h2>
+      <button class="x" onclick="closeStockModal()">✕</button>
+    </div>
+    <label class="fld"><span>Όνομα</span><input id="sName" placeholder="π.χ. Taupe (T-Shirt Yarn)"></label>
+    <div style="display:flex;gap:10px">
+      <label class="fld" style="flex:1"><span>Τύπος</span>
+        <select id="sType" onchange="onStockTypeChange()">
+          <option value="raw">Πρώτη ύλη</option>
+          <option value="product">Έτοιμο προϊόν</option>
+        </select>
+      </label>
+      <label class="fld" style="flex:1"><span>Κατηγορία</span>
+        <select id="sCat">
+          <option>Νήμα</option><option>Τσάντα</option><option>Ταμπελάκι</option>
+          <option>Αξεσουάρ</option><option>Συσκευασία</option><option>Άλλο</option>
+        </select>
+      </label>
+      <label class="fld" style="flex:1"><span>Μονάδα</span><input id="sUnit" placeholder="κουβάρι / τεμάχιο"></label>
+    </div>
+    <div style="display:flex;gap:10px">
+      <label class="fld" style="flex:1"><span>Ποσότητα</span><input id="sQty" inputmode="decimal" placeholder="0"></label>
+      <label class="fld" style="flex:1"><span>Τιμή αγοράς € / μον.</span><input id="sCost" inputmode="decimal" placeholder="0"></label>
+      <label class="fld" style="flex:1"><span>Ειδοπ. κάτω από</span><input id="sLow" inputmode="decimal" placeholder="2"></label>
+    </div>
+    <label class="fld hidden" id="sSellWrap"><span>Τιμή πώλησης € (για έτοιμα προϊόντα)</span><input id="sSell" inputmode="decimal" placeholder="0"></label>
+    <label class="fld"><span>Φωτογραφία (URL, προαιρετικό)</span><input id="sImg" placeholder="https://…"></label>
+    <p id="stockModalMsg" class="msg err hidden"></p>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn solid" style="flex:1" id="stockSaveBtn" onclick="saveStock()">Αποθήκευση</button>
+      <button class="btn danger sm hidden" id="stockDelBtn" onclick="delStock()">Διαγραφή</button>
+      <button class="btn ghost" onclick="closeStockModal()">Κλείσιμο</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ============================================================
    CONFIG
 ============================================================ */
 const SUPABASE_URL  = "https://bmdwlckzzpxjjfcvyiui.supabase.co";
+const MIX_DISCOUNT = 0.20; // Mix & Match -20% (άλλαξέ το εδώ αν αλλάξει το event)
 const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtZHdsY2t6enB4ampmY3Z5aXVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MjQyNjgsImV4cCI6MjA5NzIwMDI2OH0.JADjEDrk1Yflimp3ZEzXOpG-IE3_7xyL2jCoG38XNmU";
 const REST = SUPABASE_URL + "/rest/v1";
 const AUTH = SUPABASE_URL + "/auth/v1";
@@ -716,11 +867,26 @@ const STAGES = {
       5:{title:"Συσκευασία & Έτοιμο για Παραλαβή", dur:"θα συνεννοηθούμε για ραντεβού"},
       6:{title:"Παραλήφθηκε",                  dur:"η παραγγελία ολοκληρώθηκε"}
     }
+  },
+  ready:{
+    shipping:{
+      1:{title:"Καταχώρηση Παραγγελίας", dur:"η παραγγελία σου καταχωρήθηκε"},
+      2:{title:"Ετοιμάζεται",           dur:"ετοιμάζουμε τη συσκευασία"},
+      3:{title:"Στάλθηκε",              dur:"συνήθως ~1 μέρα"},
+      4:{title:"Παραδόθηκε",            dur:"η παραγγελία ολοκληρώθηκε"}
+    },
+    pickup:{
+      1:{title:"Καταχώρηση Παραγγελίας",   dur:"η παραγγελία σου καταχωρήθηκε"},
+      2:{title:"Συσκευασία",              dur:"ετοιμάζουμε το προϊόν"},
+      3:{title:"Έτοιμο για Παραλαβή",     dur:"θα συνεννοηθούμε για ραντεβού"},
+      4:{title:"Παραλήφθηκε",             dur:"η παραγγελία ολοκληρώθηκε"}
+    }
   }
 };
 function flowOf(o){ return (o==="return"||(o&&o.flow==="return"))?"return":"normal"; }
 function stagesFor(flow, method){
-  return STAGES[flow==="return"?"return":"normal"][method==="pickup"?"pickup":"shipping"];
+  const f = STAGES[flow] ? flow : "normal";
+  return STAGES[f][method==="pickup"?"pickup":"shipping"];
 }
 function stageCount(flow){ return flow==="return"?6:4; }
 // φάση για στατιστικά (λειτουργεί και για κανονική και για επιστροφή)
@@ -744,7 +910,7 @@ function getItems(o){
   return [{ id:"i1", name:o.product_name||"Προϊόν", details:o.product_details||null,
             stage:o.stage||1, flow:o.flow==="return"?"return":"normal", note:null }];
 }
-function itemFlow(it){ return it.flow==="return"?"return":"normal"; }
+function itemFlow(it){ return it.flow==="return"?"return":(it.flow==="ready"?"ready":"normal"); }
 function itemN(it){ return stageCount(itemFlow(it)); }
 function itemStage(it){ return Math.min(Math.max(it.stage||1,1), itemN(it)); }
 function itemDone(it){ return itemStage(it) >= itemN(it); }
@@ -759,6 +925,7 @@ function phaseIndexItem(it){
 function shortLabels(flow, method){
   const pk = method==="pickup";
   if(flow==="return") return ["Αναμονή","Παρέλαβα","Δημιουργία", pk?"Έτοιμο":"Αποστολή", pk?"Παραλήφθηκε":"Παραδόθηκε"];
+  if(flow==="ready") return ["Καταχώρηση", pk?"Συσκευασία":"Ετοιμάζεται", pk?"Έτοιμο":"Στάλθηκε", pk?"Παραλήφθηκε":"Παραδόθηκε"];
   return ["Υλικά","Δημιουργία", pk?"Έτοιμο":"Αποστολή", pk?"Παραλήφθηκε":"Παραδόθηκε"];
 }
 
@@ -785,10 +952,16 @@ function itemsTotal(){
   return any ? Math.round(sum*100)/100 : null;
 }
 function updateMoneyHint(){
-  const price=itemsTotal();
+  const sub=itemsTotal();
+  const price=finalPrice(sub);
   const cost=parseMoney(document.getElementById("fCost").value);
   const paid=parseMoney(document.getElementById("fPaid").value);
-  document.getElementById("fTotalView").textContent = fmtMoney(price!=null?price:0);
+  const tv=document.getElementById("fTotalView");
+  if(price!=null && isMix() && sub!=null){
+    tv.innerHTML = `<span class="pv-orig">${fmtMoney(sub)}</span><span class="pv-mm">${fmtMoney(price)}</span> <span class="mm-badge">−20%</span>`;
+  } else {
+    tv.textContent = fmtMoney(price!=null?price:0);
+  }
   const bits=[];
   if(price!=null && paid!=null){
     const rem=Math.round((price-paid)*100)/100;
@@ -922,12 +1095,17 @@ function renderTracking(o){
     const price = Number(o.price);
     const paid  = o.amount_paid!=null ? Number(o.amount_paid) : 0;
     const rem   = Math.round((price - paid)*100)/100;
-    // badge ΜΟΝΟ αν έχει καταχωρηθεί πληρωμή (paid>0): «Υπόλοιπο» αν μένει, «Εξοφλήθηκε» αν καλύφθηκε
     let status = "";
     if(paid > 0) status = rem>0
       ? `<span class="ps due">Υπόλοιπο ${fmtMoney(rem)}</span>`
       : `<span class="ps ok">Εξοφλήθηκε ✓</span>`;
-    pay.innerHTML = `<div><div class="pe">Αξία παραγγελίας</div><div class="pv">${fmtMoney(price)}</div></div>${status}`;
+    let priceHtml = fmtMoney(price), mmBadge = "";
+    if(o.mix_match){
+      const orig = Math.round(price/(1-MIX_DISCOUNT)*100)/100;
+      priceHtml = `<span class="pv-orig">${fmtMoney(orig)}</span><span class="pv-mm">${fmtMoney(price)}</span>`;
+      mmBadge = ` <span class="mm-badge">Mix &amp; Match −20%</span>`;
+    }
+    pay.innerHTML = `<div><div class="pe">Αξία παραγγελίας${mmBadge}</div><div class="pv">${priceHtml}</div></div>${status}`;
     pay.classList.remove("hidden");
   } else pay.classList.add("hidden");
 
@@ -1271,20 +1449,25 @@ async function enterPanel(){
   showAdminTab("orders");
   await loadOrders();
   loadFeedback();
+  loadStock();
 }
 
 function showAdminTab(tab){
-  const orders = tab !== "feedback";
-  document.getElementById("tabOrders").classList.toggle("sel", orders);
-  document.getElementById("tabFb").classList.toggle("sel", !orders);
+  const isOrders = tab==="orders", isStock = tab==="stock", isFb = tab==="feedback";
+  document.getElementById("tabOrders").classList.toggle("sel", isOrders);
+  document.getElementById("tabStock").classList.toggle("sel", isStock);
+  document.getElementById("tabFb").classList.toggle("sel", isFb);
   ["statsBox","search","ordersList"].forEach(id=>{
     const el = document.getElementById(id);
-    if(el) el.classList.toggle("hidden", !orders);
+    if(el) el.classList.toggle("hidden", !isOrders);
   });
   document.getElementById("adminMsg").classList.add("hidden");
-  document.getElementById("newOrderBtn").classList.toggle("hidden", !orders);
-  document.getElementById("fbAdmin").classList.toggle("hidden", orders);
-  if(!orders) renderFbDashboard();
+  document.getElementById("newOrderBtn").classList.toggle("hidden", !isOrders);
+  document.getElementById("newStockBtn").classList.toggle("hidden", !isStock);
+  document.getElementById("fbAdmin").classList.toggle("hidden", !isFb);
+  document.getElementById("stockAdmin").classList.toggle("hidden", !isStock);
+  if(isFb) renderFbDashboard();
+  if(isStock){ if(stockCache.length) renderStock(); else { document.getElementById("stockAdmin").innerHTML='<div class="spinner"></div>'; loadStock(); } }
 }
 
 async function loadFeedback(){
@@ -1379,7 +1562,7 @@ function renderStats(){
   let ship=0, pickup=0, monthCount=0;
   let activeOrders=0, doneOrders=0, returnActive=0, returnTotal=0, totalItems=0;
   // financials
-  let revMonth=0, profitMonth=0, outstanding=0, priceSum=0, priceN=0;
+  let revMonth=0, profitMonth=0, outstanding=0, priceSum=0, priceN=0, mixCount=0, readyCount=0, readyRevMonth=0;
   const now = new Date(); const ymNow = now.getFullYear()+"-"+now.getMonth();
   const monthly = {}; // "YYYY-M" -> revenue
   all.forEach(o=>{
@@ -1391,6 +1574,9 @@ function renderStats(){
     });
     if(allDelivered(o)) doneOrders++; else activeOrders++;
     if(o.delivery_method==="pickup") pickup++; else ship++;
+    if(o.mix_match) mixCount++;
+    const isReady = o.kind==="ready";
+    if(isReady) readyCount++;
     const c = new Date(o.created_at);
     const ym = c.getFullYear()+"-"+c.getMonth();
     if(ym===ymNow) monthCount++;
@@ -1400,7 +1586,7 @@ function renderStats(){
     if(price!=null){
       priceSum+=price; priceN++;
       monthly[ym] = (monthly[ym]||0) + price;
-      if(ym===ymNow){ revMonth+=price; if(cost!=null) profitMonth += (price-cost); }
+      if(ym===ymNow){ revMonth+=price; if(cost!=null) profitMonth += (price-cost); if(isReady) readyRevMonth+=price; }
       const rem = price - paid;
       if(rem>0) outstanding += rem;
     }
@@ -1415,11 +1601,15 @@ function renderStats(){
     {n:total, l:"Σύνολο"},
     {n:active, l:"Σε εξέλιξη"},
     {n:done, l:"Ολοκληρωμένες", dark:true},
-    {n:monthCount, l:"Αυτόν τον μήνα"}
+    {n:monthCount, l:"Αυτόν τον μήνα"},
+    {n:mixCount, l:"Mix & Match"},
+    {n:readyCount, l:"Πωλήσεις ραφιού"}
   ].map(t=>`<div class="stat ${t.dark?'dark':''}"><div class="n">${t.n}</div><div class="l">${t.l}</div></div>`).join("");
 
   const money = [
     {n:fmtMoney(revMonth), l:"Τζίρος μήνα", dark:true},
+    {n:fmtMoney(revMonth-readyRevMonth), l:"→ από custom"},
+    {n:fmtMoney(readyRevMonth), l:"→ από ραφιού"},
     {n:fmtMoney(profitMonth), l:"Κέρδος μήνα"},
     {n:fmtMoney(outstanding), l:"Εκκρεμείς εισπράξεις"},
     {n:avgOrder!=null?fmtMoney(avgOrder):"—", l:"Μέση αξία"}
@@ -1515,7 +1705,7 @@ function renderOrders(){
     return `<div class="order-row${!everyDone&&items.some(it=>itemFlow(it)==='return')?' is-return':''}">
       <div class="r-top">
         <div>
-          <div class="r-name">${esc(o.customer_name)} ${o.order_number?`<span style="color:var(--muted);font-weight:400">· ${esc(o.order_number)}</span>`:""} <span title="${pickup?'Παραλαβή διά ζώσης':'Αποστολή με courier'}" style="opacity:.6">${pickup?'🤝':'📦'}</span></div>
+          <div class="r-name">${esc(o.customer_name)} ${o.order_number?`<span style="color:var(--muted);font-weight:400">· ${esc(o.order_number)}</span>`:""} <span title="${pickup?'Παραλαβή διά ζώσης':'Αποστολή με courier'}" style="opacity:.6">${pickup?'🤝':'📦'}</span>${o.mix_match?'<span class="mm-pill">Mix &amp; Match</span>':''}${o.kind==='ready'?'<span class="mm-pill" style="background:#eef3f8;color:#2f5d8a;border-color:#cfe0f0">Έτοιμο</span>':''}</div>
         </div>
         ${orderBadge}
       </div>
@@ -1603,6 +1793,7 @@ function buildWelcomeMsg(o){
     "Σου ετοιμάσαμε ένα προσωπικό link για να παρακολουθείς σε ποιο στάδιο βρίσκεται η παραγγελία σου:\n" + linkFor(o.track_token) +
     "\n\nΕκεί θα βλέπεις κάθε βήμα, από την παραλαβή των υλικών μέχρι την αποστολή, καθώς και το tracking του δέματος όταν φύγει.\n\n" +
     "Η παραγγελία σου αυτή τη στιγμή:\n" + itemLines(o, true) +
+    (o.mix_match ? "\n\nΗ παραγγελία σου είναι μέρος του Mix & Match — έχεις −20% στη συνολική τιμή! 🤍" : "") +
     "\n\nΚράτησέ το, θα σε ενημερώνουμε σε κάθε στάδιο!";
 }
 // 2) Ενιαίο μήνυμα εξέλιξης (ίδια δομή κάθε φορά, δείχνει ότι υπάρχει πρόοδος)
@@ -1713,10 +1904,24 @@ async function declareReturnItem(orderId, itemId, name){
 
 async function delOrder(id,name){
   if(!confirm("Διαγραφή παραγγελίας για «"+name+"»; Δεν αναιρείται.")) return;
+  const o = ordersCache.find(x=>x.id===id);
+  const mats = (o && o.stock_applied && Array.isArray(o.materials)) ? o.materials : null;
+  let restore=false;
+  if(mats && mats.length){
+    restore = confirm(o.kind==="ready"
+      ? "Να επιστραφεί το προϊόν στο απόθεμα ; (OK = ναι, Άκυρο = όχι, πουλήθηκε κανονικά)"
+      : "Να επιστραφούν τα υλικά στο απόθεμα ; (OK = ναι, Άκυρο = όχι)");
+  }
   try{
+    if(restore && mats){
+      for(const m of mats){
+        const it=stockCache.find(x=>x.id===m.id);
+        if(it){ const nq=Math.round(((Number(it.qty)||0)+(Number(m.qty)||0))*100)/100; await authFetch(REST + "/thilikon_stock?id=eq."+m.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({qty:nq})}); it.qty=nq; }
+      }
+    }
     const res = await authFetch(REST + "/orders?id=eq."+id, { method:"DELETE" });
     if(!res.ok) throw new Error();
-    await loadOrders(); adminFlash("Διαγράφηκε.");
+    await loadOrders(); if(restore) loadStock(); adminFlash("Διαγράφηκε.");
   }catch(e){ adminFlash("Σφάλμα διαγραφής."); }
 }
 
@@ -1821,6 +2026,9 @@ function openOrderModal(){
   document.getElementById("fbReadout").classList.add("hidden");
   document.getElementById("modalMsg").classList.add("hidden");
   document.getElementById("saveBtn").textContent="Δημιουργία";
+  document.getElementById("fMix").checked=false;
+  document.getElementById("mmToggle").classList.remove("on");
+  pickedMaterials=[]; stockApplied=false; renderMatList();
   buildItemsEditor(null);
   pickMethod("shipping");
   document.getElementById("orderModal").classList.remove("hidden");
@@ -1841,6 +2049,11 @@ function editOrder(id){
   document.getElementById("fTrackUrl").value=o.tracking_url||"";
   document.getElementById("fCost").value  = o.cost!=null ? o.cost : "";
   document.getElementById("fPaid").value  = o.amount_paid!=null ? o.amount_paid : "";
+  document.getElementById("fMix").checked = !!o.mix_match;
+  document.getElementById("mmToggle").classList.toggle("on", !!o.mix_match);
+  pickedMaterials = Array.isArray(o.materials) ? o.materials.map(m=>({...m})) : [];
+  stockApplied = !!o.stock_applied;
+  renderMatList();
   document.getElementById("saveBtn").textContent="Αποθήκευση";
   const its = getItems(o).map(it=>({...it}));
   if(o.price!=null && its.length && its.every(it=>it.price==null)) its[0].price = o.price; // legacy: μετάφερε το σύνολο
@@ -1898,9 +2111,12 @@ async function saveOrder(){
     courier: isPickup ? null : (courier || null),
     tracking_number: isPickup ? null : (trackNo || null),
     tracking_url: isPickup ? null : (trackUrl || null),
-    price: itemsTotal(),
+    price: finalPrice(itemsTotal()),
     cost: parseMoney(document.getElementById("fCost").value),
     amount_paid: parseMoney(document.getElementById("fPaid").value),
+    mix_match: isMix(),
+    materials: pickedMaterials.length ? pickedMaterials : null,
+    stock_applied: stockApplied,
     items
   };
   const btn=document.getElementById("saveBtn"); btn.disabled=true;
@@ -1943,6 +2159,319 @@ document.getElementById("orderModal").addEventListener("click",e=>{
 ["fCost","fPaid"].forEach(id=>{
   const el=document.getElementById(id); if(el) el.addEventListener("input", updateMoneyHint);
 });
+
+/* ============================================================
+   ΣΤΟΚ (αποθήκη) + Υλικά ανά παραγγελία + Mix & Match helpers
+============================================================ */
+let stockCache = [];
+let editingStockId = null;
+let pickedMaterials = [];   // [{id,name,unit,qty,unit_cost}]
+let stockApplied = false;
+let stockView = "raw";
+let matDraft = {};
+
+function fmtNum(n){ n=Number(n)||0; return Number.isInteger(n)?String(n):String(Math.round(n*100)/100); }
+function isMix(){ const el=document.getElementById("fMix"); return !!(el && el.checked); }
+function finalPrice(sub){ return (sub!=null && isMix()) ? Math.round(sub*(1-MIX_DISCOUNT)*100)/100 : sub; }
+function onMixToggle(){
+  document.getElementById("mmToggle").classList.toggle("on", isMix());
+  updateMoneyHint();
+}
+
+/* ---- Στοκ ---- */
+async function loadStock(){
+  try{
+    const res = await authFetch(REST + "/thilikon_stock?select=*&archived=eq.false&order=category.asc,name.asc", {});
+    if(res.status===401) return;
+    stockCache = await res.json();
+    if(!document.getElementById("stockAdmin").classList.contains("hidden")) renderStock();
+  }catch(e){}
+}
+function stockState(it){
+  const q=Number(it.qty)||0, low=it.low_threshold!=null?Number(it.low_threshold):2;
+  if(q<=0) return "out"; if(q<=low) return "low"; return "ok";
+}
+function setStockView(v){ stockView=v; renderStock(); }
+function renderStock(){
+  const box=document.getElementById("stockAdmin"); const all=stockCache||[];
+  const raw=all.filter(it=>it.type!=="product");
+  const prods=all.filter(it=>it.type==="product");
+  const toggle=`<div class="tabsw" style="margin-bottom:16px">
+    <button class="tb ${stockView==='raw'?'sel':''}" onclick="setStockView('raw')">Πρώτες ύλες${raw.length?` (${raw.length})`:''}</button>
+    <button class="tb ${stockView==='product'?'sel':''}" onclick="setStockView('product')">Έτοιμα προϊόντα${prods.length?` (${prods.length})`:''}</button>
+  </div>`;
+  const rows = stockView==="product" ? prods : raw;
+
+  if(!rows.length){
+    box.innerHTML = toggle + `<div class="fbd-empty">${stockView==="product"?"Δεν υπάρχουν έτοιμα προϊόντα. Πάτα «+ Είδος» και επίλεξε τύπο «Έτοιμο προϊόν».":"Καμία πρώτη ύλη ακόμη. Πάτα «+ Είδος» για να προσθέσεις."}</div>`;
+    return;
+  }
+
+  const totalVal=rows.reduce((s,it)=>s+(Number(it.qty)||0)*(Number(it.unit_cost)||0),0);
+  const lowItems=rows.filter(it=>stockState(it)!=="ok");
+  let html=toggle+`<div class="stock-sum">
+    <div class="stat dark"><div class="n" style="font-size:22px">${fmtMoney(totalVal)}</div><div class="l">Αξία (κόστος)</div></div>
+    <div class="stat"><div class="n">${rows.length}</div><div class="l">${stockView==="product"?"Προϊόντα":"Είδη"}</div></div>
+  </div>`;
+  if(lowItems.length){
+    html+=`<div class="r-hint" style="color:#c0266c;background:#fdf1f6;margin-bottom:14px">⚠️ ${stockView==="product"?"Λίγα κομμάτια":"Τελειώνουν"}: ${lowItems.map(it=>esc(it.name)+(stockState(it)==="out"?" (0)":` (${fmtNum(it.qty)})`)).join(" · ")}</div>`;
+  }
+  const cats={}; rows.forEach(it=>{ const c=it.category||"Άλλο"; (cats[c]=cats[c]||[]).push(it); });
+  Object.keys(cats).forEach(cat=>{
+    html+=`<div class="stock-cat">${esc(cat)}</div>`;
+    cats[cat].forEach(it=>{
+      const st=stockState(it), unit=it.unit||"τεμ.";
+      const meta = stockView==="product"
+        ? `${it.sell_price!=null?"Πώληση "+fmtMoney(it.sell_price):"χωρίς τιμή πώλησης"}${it.unit_cost!=null?" · κόστος "+fmtMoney(it.unit_cost):""}`
+        : `${it.unit_cost!=null?fmtMoney(it.unit_cost)+" / "+esc(unit):"χωρίς τιμή"}`;
+      html+=`<div class="stock-item ${st}">
+        ${it.image_url?`<img class="si-img" src="${esc(it.image_url)}" alt="">`:`<div class="si-img"></div>`}
+        <div class="si-info">
+          <div class="si-name">${esc(it.name)}</div>
+          <div class="si-meta">${meta}${st==="low"?' · <span class="si-low">'+(stockView==="product"?"λίγα":"τελειώνει")+'</span>':st==="out"?' · <span class="si-low">εξαντλήθηκε</span>':''}</div>
+        </div>
+        <div class="si-qty">
+          <button class="stepper-btn" onclick="adjustStock('${it.id}',-1)">−</button>
+          <span class="si-count">${fmtNum(it.qty)}</span>
+          <button class="stepper-btn" onclick="adjustStock('${it.id}',1)">+</button>
+        </div>
+        ${stockView==="product"?`<button class="btn solid sm" ${Number(it.qty)>0?"":"disabled"} onclick="openSellModal('${it.id}')" style="background:#c0266c;border-color:#c0266c">Πούλησέ το</button>`:""}
+        <button class="btn ghost sm" onclick="openStockModal('${it.id}')">✎</button>
+      </div>`;
+    });
+  });
+  box.innerHTML=html;
+}
+async function adjustStock(id, delta){
+  const it=stockCache.find(x=>x.id===id); if(!it) return;
+  const q=Math.max(0, Math.round(((Number(it.qty)||0)+delta)*100)/100);
+  it.qty=q; renderStock();
+  try{
+    const res=await authFetch(REST + "/thilikon_stock?id=eq."+id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({qty:q})});
+    if(!res.ok) throw new Error();
+  }catch(e){ adminFlash("Σφάλμα ενημέρωσης στοκ"); loadStock(); }
+}
+function onStockTypeChange(){
+  const isProd = document.getElementById("sType").value==="product";
+  document.getElementById("sSellWrap").classList.toggle("hidden", !isProd);
+  if(isProd){
+    const cat=document.getElementById("sCat"); if(cat.value==="Νήμα") cat.value="Τσάντα";
+    const u=document.getElementById("sUnit"); if(!u.value||u.value==="κουβάρι") u.value="τεμ.";
+  }
+}
+function openStockModal(id){
+  editingStockId=id||null;
+  const it=id?stockCache.find(x=>x.id===id):null;
+  document.getElementById("stockModalTitle").textContent=it?"Επεξεργασία είδους":(stockView==="product"?"Νέο προϊόν":"Νέο είδος");
+  document.getElementById("sName").value=it?it.name:"";
+  document.getElementById("sType").value=it?(it.type||"raw"):(stockView==="product"?"product":"raw");
+  document.getElementById("sCat").value=it?(it.category||"Νήμα"):(stockView==="product"?"Τσάντα":"Νήμα");
+  document.getElementById("sUnit").value=it?(it.unit||""):(stockView==="product"?"τεμ.":"κουβάρι");
+  document.getElementById("sQty").value=it&&it.qty!=null?it.qty:"";
+  document.getElementById("sCost").value=it&&it.unit_cost!=null?it.unit_cost:"";
+  document.getElementById("sLow").value=it&&it.low_threshold!=null?it.low_threshold:"2";
+  document.getElementById("sSell").value=it&&it.sell_price!=null?it.sell_price:"";
+  document.getElementById("sImg").value=it?(it.image_url||""):"";
+  onStockTypeChange();
+  document.getElementById("stockDelBtn").classList.toggle("hidden", !id);
+  document.getElementById("stockModalMsg").classList.add("hidden");
+  document.getElementById("stockModal").classList.remove("hidden");
+}
+function closeStockModal(){ document.getElementById("stockModal").classList.add("hidden"); }
+async function saveStock(){
+  const msg=document.getElementById("stockModalMsg"); msg.classList.add("hidden");
+  const name=document.getElementById("sName").value.trim();
+  if(!name){ msg.textContent="Συμπλήρωσε όνομα."; msg.classList.remove("hidden"); return; }
+  const payload={
+    name, category:document.getElementById("sCat").value,
+    type:document.getElementById("sType").value,
+    unit:document.getElementById("sUnit").value.trim()||"τεμ.",
+    qty:parseMoney(document.getElementById("sQty").value)||0,
+    unit_cost:parseMoney(document.getElementById("sCost").value),
+    sell_price:document.getElementById("sType").value==="product"?parseMoney(document.getElementById("sSell").value):null,
+    low_threshold:parseMoney(document.getElementById("sLow").value),
+    image_url:document.getElementById("sImg").value.trim()||null
+  };
+  const btn=document.getElementById("stockSaveBtn"); btn.disabled=true;
+  try{
+    let res;
+    if(editingStockId) res=await authFetch(REST + "/thilikon_stock?id=eq."+editingStockId,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify(payload)});
+    else res=await authFetch(REST + "/thilikon_stock",{method:"POST",headers:{"Prefer":"return=minimal"},body:JSON.stringify(payload)});
+    if(!res.ok) throw new Error(await res.text());
+    closeStockModal(); await loadStock(); adminFlash("Αποθηκεύτηκε ✓");
+  }catch(e){ msg.textContent="Σφάλμα αποθήκευσης."; msg.classList.remove("hidden"); }
+  finally{ btn.disabled=false; }
+}
+async function delStock(){
+  if(!editingStockId) return;
+  if(!confirm("Διαγραφή είδους από την αποθήκη ;")) return;
+  try{
+    await authFetch(REST + "/thilikon_stock?id=eq."+editingStockId,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({archived:true})});
+    closeStockModal(); await loadStock(); adminFlash("Διαγράφηκε ✓");
+  }catch(e){ adminFlash("Σφάλμα διαγραφής"); }
+}
+
+/* ---- Πώληση έτοιμου προϊόντος (ready-made) ---- */
+let sellingStockId=null, sellMethod="pickup", sellCreatedToken=null;
+function openSellModal(id){
+  const it=stockCache.find(x=>x.id===id); if(!it) return;
+  if(Number(it.qty)<=0){ adminFlash("Δεν υπάρχει διαθέσιμο απόθεμα"); return; }
+  sellingStockId=id; sellMethod="pickup"; sellCreatedToken=null;
+  document.getElementById("sellProdName").textContent=it.name;
+  document.getElementById("sellProdMeta").textContent=`${esc(it.category||"")} · διαθέσιμα ${fmtNum(it.qty)}${it.unit_cost!=null?" · κόστος "+fmtMoney(it.unit_cost):""}`;
+  document.getElementById("sellName").value="";
+  document.getElementById("sellPhone").value="";
+  document.getElementById("sellPrice").value=it.sell_price!=null?it.sell_price:"";
+  document.getElementById("sellPaid").checked=true;
+  document.getElementById("sellPaidToggle").classList.add("on");
+  pickSellMethod("pickup");
+  document.getElementById("sellMsg").classList.add("hidden");
+  document.getElementById("sellLinkWrap").classList.add("hidden");
+  document.getElementById("sellBtn").textContent="Καταχώρησε πώληση";
+  document.getElementById("sellBtn").disabled=false;
+  document.getElementById("sellModal").classList.remove("hidden");
+}
+function closeSellModal(){ document.getElementById("sellModal").classList.add("hidden"); }
+function pickSellMethod(m){
+  sellMethod=m;
+  document.querySelectorAll("#sellMethodSeg .sell-m").forEach(b=>b.classList.toggle("sel", b.dataset.m===m));
+}
+async function sellProduct(){
+  const msg=document.getElementById("sellMsg"); msg.classList.add("hidden");
+  const it=stockCache.find(x=>x.id===sellingStockId);
+  if(!it){ msg.textContent="Σφάλμα προϊόντος."; msg.classList.remove("hidden"); return; }
+  const price=parseMoney(document.getElementById("sellPrice").value);
+  if(price==null){ msg.textContent="Συμπλήρωσε τιμή πώλησης."; msg.classList.remove("hidden"); return; }
+  const name=document.getElementById("sellName").value.trim();
+  const phone=document.getElementById("sellPhone").value.trim();
+  const paid=document.getElementById("sellPaid").checked;
+  const btn=document.getElementById("sellBtn"); btn.disabled=true; btn.textContent="Καταχώρηση…";
+  const prevQty=Number(it.qty)||0;
+  try{
+    // 1) αφαίρεση 1 από στοκ
+    const newQty=Math.max(0, prevQty-1);
+    let r=await authFetch(REST + "/thilikon_stock?id=eq."+it.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({qty:newQty})});
+    if(!r.ok) throw new Error("stock");
+    it.qty=newQty;
+    // 2) δημιουργία παραγγελίας ready
+    const item={ id:newItemId(), name:it.name, details:null, stage:1, flow:"ready", note:null, price:price };
+    const payload={
+      customer_name:name||null, customer_phone:phone||null,
+      product_name:it.name, delivery_method:sellMethod,
+      price:price, cost:it.unit_cost!=null?Number(it.unit_cost):null,
+      amount_paid:paid?price:0, kind:"ready",
+      materials:[{id:it.id,name:it.name,unit:it.unit||"τεμ.",qty:1,unit_cost:it.unit_cost!=null?Number(it.unit_cost):0}],
+      stock_applied:true, items:[item]
+    };
+    r=await authFetch(REST + "/orders",{method:"POST",headers:{"Prefer":"return=representation"},body:JSON.stringify(payload)});
+    const data=await r.json();
+    if(!r.ok) throw new Error((data&&data.message)||"order");
+    const row=Array.isArray(data)?data[0]:data;
+    sellCreatedToken=row.track_token;
+    document.getElementById("sellLink").textContent=linkFor(row.track_token);
+    document.getElementById("sellLinkWrap").classList.remove("hidden");
+    btn.textContent="Καταχωρήθηκε ✓";
+    await loadOrders(); renderStock();
+    adminFlash("Η πώληση καταχωρήθηκε ✓");
+  }catch(e){
+    // rollback στοκ αν απέτυχε η παραγγελία
+    if(String(e.message)!=="stock"){ try{ await authFetch(REST + "/thilikon_stock?id=eq."+it.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({qty:prevQty})}); it.qty=prevQty; }catch(_){} }
+    btn.disabled=false; btn.textContent="Καταχώρησε πώληση";
+    msg.textContent="Σφάλμα καταχώρησης. Δοκίμασε ξανά."; msg.classList.remove("hidden");
+  }
+}
+async function copySellLink(){
+  try{ await navigator.clipboard.writeText(document.getElementById("sellLink").textContent); adminFlash("Το link αντιγράφηκε ✓"); }catch(e){}
+}
+
+/* ---- Υλικά ανά παραγγελία (picker + αφαίρεση από στοκ) ---- */
+function openMatPicker(){
+  if(stockApplied) return;
+  if(!stockCache.length){ loadStock().then(()=>{ if(stockCache.length) openMatPicker(); else { matDraft={}; showMatPicker([]); } }); return; }
+  matDraft={}; pickedMaterials.forEach(m=> matDraft[m.id]=m.qty);
+  showMatPicker(stockCache.filter(it=>it.type!=="product" && (Number(it.qty)>0 || matDraft[it.id])));
+}
+function showMatPicker(rows){
+  const list=document.getElementById("matPickerList");
+  if(!rows.length){ list.innerHTML='<div class="mat-empty">Δεν υπάρχει διαθέσιμο στοκ. Πρόσθεσε είδη από την καρτέλα «Στοκ».</div>'; }
+  else list.innerHTML=rows.map(it=>{
+    const q=matDraft[it.id]||0;
+    return `<div class="picker-row">
+      <div class="pr-info"><div class="pr-name">${esc(it.name)}</div><div class="pr-meta">${esc(it.category||"")} · διαθέσιμα ${fmtNum(it.qty)} ${esc(it.unit||"")}${it.unit_cost!=null?" · "+fmtMoney(it.unit_cost):""}</div></div>
+      <div class="pr-stepper">
+        <button class="stepper-btn" onclick="matStep('${it.id}',-1)">−</button>
+        <span class="stepper-val" id="mv-${it.id}">${q}</span>
+        <button class="stepper-btn" onclick="matStep('${it.id}',1)">+</button>
+      </div>
+    </div>`;
+  }).join("");
+  matPickerTotalUpdate();
+  document.getElementById("matPickerMsg").classList.add("hidden");
+  document.getElementById("matModal").classList.remove("hidden");
+}
+function closeMatPicker(){ document.getElementById("matModal").classList.add("hidden"); }
+function matStep(id, delta){
+  const it=stockCache.find(x=>x.id===id); if(!it) return;
+  const avail=Number(it.qty)||0; let q=(matDraft[id]||0)+delta;
+  if(q<0)q=0; if(q>avail)q=avail; matDraft[id]=q;
+  const el=document.getElementById("mv-"+id); if(el) el.textContent=q;
+  matPickerTotalUpdate();
+}
+function matPickerTotalUpdate(){
+  let total=0;
+  Object.keys(matDraft).forEach(id=>{ const it=stockCache.find(x=>x.id===id); if(it&&matDraft[id]) total+=matDraft[id]*(Number(it.unit_cost)||0); });
+  document.getElementById("matPickerTotal").textContent="Σύνολο: "+fmtMoney(Math.round(total*100)/100);
+}
+async function applyMaterials(){
+  const chosen=Object.keys(matDraft).filter(id=>matDraft[id]>0).map(id=>{
+    const it=stockCache.find(x=>x.id===id);
+    return { id, name:it.name, unit:it.unit||"", qty:matDraft[id], unit_cost:it.unit_cost!=null?Number(it.unit_cost):0 };
+  });
+  const msg=document.getElementById("matPickerMsg");
+  if(!chosen.length){ msg.textContent="Διάλεξε τουλάχιστον ένα υλικό."; msg.classList.remove("hidden"); return; }
+  const btn=document.getElementById("matApplyBtn"); btn.disabled=true; btn.textContent="Αφαιρούμε…";
+  try{
+    for(const m of chosen){
+      const it=stockCache.find(x=>x.id===m.id);
+      const nq=Math.max(0, Math.round(((Number(it.qty)||0)-m.qty)*100)/100);
+      const res=await authFetch(REST + "/thilikon_stock?id=eq."+m.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({qty:nq})});
+      if(!res.ok) throw new Error();
+      it.qty=nq;
+    }
+    pickedMaterials=chosen; stockApplied=true;
+    const total=chosen.reduce((s,m)=>s+m.qty*m.unit_cost,0);
+    document.getElementById("fCost").value=Math.round(total*100)/100;
+    updateMoneyHint(); renderMatList(); closeMatPicker();
+    if(!document.getElementById("stockAdmin").classList.contains("hidden")) renderStock();
+    adminFlash("Αφαιρέθηκαν από το στοκ ✓");
+  }catch(e){ btn.disabled=false; btn.textContent="Επιβεβαίωση & αφαίρεση από στοκ"; msg.textContent="Σφάλμα. Δοκίμασε ξανά."; msg.classList.remove("hidden"); loadStock(); }
+}
+function renderMatList(){
+  const box=document.getElementById("matList"); const btn=document.getElementById("matBtn");
+  if(!pickedMaterials.length){
+    box.innerHTML='<div class="mat-empty">Δεν έχουν δηλωθεί υλικά. Διάλεξε για να υπολογιστεί το κόστος και να αφαιρεθούν από το στοκ.</div>';
+    if(btn){ btn.classList.remove("hidden"); }
+    return;
+  }
+  const total=pickedMaterials.reduce((s,m)=>s+m.qty*(m.unit_cost||0),0);
+  box.innerHTML=pickedMaterials.map(m=>`<div class="mat-line"><span>${esc(m.name)} <span class="q">× ${fmtNum(m.qty)} ${esc(m.unit||"")}</span></span><span>${fmtMoney(m.qty*(m.unit_cost||0))}</span></div>`).join("")
+    + `<div class="mat-total"><span>Κόστος υλικών</span><span>${fmtMoney(Math.round(total*100)/100)}</span></div>`
+    + (stockApplied?`<div class="mat-applied">✓ Αφαιρέθηκαν από το στοκ</div>`:``)
+    + `<div style="margin-top:8px"><button type="button" class="btn ghost sm" onclick="restoreMaterials()">Επαναφορά στο στοκ</button></div>`;
+  if(btn) btn.classList.add("hidden");
+}
+async function restoreMaterials(){
+  if(stockApplied && pickedMaterials.length){
+    try{
+      for(const m of pickedMaterials){
+        const it=stockCache.find(x=>x.id===m.id);
+        if(it){ const nq=Math.round(((Number(it.qty)||0)+m.qty)*100)/100; await authFetch(REST + "/thilikon_stock?id=eq."+m.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({qty:nq})}); it.qty=nq; }
+      }
+      if(!document.getElementById("stockAdmin").classList.contains("hidden")) renderStock();
+    }catch(e){ adminFlash("Σφάλμα επαναφοράς στοκ"); }
+  }
+  pickedMaterials=[]; stockApplied=false; renderMatList(); adminFlash("Έγινε επαναφορά");
+}
 
 /* go */
 route();
