@@ -473,6 +473,10 @@
   .si-qty{display:flex;align-items:center;gap:8px}
   .si-count{min-width:30px;text-align:center;font-weight:700;font-size:16px}
   .sell-m.sel{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .split-bar{display:flex;height:10px;border-radius:6px;overflow:hidden;background:var(--stone);margin:4px 0 7px}
+  .split-seg{height:100%}
+  .split-leg{font-size:11.5px;color:var(--muted);display:flex;gap:16px}
+  .split-leg b{color:var(--ink);font-weight:600}
 </style>
 </head>
 <body>
@@ -591,7 +595,7 @@
       <div class="admin-bar">
         <div class="tabsw">
           <button class="tb sel" id="tabOrders" onclick="showAdminTab('orders')">Παραγγελίες</button>
-          <button class="tb" id="tabStock" onclick="showAdminTab('stock')">Στοκ</button>
+          <button class="tb" id="tabStock" onclick="showAdminTab('stock')">Αποθήκη</button>
           <button class="tb" id="tabFb" onclick="showAdminTab('feedback')">Feedback</button>
         </div>
         <div style="display:flex;gap:8px">
@@ -1598,6 +1602,16 @@ function renderStats(){
   const active = activeOrders;
   const done = doneOrders;
   const avgOrder = priceN ? priceSum/priceN : null;
+  const customRevMonth = revMonth - readyRevMonth;
+  const margin = revMonth>0 ? Math.round(profitMonth/revMonth*100) : null;
+  const _stock = stockCache||[];
+  const stockVal = _stock.reduce((s,it)=>s+(Number(it.qty)||0)*(Number(it.unit_cost)||0),0);
+  const lowCount = _stock.filter(it=>stockState(it)!=="ok").length;
+  const mmColors = _stock.filter(it=>it.mm).length;
+  const _fb = feedbackCache||[];
+  const _sat = _fb.map(r=>r.q_satisfaction).filter(x=>x!=null);
+  const satAvg = _sat.length ? (_sat.reduce((a,b)=>a+b,0)/_sat.length) : null;
+  const inv = inventoryInfo();
   const labels = ["Αναμονή / Υλικά","Δημιουργία","Αποστολή / Παραλαβή","Παραδόθηκαν"];
   const maxStage = Math.max(1, ...byStage);
 
@@ -1605,18 +1619,16 @@ function renderStats(){
     {n:total, l:"Σύνολο"},
     {n:active, l:"Σε εξέλιξη"},
     {n:done, l:"Ολοκληρωμένες", dark:true},
-    {n:monthCount, l:"Αυτόν τον μήνα"},
-    {n:mixCount, l:"Mix & Match"},
-    {n:readyCount, l:"Πωλήσεις ραφιού"}
+    {n:monthCount, l:"Αυτόν τον μήνα"}
   ].map(t=>`<div class="stat ${t.dark?'dark':''}"><div class="n">${t.n}</div><div class="l">${t.l}</div></div>`).join("");
 
   const money = [
     {n:fmtMoney(revMonth), l:"Τζίρος μήνα", dark:true},
-    {n:fmtMoney(revMonth-readyRevMonth), l:"→ από custom"},
-    {n:fmtMoney(readyRevMonth), l:"→ από ραφιού"},
     {n:fmtMoney(profitMonth), l:"Κέρδος μήνα"},
-    {n:fmtMoney(outstanding), l:"Εκκρεμείς εισπράξεις"},
-    {n:avgOrder!=null?fmtMoney(avgOrder):"—", l:"Μέση αξία"}
+    {n:margin!=null?margin+"%":"—", l:"Περιθώριο"},
+    {n:avgOrder!=null?fmtMoney(avgOrder):"—", l:"Μέση αξία"},
+    {n:fmtMoney(outstanding), l:"Εκκρεμείς"},
+    {n:fmtMoney(priceSum), l:"Τζίρος σύνολο"}
   ].map(t=>`<div class="stat ${t.dark?'dark':''}"><div class="n" style="font-size:23px">${t.n}</div><div class="l">${t.l}</div></div>`).join("");
 
   // ---- Τζίρος ανά μήνα, ανά έτος (με κουμπιά έτους) ----
@@ -1655,18 +1667,32 @@ function renderStats(){
     <div class="stat-grid">${tiles}</div>
     <div class="stat-row">
       <span class="stat-pill">🧶 Προϊόντα: ${totalItems}</span>
-      ${returnTotal?`<span class="stat-pill" style="background:#efe6da;color:#8a5a1e">♻ Επιστροφές: ${returnTotal} (${Math.round(returnTotal/Math.max(totalItems,1)*100)}%)${returnActive?` · ${returnActive} σε εξέλιξη`:""}</span>`:""}
+      ${returnTotal?`<span class="stat-pill" style="background:#efe6da;color:#8a5a1e">♻ Επιστροφές: ${returnTotal}${returnActive?` · ${returnActive} ενεργές`:""}</span>`:""}
+      <span class="stat-pill" style="background:#fdf1f6;color:#c0266c">✨ Mix & Match: ${mixCount}</span>
+      <span class="stat-pill" style="background:#eef3f8;color:#2f5d8a">🛍️ Ραφιού: ${readyCount}</span>
       <span class="stat-pill">📦 ${ship}</span>
       <span class="stat-pill">🤝 ${pickup}</span>
+      ${satAvg!=null?`<span class="stat-pill">🤍 Ικανοποίηση: ${satAvg.toFixed(1)}/5</span>`:""}
     </div>
 
-    <div class="stats-sub">💶 Οικονομικά</div>
+    <div class="stats-sub">💶 Οικονομικά (μήνας)</div>
     <div class="stat-grid">${money}</div>
+    ${revMonth>0?`<div class="split-bar"><div class="split-seg" style="width:${Math.round(customRevMonth/revMonth*100)}%;background:var(--ink)"></div><div class="split-seg" style="width:${Math.round(readyRevMonth/revMonth*100)}%;background:#c0266c"></div></div>
+    <div class="split-leg"><span>Custom <b>${fmtMoney(customRevMonth)}</b></span><span>Ραφιού <b style="color:#c0266c">${fmtMoney(readyRevMonth)}</b></span></div>`:""}
+
     <div class="stats-sub">Τζίρος ανά μήνα</div>
     ${revBlock}
 
     <div class="stats-sub">Προϊόντα ανά φάση</div>
-    <div class="stage-bars">${bars}</div>`;
+    <div class="stage-bars">${bars}</div>
+
+    <div class="stats-sub">🧵 Αποθήκη</div>
+    <div class="stat-grid">
+      <div class="stat"><div class="n" style="font-size:20px">${fmtMoney(stockVal)}</div><div class="l">Αξία αποθέματος</div></div>
+      <div class="stat"><div class="n">${lowCount}</div><div class="l">Τελειώνουν</div></div>
+      <div class="stat"><div class="n">${mmColors}</div><div class="l">Mix & Match</div></div>
+    </div>
+    <div style="font-size:11.5px;color:${inv.due?'#8a5a1e':'var(--muted)'};margin-top:8px">${inv.due?'⏰ Ώρα για απογραφή'+(inv.last?` (πριν ${inv.days} μέρες)`:' (δεν έχει γίνει ακόμη)'):`✓ Τελευταία απογραφή πριν ${inv.days} μέρες`}</div>`;
 }
 
 function renderOrders(){
@@ -2183,12 +2209,40 @@ function onMixToggle(){
 }
 
 /* ---- Στοκ ---- */
+/* ---- Υπενθύμιση απογραφής (κάθε ~45 μέρες) ---- */
+const INVENTORY_DAYS = 45;
+function inventoryInfo(){
+  let last=null; try{ const v=store.get("th_last_inventory"); if(v) last=new Date(v); }catch(e){}
+  const days = last ? Math.floor((Date.now()-last.getTime())/86400000) : null;
+  return { last, days, due: (last===null || days>=INVENTORY_DAYS) };
+}
+function markInventoryDone(){
+  try{ store.set("th_last_inventory", new Date().toISOString()); }catch(e){}
+  updateStockTabBadge(); renderStock();
+  if(ordersCache.length && document.getElementById("statsBody")) renderStats();
+  adminFlash("Καταγράφηκε η απογραφή ✓");
+}
+function updateStockTabBadge(){
+  const t=document.getElementById("tabStock"); if(!t) return;
+  t.innerHTML = "Αποθήκη" + (inventoryInfo().due ? ' <span style="color:#c0266c;font-size:15px;line-height:0">•</span>' : "");
+}
+function inventoryBar(){
+  const inv=inventoryInfo();
+  if(!inv.due) return `<div style="font-size:11.5px;color:var(--muted);margin-bottom:14px">✓ Τελευταία απογραφή: πριν ${inv.days} μέρες. <button class="btn ghost sm" style="padding:3px 10px;margin-left:6px" onclick="markInventoryDone()">Έγινε ξανά</button></div>`;
+  return `<div class="r-hint" style="color:#8a5a1e;background:#fdf6ea;border:1px solid #f0e0c4;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+    <span>⏰ Ώρα για απογραφή — ${inv.last?`πέρασαν ${inv.days} μέρες`:"δεν έχει γίνει ακόμη"}. Έλεγξε ότι οι ποσότητες συμφωνούν με τι έχεις όντως.</span>
+    <button class="btn solid sm" onclick="markInventoryDone()">Έγινε απογραφή ✓</button>
+  </div>`;
+}
+
 async function loadStock(){
   try{
     const res = await authFetch(REST + "/thilikon_stock?select=*&archived=eq.false&order=category.asc,name.asc", {});
     if(res.status===401) return;
     stockCache = await res.json();
+    updateStockTabBadge();
     if(!document.getElementById("stockAdmin").classList.contains("hidden")) renderStock();
+    if(ordersCache.length && document.getElementById("statsBody") && !document.getElementById("statsBox").classList.contains("hidden")) renderStats();
   }catch(e){}
 }
 function stockState(it){
@@ -2207,20 +2261,21 @@ function renderStock(){
     <button class="tb ${stockView==='product'?'sel':''}" onclick="setStockView('product')">Έτοιμα προϊόντα${prods.length?` (${prods.length})`:''}</button>
   </div>`;
   const rows = stockView==="product" ? prods : (stockView==="mm" ? mm : raw);
+  const invBar = inventoryBar();
 
   if(!rows.length){
     let empty;
     if(stockView==="product") empty=`<div class="fbd-empty">Δεν υπάρχουν έτοιμα προϊόντα. Πάτα «+ Είδος» και επίλεξε τύπο «Έτοιμο προϊόν».</div>`;
     else if(stockView==="mm") empty=`<div class="fbd-empty" style="padding-bottom:14px">Κανένα χρώμα Mix &amp; Match ακόμη.</div><div style="text-align:center"><button class="btn solid sm" style="background:#c0266c;border-color:#c0266c" onclick="seedMixMatch()">🧶 Φόρτωσε τα χρώματα του event</button><div style="font-size:11px;color:var(--muted);margin-top:8px">Θα προστεθούν οι αποχρώσεις από τις φωτογραφίες σου (ποσότητα 1). Άλλαξε ποσότητες/ονόματα όπως θες.</div></div>`;
     else empty=`<div class="fbd-empty">Καμία πρώτη ύλη ακόμη. Πάτα «+ Είδος» για να προσθέσεις.</div>`;
-    box.innerHTML = toggle + empty;
+    box.innerHTML = invBar + toggle + empty;
     return;
   }
 
   const totalVal=rows.reduce((s,it)=>s+(Number(it.qty)||0)*(Number(it.unit_cost)||0),0);
   const lowItems=rows.filter(it=>stockState(it)!=="ok");
   const isMM = stockView==="mm";
-  let html=toggle+`<div class="stock-sum">
+  let html=invBar+toggle+`<div class="stock-sum">
     <div class="stat ${isMM?'':'dark'}" ${isMM?'style="background:#c0266c;color:#fff"':''}><div class="n" style="font-size:22px">${isMM?rows.length:fmtMoney(totalVal)}</div><div class="l" ${isMM?'style="color:#fff;opacity:.85"':''}>${isMM?"Αποχρώσεις":"Αξία (κόστος)"}</div></div>
     <div class="stat"><div class="n">${isMM?fmtMoney(totalVal):rows.length}</div><div class="l">${isMM?"Αξία (κόστος)":(stockView==="product"?"Προϊόντα":"Είδη")}</div></div>
   </div>`;
@@ -2295,7 +2350,7 @@ async function seedMixMatch(){
     const res = await authFetch(REST + "/thilikon_stock",{method:"POST",headers:{"Prefer":"return=minimal"},body:JSON.stringify(payload)});
     if(!res.ok) throw new Error(await res.text());
     await loadStock(); adminFlash("Προστέθηκαν "+MM_SEED.length+" αποχρώσεις ✓");
-  }catch(e){ adminFlash("Σφάλμα φόρτωσης χρωμάτων"); }
+  }catch(e){ adminFlash("Σφάλμα — έτρεξες το SQL για τη στήλη mm ;"); console.error(e); }
 }
 async function adjustStock(id, delta){
   const it=stockCache.find(x=>x.id===id); if(!it) return;
@@ -2306,13 +2361,18 @@ async function adjustStock(id, delta){
     if(!res.ok) throw new Error();
   }catch(e){ adminFlash("Σφάλμα ενημέρωσης στοκ"); loadStock(); }
 }
+const STOCK_CATS = {
+  raw:["Νήμα","Ταμπελάκι","Συσκευασία","Άλλο"],
+  product:["Τσάντα","Αξεσουάρ","Άλλο"]
+};
 function onStockTypeChange(){
   const isProd = document.getElementById("sType").value==="product";
   document.getElementById("sSellWrap").classList.toggle("hidden", !isProd);
-  if(isProd){
-    const cat=document.getElementById("sCat"); if(cat.value==="Νήμα") cat.value="Τσάντα";
-    const u=document.getElementById("sUnit"); if(!u.value||u.value==="κουβάρι") u.value="τεμ.";
-  }
+  const cat=document.getElementById("sCat"); const prev=cat.value;
+  const opts=STOCK_CATS[isProd?"product":"raw"];
+  cat.innerHTML=opts.map(o=>`<option>${o}</option>`).join("");
+  cat.value = opts.includes(prev) ? prev : opts[0];
+  if(isProd){ const u=document.getElementById("sUnit"); if(!u.value||u.value==="κουβάρι") u.value="τεμ."; }
 }
 function openStockModal(id){
   editingStockId=id||null;
@@ -2320,7 +2380,6 @@ function openStockModal(id){
   document.getElementById("stockModalTitle").textContent=it?"Επεξεργασία είδους":(stockView==="product"?"Νέο προϊόν":"Νέο είδος");
   document.getElementById("sName").value=it?it.name:"";
   document.getElementById("sType").value=it?(it.type||"raw"):(stockView==="product"?"product":"raw");
-  document.getElementById("sCat").value=it?(it.category||"Νήμα"):(stockView==="product"?"Τσάντα":"Νήμα");
   document.getElementById("sUnit").value=it?(it.unit||""):(stockView==="product"?"τεμ.":"κουβάρι");
   document.getElementById("sQty").value=it&&it.qty!=null?it.qty:"";
   document.getElementById("sCost").value=it&&it.unit_cost!=null?it.unit_cost:"";
@@ -2331,6 +2390,8 @@ function openStockModal(id){
   document.getElementById("sMM").checked=mmOn;
   document.getElementById("sMMToggle").classList.toggle("on", mmOn);
   onStockTypeChange();
+  const cat=document.getElementById("sCat"); const want=it?(it.category||""):(stockView==="product"?"Τσάντα":"Νήμα");
+  if([...cat.options].some(o=>o.value===want)) cat.value=want;
   document.getElementById("stockDelBtn").classList.toggle("hidden", !id);
   document.getElementById("stockModalMsg").classList.add("hidden");
   document.getElementById("stockModal").classList.remove("hidden");
