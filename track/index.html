@@ -836,8 +836,8 @@
       <label class="fld" style="flex:1"><span>Ειδοπ. κάτω από</span><input id="sLow" inputmode="decimal" placeholder="2"></label>
     </div>
     <label class="fld hidden" id="sSellWrap"><span>Τιμή πώλησης € (για έτοιμα προϊόντα)</span><input id="sSell" inputmode="decimal" placeholder="0"></label>
-    <label class="mm-toggle" id="sMMToggle" onclick="setTimeout(()=>document.getElementById('sMMToggle').classList.toggle('on',document.getElementById('sMM').checked),0)" style="border-radius:12px">
-      <input type="checkbox" id="sMM">
+    <label class="mm-toggle" id="sMMToggle" style="border-radius:12px">
+      <input type="checkbox" id="sMM" onchange="onStockMMChange()">
       <span><span class="mm-l">Χρώμα Mix &amp; Match</span> <span class="mm-s">— μπαίνει στο section του event</span></span>
     </label>
     <label class="fld"><span>Φωτογραφία (URL, προαιρετικό)</span><input id="sImg" placeholder="https://…"></label>
@@ -2323,35 +2323,35 @@ function renderStock(){
 /* Χρώματα Mix & Match από τις φωτογραφίες (starter — άλλαξε ονόματα/ποσότητες όπως θες) */
 const MM_SEED = [
   // Πράσινα / Γκρι / Πετρόλ
-  {name:"#43 - Dark Olive", category:"Πράσινα & Γκρι", image_url:"https://i.imgur.com/RKfdEDR.jpeg#f=25,30,240"},
-  {name:"#25 - Mint", category:"Πράσινα & Γκρι", image_url:"https://i.imgur.com/RKfdEDR.jpeg#f=50,45,240"},
-  {name:"#24 - Petrol", category:"Πράσινα & Γκρι", image_url:"https://i.imgur.com/RKfdEDR.jpeg#f=80,55,240"},
-  {name:"#02 - Dark Grey", category:"Πράσινα & Γκρι", image_url:"https://i.imgur.com/RKfdEDR.jpeg#f=45,80,240"},
+  {name:"#43 - Dark Olive", category:"Πράσινα & Γκρι", image_url:"https://i.imgur.com/RKfdEDR.jpeg#f=24,41,300"},
+  {name:"#25 - Mint", category:"Πράσινα & Γκρι", image_url:"https://i.imgur.com/RKfdEDR.jpeg#f=56,33,300"},
+  {name:"#24 - Petrol", category:"Πράσινα & Γκρι", image_url:"https://i.imgur.com/RKfdEDR.jpeg#f=76,54,300"},
+  {name:"#02 - Dark Grey", category:"Πράσινα & Γκρι", image_url:"https://i.imgur.com/RKfdEDR.jpeg#f=43,75,300"},
   // Κίτρινα
-  {name:"#05 - Off White", category:"Κίτρινα", image_url:"https://i.imgur.com/AbDSwuZ.jpeg#f=60,30,230"},
-  {name:"#18 - Vanilla", category:"Κίτρινα", image_url:"https://i.imgur.com/AbDSwuZ.jpeg#f=30,55,230"},
-  {name:"#16 - Yellow", category:"Κίτρινα", image_url:"https://i.imgur.com/AbDSwuZ.jpeg#f=82,60,230"},
+  {name:"#05 - Off White", category:"Κίτρινα", image_url:"https://i.imgur.com/AbDSwuZ.jpeg#f=56,26,300"},
+  {name:"#18 - Vanilla", category:"Κίτρινα", image_url:"https://i.imgur.com/AbDSwuZ.jpeg#f=51,21,300"},
+  {name:"#16 - Yellow", category:"Κίτρινα", image_url:"https://i.imgur.com/AbDSwuZ.jpeg#f=74,57,300"},
   // Καφέ / Μπεζ
-  {name:"#06 - Beige", category:"Καφέ & Μπεζ", image_url:"https://i.imgur.com/Gg9T11h.jpeg#f=22,30,240"},
-  {name:"#09 - Mocha", category:"Καφέ & Μπεζ", image_url:"https://i.imgur.com/Gg9T11h.jpeg#f=72,75,240"},
-  {name:"#08 - Brown", category:"Καφέ & Μπεζ", image_url:"https://i.imgur.com/Gg9T11h.jpeg#f=82,42,240"},
-  {name:"#07 - Dark Brown", category:"Καφέ & Μπεζ", image_url:"https://i.imgur.com/Gg9T11h.jpeg#f=50,30,240"},
+  {name:"#06 - Beige", category:"Καφέ & Μπεζ", image_url:"https://i.imgur.com/Gg9T11h.jpeg#f=28,29,300"},
+  {name:"#09 - Mocha", category:"Καφέ & Μπεζ", image_url:"https://i.imgur.com/Gg9T11h.jpeg#f=62,73,300"},
+  {name:"#08 - Brown", category:"Καφέ & Μπεζ", image_url:"https://i.imgur.com/Gg9T11h.jpeg#f=55,53,300"},
+  {name:"#07 - Dark Brown", category:"Καφέ & Μπεζ", image_url:"https://i.imgur.com/Gg9T11h.jpeg#f=64,39,300"},
   // Μπλε
-  {name:"#23 - Royal Blue", category:"Μπλε", image_url:"https://i.imgur.com/7ocag0T.jpeg#f=22,55,240"},
-  {name:"#20 - Blue", category:"Μπλε", image_url:"https://i.imgur.com/7ocag0T.jpeg#f=82,55,240"},
-  {name:"#22 - Light Blue", category:"Μπλε", image_url:"https://i.imgur.com/7ocag0T.jpeg#f=50,68,240"},
-  {name:"#21 - Ocean Blue", category:"Μπλε", image_url:"https://i.imgur.com/7ocag0T.jpeg#f=55,32,240"},
+  {name:"#23 - Royal Blue", category:"Μπλε", image_url:"https://i.imgur.com/7ocag0T.jpeg#f=24,69,300"},
+  {name:"#20 - Blue", category:"Μπλε", image_url:"https://i.imgur.com/7ocag0T.jpeg#f=52,53,300"},
+  {name:"#22 - Light Blue", category:"Μπλε", image_url:"https://i.imgur.com/7ocag0T.jpeg#f=58,74,300"},
+  {name:"#21 - Ocean Blue", category:"Μπλε", image_url:"https://i.imgur.com/7ocag0T.jpeg#f=51,49,300"},
   // Ροζ / Μωβ
-  {name:"#34 - Lilac", category:"Ροζ & Μωβ", image_url:"https://i.imgur.com/Upq8yPv.jpeg#f=22,45,230"},
-  {name:"#29 - Light Pink", category:"Ροζ & Μωβ", image_url:"https://i.imgur.com/Upq8yPv.jpeg#f=48,30,230"},
-  {name:"#31 - Pink", category:"Ροζ & Μωβ", image_url:"https://i.imgur.com/Upq8yPv.jpeg#f=82,35,230"},
-  {name:"#32 - Fuchsia", category:"Ροζ & Μωβ", image_url:"https://i.imgur.com/Upq8yPv.jpeg#f=35,80,230"},
-  {name:"#40 - Plum", category:"Ροζ & Μωβ", image_url:"https://i.imgur.com/Upq8yPv.jpeg#f=58,60,230"},
+  {name:"#34 - Lilac", category:"Ροζ & Μωβ", image_url:"https://i.imgur.com/Upq8yPv.jpeg#f=22,41,300"},
+  {name:"#29 - Light Pink", category:"Ροζ & Μωβ", image_url:"https://i.imgur.com/Upq8yPv.jpeg#f=45,23,300"},
+  {name:"#31 - Pink", category:"Ροζ & Μωβ", image_url:"https://i.imgur.com/Upq8yPv.jpeg#f=88,27,300"},
+  {name:"#32 - Fuchsia", category:"Ροζ & Μωβ", image_url:"https://i.imgur.com/Upq8yPv.jpeg#f=38,75,300"},
+  {name:"#40 - Plum", category:"Ροζ & Μωβ", image_url:"https://i.imgur.com/Upq8yPv.jpeg#f=52,53,300"},
   // Κόκκινα
-  {name:"#38 - Red", category:"Κόκκινα", image_url:"https://i.imgur.com/PHVTCb3.jpeg#f=55,25,235"},
-  {name:"#13 - Orange", category:"Κόκκινα", image_url:"https://i.imgur.com/PHVTCb3.jpeg#f=30,80,235"},
-  {name:"#39 - Burgundy", category:"Κόκκινα", image_url:"https://i.imgur.com/PHVTCb3.jpeg#f=40,52,235"},
-  {name:"#33 - Berry", category:"Κόκκινα", image_url:"https://i.imgur.com/PHVTCb3.jpeg#f=82,65,235"}
+  {name:"#38 - Red", category:"Κόκκινα", image_url:"https://i.imgur.com/PHVTCb3.jpeg#f=55,20,300"},
+  {name:"#13 - Orange", category:"Κόκκινα", image_url:"https://i.imgur.com/PHVTCb3.jpeg#f=66,53,300"},
+  {name:"#39 - Burgundy", category:"Κόκκινα", image_url:"https://i.imgur.com/PHVTCb3.jpeg#f=62,55,300"},
+  {name:"#33 - Berry", category:"Κόκκινα", image_url:"https://i.imgur.com/PHVTCb3.jpeg#f=40,35,300"}
 ];
 async function seedMixMatch(){
   if((stockCache||[]).some(it=>it.mm)){ adminFlash("Υπάρχουν ήδη χρώματα Mix & Match"); return; }
@@ -2376,14 +2376,25 @@ const STOCK_CATS = {
   raw:["Νήμα","Ταμπελάκι","Συσκευασία","Άλλο"],
   product:["Τσάντα","Αξεσουάρ","Άλλο"]
 };
+const MM_CATS = ["Πράσινα & Γκρι","Κίτρινα","Καφέ & Μπεζ","Μπλε","Ροζ & Μωβ","Κόκκινα"];
+function rebuildStockCats(){
+  const isProd = document.getElementById("sType").value==="product";
+  const isMM = document.getElementById("sMM").checked;
+  const cat = document.getElementById("sCat"); const prev = cat.value;
+  let opts = isMM ? MM_CATS.slice() : (isProd ? STOCK_CATS.product.slice() : STOCK_CATS.raw.slice());
+  if(prev && !opts.includes(prev)) opts.push(prev); // ποτέ μη χάσεις την τρέχουσα κατηγορία
+  cat.innerHTML = opts.map(o=>`<option>${o}</option>`).join("");
+  cat.value = opts.includes(prev) ? prev : opts[0];
+}
+function onStockMMChange(){
+  document.getElementById("sMMToggle").classList.toggle("on", document.getElementById("sMM").checked);
+  rebuildStockCats();
+}
 function onStockTypeChange(){
   const isProd = document.getElementById("sType").value==="product";
   document.getElementById("sSellWrap").classList.toggle("hidden", !isProd);
-  const cat=document.getElementById("sCat"); const prev=cat.value;
-  const opts=STOCK_CATS[isProd?"product":"raw"];
-  cat.innerHTML=opts.map(o=>`<option>${o}</option>`).join("");
-  cat.value = opts.includes(prev) ? prev : opts[0];
   if(isProd){ const u=document.getElementById("sUnit"); if(!u.value||u.value==="κουβάρι") u.value="τεμ."; }
+  rebuildStockCats();
 }
 function openStockModal(id){
   editingStockId=id||null;
@@ -2400,6 +2411,7 @@ function openStockModal(id){
   const mmOn = it?!!it.mm:(stockView==="mm");
   document.getElementById("sMM").checked=mmOn;
   document.getElementById("sMMToggle").classList.toggle("on", mmOn);
+  document.getElementById("sCat").innerHTML="";
   onStockTypeChange();
   const cat=document.getElementById("sCat"); const want=it?(it.category||""):(stockView==="product"?"Τσάντα":"Νήμα");
   if([...cat.options].some(o=>o.value===want)) cat.value=want;
