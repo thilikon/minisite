@@ -2247,6 +2247,16 @@ async function loadStock(){
     if(ordersCache.length && document.getElementById("statsBody") && !document.getElementById("statsBox").classList.contains("hidden")) renderStats();
   }catch(e){}
 }
+function stockThumb(it){
+  const u = it.image_url;
+  if(!u) return '<div class="si-img"></div>';
+  const m = u.match(/#f=([\d.]+),([\d.]+),([\d.]+)/);
+  if(m){
+    const base = u.split("#")[0];
+    return `<div class="si-img" style="background-image:url('${esc(base)}');background-size:${m[3]}%;background-position:${m[1]}% ${m[2]}%;background-repeat:no-repeat"></div>`;
+  }
+  return `<img class="si-img" src="${esc(u)}" alt="">`;
+}
 function stockState(it){
   const q=Number(it.qty)||0, low=it.low_threshold!=null?Number(it.low_threshold):2;
   if(q<=0) return "out"; if(q<=low) return "low"; return "ok";
@@ -2292,7 +2302,7 @@ function renderStock(){
         ? `${it.sell_price!=null?"Πώληση "+fmtMoney(it.sell_price):"χωρίς τιμή πώλησης"}${it.unit_cost!=null?" · κόστος "+fmtMoney(it.unit_cost):""}`
         : `${it.unit_cost!=null?fmtMoney(it.unit_cost)+" / "+esc(unit):"χωρίς τιμή"}`;
       html+=`<div class="stock-item ${st}">
-        ${it.image_url?`<img class="si-img" src="${esc(it.image_url)}" alt="">`:`<div class="si-img"></div>`}
+        ${stockThumb(it)}
         <div class="si-info">
           <div class="si-name">${esc(it.name)}</div>
           <div class="si-meta">${meta}${st==="low"?' · <span class="si-low">'+(stockView==="product"?"λίγα":"τελειώνει")+'</span>':st==="out"?' · <span class="si-low">εξαντλήθηκε</span>':''}</div>
@@ -2313,35 +2323,35 @@ function renderStock(){
 /* Χρώματα Mix & Match από τις φωτογραφίες (starter — άλλαξε ονόματα/ποσότητες όπως θες) */
 const MM_SEED = [
   // Πράσινα / Γκρι / Πετρόλ
-  {name:"#43 - Dark Olive", category:"Πράσινα & Γκρι", image_url:"https://i.imgur.com/RKfdEDR.jpeg"},
-  {name:"#25 - Mint", category:"Πράσινα & Γκρι", image_url:"https://i.imgur.com/RKfdEDR.jpeg"},
-  {name:"#24 - Petrol", category:"Πράσινα & Γκρι", image_url:"https://i.imgur.com/RKfdEDR.jpeg"},
-  {name:"#02 - Dark Grey", category:"Πράσινα & Γκρι", image_url:"https://i.imgur.com/RKfdEDR.jpeg"},
+  {name:"#43 - Dark Olive", category:"Πράσινα & Γκρι", image_url:"https://i.imgur.com/RKfdEDR.jpeg#f=25,30,240"},
+  {name:"#25 - Mint", category:"Πράσινα & Γκρι", image_url:"https://i.imgur.com/RKfdEDR.jpeg#f=50,45,240"},
+  {name:"#24 - Petrol", category:"Πράσινα & Γκρι", image_url:"https://i.imgur.com/RKfdEDR.jpeg#f=80,55,240"},
+  {name:"#02 - Dark Grey", category:"Πράσινα & Γκρι", image_url:"https://i.imgur.com/RKfdEDR.jpeg#f=45,80,240"},
   // Κίτρινα
-  {name:"#05 - Off White", category:"Κίτρινα", image_url:"https://i.imgur.com/AbDSwuZ.jpeg"},
-  {name:"#18 - Vanilla", category:"Κίτρινα", image_url:"https://i.imgur.com/AbDSwuZ.jpeg"},
-  {name:"#16 - Yellow", category:"Κίτρινα", image_url:"https://i.imgur.com/AbDSwuZ.jpeg"},
+  {name:"#05 - Off White", category:"Κίτρινα", image_url:"https://i.imgur.com/AbDSwuZ.jpeg#f=60,30,230"},
+  {name:"#18 - Vanilla", category:"Κίτρινα", image_url:"https://i.imgur.com/AbDSwuZ.jpeg#f=30,55,230"},
+  {name:"#16 - Yellow", category:"Κίτρινα", image_url:"https://i.imgur.com/AbDSwuZ.jpeg#f=82,60,230"},
   // Καφέ / Μπεζ
-  {name:"#06 - Beige", category:"Καφέ & Μπεζ", image_url:"https://i.imgur.com/Gg9T11h.jpeg"},
-  {name:"#09 - Mocha", category:"Καφέ & Μπεζ", image_url:"https://i.imgur.com/Gg9T11h.jpeg"},
-  {name:"#08 - Brown", category:"Καφέ & Μπεζ", image_url:"https://i.imgur.com/Gg9T11h.jpeg"},
-  {name:"#07 - Dark Brown", category:"Καφέ & Μπεζ", image_url:"https://i.imgur.com/Gg9T11h.jpeg"},
+  {name:"#06 - Beige", category:"Καφέ & Μπεζ", image_url:"https://i.imgur.com/Gg9T11h.jpeg#f=22,30,240"},
+  {name:"#09 - Mocha", category:"Καφέ & Μπεζ", image_url:"https://i.imgur.com/Gg9T11h.jpeg#f=72,75,240"},
+  {name:"#08 - Brown", category:"Καφέ & Μπεζ", image_url:"https://i.imgur.com/Gg9T11h.jpeg#f=82,42,240"},
+  {name:"#07 - Dark Brown", category:"Καφέ & Μπεζ", image_url:"https://i.imgur.com/Gg9T11h.jpeg#f=50,30,240"},
   // Μπλε
-  {name:"#23 - Royal Blue", category:"Μπλε", image_url:"https://i.imgur.com/7ocag0T.jpeg"},
-  {name:"#20 - Blue", category:"Μπλε", image_url:"https://i.imgur.com/7ocag0T.jpeg"},
-  {name:"#22 - Light Blue", category:"Μπλε", image_url:"https://i.imgur.com/7ocag0T.jpeg"},
-  {name:"#21 - Ocean Blue", category:"Μπλε", image_url:"https://i.imgur.com/7ocag0T.jpeg"},
+  {name:"#23 - Royal Blue", category:"Μπλε", image_url:"https://i.imgur.com/7ocag0T.jpeg#f=22,55,240"},
+  {name:"#20 - Blue", category:"Μπλε", image_url:"https://i.imgur.com/7ocag0T.jpeg#f=82,55,240"},
+  {name:"#22 - Light Blue", category:"Μπλε", image_url:"https://i.imgur.com/7ocag0T.jpeg#f=50,68,240"},
+  {name:"#21 - Ocean Blue", category:"Μπλε", image_url:"https://i.imgur.com/7ocag0T.jpeg#f=55,32,240"},
   // Ροζ / Μωβ
-  {name:"#34 - Lilac", category:"Ροζ & Μωβ", image_url:"https://i.imgur.com/Upq8yPv.jpeg"},
-  {name:"#29 - Light Pink", category:"Ροζ & Μωβ", image_url:"https://i.imgur.com/Upq8yPv.jpeg"},
-  {name:"#31 - Pink", category:"Ροζ & Μωβ", image_url:"https://i.imgur.com/Upq8yPv.jpeg"},
-  {name:"#32 - Fuchsia", category:"Ροζ & Μωβ", image_url:"https://i.imgur.com/Upq8yPv.jpeg"},
-  {name:"#40 - Plum", category:"Ροζ & Μωβ", image_url:"https://i.imgur.com/Upq8yPv.jpeg"},
+  {name:"#34 - Lilac", category:"Ροζ & Μωβ", image_url:"https://i.imgur.com/Upq8yPv.jpeg#f=22,45,230"},
+  {name:"#29 - Light Pink", category:"Ροζ & Μωβ", image_url:"https://i.imgur.com/Upq8yPv.jpeg#f=48,30,230"},
+  {name:"#31 - Pink", category:"Ροζ & Μωβ", image_url:"https://i.imgur.com/Upq8yPv.jpeg#f=82,35,230"},
+  {name:"#32 - Fuchsia", category:"Ροζ & Μωβ", image_url:"https://i.imgur.com/Upq8yPv.jpeg#f=35,80,230"},
+  {name:"#40 - Plum", category:"Ροζ & Μωβ", image_url:"https://i.imgur.com/Upq8yPv.jpeg#f=58,60,230"},
   // Κόκκινα
-  {name:"#38 - Red", category:"Κόκκινα", image_url:"https://i.imgur.com/PHVTCb3.jpeg"},
-  {name:"#13 - Orange", category:"Κόκκινα", image_url:"https://i.imgur.com/PHVTCb3.jpeg"},
-  {name:"#39 - Burgundy", category:"Κόκκινα", image_url:"https://i.imgur.com/PHVTCb3.jpeg"},
-  {name:"#33 - Berry", category:"Κόκκινα", image_url:"https://i.imgur.com/PHVTCb3.jpeg"}
+  {name:"#38 - Red", category:"Κόκκινα", image_url:"https://i.imgur.com/PHVTCb3.jpeg#f=55,25,235"},
+  {name:"#13 - Orange", category:"Κόκκινα", image_url:"https://i.imgur.com/PHVTCb3.jpeg#f=30,80,235"},
+  {name:"#39 - Burgundy", category:"Κόκκινα", image_url:"https://i.imgur.com/PHVTCb3.jpeg#f=40,52,235"},
+  {name:"#33 - Berry", category:"Κόκκινα", image_url:"https://i.imgur.com/PHVTCb3.jpeg#f=82,65,235"}
 ];
 async function seedMixMatch(){
   if((stockCache||[]).some(it=>it.mm)){ adminFlash("Υπάρχουν ήδη χρώματα Mix & Match"); return; }
