@@ -483,6 +483,7 @@
   .mat-group[open] summary{color:var(--ink)}
   .mat-group[open] summary::after{transform:rotate(180deg)}
   .mat-sel-h{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);padding:6px 2px 4px}
+  .oi-spec{font-size:11.5px;color:var(--muted);margin-top:1px}
   /* stock tab */
   .stock-sum{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
   .stock-cat{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:18px 0 8px}
@@ -1235,7 +1236,8 @@ function renderItemCard(it, method, showPrice){
                 : `<span class="item-badge">Σε εξέλιξη</span>`);
 
   const sub = [];
-  if(it.details) sub.push(`<span>${esc(it.details)}</span>`);
+  const spec = [it.color, it.label ? it.label + " ταμπελάκι" : null].filter(Boolean).join(" · ") || it.details;
+  if(spec) sub.push(`<span>${esc(spec)}</span>`);
   if(showPrice && it.price!=null) sub.push(`<span class="iprice">${fmtMoney(Number(it.price))}</span>`);
   if(isReturn) sub.push(`<span class="rtag">♻ Επιστροφή</span>`);
 
@@ -1830,9 +1832,11 @@ function renderOrders(){
       const STG=stagesFor(flow, pickup?"pickup":"shipping");
       const ret = flow==="return";
       const statusCls = d?'i-done':(ret?'i-ret':'');
+      const spec=[it.color, it.label?it.label+" ταμπελάκι":null].filter(Boolean).join(" · ")||it.details;
       return `<div class="oi ${statusCls}">
         <div class="oi-info">
           <div class="oi-name">${esc(it.name)}${ret?' <span class="oi-rt">♻</span>':''}</div>
+          ${spec?`<div class="oi-spec">${esc(spec)}</div>`:""}
           <div class="oi-stage">${STG[s].title}${ret?` · επιστροφή ${s}/${N}`:` · ${s}/${N}`}</div>
           ${it.note?`<div class="oi-note">📝 ${esc(it.note)}</div>`:""}
         </div>
@@ -2091,7 +2095,14 @@ function addItemRow(item){
       <input class="ie-price" inputmode="decimal" placeholder="€ τιμή" style="max-width:90px">
       <button class="ie-del" title="Αφαίρεση" type="button">✕</button>
     </div>
-    <input class="ie-details" placeholder="λεπτομέρειες (χρώμα, υλικό…)">
+    <div class="ie-row" style="margin-top:8px">
+      <input class="ie-color" placeholder="απόχρωση (π.χ. Μπεζ)" style="flex:1.4;min-width:0">
+      <select class="ie-label" style="flex:1;min-width:0">
+        <option value="">— ταμπελάκι</option>
+        <option value="Χρυσό">Χρυσό</option>
+        <option value="Ασημί">Ασημί</option>
+      </select>
+    </div>
     <div class="ie-row">
       <select class="ie-flow"><option value="normal">Κανονική</option><option value="return">♻ Επιστροφή</option></select>
       <select class="ie-stage"></select>
@@ -2103,7 +2114,9 @@ function addItemRow(item){
   wrap.appendChild(row);
   row.querySelector(".ie-name").value=item.name||"";
   row.querySelector(".ie-price").value=(item.price!=null?item.price:"");
-  row.querySelector(".ie-details").value=item.details||"";
+  row.querySelector(".ie-color").value = item.color || item.details || "";
+  const lblSel=row.querySelector(".ie-label");
+  lblSel.value = (item.label==="Χρυσό"||item.label==="Ασημί") ? item.label : "";
   row.querySelector(".ie-eta").value=item.eta || (isNew ? plusDays(DELIVERY_DAYS) : "");
   row.querySelector(".ie-track").value=item.trackNo||"";
   row.querySelector(".ie-note").value=item.note||"";
@@ -2137,7 +2150,8 @@ function collectItems(){
       id: row.dataset.id || newItemId(),
       name,
       price: parseMoney(row.querySelector(".ie-price").value),
-      details: row.querySelector(".ie-details").value.trim()||null,
+      color: row.querySelector(".ie-color").value.trim()||null,
+      label: row.querySelector(".ie-label").value||null,
       flow: row.querySelector(".ie-flow").value==="return"?"return":"normal",
       stage: +row.querySelector(".ie-stage").value||1,
       eta: row.querySelector(".ie-eta").value||null,
