@@ -99,13 +99,13 @@
   .btn.danger{border-color:#b54b3a;color:#b54b3a}
   .btn.danger:hover{background:#b54b3a;color:#fff}
 
-  label.fld{display:block;margin-bottom:14px}
+  label.fld{display:block;margin-bottom:14px;min-width:0}
   label.fld span{
     display:block;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
     color:var(--muted);margin-bottom:6px;font-weight:600;
   }
   input,textarea,select{
-    width:100%;font-family:'Inter';font-size:16px;color:var(--ink);
+    width:100%;min-width:0;font-family:'Inter';font-size:16px;color:var(--ink);
     background:var(--cream);border:1px solid var(--line);
     border-radius:12px;padding:12px 14px;outline:none;transition:.15s;
   }
@@ -387,9 +387,11 @@
     display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;
     overflow:auto;z-index:50;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
   }
-  .modal{background:#fff;border-radius:var(--radius);max-width:520px;width:100%;padding:26px 24px;margin:0 auto 40px}
+  .modal{background:#fff;border-radius:var(--radius);max-width:520px;width:100%;padding:26px 24px;margin:0 auto 40px;overflow-x:clip}
   /* iOS: πεδία <16px προκαλούν αυτόματο zoom στο focus και "χοροπηδάει" το UI */
   .modal input,.modal select,.modal textarea{font-size:16px}
+  .ie-top input{min-width:0}
+  .ie-row select{min-width:0}
   .modal h2{font-size:22px;font-weight:600;margin-bottom:4px;letter-spacing:-.01em}
   .modal .mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
   .x{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1}
@@ -472,9 +474,9 @@
   /* materials picker groups */
   .mat-group{border-bottom:1px solid var(--line)}
   .mat-group:last-child{border-bottom:none}
-  .mat-group summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:13px 2px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);user-select:none}
+  .mat-group summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:13px 2px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);user-select:none}
   .mat-group summary::-webkit-details-marker{display:none}
-  .mat-group summary .cnt{letter-spacing:0;text-transform:none;font-weight:600;font-size:11.5px}
+  .mat-group summary .cnt{margin-left:auto;background:var(--stone);border-radius:var(--pill);padding:2px 9px;font-size:11px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--muted)}
   .mat-group summary::after{content:'▾';font-size:11px;margin-left:8px;transition:.15s;color:var(--muted)}
   .mat-group[open] summary{color:var(--ink)}
   .mat-group[open] summary::after{transform:rotate(180deg)}
