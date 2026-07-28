@@ -303,8 +303,9 @@
   .tabsw .tb.sel{background:var(--ink);color:#fff;border-color:var(--ink)}
 
   /* ---------- admin ---------- */
-  .admin-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+  .admin-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:18px}
   .admin-bar .e{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .admin-bar .tabsw{flex-wrap:wrap}
   .order-row{
     border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px;background:#fff;
   }
@@ -500,7 +501,7 @@
 
 <header>
   <img src="https://i.imgur.com/TbSGZu5.png" alt="THILIKON">
-  <div class="sub">Order Tracking</div>
+  <div class="sub" id="headerSub">Order Tracking</div>
 </header>
 
 <main class="wrap" style="padding-bottom:20px">
@@ -1021,6 +1022,8 @@ function show(id){
   ["view-landing","view-track","view-admin","view-feedback"].forEach(v=>{
     document.getElementById(v).classList.toggle("hidden", v!==id);
   });
+  const sub=document.getElementById("headerSub");
+  if(sub) sub.textContent = (id==="view-admin") ? "Διαχείριση" : "Order Tracking";
 }
 function route(){
   const params = new URLSearchParams(location.search);
@@ -2261,6 +2264,7 @@ function stockThumb(it){
   return `<img class="si-img" src="${esc(u)}" alt="">`;
 }
 function stockState(it){
+  if(it.mm) return "ok"; // Mix & Match: το να τελειώνει είναι φυσιολογικό, χωρίς προειδοποίηση
   const q=Number(it.qty)||0, low=it.low_threshold!=null?Number(it.low_threshold):2;
   if(q<=0) return "out"; if(q<=low) return "low"; return "ok";
 }
