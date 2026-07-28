@@ -387,7 +387,9 @@
     display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;
     overflow:auto;z-index:50;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
   }
-  .modal{background:#fff;border-radius:var(--radius);max-width:520px;width:100%;padding:26px 24px;margin:0 auto}
+  .modal{background:#fff;border-radius:var(--radius);max-width:520px;width:100%;padding:26px 24px;margin:0 auto 40px}
+  /* iOS: πεδία <16px προκαλούν αυτόματο zoom στο focus και "χοροπηδάει" το UI */
+  .modal input,.modal select,.modal textarea{font-size:16px}
   .modal h2{font-size:22px;font-weight:600;margin-bottom:4px;letter-spacing:-.01em}
   .modal .mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
   .x{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1}
@@ -467,6 +469,16 @@
   .stepper-btn{width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:var(--cream);font-size:17px;cursor:pointer;line-height:1;color:var(--ink)}
   .stepper-btn:active{background:var(--stone)}
   .stepper-val{min-width:24px;text-align:center;font-weight:700;font-size:14px}
+  /* materials picker groups */
+  .mat-group{border-bottom:1px solid var(--line)}
+  .mat-group:last-child{border-bottom:none}
+  .mat-group summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:13px 2px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);user-select:none}
+  .mat-group summary::-webkit-details-marker{display:none}
+  .mat-group summary .cnt{letter-spacing:0;text-transform:none;font-weight:600;font-size:11.5px}
+  .mat-group summary::after{content:'▾';font-size:11px;margin-left:8px;transition:.15s;color:var(--muted)}
+  .mat-group[open] summary{color:var(--ink)}
+  .mat-group[open] summary::after{transform:rotate(180deg)}
+  .mat-sel-h{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);padding:6px 2px 4px}
   /* stock tab */
   .stock-sum{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
   .stock-cat{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:18px 0 8px}
@@ -797,7 +809,8 @@
       <h2 class="serif">Υλικά από την αποθήκη</h2>
       <button class="x" onclick="closeMatPicker()">✕</button>
     </div>
-    <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:6px">Διάλεξε ποσότητες. Στην επιβεβαίωση, το κόστος μπαίνει στην παραγγελία και οι ποσότητες αφαιρούνται από το στοκ.</p>
+    <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:10px">Διάλεξε ποσότητες. Στην επιβεβαίωση, το κόστος μπαίνει στην παραγγελία και οι ποσότητες αφαιρούνται από το στοκ.</p>
+    <input id="matSearch" placeholder="Αναζήτηση υλικού…" oninput="renderMatPicker()" style="width:100%;margin-bottom:6px">
     <div id="matPickerList"><div class="spinner"></div></div>
     <div class="mat-total" id="matPickerTotal" style="margin-top:12px">Σύνολο: €0,00</div>
     <p id="matPickerMsg" class="msg err hidden" style="margin-top:10px"></p>
@@ -1018,6 +1031,31 @@ let pickedFlow = "normal";
 /* ============================================================
    ROUTER
 ============================================================ */
+/* ---- Κλείδωμα φόντου όσο είναι ανοιχτό modal (σταθερότητα σε κινητό/iOS) ---- */
+let _ovCount=0,_ovY=0;
+function _ovOpen(id){
+  const el=document.getElementById(id);
+  if(!el || !el.classList.contains("hidden")){ if(el) el.classList.remove("hidden"); return; }
+  if(_ovCount++===0){
+    _ovY=window.scrollY||0;
+    const b=document.body;
+    b.style.position="fixed"; b.style.top=(-_ovY)+"px";
+    b.style.left="0"; b.style.right="0"; b.style.width="100%";
+  }
+  el.classList.remove("hidden");
+  el.scrollTop=0;
+}
+function _ovClose(id){
+  const el=document.getElementById(id);
+  if(!el || el.classList.contains("hidden")) return;
+  el.classList.add("hidden");
+  if(_ovCount>0 && --_ovCount===0){
+    const b=document.body;
+    b.style.position=""; b.style.top=""; b.style.left=""; b.style.right=""; b.style.width="";
+    window.scrollTo(0,_ovY);
+  }
+}
+
 function show(id){
   ["view-landing","view-track","view-admin","view-feedback"].forEach(v=>{
     document.getElementById(v).classList.toggle("hidden", v!==id);
@@ -1907,9 +1945,9 @@ function notifyCustomer(orderId){
     hint.textContent = "Δεν έχεις βάλει τηλέφωνο/email σε αυτή την παραγγελία — πρόσθεσέ τα από «Επεξεργασία». Μπορείς πάντως να αντιγράψεις το μήνυμα.";
     hint.classList.remove("hidden");
   } else hint.classList.add("hidden");
-  document.getElementById("notifyModal").classList.remove("hidden");
+  _ovOpen("notifyModal");
 }
-function closeNotify(){ document.getElementById("notifyModal").classList.add("hidden"); }
+function closeNotify(){ _ovClose("notifyModal"); }
 async function sendVia(how){
   const msg = document.getElementById("notifyMsg").value;
   const enc = encodeURIComponent(msg);
@@ -2093,7 +2131,7 @@ function openOrderModal(){
   pickedMaterials=[]; stockApplied=false; renderMatList();
   buildItemsEditor(null);
   pickMethod("shipping");
-  document.getElementById("orderModal").classList.remove("hidden");
+  _ovOpen("orderModal");
 }
 
 function editOrder(id){
@@ -2145,10 +2183,10 @@ function editOrder(id){
   document.getElementById("modalLink").textContent=linkFor(o.track_token);
   document.getElementById("modalLink").dataset.token=o.track_token;
   document.getElementById("modalMsg").classList.add("hidden");
-  document.getElementById("orderModal").classList.remove("hidden");
+  _ovOpen("orderModal");
 }
 
-function closeOrderModal(){ document.getElementById("orderModal").classList.add("hidden"); }
+function closeOrderModal(){ _ovClose("orderModal"); }
 
 function copyLink(){
   const t=document.getElementById("modalLink").dataset.token;
@@ -2424,9 +2462,9 @@ function openStockModal(id){
   if([...cat.options].some(o=>o.value===want)) cat.value=want;
   document.getElementById("stockDelBtn").classList.toggle("hidden", !id);
   document.getElementById("stockModalMsg").classList.add("hidden");
-  document.getElementById("stockModal").classList.remove("hidden");
+  _ovOpen("stockModal");
 }
-function closeStockModal(){ document.getElementById("stockModal").classList.add("hidden"); }
+function closeStockModal(){ _ovClose("stockModal"); }
 async function saveStock(){
   const msg=document.getElementById("stockModalMsg"); msg.classList.add("hidden");
   const name=document.getElementById("sName").value.trim();
@@ -2479,9 +2517,9 @@ function openSellModal(id){
   document.getElementById("sellLinkWrap").classList.add("hidden");
   document.getElementById("sellBtn").textContent="Καταχώρησε πώληση";
   document.getElementById("sellBtn").disabled=false;
-  document.getElementById("sellModal").classList.remove("hidden");
+  _ovOpen("sellModal");
 }
-function closeSellModal(){ document.getElementById("sellModal").classList.add("hidden"); }
+function closeSellModal(){ _ovClose("sellModal"); }
 function pickSellMethod(m){
   sellMethod=m;
   document.querySelectorAll("#sellMethodSeg .sell-m").forEach(b=>b.classList.toggle("sel", b.dataset.m===m));
@@ -2541,31 +2579,63 @@ function openMatPicker(){
   matDraft={}; pickedMaterials.forEach(m=> matDraft[m.id]=m.qty);
   showMatPicker(stockCache.filter(it=>it.type!=="product" && (isMix() || !it.mm) && (Number(it.qty)>0 || matDraft[it.id])));
 }
+let matRows=[];
 function showMatPicker(rows){
-  const list=document.getElementById("matPickerList");
-  if(!rows.length){ list.innerHTML='<div class="mat-empty">Δεν υπάρχει διαθέσιμο στοκ. Πρόσθεσε είδη από την καρτέλα «Στοκ».</div>'; }
-  else list.innerHTML=rows.map(it=>{
-    const q=matDraft[it.id]||0;
-    return `<div class="picker-row">
-      <div class="pr-info"><div class="pr-name">${esc(it.name)}</div><div class="pr-meta">${esc(it.category||"")} · διαθέσιμα ${fmtNum(it.qty)} ${esc(it.unit||"")}${it.unit_cost!=null?" · "+fmtMoney(it.unit_cost):""}</div></div>
-      <div class="pr-stepper">
-        <button class="stepper-btn" onclick="matStep('${it.id}',-1)">−</button>
-        <span class="stepper-val" id="mv-${it.id}">${q}</span>
-        <button class="stepper-btn" onclick="matStep('${it.id}',1)">+</button>
-      </div>
-    </div>`;
-  }).join("");
-  matPickerTotalUpdate();
+  matRows=rows||[];
+  const se=document.getElementById("matSearch"); if(se) se.value="";
+  renderMatPicker();
   document.getElementById("matPickerMsg").classList.add("hidden");
-  document.getElementById("matModal").classList.remove("hidden");
+  _ovOpen("matModal");
 }
-function closeMatPicker(){ document.getElementById("matModal").classList.add("hidden"); }
+function matRowHtml(it){
+  const q=matDraft[it.id]||0;
+  return `<div class="picker-row">
+    <div class="pr-info"><div class="pr-name">${esc(it.name)}</div><div class="pr-meta">διαθέσιμα ${fmtNum(it.qty)} ${esc(it.unit||"")}${it.unit_cost!=null?" · "+fmtMoney(it.unit_cost):""}</div></div>
+    <div class="pr-stepper">
+      <button class="stepper-btn" onclick="matStep('${it.id}',-1)">−</button>
+      <span class="stepper-val" id="mv-${it.id}">${q}</span>
+      <button class="stepper-btn" onclick="matStep('${it.id}',1)">+</button>
+    </div>
+  </div>`;
+}
+const MAT_CAT_ORDER = ["Νήμα","Ταμπελάκι","Συσκευασία","Άλλο","Πράσινα & Γκρι","Κίτρινα","Καφέ & Μπεζ","Μπλε","Ροζ & Μωβ","Κόκκινα"];
+function renderMatPicker(){
+  const list=document.getElementById("matPickerList");
+  if(!matRows.length){ list.innerHTML='<div class="mat-empty">Δεν υπάρχει διαθέσιμο στοκ. Πρόσθεσε είδη από την καρτέλα «Αποθήκη».</div>'; matPickerTotalUpdate(); return; }
+  const ov=document.getElementById("matModal"); const st=ov?ov.scrollTop:0;
+  const q=(document.getElementById("matSearch")?.value||"").trim().toLowerCase();
+  let html="";
+  if(q){
+    const hits=matRows.filter(it=>(it.name||"").toLowerCase().includes(q)||(it.category||"").toLowerCase().includes(q));
+    html = hits.length ? hits.map(matRowHtml).join("") : '<div class="mat-empty">Τίποτα δεν ταιριάζει.</div>';
+  } else {
+    const sel=matRows.filter(it=>(matDraft[it.id]||0)>0);
+    const rest=matRows.filter(it=>!(matDraft[it.id]>0));
+    if(sel.length) html += `<div class="mat-sel-h">Επιλεγμένα (${sel.length})</div>` + sel.map(matRowHtml).join("");
+    const groups={};
+    rest.forEach(it=>{ const c=it.category||"Άλλο"; (groups[c]=groups[c]||[]).push(it); });
+    const keys=Object.keys(groups).sort((a,b)=>{
+      const ia=MAT_CAT_ORDER.indexOf(a), ib=MAT_CAT_ORDER.indexOf(b);
+      return (ia<0?99:ia)-(ib<0?99:ib) || a.localeCompare(b,"el");
+    });
+    const openAll = keys.length===1;
+    keys.forEach(k=>{
+      html += `<details class="mat-group"${openAll?" open":""}><summary>${esc(k)}<span class="cnt">${groups[k].length}</span></summary>${groups[k].map(matRowHtml).join("")}</details>`;
+    });
+  }
+  list.innerHTML=html;
+  matPickerTotalUpdate();
+  if(ov) ov.scrollTop=st;
+}
+function closeMatPicker(){ _ovClose("matModal"); }
 function matStep(id, delta){
   const it=stockCache.find(x=>x.id===id); if(!it) return;
   const avail=Number(it.qty)||0; let q=(matDraft[id]||0)+delta;
-  if(q<0)q=0; if(q>avail)q=avail; matDraft[id]=q;
-  const el=document.getElementById("mv-"+id); if(el) el.textContent=q;
-  matPickerTotalUpdate();
+  if(q<0)q=0; if(q>avail)q=avail;
+  const was=matDraft[id]||0;
+  matDraft[id]=q;
+  if((was===0)!==(q===0)) renderMatPicker();      // μπήκε/βγήκε από τα Επιλεγμένα -> αναδόμηση
+  else { const el=document.getElementById("mv-"+id); if(el) el.textContent=q; matPickerTotalUpdate(); }
 }
 function matPickerTotalUpdate(){
   let total=0;
