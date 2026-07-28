@@ -2115,7 +2115,10 @@ function editOrder(id){
   renderMatList();
   document.getElementById("saveBtn").textContent="Αποθήκευση";
   const its = getItems(o).map(it=>({...it}));
-  if(o.price!=null && its.length && its.every(it=>it.price==null)) its[0].price = o.price; // legacy: μετάφερε το σύνολο
+  if(o.price!=null && its.length && its.every(it=>it.price==null)){
+    // legacy: μετάφερε το σύνολο. Σε mix, το o.price είναι με έκπτωση -> επανάφερε την αρχική τιμή
+    its[0].price = o.mix_match ? Math.round(o.price/(1-MIX_DISCOUNT)*100)/100 : o.price;
+  }
   buildItemsEditor(its);
   updateMoneyHint();
   pickMethod(pickedMethod);
