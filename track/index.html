@@ -646,7 +646,8 @@
         </div>
         <div class="stats-body" id="statsBody"></div>
       </div>
-      <input id="search" placeholder="Αναζήτηση (όνομα, προϊόν, κωδικός…)" oninput="renderOrders()" style="margin-bottom:14px">
+      <input id="search" placeholder="Αναζήτηση (όνομα, προϊόν, κωδικός…)" oninput="renderOrders()" style="margin-bottom:10px">
+      <div class="tabsw" id="orderFilters" style="margin-bottom:14px;flex-wrap:wrap"></div>
       <div id="adminMsg" class="msg ok hidden"></div>
       <div id="ordersList"><div class="spinner"></div></div>
       <div id="fbAdmin" class="hidden"></div>
@@ -1541,7 +1542,7 @@ function showAdminTab(tab){
   document.getElementById("tabOrders").classList.toggle("sel", isOrders);
   document.getElementById("tabStock").classList.toggle("sel", isStock);
   document.getElementById("tabFb").classList.toggle("sel", isFb);
-  ["statsBox","search","ordersList"].forEach(id=>{
+  ["statsBox","search","orderFilters","ordersList"].forEach(id=>{
     const el = document.getElementById(id);
     if(el) el.classList.toggle("hidden", !isOrders);
   });
@@ -1769,15 +1770,51 @@ function renderStats(){
     </div>`;
 }
 
+let orderFilter = "all";
+function setOrderFilter(f){ orderFilter=f; renderOrders(); }
+function orderIsDone(o){ return getItems(o).every(itemDone); }
+
 function renderOrders(){
   const q = (document.getElementById("search").value||"").toLowerCase();
   const list = document.getElementById("ordersList");
-  const filtered = ordersCache.filter(o=>{
+
+  // chips με μετρητές
+  const counts = {
+    all: ordersCache.length,
+    active: ordersCache.filter(o=>!orderIsDone(o)).length,
+    done: ordersCache.filter(orderIsDone).length,
+    mix: ordersCache.filter(o=>o.mix_match).length,
+    ready: ordersCache.filter(o=>o.kind==="ready").length
+  };
+  const chips = [
+    ["all","Όλες"],["active","Σε εξέλιξη"],["done","Ολοκληρωμένες"],["mix","Mix & Match"],["ready","Ραφιού"]
+  ].filter(([k])=> k==="all" || counts[k]>0 || orderFilter===k);
+  const fbox=document.getElementById("orderFilters");
+  if(fbox) fbox.innerHTML = chips.map(([k,l])=>
+    `<button class="tb ${orderFilter===k?'sel':''}" onclick="setOrderFilter('${k}')">${l}${counts[k]?` (${counts[k]})`:""}</button>`
+  ).join("");
+
+  let filtered = ordersCache.filter(o=>{
+    if(orderFilter==="active" && orderIsDone(o)) return false;
+    if(orderFilter==="done" && !orderIsDone(o)) return false;
+    if(orderFilter==="mix" && !o.mix_match) return false;
+    if(orderFilter==="ready" && o.kind!=="ready") return false;
     const itemNames = getItems(o).map(i=>i.name).join(" ");
     const hay = [o.customer_name,o.product_name,o.order_number,itemNames].join(" ").toLowerCase();
     return hay.includes(q);
   });
-  if(!filtered.length){ list.innerHTML='<p style="text-align:center;color:var(--muted);padding:24px 0;font-size:13px">Καμία παραγγελία ακόμη. Πάτησε «+ Νέα».</p>'; return; }
+
+  // ταξινόμηση: ενεργές πρώτα, μετά ολοκληρωμένες · μέσα σε κάθε ομάδα οι πιο πρόσφατες πάνω
+  filtered = filtered.slice().sort((a,b)=>{
+    const da=orderIsDone(a)?1:0, db=orderIsDone(b)?1:0;
+    if(da!==db) return da-db;
+    return new Date(b.updated_at||b.created_at||0) - new Date(a.updated_at||a.created_at||0);
+  });
+
+  if(!filtered.length){
+    list.innerHTML = `<p style="text-align:center;color:var(--muted);padding:24px 0;font-size:13px">${ordersCache.length? "Τίποτα δεν ταιριάζει με το φίλτρο ή την αναζήτηση." : "Καμία παραγγελία ακόμη. Πάτησε «+ Νέα»."}</p>`;
+    return;
+  }
   list.innerHTML = filtered.map(o=>{
     const items = getItems(o);
     const pickup = o.delivery_method === "pickup";
