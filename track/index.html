@@ -2539,7 +2539,7 @@ function openMatPicker(){
   if(stockApplied) return;
   if(!stockCache.length){ loadStock().then(()=>{ if(stockCache.length) openMatPicker(); else { matDraft={}; showMatPicker([]); } }); return; }
   matDraft={}; pickedMaterials.forEach(m=> matDraft[m.id]=m.qty);
-  showMatPicker(stockCache.filter(it=>it.type!=="product" && (Number(it.qty)>0 || matDraft[it.id])));
+  showMatPicker(stockCache.filter(it=>it.type!=="product" && (isMix() || !it.mm) && (Number(it.qty)>0 || matDraft[it.id])));
 }
 function showMatPicker(rows){
   const list=document.getElementById("matPickerList");
