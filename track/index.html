@@ -2615,7 +2615,12 @@ function openMatPicker(){
   if(!stockCache.length){ loadStock().then(()=>{ if(stockCache.length) openMatPicker(); else { matDraft={}; showMatPicker([]); } }); return; }
   matDraft={}; pickedMaterials.forEach(m=> matDraft[m.id]=m.qty);
   // Τα ήδη αφαιρεμένα μένουν επιλεγμένα: μπορεί να προσθέσει κι άλλα, αφαιρείται μόνο η διαφορά.
-  showMatPicker(stockCache.filter(it=>it.type!=="product" && (isMix() || !it.mm) && (Number(it.qty)>0 || matDraft[it.id])));
+  const rows = stockCache.filter(it=>it.type!=="product" && (isMix() || !it.mm) && (Number(it.qty)>0 || matDraft[it.id]));
+  // υλικά που δηλώθηκαν παλιότερα αλλά δεν υπάρχουν πια στην αποθήκη
+  pickedMaterials.forEach(m=>{
+    if(!stockCache.some(x=>x.id===m.id)) rows.push({ id:m.id, name:(m.name||"(διαγραμμένο υλικό)")+" · εκτός αποθήκης", unit:m.unit||"", qty:0, unit_cost:m.unit_cost||0, category:"Εκτός αποθήκης", missing:true });
+  });
+  showMatPicker(rows);
 }
 let matRows=[];
 function showMatPicker(rows){
@@ -2668,7 +2673,8 @@ function renderMatPicker(){
 }
 function closeMatPicker(){ _ovClose("matModal"); }
 function matStep(id, delta){
-  const it=stockCache.find(x=>x.id===id); if(!it) return;
+  const it=stockCache.find(x=>x.id===id) || (matRows.find(r=>r.id===id&&r.missing));
+  if(!it) return;
   const already = stockApplied ? ((pickedMaterials.find(m=>m.id===id)||{}).qty||0) : 0;
   const avail=(Number(it.qty)||0)+already;   // ό,τι έχει ήδη αφαιρεθεί μετράει ως διαθέσιμο
   let q=(matDraft[id]||0)+delta;
@@ -2680,12 +2686,20 @@ function matStep(id, delta){
 }
 function matPickerTotalUpdate(){
   let total=0;
-  Object.keys(matDraft).forEach(id=>{ const it=stockCache.find(x=>x.id===id); if(it&&matDraft[id]) total+=matDraft[id]*(Number(it.unit_cost)||0); });
+  Object.keys(matDraft).forEach(id=>{
+    if(!matDraft[id]) return;
+    const it=stockCache.find(x=>x.id===id) || pickedMaterials.find(m=>m.id===id);
+    if(it) total+=matDraft[id]*(Number(it.unit_cost)||0);
+  });
   document.getElementById("matPickerTotal").textContent="Σύνολο: "+fmtMoney(Math.round(total*100)/100);
 }
 async function applyMaterials(){
   const chosen=Object.keys(matDraft).filter(id=>matDraft[id]>0).map(id=>{
     const it=stockCache.find(x=>x.id===id);
+    const old=pickedMaterials.find(m=>m.id===id);
+    if(!it){ // το είδος δεν υπάρχει πια στην αποθήκη (διαγράφηκε) — κρατάμε ό,τι ξέραμε
+      return { id, name:(old&&old.name)||"(διαγραμμένο υλικό)", unit:(old&&old.unit)||"", qty:matDraft[id], unit_cost:(old&&old.unit_cost)||0, missing:true };
+    }
     return { id, name:it.name, unit:it.unit||"", qty:matDraft[id], unit_cost:it.unit_cost!=null?Number(it.unit_cost):0 };
   });
   const msg=document.getElementById("matPickerMsg");
