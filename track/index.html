@@ -488,16 +488,20 @@
   /* stock tab */
   .stock-sum{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
   .stock-cat{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:18px 0 8px}
-  .stock-item{display:flex;align-items:center;gap:12px;background:var(--card,#fff);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:9px}
+  .stock-item{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;background:var(--card,#fff);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:9px}
   .stock-item.low{border-color:#e6a23c;background:#fff9f0}
   .stock-item.out{border-color:#c98a2e;background:#fdf3e6}
   .si-img{width:42px;height:42px;border-radius:10px;object-fit:cover;background:var(--stone);flex:none}
-  .si-info{flex:1;min-width:0}
-  .si-name{font-size:14px;font-weight:600}
+  .si-info{flex:1 1 120px;min-width:0}
+  .si-name{font-size:14px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}
   .si-meta{font-size:11.5px;color:var(--muted);margin-top:2px}
   .si-low{color:#9a6a1e;font-weight:600}
-  .si-qty{display:flex;align-items:center;gap:8px}
+  .si-qty{display:flex;align-items:center;gap:8px;flex:none}
   .si-count{min-width:30px;text-align:center;font-weight:700;font-size:16px}
+  /* γραμμή ενεργειών (έτοιμα προϊόντα): πλήρες πλάτος κάτω από το όνομα */
+  .si-actions{flex:1 0 100%;display:flex;align-items:center;gap:8px;justify-content:flex-end;border-top:1px solid var(--line);padding-top:10px;margin-top:2px}
+  .si-actions .si-qty{margin-right:auto}
+  .si-actions .btn{flex:none}
   .sell-m.sel{background:var(--ink);color:#fff;border-color:var(--ink)}
   .split-bar{display:flex;height:10px;border-radius:6px;overflow:hidden;background:var(--stone);margin:4px 0 7px}
   .split-seg{height:100%}
@@ -2376,19 +2380,23 @@ function renderStock(){
       const meta = stockView==="product"
         ? `${it.sell_price!=null?"Πώληση "+fmtMoney(it.sell_price):"χωρίς τιμή πώλησης"}${it.unit_cost!=null?" · κόστος "+fmtMoney(it.unit_cost):""}`
         : `${it.unit_cost!=null?fmtMoney(it.unit_cost)+" / "+esc(unit):"χωρίς τιμή"}`;
+      const isProd = stockView==="product";
+      const qtyBlock = `<div class="si-qty">
+          <button class="stepper-btn" onclick="adjustStock('${it.id}',-1)">−</button>
+          <span class="si-count">${fmtNum(it.qty)}</span>
+          <button class="stepper-btn" onclick="adjustStock('${it.id}',1)">+</button>
+        </div>`;
       html+=`<div class="stock-item ${st}">
         ${stockThumb(it)}
         <div class="si-info">
           <div class="si-name">${esc(it.name)}</div>
-          <div class="si-meta">${meta}${st==="low"?' · <span class="si-low">'+(stockView==="product"?"λίγα":"τελειώνει")+'</span>':st==="out"?' · <span class="si-low">εξαντλήθηκε</span>':''}</div>
+          <div class="si-meta">${meta}${st==="low"?' · <span class="si-low">'+(isProd?"λίγα":"τελειώνει")+'</span>':st==="out"?' · <span class="si-low">εξαντλήθηκε</span>':''}</div>
         </div>
-        <div class="si-qty">
-          <button class="stepper-btn" onclick="adjustStock('${it.id}',-1)">−</button>
-          <span class="si-count">${fmtNum(it.qty)}</span>
-          <button class="stepper-btn" onclick="adjustStock('${it.id}',1)">+</button>
-        </div>
-        ${stockView==="product"?`<button class="btn solid sm" ${Number(it.qty)>0?"":"disabled"} onclick="openSellModal('${it.id}')">Πούλησέ το</button>`:""}
-        <button class="btn ghost sm" onclick="openStockModal('${it.id}')">✎</button>
+        ${isProd ? `<div class="si-actions">
+          ${qtyBlock}
+          <button class="btn solid sm" ${Number(it.qty)>0?"":"disabled"} onclick="openSellModal('${it.id}')">Πούλησέ το</button>
+          <button class="btn ghost sm" onclick="openStockModal('${it.id}')">✎</button>
+        </div>` : `${qtyBlock}<button class="btn ghost sm" onclick="openStockModal('${it.id}')">✎</button>`}
       </div>`;
     });
   });
@@ -2451,7 +2459,7 @@ const STOCK_CATS = {
   raw:["Νήμα","Ταμπελάκι","Συσκευασία","Άλλο"],
   product:["Τσάντα","Αξεσουάρ","Άλλο"]
 };
-const MM_CATS = ["Πράσινα & Γκρι","Κίτρινα","Καφέ & Μπεζ","Μπλε","Ροζ & Μωβ","Κόκκινα"];
+const MM_CATS = ["Άσπρα & Μαύρα","Πράσινα & Γκρι","Κίτρινα","Καφέ & Μπεζ","Μπλε","Ροζ & Μωβ","Κόκκινα"];
 function rebuildStockCats(){
   const isProd = document.getElementById("sType").value==="product";
   const isMM = document.getElementById("sMM").checked;
@@ -2642,7 +2650,7 @@ function matRowHtml(it){
     </div>
   </div>`;
 }
-const MAT_CAT_ORDER = ["Νήμα","Ταμπελάκι","Συσκευασία","Άλλο","Πράσινα & Γκρι","Κίτρινα","Καφέ & Μπεζ","Μπλε","Ροζ & Μωβ","Κόκκινα"];
+const MAT_CAT_ORDER = ["Νήμα","Ταμπελάκι","Συσκευασία","Άλλο","Άσπρα & Μαύρα","Πράσινα & Γκρι","Κίτρινα","Καφέ & Μπεζ","Μπλε","Ροζ & Μωβ","Κόκκινα"];
 function renderMatPicker(){
   const list=document.getElementById("matPickerList");
   if(!matRows.length){ list.innerHTML='<div class="mat-empty">Δεν υπάρχει διαθέσιμο στοκ. Πρόσθεσε είδη από την καρτέλα «Αποθήκη».</div>'; matPickerTotalUpdate(); return; }
