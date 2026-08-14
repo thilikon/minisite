@@ -55,6 +55,20 @@ h1.hero-title em,h2 em{font-style:italic}
 .img-frame{width:100%;max-width:460px;aspect-ratio:3/4;background:var(--gl);border-radius:8px;overflow:hidden;position:relative}
 .img-frame img{width:100%;height:100%;object-fit:cover;transition:transform .6s}
 .img-frame:hover img{transform:scale(1.04)}
+/* STORY SLIDER */
+.story-frame{position:relative;background:#000}
+.story-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s ease;pointer-events:none}
+.story-video.active{opacity:1}
+.story-bars{position:absolute;top:12px;left:12px;right:12px;z-index:5;display:flex;gap:5px}
+.story-bar{flex:1;height:3px;border-radius:100px;background:rgba(255,255,255,.32);overflow:hidden;cursor:pointer}
+.story-bar-fill{display:block;height:100%;width:0;border-radius:100px;background:#fff}
+.story-bar.done .story-bar-fill{width:100%}
+.story-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:5;width:34px;height:34px;border-radius:50%;border:none;background:rgba(255,255,255,.16);backdrop-filter:blur(6px);color:#fff;font-size:20px;line-height:1;cursor:none;opacity:0;transition:opacity .3s,background .3s;display:flex;align-items:center;justify-content:center;padding-bottom:2px}
+.story-nav:hover{background:rgba(255,255,255,.3)}
+.story-frame:hover .story-nav{opacity:1}
+.story-nav.prev{left:10px}
+.story-nav.next{right:10px}
+@media(hover:none){.story-nav{opacity:1}}
 .hero-badge{position:absolute;bottom:24px;left:-20px;background:var(--white);border:1px solid var(--black);border-radius:100px;padding:9px 20px;font-size:9px;letter-spacing:.15em;text-transform:uppercase;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,.08)}
 .marquee-bar{border-top:1px solid var(--black);border-bottom:1px solid var(--black);padding:14px 0;overflow:hidden;background:var(--black)}
 .marquee-track{display:flex;animation:marquee 30s linear infinite;white-space:nowrap}
@@ -280,10 +294,22 @@ footer img.footer-logo{height:30px;filter:invert(1);margin-bottom:18px;display:b
     </div>
   </div>
   <div class="hero-visual fade-up">
-    <div class="img-frame">
-      <video autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover">
+    <div class="img-frame story-frame" id="storyFrame">
+      <div class="story-bars" id="storyBars"></div>
+      <video class="story-video active" data-i="0" muted playsinline preload="auto">
         <source src="https://i.imgur.com/obNi4Jp.mp4" type="video/mp4">
       </video>
+      <video class="story-video" data-i="1" muted playsinline preload="auto">
+        <source src="https://i.imgur.com/7VbW9NC.mp4" type="video/mp4">
+      </video>
+      <video class="story-video" data-i="2" muted playsinline preload="auto">
+        <source src="https://i.imgur.com/HtyLMWL.mp4" type="video/mp4">
+      </video>
+      <video class="story-video" data-i="3" muted playsinline preload="auto">
+        <source src="https://i.imgur.com/Ex9ll6u.mp4" type="video/mp4">
+      </video>
+      <button class="story-nav prev" id="storyPrev" aria-label="Previous">‹</button>
+      <button class="story-nav next" id="storyNext" aria-label="Next">›</button>
       <div class="hero-badge">✦ Anasa Collection</div>
     </div>
   </div>
@@ -464,7 +490,7 @@ footer img.footer-logo{height:30px;filter:invert(1);margin-bottom:18px;display:b
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2025 THILIKON. All rights reserved.</span>
+    <span>© 2026 THILIKON. All rights reserved.</span>
     <div class="footer-ig"><a href="https://www.instagram.com/thilikon.gr/" target="_blank">@thilikón ↗</a></div>
   </div>
 </footer>
@@ -1098,6 +1124,52 @@ document.querySelectorAll('.ce-main img, .ce-small img, .ce-half img').forEach(i
 
 // fallback: make all fade-up visible after 800ms in case observer misses them
 setTimeout(()=>{ document.querySelectorAll('.fade-up').forEach(el=>el.classList.add('visible')); }, 800);
+
+// ============================================================
+// HERO STORY SLIDER
+// ============================================================
+(function(){
+  const frame = document.getElementById('storyFrame');
+  if (!frame) return;
+  const vids = Array.from(frame.querySelectorAll('.story-video'));
+  const barsEl = document.getElementById('storyBars');
+  barsEl.innerHTML = vids.map(() => '<div class="story-bar"><span class="story-bar-fill"></span></div>').join('');
+  const bars = Array.from(barsEl.children);
+  let cur = 0, raf = null;
+
+  bars.forEach((b,i) => b.addEventListener('click', () => go(i)));
+
+  function paint(){
+    const v = vids[cur];
+    const pct = v.duration ? (v.currentTime / v.duration) * 100 : 0;
+    bars[cur].firstElementChild.style.width = pct + '%';
+    raf = requestAnimationFrame(paint);
+  }
+
+  function go(i){
+    if (raf) cancelAnimationFrame(raf);
+    const v0 = vids[cur];
+    v0.pause(); v0.classList.remove('active');
+    bars.forEach((b,bi) => {
+      b.classList.toggle('done', bi < i);
+      if (bi !== i) b.firstElementChild.style.width = bi < i ? '100%' : '0';
+    });
+    cur = (i + vids.length) % vids.length;
+    const v = vids[cur];
+    v.currentTime = 0;
+    v.classList.add('active');
+    bars[cur].firstElementChild.style.width = '0';
+    const p = v.play();
+    if (p) p.catch(()=>{});
+    raf = requestAnimationFrame(paint);
+  }
+
+  vids.forEach((v,i) => v.addEventListener('ended', () => go(i + 1)));
+  document.getElementById('storyNext').addEventListener('click', e => { e.stopPropagation(); go(cur + 1); });
+  document.getElementById('storyPrev').addEventListener('click', e => { e.stopPropagation(); go(cur - 1); });
+
+  go(0);
+})();
 
 // nav + fade
 window.addEventListener('scroll',()=>document.getElementById('mainNav').classList.toggle('scrolled',scrollY>40));
