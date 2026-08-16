@@ -182,6 +182,11 @@ footer img.footer-logo{height:30px;filter:invert(1);margin-bottom:18px;display:b
 .modal-bag-cat{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--gd);margin-top:4px}
 .modal-close{background:none;border:none;cursor:none;font-size:20px;color:var(--gd);transition:color .2s;line-height:1;padding:4px}
 .modal-close:hover{color:var(--black)}
+.modal-hdr-actions{display:flex;align-items:center;gap:14px}
+.modal-share{background:none;border:1px solid var(--gm);color:var(--gd);cursor:none;font-size:9px;letter-spacing:.18em;text-transform:uppercase;font-weight:500;padding:7px 16px;border-radius:100px;transition:all .25s;white-space:nowrap}
+.modal-share:hover{border-color:var(--black);color:var(--black)}
+.modal-share.copied{background:var(--black);color:#fff;border-color:var(--black)}
+@media(hover:none){.modal-share{cursor:pointer}}
 .modal-body{padding:22px 32px 30px;overflow-y:auto}
 .modal-label{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gd);margin-bottom:18px;font-weight:500}
 .modal-colors-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:14px;margin-bottom:26px}
@@ -499,7 +504,10 @@ footer img.footer-logo{height:30px;filter:invert(1);margin-bottom:18px;display:b
         <div class="modal-bag-name" id="modalBagName"></div>
         <div class="modal-bag-cat" id="modalBagCat"></div>
       </div>
-      <button class="modal-close" id="modalClose">✕</button>
+      <div class="modal-hdr-actions">
+        <button class="modal-share" id="modalShare" title="Copy link to this bag">Share</button>
+        <button class="modal-close" id="modalClose">✕</button>
+      </div>
     </div>
     <div class="modal-body">
       <div id="modalToggle" style="display:none" class="modal-toggle"></div>
@@ -839,6 +847,44 @@ function scrollToBag(id) {
   setTimeout(()=>openModal(bag), 600);
 }
 
+// ---- permanent links (#bag-<id>) ----
+let currentBagId = null;
+
+function shareCurrentBag(){
+  if (!currentBagId) return;
+  const url = location.origin + location.pathname + '#bag-' + currentBagId;
+  const btn = document.getElementById('modalShare');
+  const done = () => {
+    btn.textContent = 'Copied';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Share'; btn.classList.remove('copied'); }, 1800);
+  };
+  if (navigator.share && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
+    const bag = bags.find(b => b.id === currentBagId);
+    navigator.share({ title: 'THILIKON · ' + bag.name, url }).catch(()=>{});
+    return;
+  }
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(done).catch(()=>{ prompt('Copy this link:', url); });
+  } else {
+    prompt('Copy this link:', url);
+  }
+}
+
+function openFromHash(instant){
+  const m = location.hash.match(/^#bag-(.+)$/);
+  if (!m) return false;
+  const bag = bags.find(b => b.id === m[1]);
+  if (!bag) return false;
+  const card = document.getElementById('bag-' + bag.id);
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.filter-btn[data-filter="all"]').classList.add('active');
+  document.querySelectorAll('.bag-card').forEach(c=>c.classList.remove('hidden'));
+  if (card) card.scrollIntoView({behavior: instant ? 'auto' : 'smooth', block:'center'});
+  setTimeout(()=>openModal(bag), instant ? 250 : 600);
+  return true;
+}
+
 // filter
 document.querySelectorAll('.filter-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
@@ -937,10 +983,23 @@ function openModal(b){
     </div>` : '';
   document.getElementById('modalLifestyle').innerHTML = lifestyleHtml;
   document.getElementById('modalNote').innerHTML=`<strong>Note:</strong> ${b.note}<br><br>To place an order, <a href="https://www.instagram.com/thilikon.gr/" target="_blank" style="color:var(--black);font-weight:500"><strong>DM us on Instagram</strong></a> with the model name and colour code.`;
+  currentBagId = b.id;
+  if (location.hash !== '#bag-' + b.id) history.replaceState(null, '', '#bag-' + b.id);
+  const shareBtn = document.getElementById('modalShare');
+  shareBtn.textContent = 'Share';
+  shareBtn.classList.remove('copied');
   overlay.classList.add('open');document.body.style.overflow='hidden';
 }
-function closeModal(){overlay.classList.remove('open');document.body.style.overflow='';}
+function closeModal(){
+  overlay.classList.remove('open');
+  document.body.style.overflow='';
+  currentBagId = null;
+  if (location.hash.startsWith('#bag-')) history.replaceState(null, '', location.pathname + location.search);
+}
 document.getElementById('modalClose').addEventListener('click',closeModal);
+document.getElementById('modalShare').addEventListener('click', e => { e.stopPropagation(); shareCurrentBag(); });
+window.addEventListener('hashchange', () => { if (!openFromHash(false) && overlay.classList.contains('open')) closeModal(); });
+openFromHash(true);
 overlay.addEventListener('click',e=>{if(e.target===overlay)closeModal();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 
@@ -1070,7 +1129,10 @@ function showResult() {
   document.getElementById('quizResultImg').alt = bag.name;
   document.getElementById('quizResultName').textContent = bag.name;
   document.getElementById('quizResultDesc').textContent = extra.desc;
-  document.getElementById('quizResultCta').href = '#collection';
+  const cta = document.getElementById('quizResultCta');
+  cta.textContent = 'See the ' + bag.name;
+  cta.href = '#bag-' + winner;
+  cta.onclick = e => { e.preventDefault(); location.hash = '#bag-' + winner; };
   res.style.display = 'block';
 
   document.querySelectorAll('.quiz-progress-dot').forEach(d => {
