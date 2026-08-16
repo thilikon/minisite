@@ -747,6 +747,7 @@
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       <label class="fld" style="flex:2 1 150px"><span>Σύνολο € 👁</span><div id="fTotalView" class="ro-field">€0,00</div></label>
       <label class="fld" style="flex:1 1 90px"><span>Έκπτωση % 👁</span><input id="fDisc" inputmode="decimal" placeholder="0" oninput="updateMoneyHint()"></label>
+      <label class="fld hidden" id="fShipWrap" style="flex:1 1 90px"><span>Μεταφορικά € 👁</span><input id="fShip" inputmode="decimal" placeholder="0" oninput="updateMoneyHint()"></label>
       <label class="fld" style="flex:1 1 90px"><span>Κόστος υλ. € 🔒</span><input id="fCost" inputmode="decimal" placeholder="0"></label>
       <label class="fld" style="flex:1 1 90px"><span>Πληρωμένο € 👁</span><input id="fPaid" inputmode="decimal" placeholder="0"></label>
     </div>
@@ -1006,14 +1007,21 @@ function updateMoneyHint(){
   const sub=itemsTotal();
   const price=finalPrice(sub);
   const d=activeDiscount();
+  const ship=shipCost();
   const cost=parseMoney(document.getElementById("fCost").value);
   const paid=parseMoney(document.getElementById("fPaid").value);
   const tv=document.getElementById("fTotalView");
   const dEl=document.getElementById("fDisc");
   if(dEl) dEl.disabled = isMix();   // στο Mix & Match ισχύει το −20% του event
-  if(price!=null && d>0 && sub!=null){
-    const lbl = isMix() ? "−20%" : "−"+Math.round(d*100)+"%";
-    tv.innerHTML = `<span class="pv-orig">${fmtMoney(sub)}</span><span class="pv-mm">${fmtMoney(price)}</span> <span class="mm-badge"${isMix()?"":' style="background:var(--ink)"'}>${lbl}</span>`;
+  const wrap=document.getElementById("fShipWrap");
+  if(wrap) wrap.classList.toggle("hidden", pickedMethod==="pickup");
+  if(price!=null && (d>0||ship>0) && sub!=null){
+    const before = Math.round((sub+ship)*100)/100;
+    const lbl = isMix() ? "−20%" : (d>0 ? "−"+Math.round(d*100)+"%" : "");
+    tv.innerHTML = (d>0?`<span class="pv-orig">${fmtMoney(before)}</span>`:"") +
+      `<span class="${isMix()?'pv-mm':''}">${fmtMoney(price)}</span>` +
+      (lbl?` <span class="mm-badge"${isMix()?"":' style="background:var(--ink)"'}>${lbl}</span>`:"") +
+      (ship>0?` <span class="mm-badge" style="background:#2f5d8a">+${fmtMoney(ship)} μετ.</span>`:"");
   } else {
     tv.textContent = fmtMoney(price!=null?price:0);
   }
@@ -1193,18 +1201,21 @@ function renderTracking(o){
     if(paid > 0) status = rem>0
       ? `<span class="ps due">Υπόλοιπο ${fmtMoney(rem)}</span>`
       : `<span class="ps ok">Εξοφλήθηκε ✓</span>`;
+    const ship = Number(o.shipping_cost)||0;
+    const goods = Math.round((price-ship)*100)/100;
     let priceHtml = fmtMoney(price), mmBadge = "";
     if(o.mix_match){
-      const orig = Math.round(price/(1-MIX_DISCOUNT)*100)/100;
+      const orig = Math.round((goods/(1-MIX_DISCOUNT) + ship)*100)/100;
       priceHtml = `<span class="pv-orig">${fmtMoney(orig)}</span><span class="pv-mm">${fmtMoney(price)}</span>`;
       mmBadge = ` <span class="mm-badge">Mix &amp; Match −20%</span>`;
     } else if(o.discount_pct){
       const d=Number(o.discount_pct)/100;
-      const orig = Math.round(price/(1-d)*100)/100;
+      const orig = Math.round((goods/(1-d) + ship)*100)/100;
       priceHtml = `<span class="pv-orig">${fmtMoney(orig)}</span><span>${fmtMoney(price)}</span>`;
       mmBadge = ` <span class="mm-badge" style="background:var(--ink)">−${Math.round(Number(o.discount_pct))}%</span>`;
     }
-    pay.innerHTML = `<div><div class="pe">Αξία παραγγελίας${mmBadge}</div><div class="pv">${priceHtml}</div></div>${status}`;
+    const shipLine = ship>0 ? `<div style="font-size:11px;color:var(--muted);margin-top:3px">Προϊόντα ${fmtMoney(goods)} · Μεταφορικά ${fmtMoney(ship)}</div>` : "";
+    pay.innerHTML = `<div><div class="pe">Αξία παραγγελίας${mmBadge}</div><div class="pv">${priceHtml}</div>${shipLine}</div>${status}`;
     pay.classList.remove("hidden");
   } else pay.classList.add("hidden");
 
@@ -2224,12 +2235,13 @@ function pickMethod(m){
   document.querySelectorAll("#methodPicker button").forEach(b=>b.classList.toggle("sel", b.dataset.m===m));
   document.getElementById("courierFields").style.display = (m==="pickup") ? "none" : "block";
   methodLabelsRefresh();
+  updateMoneyHint();
 }
 
 function openOrderModal(){
   editingId=null; pickedMethod="shipping";
   document.getElementById("modalTitle").textContent="Νέα παραγγελία";
-  ["fName","fNote","fTrackNo","fTrackUrl","fCost","fPaid","fPhone","fDisc"].forEach(id=>document.getElementById(id).value="");
+  ["fName","fNote","fTrackNo","fTrackUrl","fCost","fPaid","fPhone","fDisc","fShip"].forEach(id=>document.getElementById(id).value="");
   document.getElementById("fCourier").value="BoxNow";
   document.getElementById("fTotalView").textContent="€0,00";
   document.getElementById("fOrderNoView").textContent="θα δημιουργηθεί αυτόματα";
@@ -2243,6 +2255,7 @@ function openOrderModal(){
   document.getElementById("mmToggle").classList.toggle("hidden", !MIX_ACTIVE);
   document.getElementById("fDisc").value="";
   document.getElementById("fDisc").disabled=false;
+  document.getElementById("fShip").value="";
   pickedMaterials=[]; stockApplied=false; renderMatList();
   buildItemsEditor(null);
   pickMethod("shipping");
@@ -2267,6 +2280,7 @@ function editOrder(id){
   document.getElementById("mmToggle").classList.toggle("on", !!o.mix_match);
   document.getElementById("mmToggle").classList.toggle("hidden", !MIX_ACTIVE && !o.mix_match);
   document.getElementById("fDisc").value = o.discount_pct!=null ? o.discount_pct : "";
+  document.getElementById("fShip").value = o.shipping_cost!=null ? o.shipping_cost : "";
   pickedMaterials = Array.isArray(o.materials) ? o.materials.map(m=>({...m})) : [];
   stockApplied = !!o.stock_applied;
   renderMatList();
@@ -2275,7 +2289,8 @@ function editOrder(id){
   if(o.price!=null && its.length && its.every(it=>it.price==null)){
     // legacy: μετάφερε το σύνολο. Αν υπάρχει έκπτωση, το o.price είναι μειωμένο -> επανάφερε την αρχική
     const d = o.mix_match ? MIX_DISCOUNT : (o.discount_pct ? Number(o.discount_pct)/100 : 0);
-    its[0].price = d>0 ? Math.round(o.price/(1-d)*100)/100 : o.price;
+    const goods = Math.round((Number(o.price) - (Number(o.shipping_cost)||0))*100)/100;
+    its[0].price = d>0 ? Math.round(goods/(1-d)*100)/100 : goods;
   }
   buildItemsEditor(its);
   updateMoneyHint();
@@ -2339,6 +2354,7 @@ async function saveOrder(){
     amount_paid: parseMoney(document.getElementById("fPaid").value),
     mix_match: isMix(),
     discount_pct: isMix() ? null : discPct(),
+    shipping_cost: isPickup ? null : (shipCost()||null),
     materials: pickedMaterials.length ? pickedMaterials : null,
     stock_applied: stockApplied,
     items
@@ -2397,8 +2413,13 @@ let matDraft = {};
 function fmtNum(n){ n=Number(n)||0; return Number.isInteger(n)?String(n):String(Math.round(n*100)/100); }
 function isMix(){ const el=document.getElementById("fMix"); return !!(el && el.checked); }
 function discPct(){ const v=parseMoney((document.getElementById("fDisc")||{}).value); return (v!=null && v>0 && v<100) ? v : null; }
+function shipCost(){ if(pickedMethod==="pickup") return 0; const v=parseMoney((document.getElementById("fShip")||{}).value); return (v!=null && v>0) ? v : 0; }
 function activeDiscount(){ return isMix() ? MIX_DISCOUNT : (discPct()!=null ? discPct()/100 : 0); }
-function finalPrice(sub){ const d=activeDiscount(); return (sub!=null && d>0) ? Math.round(sub*(1-d)*100)/100 : sub; }
+function finalPrice(sub){
+  const d=activeDiscount();
+  const goods = (sub!=null && d>0) ? Math.round(sub*(1-d)*100)/100 : sub;
+  return goods==null ? null : Math.round((goods + shipCost())*100)/100;   // μεταφορικά ΜΕΤΑ την έκπτωση
+}
 function onMixToggle(){
   document.getElementById("mmToggle").classList.toggle("on", isMix());
   updateMoneyHint();
