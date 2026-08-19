@@ -480,6 +480,14 @@
   .mat-sel-h{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);padding:6px 2px 4px}
   .oi-spec{font-size:11.5px;color:var(--muted);margin-top:1px}
   .r-created{font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:.02em}
+  .money-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+  .money-row .fld{margin-bottom:12px}
+  .money-row .fld span{min-height:26px;display:flex;align-items:flex-end}
+  .gear-dot{position:absolute;top:2px;right:3px;width:7px;height:7px;border-radius:50%;background:#c0266c}
+  .ev-row{display:flex;align-items:flex-start;gap:11px;border:1px solid var(--line);background:var(--cream);border-radius:14px;padding:13px 15px;margin-bottom:10px;cursor:pointer;transition:.15s}
+  .ev-row input{width:18px;height:18px;flex:none;margin-top:1px;cursor:pointer}
+  .ev-name{font-size:14px;font-weight:600}
+  .ev-sub{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.45}
   .meta-row{display:flex;flex-wrap:wrap;gap:7px;margin:-6px 0 14px}
   .meta-chip{background:var(--stone);border-radius:var(--pill);padding:5px 11px;font-size:11.5px;color:var(--ink);white-space:nowrap}
   .meta-chip b{color:var(--muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:10px;margin-right:2px}
@@ -511,6 +519,9 @@
   .mix-banner::before{top:9px;left:9px;border-right:none;border-bottom:none}
   .mix-banner::after{bottom:9px;right:9px;border-left:none;border-top:none}
   .mix-banner .mix-logo{height:58px;width:auto;margin:0 auto 12px;display:block;filter:brightness(0) invert(1)}
+  .mix-banner.on-light .mix-logo{filter:none}
+  .mix-banner.on-light::before,.mix-banner.on-light::after{border-color:rgba(20,20,20,.28)}
+  .mix-banner.on-light .mix-pct{background:rgba(255,255,255,.55);border-color:currentColor}
   .mix-banner .mix-name{font-family:'Cormorant',Georgia,serif;font-style:italic;font-size:30px;font-weight:600;line-height:1}
   .mix-banner .mix-tag{font-size:9.5px;letter-spacing:.3em;text-transform:uppercase;opacity:.82;margin-top:7px}
   .mix-banner .mix-line{font-size:12.5px;opacity:.95;margin:13px auto 0;line-height:1.55;max-width:330px}
@@ -585,18 +596,11 @@
           <div id="fbMountOrder"></div>
         </div>
 
-        <div class="pcard dark">
+        <div class="pcard dark hidden" id="tagCard">
           <div class="pe">Δείξε μας</div>
           <h3>Φόρεσέ τη και κάνε μας tag</h3>
           <p class="pb">Θα χαρούμε πολύ να δούμε τη δημιουργία σου σε δράση! Ανέβασε μια φωτογραφία και κάνε μας tag ή στείλε τη σε DM , μπορεί να την αναδημοσιεύσουμε στο προφίλ μας.</p>
           <div class="pbtn"><a class="btn ghost" href="https://www.instagram.com/thilikon.gr/" target="_blank" rel="noopener">@thilikon.gr στο Instagram</a></div>
-        </div>
-
-        <div class="pcard">
-          <div class="pe">Είμαστε εδώ</div>
-          <h3>Χρειάζεσαι κάτι;</h3>
-          <p class="pb">Για οτιδήποτε προκύψει με την παραγγελία σου, στείλε μας ένα DM στο Instagram και θα σου απαντήσουμε το συντομότερο.</p>
-          <div class="pbtn"><a class="btn ghost" href="https://www.instagram.com/thilikon.gr/" target="_blank" rel="noopener">Στείλε μας μήνυμα</a></div>
         </div>
       </div>
 
@@ -640,6 +644,7 @@
         <div style="display:flex;gap:8px">
           <button class="btn solid sm" id="newOrderBtn" onclick="openOrderModal()">+ Νέα</button>
           <button class="btn solid sm hidden" id="newStockBtn" onclick="openStockModal()">+ Είδος</button>
+          <button class="btn ghost sm" onclick="openSettings()" title="Ρυθμίσεις events" style="position:relative">⚙<span id="gearDot" class="gear-dot hidden"></span></button>
           <button class="btn ghost sm" onclick="adminLogout()">Έξοδος</button>
         </div>
       </div>
@@ -739,17 +744,16 @@
 
     <label class="fld"><span>Σημείωση προς πελάτη (όλη η παραγγελία)</span><textarea id="fNote" placeholder="προαιρετικό μήνυμα που θα δει ο πελάτης"></textarea></label>
 
-    <label class="mm-toggle" id="mmToggle" onclick="setTimeout(onMixToggle,0)">
-      <input type="checkbox" id="fMix">
-      <span><span class="mm-l">Mix &amp; Match</span> <span class="mm-s">— εφαρμόζει αυτόματα −20% στη συνολική τιμή</span></span>
+    <label class="fld hidden" id="evWrap"><span>Event</span>
+      <select id="fEvent" onchange="onEventChange()"><option value="">— καμία</option></select>
     </label>
 
     <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:6px 0 8px">Οικονομικά <span style="text-transform:none;letter-spacing:0">(ο πελάτης βλέπει τις τιμές & αν εξοφλήθηκε — το κόστος υλικών μένει κρυφό)</span></p>
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <div class="money-row">
       <label class="fld" style="flex:2 1 150px"><span>Σύνολο €</span><div id="fTotalView" class="ro-field">€0,00</div></label>
       <label class="fld" style="flex:1 1 90px"><span>Έκπτωση %</span><input id="fDisc" inputmode="decimal" placeholder="0" oninput="updateMoneyHint()"></label>
       <label class="fld hidden" id="fShipWrap" style="flex:1 1 90px"><span>Μεταφορικά €</span><input id="fShip" inputmode="decimal" placeholder="0" oninput="updateMoneyHint()"></label>
-      <label class="fld" style="flex:1 1 90px"><span>Κόστος υλ. € 🔒</span><input id="fCost" inputmode="decimal" placeholder="0"></label>
+      <label class="fld" style="flex:1 1 90px"><span>Κόστος υλ. 🔒</span><input id="fCost" inputmode="decimal" placeholder="0"></label>
       <label class="fld" style="flex:1 1 90px"><span>Πληρωμένο €</span><input id="fPaid" inputmode="decimal" placeholder="0"></label>
     </div>
 
@@ -774,6 +778,20 @@
       <button class="btn solid" style="flex:1" id="saveBtn" onclick="saveOrder()">Αποθήκευση</button>
       <button class="btn ghost" onclick="closeOrderModal()">Κλείσιμο</button>
     </div>
+  </div>
+</div>
+
+<!-- ============ SETTINGS (events) ============ -->
+<div id="settingsModal" class="overlay hidden">
+  <div class="modal">
+    <div class="mh">
+      <h2 class="serif">Ρυθμίσεις</h2>
+      <button class="x" onclick="closeSettings()">✕</button>
+    </div>
+    <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:4px 0 10px">Ενεργά events</p>
+    <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:14px">Όταν ένα event είναι ανοιχτό, εμφανίζεται στη νέα παραγγελία και ο πελάτης βλέπει το banner του.</p>
+    <div id="settingsBody"></div>
+    <div style="margin-top:18px"><button class="btn ghost" style="width:100%" onclick="closeSettings()">Κλείσιμο</button></div>
   </div>
 </div>
 
@@ -880,9 +898,34 @@
    CONFIG
 ============================================================ */
 const SUPABASE_URL  = "https://bmdwlckzzpxjjfcvyiui.supabase.co";
-const MIX_DISCOUNT = 0.20; // Mix & Match -20% (άλλαξέ το εδώ αν αλλάξει το event)
-const MIX_ACTIVE = false;  // ⬅ ΔΙΑΚΟΠΤΗΣ EVENT: true = τρέχει το Mix & Match (εμφανίζεται ο διακόπτης στη νέα παραγγελία)
-const MIX_LOGO = "https://i.imgur.com/JXzdPOM.png"; // logo του event — εμφανίζεται στο banner του πελάτη
+const MIX_DISCOUNT = 0.20;
+const MIX_LOGO = "https://i.imgur.com/JXzdPOM.png";
+/* ============ EVENTS ============
+   Κάθε event: όνομα, tagline, χρώμα, έκπτωση (0 = χειροκίνητη), logo, autoOff (σβήνει μόνο του).
+   Το on/off ρυθμίζεται από το ⚙ στο admin — το autoOff είναι δίχτυ ασφαλείας. */
+const EVENTS = {
+  mix: {
+    name:"Mix & Match", tagline:"while the yarn lasts", color:"#c0266c", logo:MIX_LOGO,
+    discount:MIX_DISCOUNT, autoOff:"2026-08-02",
+    line:"Η δημιουργία σου είναι μέρος του Mix & Match. Φτιάχτηκε από τα τελευταία άμεσα διαθέσιμα νήματα, ειδικά για σένα."
+  },
+  luxe: {
+    name:"Little Luxuries", tagline:"a daily piece, uniquely yours", color:"#86c5ec", ink:"#8c191e", logo:"",
+    discount:0, autoOff:"2026-09-02",
+    line:"Το κομμάτι σου είναι μέρος των Little Luxuries. Χειροποίητο κόσμημα, φτιαγμένο μία φορά και ποτέ ξανά."
+  }
+};
+function isLight(hex){
+  const n=parseInt(hex.slice(1),16);
+  const L=(0.299*(n>>16) + 0.587*((n>>8)&255) + 0.114*(n&255));
+  return L>165;
+}
+function shade(hex,amt){
+  const n=parseInt(hex.slice(1),16); let r=(n>>16)+amt, g=((n>>8)&255)+amt, b=(n&255)+amt;
+  const c=v=>Math.max(0,Math.min(255,v));
+  return "#"+((1<<24)+(c(r)<<16)+(c(g)<<8)+c(b)).toString(16).slice(1);
+}
+function evOf(o){ const id=o&&(o.event_id || (o.mix_match?"mix":null)); return id&&EVENTS[id] ? Object.assign({id},EVENTS[id]) : null; }
 const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtZHdsY2t6enB4ampmY3Z5aXVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MjQyNjgsImV4cCI6MjA5NzIwMDI2OH0.JADjEDrk1Yflimp3ZEzXOpG-IE3_7xyL2jCoG38XNmU";
 const REST = SUPABASE_URL + "/rest/v1";
 const AUTH = SUPABASE_URL + "/auth/v1";
@@ -1013,15 +1056,19 @@ function updateMoneyHint(){
   const paid=parseMoney(document.getElementById("fPaid").value);
   const tv=document.getElementById("fTotalView");
   const dEl=document.getElementById("fDisc");
-  if(dEl) dEl.disabled = isMix();   // στο Mix & Match ισχύει το −20% του event
+  const _ev=curEvent();
+  if(dEl) dEl.disabled = !!(_ev && _ev.discount>0);   // event με σταθερή έκπτωση
   const wrap=document.getElementById("fShipWrap");
   if(wrap) wrap.classList.toggle("hidden", pickedMethod==="pickup");
   if(price!=null && (d>0||ship>0) && sub!=null){
     const before = Math.round((sub+ship)*100)/100;
-    const lbl = isMix() ? "−20%" : (d>0 ? "−"+Math.round(d*100)+"%" : "");
+    const lbl = d>0 ? "−"+Math.round(d*100)+"%" : "";
+    const evc = _ev ? _ev.color : "var(--ink)";
+    const evTxt = _ev ? (_ev.ink || _ev.color) : "var(--ink)";
+    const badgeFg = _ev && isLight(_ev.color) ? (_ev.ink||"#141414") : "#fff";
     tv.innerHTML = (d>0?`<span class="pv-orig">${fmtMoney(before)}</span>`:"") +
-      `<span class="${isMix()?'pv-mm':''}">${fmtMoney(price)}</span>` +
-      (lbl?` <span class="mm-badge"${isMix()?"":' style="background:var(--ink)"'}>${lbl}</span>`:"") +
+      `<span${_ev?` style="color:${evTxt}"`:""}>${fmtMoney(price)}</span>` +
+      (lbl?` <span class="mm-badge" style="background:${evc};color:${badgeFg}">${lbl}</span>`:"") +
       (ship>0?` <span class="mm-badge" style="background:#2f5d8a">+${fmtMoney(ship)} μετ.</span>`:"");
   } else {
     tv.textContent = fmtMoney(price!=null?price:0);
@@ -1182,13 +1229,21 @@ function renderTracking(o){
 
   // Mix & Match event banner (πάνω-πάνω στην κάρτα του πελάτη)
   const mb = document.getElementById("tMixBanner");
-  if(o.mix_match){
+  const ev = evOf(o);
+  if(ev){
+    const pct = ev.discount>0 ? Math.round(ev.discount*100) : (o.discount_pct?Math.round(Number(o.discount_pct)):0);
+    const light = isLight(ev.color);
+    const fg = ev.ink || (light ? "#141414" : "#ffffff");
+    mb.style.background = `linear-gradient(135deg, ${ev.color}, ${shade(ev.color, light?-14:-28)})`;
+    mb.style.color = fg;
+    mb.style.setProperty("--ev-fg", fg);
+    mb.classList.toggle("on-light", light);
     mb.innerHTML = `
-      ${MIX_LOGO?`<img class="mix-logo" src="${MIX_LOGO}" alt="">`:""}
-      <div class="mix-name">Mix &amp; Match</div>
-      <div class="mix-tag">while the yarn lasts</div>
-      <div class="mix-line">Η δημιουργία σου είναι μέρος του Mix &amp; Match. Φτιάχτηκε από τα τελευταία άμεσα διαθέσιμα νήματα, ειδικά για σένα.</div>
-      <div class="mix-pct">−20%</div>`;
+      ${ev.logo?`<img class="mix-logo" src="${ev.logo}" alt="">`:""}
+      <div class="mix-name">${esc(ev.name)}</div>
+      <div class="mix-tag">${esc(ev.tagline)}</div>
+      <div class="mix-line">${esc(ev.line)}</div>
+      ${pct?`<div class="mix-pct">−${pct}%</div>`:""}`;
     mb.classList.remove("hidden");
   } else mb.classList.add("hidden");
 
@@ -1205,10 +1260,12 @@ function renderTracking(o){
     const ship = Number(o.shipping_cost)||0;
     const goods = Math.round((price-ship)*100)/100;
     let priceHtml = fmtMoney(price), mmBadge = "";
-    if(o.mix_match){
-      const orig = Math.round((goods/(1-MIX_DISCOUNT) + ship)*100)/100;
-      priceHtml = `<span class="pv-orig">${fmtMoney(orig)}</span><span class="pv-mm">${fmtMoney(price)}</span>`;
-      mmBadge = ` <span class="mm-badge">Mix &amp; Match −20%</span>`;
+    const _ev = evOf(o);
+    if(_ev && _ev.discount>0){
+      const orig = Math.round((goods/(1-_ev.discount) + ship)*100)/100;
+      const _fg = isLight(_ev.color) ? (_ev.ink||"#141414") : "#fff";
+      priceHtml = `<span class="pv-orig">${fmtMoney(orig)}</span><span style="color:${_ev.ink||_ev.color}">${fmtMoney(price)}</span>`;
+      mmBadge = ` <span class="mm-badge" style="background:${_ev.color};color:${_fg}">${esc(_ev.name)} −${Math.round(_ev.discount*100)}%</span>`;
     } else if(o.discount_pct){
       const d=Number(o.discount_pct)/100;
       const orig = Math.round((goods/(1-d) + ship)*100)/100;
@@ -1238,6 +1295,7 @@ function renderTracking(o){
   post.classList.toggle("locked", !unlocked);
   document.getElementById("postLock").classList.toggle("hidden", unlocked);
   document.getElementById("fbCardOrder").classList.toggle("hidden", !unlocked);
+  document.getElementById("tagCard").classList.toggle("hidden", !unlocked);
   contact.classList.toggle("hidden", unlocked);
   if(unlocked) renderFeedbackForm(document.getElementById("fbMountOrder"), currentToken, "order");
 }
@@ -1562,6 +1620,7 @@ async function enterPanel(){
   await loadOrders();
   loadFeedback();
   loadStock();
+  loadSettings();
 }
 
 function showAdminTab(tab){
@@ -1686,7 +1745,7 @@ function renderStats(){
     });
     if(allDelivered(o)) doneOrders++; else activeOrders++;
     if(o.delivery_method==="pickup") pickup++; else ship++;
-    if(o.mix_match) mixCount++;
+    if(evOf(o)) mixCount++;
     const isReady = o.kind==="ready";
     if(isReady) readyCount++;
     const c = new Date(o.created_at);
@@ -1819,7 +1878,7 @@ function renderStats(){
     <div class="stat-row">
       <span class="stat-pill"><b>${totalItems}</b> Προϊόντα</span>
       ${returnTotal?`<span class="stat-pill warn"><b>${returnTotal}</b> Επιστροφές${returnActive?` · ${returnActive} ενεργές`:""}</span>`:""}
-      <span class="stat-pill mm"><b>${mixCount}</b> Mix &amp; Match</span>
+      <span class="stat-pill mm"><b>${mixCount}</b> Event</span>
       <span class="stat-pill blue"><b>${readyCount}</b> Ραφιού</span>
       <span class="stat-pill"><b>${ship}</b> Αποστολή</span>
       <span class="stat-pill"><b>${pickup}</b> Παραλαβή</span>
@@ -1860,11 +1919,11 @@ function renderOrders(){
     all: ordersCache.length,
     active: ordersCache.filter(o=>!orderIsDone(o)).length,
     done: ordersCache.filter(orderIsDone).length,
-    mix: ordersCache.filter(o=>o.mix_match).length,
+    mix: ordersCache.filter(o=>!!evOf(o)).length,
     ready: ordersCache.filter(o=>o.kind==="ready").length
   };
   const chips = [
-    ["all","Όλες"],["active","Σε εξέλιξη"],["done","Ολοκληρωμένες"],["mix","Mix & Match"],["ready","Ραφιού"]
+    ["all","Όλες"],["active","Σε εξέλιξη"],["done","Ολοκληρωμένες"],["mix","Event"],["ready","Ραφιού"]
   ].filter(([k])=> k==="all" || counts[k]>0 || orderFilter===k);
   const fbox=document.getElementById("orderFilters");
   if(fbox) fbox.innerHTML = chips.map(([k,l])=>
@@ -1874,7 +1933,7 @@ function renderOrders(){
   let filtered = ordersCache.filter(o=>{
     if(orderFilter==="active" && orderIsDone(o)) return false;
     if(orderFilter==="done" && !orderIsDone(o)) return false;
-    if(orderFilter==="mix" && !o.mix_match) return false;
+    if(orderFilter==="mix" && !evOf(o)) return false;
     if(orderFilter==="ready" && o.kind!=="ready") return false;
     const itemNames = getItems(o).map(i=>i.name).join(" ");
     const hay = [o.customer_name,o.product_name,o.order_number,itemNames].join(" ").toLowerCase();
@@ -1925,7 +1984,7 @@ function renderOrders(){
     return `<div class="order-row${!everyDone&&items.some(it=>itemFlow(it)==='return')?' is-return':''}">
       <div class="r-top">
         <div>
-          <div class="r-name">${esc(o.customer_name)} ${o.order_number?`<span style="color:var(--muted);font-weight:400">· ${esc(o.order_number)}</span>`:""} <span title="${pickup?'Παραλαβή διά ζώσης':'Αποστολή με courier'}" style="opacity:.6">${pickup?'🤝':'📦'}</span>${o.mix_match?'<span class="mm-pill">Mix &amp; Match</span>':(o.discount_pct?`<span class="mm-pill" style="background:var(--stone);color:var(--ink);border-color:var(--line)">−${Math.round(Number(o.discount_pct))}%</span>`:'')}${o.kind==='ready'?'<span class="mm-pill" style="background:#eef3f8;color:#2f5d8a;border-color:#cfe0f0">Έτοιμο</span>':''}</div>
+          <div class="r-name">${esc(o.customer_name)} ${o.order_number?`<span style="color:var(--muted);font-weight:400">· ${esc(o.order_number)}</span>`:""} <span title="${pickup?'Παραλαβή διά ζώσης':'Αποστολή με courier'}" style="opacity:.6">${pickup?'🤝':'📦'}</span>${(function(){const e=evOf(o);return e?`<span class="mm-pill" style="background:${e.color}26;color:${e.ink||e.color};border-color:${e.color}">${esc(e.name)}</span>`:'';})()}${(!evOf(o)&&o.discount_pct?`<span class="mm-pill" style="background:var(--stone);color:var(--ink);border-color:var(--line)">−${Math.round(Number(o.discount_pct))}%</span>`:'')}${o.kind==='ready'?'<span class="mm-pill" style="background:#eef3f8;color:#2f5d8a;border-color:#cfe0f0">Έτοιμο</span>':''}</div>
           ${o.created_at?`<div class="r-created">Καταχωρήθηκε ${new Date(o.created_at).toLocaleDateString("el-GR",{day:"2-digit",month:"2-digit",year:"numeric"})}</div>`:""}
         </div>
         ${orderBadge}
@@ -2014,7 +2073,7 @@ function buildWelcomeMsg(o){
     "Σου ετοιμάσαμε ένα προσωπικό link για να παρακολουθείς σε ποιο στάδιο βρίσκεται η παραγγελία σου:\n" + linkFor(o.track_token) +
     "\n\nΕκεί θα βλέπεις κάθε βήμα, από την παραλαβή των υλικών μέχρι την αποστολή, καθώς και το tracking του δέματος όταν φύγει.\n\n" +
     "Η παραγγελία σου αυτή τη στιγμή:\n" + itemLines(o, true) +
-    (o.mix_match ? "\n\nΗ παραγγελία σου είναι μέρος του Mix & Match — έχεις −20% στη συνολική τιμή! 🤍" : "") +
+    (function(){const e=evOf(o); if(!e) return ""; return "\n\nΗ παραγγελία σου είναι μέρος του " + e.name + (e.discount>0?" — έχεις −"+Math.round(e.discount*100)+"% στη συνολική τιμή!":"") + " 🤍";})() +
     "\n\nΚράτησέ το, θα σε ενημερώνουμε σε κάθε στάδιο!";
 }
 // 2) Ενιαίο μήνυμα εξέλιξης (ίδια δομή κάθε φορά, δείχνει ότι υπάρχει πρόοδος)
@@ -2253,9 +2312,7 @@ function openOrderModal(){
   document.getElementById("fbReadout").classList.add("hidden");
   document.getElementById("modalMsg").classList.add("hidden");
   document.getElementById("saveBtn").textContent="Δημιουργία";
-  document.getElementById("fMix").checked=false;
-  document.getElementById("mmToggle").classList.remove("on");
-  document.getElementById("mmToggle").classList.toggle("hidden", !MIX_ACTIVE);
+  fillEventSelect("");
   document.getElementById("fDisc").value="";
   document.getElementById("fDisc").disabled=false;
   document.getElementById("fShip").value="";
@@ -2280,9 +2337,7 @@ function editOrder(id){
   document.getElementById("fTrackUrl").value=o.tracking_url||"";
   document.getElementById("fCost").value  = o.cost!=null ? o.cost : "";
   document.getElementById("fPaid").value  = o.amount_paid!=null ? o.amount_paid : "";
-  document.getElementById("fMix").checked = !!o.mix_match;
-  document.getElementById("mmToggle").classList.toggle("on", !!o.mix_match);
-  document.getElementById("mmToggle").classList.toggle("hidden", !MIX_ACTIVE && !o.mix_match);
+  fillEventSelect(o.event_id || (o.mix_match?"mix":""));
   document.getElementById("fDisc").value = o.discount_pct!=null ? o.discount_pct : "";
   document.getElementById("fShip").value = o.shipping_cost!=null ? o.shipping_cost : "";
   pickedMaterials = Array.isArray(o.materials) ? o.materials.map(m=>({...m})) : [];
@@ -2292,7 +2347,7 @@ function editOrder(id){
   const its = getItems(o).map(it=>({...it}));
   if(o.price!=null && its.length && its.every(it=>it.price==null)){
     // legacy: μετάφερε το σύνολο. Αν υπάρχει έκπτωση, το o.price είναι μειωμένο -> επανάφερε την αρχική
-    const d = o.mix_match ? MIX_DISCOUNT : (o.discount_pct ? Number(o.discount_pct)/100 : 0);
+    const _e=evOf(o); const d = (_e&&_e.discount>0) ? _e.discount : (o.discount_pct ? Number(o.discount_pct)/100 : 0);
     const goods = Math.round((Number(o.price) - (Number(o.shipping_cost)||0))*100)/100;
     its[0].price = d>0 ? Math.round(goods/(1-d)*100)/100 : goods;
   }
@@ -2356,8 +2411,9 @@ async function saveOrder(){
     price: finalPrice(itemsTotal()),
     cost: parseMoney(document.getElementById("fCost").value),
     amount_paid: parseMoney(document.getElementById("fPaid").value),
+    event_id: curEventId() || null,
     mix_match: isMix(),
-    discount_pct: isMix() ? null : discPct(),
+    discount_pct: (curEvent()&&curEvent().discount>0) ? null : discPct(),
     shipping_cost: isPickup ? null : (shipCost()||null),
     materials: pickedMaterials.length ? pickedMaterials : null,
     stock_applied: stockApplied,
@@ -2416,18 +2472,76 @@ let stockView = "raw";
 let matDraft = {};
 
 function fmtNum(n){ n=Number(n)||0; return Number.isInteger(n)?String(n):String(Math.round(n*100)/100); }
-function isMix(){ const el=document.getElementById("fMix"); return !!(el && el.checked); }
+function curEventId(){ const el=document.getElementById("fEvent"); return el ? (el.value||"") : ""; }
+function curEvent(){ const id=curEventId(); return id&&EVENTS[id] ? Object.assign({id},EVENTS[id]) : null; }
+function isMix(){ return curEventId()==="mix"; }
+function fillEventSelect(currentId){
+  const sel=document.getElementById("fEvent"); if(!sel) return;
+  const ids=activeEvents();
+  if(currentId && EVENTS[currentId] && !ids.includes(currentId)) ids.push(currentId);
+  sel.innerHTML='<option value="">— καμία</option>'+ids.map(id=>`<option value="${id}">${esc(EVENTS[id].name)}</option>`).join("");
+  sel.value = currentId && EVENTS[currentId] ? currentId : "";
+  document.getElementById("evWrap").classList.toggle("hidden", ids.length===0);
+}
+function onEventChange(){ updateMoneyHint(); }
 function discPct(){ const v=parseMoney((document.getElementById("fDisc")||{}).value); return (v!=null && v>0 && v<100) ? v : null; }
 function shipCost(){ if(pickedMethod==="pickup") return 0; const v=parseMoney((document.getElementById("fShip")||{}).value); return (v!=null && v>0) ? v : 0; }
-function activeDiscount(){ return isMix() ? MIX_DISCOUNT : (discPct()!=null ? discPct()/100 : 0); }
+function activeDiscount(){ const e=curEvent(); if(e && e.discount>0) return e.discount; return discPct()!=null ? discPct()/100 : 0; }
 function finalPrice(sub){
   const d=activeDiscount();
   const goods = (sub!=null && d>0) ? Math.round(sub*(1-d)*100)/100 : sub;
   return goods==null ? null : Math.round((goods + shipCost())*100)/100;   // μεταφορικά ΜΕΤΑ την έκπτωση
 }
-function onMixToggle(){
-  document.getElementById("mmToggle").classList.toggle("on", isMix());
-  updateMoneyHint();
+/* ---- Ρυθμίσεις events (κοινές, από Supabase) ---- */
+let eventsOn = {};   // { mix:false, luxe:true }
+function evAutoOff(id){ const e=EVENTS[id]; return !!(e && e.autoOff && new Date() >= new Date(e.autoOff+"T00:00:00")); }
+function evActive(id){ return !!eventsOn[id] && !evAutoOff(id); }
+function activeEvents(){ return Object.keys(EVENTS).filter(evActive); }
+async function loadSettings(){
+  try{
+    const res=await authFetch(REST + "/thilikon_settings?key=eq.events&select=value",{});
+    if(res.status===401) return;
+    const rows=await res.json();
+    eventsOn = (rows && rows[0] && rows[0].value) || {};
+  }catch(e){ eventsOn = {}; }
+  updateEventBadge();
+}
+async function saveSettings(){
+  try{
+    const res=await authFetch(REST + "/thilikon_settings?on_conflict=key",{
+      method:"POST",
+      headers:{"Prefer":"resolution=merge-duplicates,return=minimal"},
+      body:JSON.stringify({key:"events", value:eventsOn})
+    });
+    if(!res.ok) throw new Error(await res.text());
+    adminFlash("Αποθηκεύτηκε ✓");
+  }catch(e){ adminFlash("Σφάλμα — έτρεξες το SQL για τα settings ;"); console.error(e); }
+  updateEventBadge();
+}
+function updateEventBadge(){
+  const b=document.getElementById("gearDot"); if(!b) return;
+  b.classList.toggle("hidden", activeEvents().length===0);
+}
+function openSettings(){
+  const box=document.getElementById("settingsBody");
+  box.innerHTML = Object.keys(EVENTS).map(id=>{
+    const e=EVENTS[id], off=evAutoOff(id), on=evActive(id);
+    return `<label class="ev-row ${on?'on':''}" style="${on?`border-color:${e.color};background:${e.color}1f`:''}">
+      <input type="checkbox" ${on?"checked":""} ${off?"disabled":""} onchange="toggleEvent('${id}',this.checked)" style="accent-color:${e.color}">
+      <div style="flex:1;min-width:0">
+        <div class="ev-name" style="${on?`color:${e.ink||e.color}`:''}">${esc(e.name)}</div>
+        <div class="ev-sub">${esc(e.tagline)}${e.discount?` · αυτόματο −${Math.round(e.discount*100)}%`:" · χειροκίνητη έκπτωση"}</div>
+        ${off?`<div class="ev-sub" style="color:#8a5a1e">Έληξε ${new Date(e.autoOff).toLocaleDateString("el-GR")} — έκλεισε αυτόματα</div>`:""}
+      </div>
+    </label>`;
+  }).join("");
+  _ovOpen("settingsModal");
+}
+function closeSettings(){ _ovClose("settingsModal"); }
+async function toggleEvent(id, val){
+  eventsOn[id]=!!val;
+  await saveSettings();
+  openSettings();
 }
 
 /* ---- Στοκ ---- */
