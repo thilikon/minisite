@@ -878,9 +878,8 @@
       <label class="fld" style="flex:1"><span>Ειδοπ. κάτω από</span><input id="sLow" inputmode="decimal" placeholder="2"></label>
     </div>
     <label class="fld hidden" id="sSellWrap"><span>Τιμή πώλησης € (για έτοιμα προϊόντα)</span><input id="sSell" inputmode="decimal" placeholder="0"></label>
-    <label class="mm-toggle" id="sMMToggle" style="border-radius:12px">
-      <input type="checkbox" id="sMM" onchange="onStockMMChange()">
-      <span><span class="mm-l">Χρώμα Mix &amp; Match</span> <span class="mm-s">— μπαίνει στο section του event</span></span>
+    <label class="fld hidden" id="sEvWrap"><span>Event (προαιρετικό)</span>
+      <select id="sEvent" onchange="onStockEventChange()"><option value="">— κανένα</option></select>
     </label>
     <label class="fld"><span>Φωτογραφία (URL, προαιρετικό)</span><input id="sImg" placeholder="https://…"></label>
     <p id="stockModalMsg" class="msg err hidden"></p>
@@ -1771,6 +1770,13 @@ function renderStats(){
   const stockVal = _stock.reduce((s,it)=>s+(Number(it.qty)||0)*(Number(it.unit_cost)||0),0);
   const lowCount = _stock.filter(it=>stockState(it)!=="ok").length;
   const mmColors = _stock.filter(it=>it.mm).length;
+  const evStats={};
+  ordersCache.forEach(o=>{
+    const e=evOf(o); if(!e) return;
+    const st=evStats[e.id]=evStats[e.id]||{name:e.name,color:e.color,ink:e.ink,n:0,rev:0,items:0};
+    st.n++; if(o.price!=null) st.rev+=Number(o.price);
+    st.items+=getItems(o).length;
+  });
   const _fb = feedbackCache||[];
   const _sat = _fb.map(r=>r.q_satisfaction).filter(x=>x!=null);
   const satAvg = _sat.length ? (_sat.reduce((a,b)=>a+b,0)/_sat.length) : null;
@@ -1878,7 +1884,7 @@ function renderStats(){
     <div class="stat-row">
       <span class="stat-pill"><b>${totalItems}</b> Προϊόντα</span>
       ${returnTotal?`<span class="stat-pill warn"><b>${returnTotal}</b> Επιστροφές${returnActive?` · ${returnActive} ενεργές`:""}</span>`:""}
-      <span class="stat-pill mm"><b>${mixCount}</b> Event</span>
+      ${Object.keys(evStats).map(id=>{const v=evStats[id];return `<span class="stat-pill" style="background:${v.color}1f;border-color:${v.color};color:${v.ink||v.color}"><b style="color:${v.ink||v.color}">${v.n}</b> ${esc(v.name)}</span>`;}).join("")}
       <span class="stat-pill blue"><b>${readyCount}</b> Ραφιού</span>
       <span class="stat-pill"><b>${ship}</b> Αποστολή</span>
       <span class="stat-pill"><b>${pickup}</b> Παραλαβή</span>
@@ -1897,6 +1903,11 @@ function renderStats(){
     <div class="stage-bars">${bars}</div>
 
     ${timeBlock}
+
+    ${Object.keys(evStats).length?`<div class="stats-sub">Events</div>
+    <div class="stat-grid">${Object.keys(evStats).map(id=>{const v=evStats[id];
+      return `<div class="stat"><div class="n" style="font-size:20px;color:${v.ink||v.color}">${v.items}</div><div class="l">${esc(v.name)}<br><span style="opacity:.7">${fmtMoney(v.rev)}</span></div></div>`;
+    }).join("")}</div>`:""}
 
     <div class="stats-sub">Αποθήκη</div>
     <div class="stat-grid">
@@ -2494,8 +2505,8 @@ function finalPrice(sub){
 }
 /* ---- Ρυθμίσεις events (κοινές, από Supabase) ---- */
 let eventsOn = {};   // { mix:false, luxe:true }
-function evAutoOff(id){ const e=EVENTS[id]; return !!(e && e.autoOff && new Date() >= new Date(e.autoOff+"T00:00:00")); }
-function evActive(id){ return !!eventsOn[id] && !evAutoOff(id); }
+function evExpired(id){ const e=EVENTS[id]; return !!(e && e.autoOff && new Date() >= new Date(e.autoOff+"T00:00:00")); }
+function evActive(id){ return !!eventsOn[id]; }
 function activeEvents(){ return Object.keys(EVENTS).filter(evActive); }
 async function loadSettings(){
   try{
@@ -2504,9 +2515,16 @@ async function loadSettings(){
     const rows=await res.json();
     eventsOn = (rows && rows[0] && rows[0].value) || {};
   }catch(e){ eventsOn = {}; }
+  // αυτόματο κλείσιμο στη λήξη — γίνεται ΜΙΑ φορά, μετά ελέγχεις εσύ
+  const ao = eventsOn._autoOff || {};
+  let changed=false;
+  Object.keys(EVENTS).forEach(id=>{
+    if(evExpired(id) && eventsOn[id] && !ao[id]){ eventsOn[id]=false; ao[id]=true; changed=true; }
+  });
+  if(changed){ eventsOn._autoOff=ao; saveSettings(true); }
   updateEventBadge();
 }
-async function saveSettings(){
+async function saveSettings(silent){
   try{
     const res=await authFetch(REST + "/thilikon_settings?on_conflict=key",{
       method:"POST",
@@ -2514,7 +2532,7 @@ async function saveSettings(){
       body:JSON.stringify({key:"events", value:eventsOn})
     });
     if(!res.ok) throw new Error(await res.text());
-    adminFlash("Αποθηκεύτηκε ✓");
+    if(!silent) adminFlash("Αποθηκεύτηκε ✓");
   }catch(e){ adminFlash("Σφάλμα — έτρεξες το SQL για τα settings ;"); console.error(e); }
   updateEventBadge();
 }
@@ -2525,13 +2543,13 @@ function updateEventBadge(){
 function openSettings(){
   const box=document.getElementById("settingsBody");
   box.innerHTML = Object.keys(EVENTS).map(id=>{
-    const e=EVENTS[id], off=evAutoOff(id), on=evActive(id);
+    const e=EVENTS[id], off=evExpired(id), on=evActive(id);
     return `<label class="ev-row ${on?'on':''}" style="${on?`border-color:${e.color};background:${e.color}1f`:''}">
-      <input type="checkbox" ${on?"checked":""} ${off?"disabled":""} onchange="toggleEvent('${id}',this.checked)" style="accent-color:${e.color}">
+      <input type="checkbox" ${on?"checked":""} onchange="toggleEvent('${id}',this.checked)" style="accent-color:${e.color}">
       <div style="flex:1;min-width:0">
         <div class="ev-name" style="${on?`color:${e.ink||e.color}`:''}">${esc(e.name)}</div>
         <div class="ev-sub">${esc(e.tagline)}${e.discount?` · αυτόματο −${Math.round(e.discount*100)}%`:" · χειροκίνητη έκπτωση"}</div>
-        ${off?`<div class="ev-sub" style="color:#8a5a1e">Έληξε ${new Date(e.autoOff).toLocaleDateString("el-GR")} — έκλεισε αυτόματα</div>`:""}
+        ${off?`<div class="ev-sub" style="color:#8a5a1e">Έληξε ${new Date(e.autoOff).toLocaleDateString("el-GR")} — άνοιξέ το ξανά αν χρειαστεί</div>`:""}
       </div>
     </label>`;
   }).join("");
@@ -2554,6 +2572,16 @@ async function loadStock(){
     if(ordersCache.length && document.getElementById("statsBody") && !document.getElementById("statsBox").classList.contains("hidden")) renderStats();
   }catch(e){}
 }
+function stEv(it){ const id = it && (it.event_id || (it.mm?"mix":null)); return id&&EVENTS[id] ? Object.assign({id},EVENTS[id]) : null; }
+function fillStockEventSelect(currentId, isProd){
+  const sel=document.getElementById("sEvent"); if(!sel) return;
+  const ids=activeEvents();
+  if(currentId && EVENTS[currentId] && !ids.includes(currentId)) ids.push(currentId);
+  sel.innerHTML='<option value="">— κανένα</option>'+ids.map(id=>`<option value="${id}">${esc(EVENTS[id].name)}</option>`).join("");
+  sel.value = currentId && EVENTS[currentId] ? currentId : "";
+  document.getElementById("sEvWrap").classList.toggle("hidden", ids.length===0);
+}
+function onStockEventChange(){ rebuildStockCats(); }
 function stockThumb(it){
   const u = it.image_url;
   if(!u) return '<div class="si-img"></div>';
@@ -2572,8 +2600,8 @@ function stockState(it){
 function setStockView(v){ stockView=v; renderStock(); }
 function renderStock(){
   const box=document.getElementById("stockAdmin"); const all=stockCache||[];
-  const raw=all.filter(it=>it.type!=="product" && !it.mm);
-  const mm=all.filter(it=>it.type!=="product" && it.mm);
+  const raw=all.filter(it=>it.type!=="product" && !stEv(it));
+  const mm=all.filter(it=>it.type!=="product" && stEv(it));
   const prods=all.filter(it=>it.type==="product");
   const toggle=`<div class="tabsw" style="margin-bottom:16px;flex-wrap:wrap">
     <button class="tb ${stockView==='raw'?'sel':''}" onclick="setStockView('raw')">Πρώτες ύλες${raw.length?` (${raw.length})`:''}</button>
@@ -2615,10 +2643,11 @@ function renderStock(){
           <span class="si-count">${fmtNum(it.qty)}</span>
           <button class="stepper-btn" onclick="adjustStock('${it.id}',1)">+</button>
         </div>`;
+      const _sev=stEv(it);
       html+=`<div class="stock-item ${st}">
         ${stockThumb(it)}
         <div class="si-info">
-          <div class="si-name">${esc(it.name)}</div>
+          <div class="si-name">${esc(it.name)}${_sev&&isProd?` <span class="mm-pill" style="background:${_sev.color}26;color:${_sev.ink||_sev.color};border-color:${_sev.color}">${esc(_sev.name)}</span>`:""}</div>
           <div class="si-meta">${meta}${st==="low"?' · <span class="si-low">'+(isProd?"λίγα":"τελειώνει")+'</span>':st==="out"?' · <span class="si-low">εξαντλήθηκε</span>':''}</div>
         </div>
         ${isProd ? `<div class="si-actions">
@@ -2691,16 +2720,12 @@ const STOCK_CATS = {
 const MM_CATS = ["Άσπρα & Μαύρα","Πράσινα & Γκρι","Κίτρινα","Καφέ & Μπεζ","Μπλε","Ροζ & Μωβ","Κόκκινα"];
 function rebuildStockCats(){
   const isProd = document.getElementById("sType").value==="product";
-  const isMM = document.getElementById("sMM").checked;
+  const isMM = (document.getElementById("sEvent")||{}).value==="mix";
   const cat = document.getElementById("sCat"); const prev = cat.value;
   let opts = isMM ? MM_CATS.slice() : (isProd ? STOCK_CATS.product.slice() : STOCK_CATS.raw.slice());
   if(prev && !opts.includes(prev)) opts.push(prev); // ποτέ μη χάσεις την τρέχουσα κατηγορία
   cat.innerHTML = opts.map(o=>`<option>${o}</option>`).join("");
   cat.value = opts.includes(prev) ? prev : opts[0];
-}
-function onStockMMChange(){
-  document.getElementById("sMMToggle").classList.toggle("on", document.getElementById("sMM").checked);
-  rebuildStockCats();
 }
 function onStockTypeChange(){
   const isProd = document.getElementById("sType").value==="product";
@@ -2720,9 +2745,8 @@ function openStockModal(id){
   document.getElementById("sLow").value=it&&it.low_threshold!=null?it.low_threshold:"2";
   document.getElementById("sSell").value=it&&it.sell_price!=null?it.sell_price:"";
   document.getElementById("sImg").value=it?(it.image_url||""):"";
-  const mmOn = it?!!it.mm:(stockView==="mm");
-  document.getElementById("sMM").checked=mmOn;
-  document.getElementById("sMMToggle").classList.toggle("on", mmOn);
+  const curEv = it ? (it.event_id || (it.mm?"mix":"")) : (stockView==="mm" ? "mix" : (stockView==="product" ? (activeEvents().find(x=>EVENTS[x])||"") : ""));
+  fillStockEventSelect(stockView==="product" && !it ? "" : curEv);
   document.getElementById("sCat").innerHTML="";
   onStockTypeChange();
   const cat=document.getElementById("sCat"); const want=it?(it.category||""):(stockView==="product"?"Τσάντα":"Νήμα");
@@ -2744,7 +2768,8 @@ async function saveStock(keepOpen){
     unit_cost:parseMoney(document.getElementById("sCost").value),
     sell_price:document.getElementById("sType").value==="product"?parseMoney(document.getElementById("sSell").value):null,
     low_threshold:parseMoney(document.getElementById("sLow").value),
-    mm:document.getElementById("sMM").checked,
+    event_id:document.getElementById("sEvent").value||null,
+    mm:document.getElementById("sEvent").value==="mix",
     image_url:document.getElementById("sImg").value.trim()||null
   };
   const btn=document.getElementById("stockSaveBtn"); btn.disabled=true;
@@ -2823,6 +2848,8 @@ async function sellProduct(){
       product_name:it.name, delivery_method:sellMethod,
       price:price, cost:it.unit_cost!=null?Number(it.unit_cost):null,
       amount_paid:paid?price:0, kind:"ready",
+      event_id: (stEv(it)||{}).id || null,
+      mix_match: ((stEv(it)||{}).id==="mix"),
       materials:[{id:it.id,name:it.name,unit:it.unit||"τεμ.",qty:1,unit_cost:it.unit_cost!=null?Number(it.unit_cost):0}],
       stock_applied:true, items:[item]
     };
