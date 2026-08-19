@@ -480,6 +480,9 @@
   .mat-sel-h{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);padding:6px 2px 4px}
   .oi-spec{font-size:11.5px;color:var(--muted);margin-top:1px}
   .r-created{font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:.02em}
+  .meta-row{display:flex;flex-wrap:wrap;gap:7px;margin:-6px 0 14px}
+  .meta-chip{background:var(--stone);border-radius:var(--pill);padding:5px 11px;font-size:11.5px;color:var(--ink);white-space:nowrap}
+  .meta-chip b{color:var(--muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:10px;margin-right:2px}
   /* stock tab */
   .stock-sum{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
   .stock-cat{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:18px 0 8px}
@@ -702,10 +705,12 @@
 
     <div id="fbReadout" class="fb-readout hidden"></div>
 
-    <div style="display:flex;gap:10px">
-      <label class="fld" style="flex:1"><span>Όνομα πελάτη *</span><input id="fName"></label>
-      <label class="fld" style="flex:1"><span>Αρ. παραγγελίας</span><div id="fOrderNoView" class="ro-field">αυτόματο</div></label>
-      <label class="fld" style="flex:1"><span>Καταχωρήθηκε</span><div id="fCreatedView" class="ro-field">—</div></label>
+    <div style="display:block">
+      <label class="fld"><span>Όνομα πελάτη *</span><input id="fName"></label>
+      <div class="meta-row">
+        <span class="meta-chip"><b>Αρ.</b> <span id="fOrderNoView">αυτόματο</span></span>
+        <span class="meta-chip"><b>Καταχ.</b> <span id="fCreatedView">—</span></span>
+      </div>
     </div>
     <div style="display:flex;gap:10px">
       <label class="fld" style="flex:1"><span>Τηλέφωνο (προαιρετικό)</span><input id="fPhone" placeholder="π.χ. 6971234567"></label>
@@ -741,11 +746,11 @@
 
     <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:6px 0 8px">Οικονομικά <span style="text-transform:none;letter-spacing:0">(ο πελάτης βλέπει τις τιμές & αν εξοφλήθηκε — το κόστος υλικών μένει κρυφό)</span></p>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <label class="fld" style="flex:2 1 150px"><span>Σύνολο € 👁</span><div id="fTotalView" class="ro-field">€0,00</div></label>
-      <label class="fld" style="flex:1 1 90px"><span>Έκπτωση % 👁</span><input id="fDisc" inputmode="decimal" placeholder="0" oninput="updateMoneyHint()"></label>
-      <label class="fld hidden" id="fShipWrap" style="flex:1 1 90px"><span>Μεταφορικά € 👁</span><input id="fShip" inputmode="decimal" placeholder="0" oninput="updateMoneyHint()"></label>
+      <label class="fld" style="flex:2 1 150px"><span>Σύνολο €</span><div id="fTotalView" class="ro-field">€0,00</div></label>
+      <label class="fld" style="flex:1 1 90px"><span>Έκπτωση %</span><input id="fDisc" inputmode="decimal" placeholder="0" oninput="updateMoneyHint()"></label>
+      <label class="fld hidden" id="fShipWrap" style="flex:1 1 90px"><span>Μεταφορικά €</span><input id="fShip" inputmode="decimal" placeholder="0" oninput="updateMoneyHint()"></label>
       <label class="fld" style="flex:1 1 90px"><span>Κόστος υλ. € 🔒</span><input id="fCost" inputmode="decimal" placeholder="0"></label>
-      <label class="fld" style="flex:1 1 90px"><span>Πληρωμένο € 👁</span><input id="fPaid" inputmode="decimal" placeholder="0"></label>
+      <label class="fld" style="flex:1 1 90px"><span>Πληρωμένο €</span><input id="fPaid" inputmode="decimal" placeholder="0"></label>
     </div>
 
     <div class="mat-block" id="matBlock">
