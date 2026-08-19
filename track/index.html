@@ -134,10 +134,14 @@
 
   /* ---------- per-item cards ---------- */
   #tItems{margin-top:18px;display:flex;flex-direction:column;gap:12px}
-  .pay-box{margin-top:14px;border:1px solid var(--line);border-radius:14px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--paper)}
+  .pay-box{margin-top:14px;border:1px solid var(--line);border-radius:14px;padding:14px 18px;background:var(--paper)}
+  .pay-head{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+  .pay-line{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:5px}
+  .pay-ship{font-size:11px;color:var(--muted);margin-top:6px}
+  .pay-box .mm-badge{font-size:9px;padding:3px 9px}
   .pay-box .pe{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:600}
-  .pay-box .pv{font-size:19px;font-weight:700;margin-top:2px}
-  .pay-box .ps{font-size:12px;font-weight:600;border-radius:var(--pill);padding:6px 12px;white-space:nowrap}
+  .pay-box .pv{font-size:19px;font-weight:700;white-space:nowrap;flex:0 1 auto}
+  .pay-box .ps{font-size:11.5px;font-weight:600;border-radius:var(--pill);padding:5px 11px;white-space:nowrap;flex:none}
   .pay-box .ps.ok{background:#e3efe7;color:#2c6e49}
   .pay-box .ps.due{background:#f6ead6;color:#8a5a1e}
   .item{border:1px solid var(--line);border-radius:14px;padding:16px 16px;background:var(--paper)}
@@ -488,8 +492,8 @@
   .ev-row input{width:18px;height:18px;flex:none;margin-top:1px;cursor:pointer}
   .ev-name{font-size:14px;font-weight:600}
   .ev-sub{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.45}
-  .meta-row{display:flex;flex-wrap:wrap;gap:7px;margin:-6px 0 14px}
-  .meta-chip{background:var(--stone);border-radius:var(--pill);padding:5px 11px;font-size:11.5px;color:var(--ink);white-space:nowrap}
+  .ord-meta{display:flex;flex-wrap:wrap;gap:7px;margin:-6px 0 14px}
+  .ord-meta .meta-chip, .meta-chip{background:var(--stone);border-radius:var(--pill);padding:5px 11px;font-size:11.5px;color:var(--ink);white-space:nowrap}
   .meta-chip b{color:var(--muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:10px;margin-right:2px}
   /* stock tab */
   .stock-sum{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
@@ -712,7 +716,7 @@
 
     <div style="display:block">
       <label class="fld"><span>Όνομα πελάτη *</span><input id="fName"></label>
-      <div class="meta-row">
+      <div class="ord-meta">
         <span class="meta-chip"><b>Αρ.</b> <span id="fOrderNoView">αυτόματο</span></span>
         <span class="meta-chip"><b>Καταχ.</b> <span id="fCreatedView">—</span></span>
       </div>
@@ -1271,8 +1275,11 @@ function renderTracking(o){
       priceHtml = `<span class="pv-orig">${fmtMoney(orig)}</span><span>${fmtMoney(price)}</span>`;
       mmBadge = ` <span class="mm-badge" style="background:var(--ink)">−${Math.round(Number(o.discount_pct))}%</span>`;
     }
-    const shipLine = ship>0 ? `<div style="font-size:11px;color:var(--muted);margin-top:3px">Προϊόντα ${fmtMoney(goods)} · Μεταφορικά ${fmtMoney(ship)}</div>` : "";
-    pay.innerHTML = `<div><div class="pe">Αξία παραγγελίας${mmBadge}</div><div class="pv">${priceHtml}</div>${shipLine}</div>${status}`;
+    const shipLine = ship>0 ? `<div class="pay-ship">Προϊόντα ${fmtMoney(goods)} · Μεταφορικά ${fmtMoney(ship)}</div>` : "";
+    pay.innerHTML =
+      `<div class="pay-head"><span class="pe">Αξία παραγγελίας</span>${mmBadge}</div>
+       <div class="pay-line"><div class="pv">${priceHtml}</div>${status}</div>
+       ${shipLine}`;
     pay.classList.remove("hidden");
   } else pay.classList.add("hidden");
 
