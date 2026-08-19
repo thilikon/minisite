@@ -479,6 +479,7 @@
   .mat-group[open] summary::after{transform:rotate(180deg)}
   .mat-sel-h{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);padding:6px 2px 4px}
   .oi-spec{font-size:11.5px;color:var(--muted);margin-top:1px}
+  .r-created{font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:.02em}
   /* stock tab */
   .stock-sum{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
   .stock-cat{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:18px 0 8px}
@@ -704,6 +705,7 @@
     <div style="display:flex;gap:10px">
       <label class="fld" style="flex:1"><span>Όνομα πελάτη *</span><input id="fName"></label>
       <label class="fld" style="flex:1"><span>Αρ. παραγγελίας</span><div id="fOrderNoView" class="ro-field">αυτόματο</div></label>
+      <label class="fld" style="flex:1"><span>Καταχωρήθηκε</span><div id="fCreatedView" class="ro-field">—</div></label>
     </div>
     <div style="display:flex;gap:10px">
       <label class="fld" style="flex:1"><span>Τηλέφωνο (προαιρετικό)</span><input id="fPhone" placeholder="π.χ. 6971234567"></label>
@@ -1919,6 +1921,7 @@ function renderOrders(){
       <div class="r-top">
         <div>
           <div class="r-name">${esc(o.customer_name)} ${o.order_number?`<span style="color:var(--muted);font-weight:400">· ${esc(o.order_number)}</span>`:""} <span title="${pickup?'Παραλαβή διά ζώσης':'Αποστολή με courier'}" style="opacity:.6">${pickup?'🤝':'📦'}</span>${o.mix_match?'<span class="mm-pill">Mix &amp; Match</span>':(o.discount_pct?`<span class="mm-pill" style="background:var(--stone);color:var(--ink);border-color:var(--line)">−${Math.round(Number(o.discount_pct))}%</span>`:'')}${o.kind==='ready'?'<span class="mm-pill" style="background:#eef3f8;color:#2f5d8a;border-color:#cfe0f0">Έτοιμο</span>':''}</div>
+          ${o.created_at?`<div class="r-created">Καταχωρήθηκε ${new Date(o.created_at).toLocaleDateString("el-GR",{day:"2-digit",month:"2-digit",year:"numeric"})}</div>`:""}
         </div>
         ${orderBadge}
       </div>
@@ -2239,6 +2242,7 @@ function openOrderModal(){
   document.getElementById("fCourier").value="BoxNow";
   document.getElementById("fTotalView").textContent="€0,00";
   document.getElementById("fOrderNoView").textContent="θα δημιουργηθεί αυτόματα";
+  document.getElementById("fCreatedView").textContent="σήμερα";
   document.getElementById("moneyHint").textContent="";
   document.getElementById("modalLinkWrap").classList.add("hidden");
   document.getElementById("fbReadout").classList.add("hidden");
@@ -2263,6 +2267,7 @@ function editOrder(id){
   document.getElementById("modalTitle").textContent="Επεξεργασία";
   document.getElementById("fName").value=o.customer_name||"";
   document.getElementById("fOrderNoView").textContent=o.order_number||"—";
+  document.getElementById("fCreatedView").textContent = o.created_at ? new Date(o.created_at).toLocaleDateString("el-GR",{day:"2-digit",month:"2-digit",year:"numeric"}) : "—";
   document.getElementById("fPhone").value=o.customer_phone||"";
   document.getElementById("fNote").value=o.note||"";
   document.getElementById("fCourier").value=o.courier||"";
@@ -2371,6 +2376,7 @@ async function saveOrder(){
     if(!res.ok) throw new Error(data.message || "Σφάλμα");
     const row = Array.isArray(data)?data[0]:data;
     document.getElementById("fOrderNoView").textContent = row.order_number || "—";
+    if(row.created_at) document.getElementById("fCreatedView").textContent = new Date(row.created_at).toLocaleDateString("el-GR",{day:"2-digit",month:"2-digit",year:"numeric"});
     // show link
     const lw=document.getElementById("modalLinkWrap"); lw.classList.remove("hidden");
     document.getElementById("modalLink").textContent=linkFor(row.track_token);
