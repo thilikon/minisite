@@ -497,11 +497,17 @@
   .money-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
   .money-row .fld{margin-bottom:12px}
   .money-row .fld span{min-height:26px;display:flex;align-items:flex-end}
+  .ms-row{display:flex;align-items:center;gap:11px;background:var(--cream);border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin-bottom:8px;cursor:pointer}
+  .ms-row input{width:18px;height:18px;accent-color:var(--ink);flex:none}
+  .ms-n{font-size:13.5px;font-weight:600}
+  .ms-s{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.45}
   .cust-pill{cursor:pointer;font-family:'Inter'}
   .cust-line{font-size:12.5px;color:var(--ink-soft);line-height:1.7;margin-top:10px}
   .cust-line b{color:var(--ink);font-weight:600}
-  .cust-row{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;text-align:left;background:var(--cream);border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin-bottom:8px;cursor:pointer;font-family:'Inter'}
-  .cust-row:active{background:var(--stone)}
+  .cust-row{display:flex;align-items:center;gap:6px;background:var(--cream);border:1px solid var(--line);border-radius:12px;padding:4px 6px 4px 13px;margin-bottom:8px}
+  .cr-main{flex:1;display:flex;justify-content:space-between;align-items:center;gap:12px;background:none;border:none;text-align:left;padding:8px 4px;cursor:pointer;font-family:'Inter';min-width:0}
+  .cr-x{flex:none;width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:#fff;color:var(--muted);font-size:12px;cursor:pointer}
+  .cr-x:active{background:var(--stone)}
   .cr-t{font-size:13px;font-weight:600;color:var(--ink)}
   .cr-s{font-size:11px;color:var(--muted);margin-top:2px}
   .cr-r{text-align:right;flex:none}
@@ -682,7 +688,7 @@
         </div>
         <div style="display:flex;gap:8px">
           <button class="btn solid sm" id="newOrderBtn" onclick="openOrderModal()">+ Νέα</button>
-          <button class="btn solid sm hidden" id="newStockBtn" onclick="openStockModal()">+ Είδος</button>
+          <button class="btn solid sm hidden" id="newStockBtn" onclick="stockView==='models'?openModelModal():openStockModal()">+ Είδος</button>
           <button class="btn ghost sm" onclick="openSettings()" title="Ρυθμίσεις events" style="position:relative">⚙<span id="gearDot" class="gear-dot hidden"></span></button>
           <button class="btn ghost sm" onclick="adminLogout()">Έξοδος</button>
         </div>
@@ -765,6 +771,7 @@
       <span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)">Προϊόντα</span>
       <button class="btn ghost sm" onclick="addItemRow()">+ Προσθήκη προϊόντος</button>
     </div>
+    <datalist id="modelList"></datalist>
     <div id="itemsEditor"></div>
 
     <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:14px 0 8px">Τρόπος παράδοσης</p>
@@ -802,6 +809,7 @@
         <span style="font-size:12px;font-weight:600">Υλικά από την αποθήκη</span>
         <button type="button" class="btn ghost sm" id="matBtn" onclick="openMatPicker()">Επίλεξε</button>
       </div>
+      <div id="matHint" class="hidden" style="font-size:11.5px;color:var(--ink-soft);margin-top:8px;background:var(--stone);border-radius:9px;padding:8px 10px"></div>
       <div id="matList" style="margin-top:8px"><div class="mat-empty">Δεν έχουν δηλωθεί υλικά. Διάλεξε για να υπολογιστεί το κόστος και να αφαιρεθούν από το στοκ.</div></div>
     </div>
 
@@ -818,6 +826,25 @@
       <button class="btn solid" style="flex:1 1 100%" id="saveBtn" onclick="saveOrder()">Αποθήκευση</button>
       <button class="btn ghost" style="flex:1 1 auto" onclick="closeOrderModal()">Κλείσιμο</button>
       <button class="btn danger hidden" style="flex:0 1 auto" id="orderDelBtn" onclick="delOrderFromModal()">Διαγραφή</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ΜΟΝΤΕΛΟ ============ -->
+<div id="modelModal" class="overlay hidden">
+  <div class="modal">
+    <div class="mh"><h2 class="serif" id="modelTitle">Νέο μοντέλο</h2><button class="x" onclick="closeModelModal()">✕</button></div>
+    <label class="fld"><span>Όνομα μοντέλου</span><input id="mName" placeholder="π.χ. KELLY"></label>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <label class="fld" style="flex:1 1 120px"><span>Βασική τιμή €</span><input id="mPrice" inputmode="decimal" placeholder="0"></label>
+      <label class="fld" style="flex:2 1 160px"><span>Φωτογραφία (URL)</span><input id="mImg" placeholder="https://…"></label>
+    </div>
+    <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:4px 0 8px">Τυπικά υλικά</p>
+    <div class="mat-block" id="mMatList"></div>
+    <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+      <button class="btn solid" style="flex:1 1 100%" onclick="saveModel()">Αποθήκευση</button>
+      <button class="btn ghost" style="flex:1 1 auto" onclick="closeModelModal()">Κλείσιμο</button>
+      <button class="btn danger hidden" id="modelDelBtn" onclick="delModel()">Διαγραφή</button>
     </div>
   </div>
 </div>
@@ -2139,8 +2166,7 @@ function renderStats(){
   const stageAvgMax = stageKeys.length ? Math.max(...stageKeys.map(k=>stageDur[k]/stageN[k])) : 0;
   const hasTime = stageKeys.length || totalDays.length;
   const timeBlock = `
-    <div class="stats-sub">Χρόνοι</div>
-    ${hasTime?`<div class="stat-grid">
+    ${hasTime?`<div class="stat-grid" style="margin-top:12px">
       <div class="stat dark"><div class="n" style="font-size:20px">${fmtDays(avgTotal)}</div><div class="l">Μέσος χρόνος παράδοσης</div></div>
       <div class="stat"><div class="n" style="font-size:20px">${fmtDays(fastest)}</div><div class="l">Γρηγορότερη</div></div>
       <div class="stat"><div class="n" style="font-size:20px">${fmtDays(slowest)}</div><div class="l">Πιο αργή</div></div>
@@ -2230,12 +2256,10 @@ function renderStats(){
     ${readyRevMonth>0?`<div class="split-bar"><div class="split-seg" style="width:${Math.round(customRevMonth/revMonth*100)}%;background:var(--ink)"></div><div class="split-seg" style="width:${Math.round(readyRevMonth/revMonth*100)}%;background:#2f5d8a"></div></div>
     <div class="split-leg"><span>Custom <b>${fmtMoney(customRevMonth)}</b></span><span>Ραφιού <b style="color:#2f5d8a">${fmtMoney(readyRevMonth)}</b></span></div>`:""}
 
-    <div class="stats-sub">Τζίρος ανά μήνα</div>
     ${revBlock}
 
-    <div class="stats-sub">Προϊόντα ανά φάση</div>
+    <div class="stats-sub">Ροή εργασίας</div>
     <div class="stage-bars">${bars}</div>
-
     ${timeBlock}
 
     ${Object.keys(evStats).length?`<div class="stats-sub">Events ${yearNow}</div>
@@ -2591,7 +2615,7 @@ function addItemRow(item){
   const row=document.createElement("div"); row.className="ie-item"; row.dataset.id=item.id||newItemId();
   row.innerHTML=`
     <div class="ie-top">
-      <input class="ie-name" placeholder="Προϊόν (π.χ. Laluna — Μαύρο)">
+      <input class="ie-name" list="modelList" placeholder="Προϊόν (π.χ. Laluna — Μαύρο)" oninput="onModelPick(this)">
       <input class="ie-price" inputmode="decimal" placeholder="€ τιμή" style="max-width:90px">
       <button class="ie-del" title="Αφαίρεση" type="button">✕</button>
     </div>
@@ -2655,6 +2679,29 @@ function stampStages(newItems, prevItems, fallbackISO){
   });
 }
 
+function refreshModelList(){
+  const dl=document.getElementById("modelList"); if(!dl) return;
+  dl.innerHTML=(modelCat||[]).map(m=>`<option value="${esc(m.name)}">${m.price!=null?fmtMoney(m.price):""}</option>`).join("");
+}
+function onModelPick(inp){
+  const row=inp.closest(".ie-item"); if(!row) return;
+  const m=(modelCat||[]).find(x=>normText(x.name)===normText(inp.value));
+  if(!m) return;
+  const pr=row.querySelector(".ie-price");
+  if(pr && !pr.value && m.price!=null) pr.value=m.price;     // δεν πατάει ό,τι έχεις ήδη γράψει
+  if(m.materials && m.materials.length && !pickedMaterials.length && !stockApplied){
+    document.getElementById("matHint").innerHTML =
+      `Το <b>${esc(m.name)}</b> χρειάζεται συνήθως ${m.materials.length} υλικά. <button type="button" class="btn ghost sm" style="margin-left:6px" onclick="applyModelMaterials('${m.id}')">Φόρτωσέ τα</button>`;
+    document.getElementById("matHint").classList.remove("hidden");
+  }
+}
+function applyModelMaterials(mid){
+  const m=(modelCat||[]).find(x=>x.id===mid); if(!m) return;
+  matDraft={}; (m.materials||[]).forEach(mm=>{ if((stockCache||[]).some(x=>x.id===mm.id)) matDraft[mm.id]=mm.qty; });
+  const rows=stockCache.filter(it=>it.type!=="product" && (isMix()||!stEv(it)||curEventId()===((stEv(it)||{}).id)) && (Number(it.qty)>0||matDraft[it.id]));
+  showMatPicker(rows);
+  document.getElementById("matHint").classList.add("hidden");
+}
 function collectItems(){
   const out=[];
   document.querySelectorAll("#itemsEditor .ie-item").forEach(row=>{
@@ -2698,6 +2745,8 @@ function openOrderModal(){
   document.getElementById("modalMsg").classList.add("hidden");
   document.getElementById("saveBtn").textContent="Δημιουργία";
   document.getElementById("orderDelBtn").classList.add("hidden");
+  refreshModelList();
+  document.getElementById("matHint").classList.add("hidden");
   fillEventSelect("");
   document.getElementById("fDisc").value="";
   document.getElementById("fDisc").disabled=false;
@@ -2724,6 +2773,8 @@ function editOrder(id){
   document.getElementById("fTrackUrl").value=o.tracking_url||"";
   document.getElementById("fCost").value  = o.cost!=null ? o.cost : "";
   document.getElementById("fPaid").value  = o.amount_paid!=null ? o.amount_paid : "";
+  refreshModelList();
+  document.getElementById("matHint").classList.add("hidden");
   fillEventSelect(o.event_id || (o.mix_match?"mix":""));
   document.getElementById("fDisc").value = o.discount_pct!=null ? o.discount_pct : "";
   document.getElementById("fShip").value = o.shipping_cost!=null ? o.shipping_cost : "";
@@ -2893,6 +2944,7 @@ function finalPrice(sub){
 }
 /* ---- Αναγνώριση επαναλαμβανόμενης πελάτισσας (αυτόματα, χωρίς καρτέλες) ---- */
 function custKey(o){
+  if(o.id && custLinks[o.id]) return custLinks[o.id];   // χειροκίνητη διόρθωση
   const ph=String(o.customer_phone||"").replace(/\D/g,"");
   if(ph.length>=9) return "p:"+ph.slice(-9);          // τηλέφωνο = πιο αξιόπιστο
   const n=normText(o.customer_name||"");
@@ -2999,6 +3051,36 @@ function openCustomer(key){
   _ovOpen("custModal");
 }
 function closeCustomer(){ _ovClose("custModal"); }
+function customerGroups(){
+  const g={};
+  ordersCache.forEach(o=>{ const k=custKey(o); if(!k) return;
+    if(!g[k]) g[k]={key:k, name:o.customer_name||"—", n:0, anyId:o.id, last:0};
+    g[k].n++;
+    const t=o.created_at?new Date(o.created_at).getTime():0;
+    if(t>g[k].last){ g[k].last=t; g[k].name=o.customer_name||g[k].name; g[k].anyId=o.id; }
+  });
+  return Object.values(g).sort((a,b)=>b.last-a.last);
+}
+async function splitCustomer(orderId){
+  if(!confirm("Να ξεχωρίσει αυτή η παραγγελία σε δική της πελάτισσα ;")) return;
+  custLinks[orderId] = "g:" + Math.random().toString(36).slice(2,10);
+  await saveSetting("cust_links", custLinks, true);
+  renderOrders(); renderStats();
+  closeCustomer(); adminFlash("Ξεχωρίστηκε ✓");
+}
+async function mergeCustomer(refOrderId){
+  const pick=document.getElementById("custMergePick"); if(!pick) return;
+  const ref=ordersCache.find(o=>o.id===refOrderId);
+  const other=ordersCache.find(o=>o.id===pick.value);
+  if(!ref||!other) return;
+  if(!confirm(`Να ενωθεί η «${other.customer_name}» με την «${ref.customer_name}» ;`)) return;
+  const target = custLinks[ref.id] || ("g:" + Math.random().toString(36).slice(2,10));
+  const kRef=custKey(ref), kOther=custKey(other);
+  ordersCache.forEach(o=>{ const k=custKey(o); if(k===kRef||k===kOther) custLinks[o.id]=target; });
+  await saveSetting("cust_links", custLinks, true);
+  renderOrders(); renderStats();
+  openCustomer(refOrderId); adminFlash("Ενώθηκαν ✓");
+}
 
 /* ---- Προφίλ πελάτισσας: ποσοτικά + ποιοτικά ---- */
 function customerOrders(ref){
@@ -3088,13 +3170,27 @@ function openCustomer(orderId){
   html+=list.slice().reverse().map(o=>{
     const its=getItems(o).map(i=>esc(i.name)).join(", ");
     const done=getItems(o).every(itemDone);
-    return `<button class="cust-row" onclick="closeCustomer();editOrder('${o.id}')">
-      <div class="cr-l"><div class="cr-t">${its||"—"}</div>
-      <div class="cr-s">${o.created_at?fmtDateShort(new Date(o.created_at)):""}${o.order_number?" · "+esc(o.order_number):""}</div></div>
-      <div class="cr-r"><div class="cr-p">${o.price!=null?fmtMoney(o.price):"—"}</div>
-      <div class="cr-s">${done?"ολοκληρώθηκε":"σε εξέλιξη"}</div></div>
-    </button>`;
+    return `<div class="cust-row">
+      <button class="cr-main" onclick="closeCustomer();editOrder('${o.id}')">
+        <div><div class="cr-t">${its||"—"}</div>
+        <div class="cr-s">${o.created_at?fmtDateShort(new Date(o.created_at)):""}${o.order_number?" · "+esc(o.order_number):""} · ${esc(o.customer_name||"")}</div></div>
+        <div class="cr-r"><div class="cr-p">${o.price!=null?fmtMoney(o.price):"—"}</div>
+        <div class="cr-s">${done?"ολοκληρώθηκε":"σε εξέλιξη"}</div></div>
+      </button>
+      ${list.length>1?`<button class="cr-x" title="Δεν είναι η ίδια πελάτισσα" onclick="splitCustomer('${o.id}')">✕</button>`:""}
+    </div>`;
   }).join("");
+
+  // σύνδεση με άλλη πελάτισσα (αν η αναγνώριση δεν τις ένωσε)
+  const others=customerGroups().filter(g=>g.key!==custKey(ref));
+  if(others.length){
+    html+=`<div class="stats-sub">Διόρθωση</div>
+      <div class="cust-line" style="margin-top:4px">Αν κάποια από αυτές είναι το ίδιο άτομο, ένωσέ τες:</div>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+        <select id="custMergePick" style="flex:1 1 160px">${others.map(g=>`<option value="${g.anyId}">${esc(g.name)} (${g.n})</option>`).join("")}</select>
+        <button class="btn ghost sm" onclick="mergeCustomer('${ref.id}')">Ένωσε</button>
+      </div>`;
+  }
 
   box.innerHTML=html;
   _ovOpen("custModal");
@@ -3158,34 +3254,41 @@ let eventsOn = {};   // { mix:false, luxe:true }
 function evExpired(id){ const e=EVENTS[id]; return !!(e && e.autoOff && new Date() >= new Date(e.autoOff+"T00:00:00")); }
 function evActive(id){ return !!eventsOn[id]; }
 function activeEvents(){ return Object.keys(EVENTS).filter(evActive); }
+let custLinks = {};   // orderId -> groupId (χειροκίνητες διορθώσεις ταυτοποίησης)
+let modelCat = [];    // κατάλογος μοντέλων
+
 async function loadSettings(){
   try{
-    const res=await authFetch(REST + "/thilikon_settings?key=eq.events&select=value",{});
+    const res=await authFetch(REST + "/thilikon_settings?select=key,value",{});
     if(res.status===401) return;
     const rows=await res.json();
-    eventsOn = (rows && rows[0] && rows[0].value) || {};
-  }catch(e){ eventsOn = {}; }
-  // αυτόματο κλείσιμο στη λήξη — γίνεται ΜΙΑ φορά, μετά ελέγχεις εσύ
+    const map={}; (rows||[]).forEach(r=> map[r.key]=r.value);
+    eventsOn  = map.events || {};
+    custLinks = map.cust_links || {};
+    modelCat  = Array.isArray(map.models) ? map.models : [];
+  }catch(e){ eventsOn={}; custLinks={}; modelCat=[]; }
+  // αυτόματο κλείσιμο event στη λήξη — γίνεται ΜΙΑ φορά, μετά ελέγχεις εσύ
   const ao = eventsOn._autoOff || {};
   let changed=false;
   Object.keys(EVENTS).forEach(id=>{
     if(evExpired(id) && eventsOn[id] && !ao[id]){ eventsOn[id]=false; ao[id]=true; changed=true; }
   });
-  if(changed){ eventsOn._autoOff=ao; saveSettings(true); }
+  if(changed){ eventsOn._autoOff=ao; saveSetting("events", eventsOn, true); }
   updateEventBadge();
 }
-async function saveSettings(silent){
+async function saveSetting(key, value, silent){
   try{
     const res=await authFetch(REST + "/thilikon_settings?on_conflict=key",{
       method:"POST",
       headers:{"Prefer":"resolution=merge-duplicates,return=minimal"},
-      body:JSON.stringify({key:"events", value:eventsOn})
+      body:JSON.stringify({key, value})
     });
     if(!res.ok) throw new Error(await res.text());
     if(!silent) adminFlash("Αποθηκεύτηκε ✓");
   }catch(e){ adminFlash("Σφάλμα — έτρεξες το SQL για τα settings ;"); console.error(e); }
-  updateEventBadge();
 }
+async function saveSettings(silent){ await saveSetting("events", eventsOn, silent); updateEventBadge(); }
+
 function updateEventBadge(){
   const b=document.getElementById("gearDot"); if(!b) return;
   b.classList.toggle("hidden", activeEvents().length===0);
@@ -3253,10 +3356,12 @@ function renderStock(){
   const mm=all.filter(it=>it.type!=="product" && stEv(it));
   const prods=all.filter(it=>it.type==="product");
   const toggle=`<div class="tabsw" style="margin-bottom:16px;flex-wrap:wrap">
+    <button class="tb ${stockView==='models'?'sel':''}" onclick="setStockView('models')">Μοντέλα${modelCat.length?` (${modelCat.length})`:''}</button>
     <button class="tb ${stockView==='raw'?'sel':''}" onclick="setStockView('raw')">Πρώτες ύλες${raw.length?` (${raw.length})`:''}</button>
     <button class="tb ${stockView==='mm'?'sel':''}" onclick="setStockView('mm')" ${stockView==='mm'?'style="background:#c0266c;border-color:#c0266c"':''}>Mix &amp; Match${mm.length?` (${mm.length})`:''}</button>
     <button class="tb ${stockView==='product'?'sel':''}" onclick="setStockView('product')">Έτοιμα προϊόντα${prods.length?` (${prods.length})`:''}</button>
   </div>`;
+  if(stockView==="models"){ box.innerHTML = toggle + renderModels(); return; }
   let rows = stockView==="product" ? prods : (stockView==="mm" ? mm : raw);
   const sq=(document.getElementById("stockSearch")?.value||"").trim();
   const allRows=rows;
@@ -3462,6 +3567,121 @@ async function delStock(){
     await authFetch(REST + "/thilikon_stock?id=eq."+editingStockId,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({archived:true})});
     closeStockModal(); await loadStock(); adminFlash("Διαγράφηκε ✓");
   }catch(e){ adminFlash("Σφάλμα διαγραφής"); }
+}
+
+/* ---- Κατάλογος μοντέλων ---- */
+function modelSuggestions(){
+  // μαθαίνει από το ιστορικό: όνομα, τυπική τιμή, συνηθισμένα χρώματα
+  const map={};
+  ordersCache.forEach(o=>getItems(o).forEach(it=>{
+    const raw=(it.name||"").trim(); if(!raw) return;
+    const k=normText(raw); if(!k) return;
+    const m=map[k]=map[k]||{name:raw,count:0,prices:[],colors:{}};
+    m.count++;
+    if(it.price!=null) m.prices.push(Number(it.price));
+    if(it.color) m.colors[it.color]=(m.colors[it.color]||0)+1;
+    if(raw.length>m.name.length) m.name=raw;      // κράτα την πληρέστερη γραφή
+  }));
+  return Object.values(map).sort((a,b)=>b.count-a.count).map(m=>{
+    const ps=m.prices.slice().sort((a,b)=>a-b);
+    const med=ps.length?ps[Math.floor(ps.length/2)]:null;
+    return {name:m.name, count:m.count, price:med,
+            colors:Object.entries(m.colors).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0])};
+  });
+}
+function renderModels(){
+  let html=`<div class="cust-line" style="margin:0 0 14px">Τα μοντέλα σου: όνομα και βασική τιμή. Όταν καταχωρείς παραγγελία, τα διαλέγεις έτοιμα.</div>`;
+  if(!modelCat.length){
+    const sug=modelSuggestions();
+    html+=`<div class="fbd-empty" style="padding:18px 0 12px">Δεν έχεις καταχωρήσει μοντέλα ακόμη.</div>`;
+    if(sug.length){
+      html+=`<div class="cust-line" style="margin-bottom:10px">Βρήκα <b>${sug.length}</b> ${sug.length===1?"μοντέλο":"μοντέλα"} από τις παραγγελίες σου. Δες τα και κράτα όσα ισχύουν:</div>`;
+      html+=sug.map((m,i)=>`<label class="ms-row">
+        <input type="checkbox" class="ms-chk" data-i="${i}" checked>
+        <div style="flex:1;min-width:0">
+          <div class="ms-n">${esc(m.name)}</div>
+          <div class="ms-s">${m.count} ${m.count===1?"παραγγελία":"παραγγελίες"}${m.price!=null?` · συνήθως ${fmtMoney(m.price)}`:""}${m.colors.length?` · ${m.colors.map(esc).join(", ")}`:""}</div>
+        </div>
+      </label>`).join("");
+      html+=`<div style="margin-top:12px"><button class="btn solid" style="width:100%" onclick="importModels()">Πρόσθεσε τα επιλεγμένα</button></div>
+        <div class="ms-s" style="margin-top:8px">Μπορείς να αλλάξεις όνομα και τιμή σε καθένα μετά.</div>`;
+    }
+    html+=`<div style="margin-top:10px"><button class="btn ghost" style="width:100%" onclick="openModelModal()">+ Νέο μοντέλο</button></div>`;
+    return html;
+  }
+  html+=modelCat.map(m=>`<div class="stock-item">
+      ${m.image_url?`<img class="si-img" src="${esc(m.image_url)}" alt="">`:`<div class="si-img"></div>`}
+      <div class="si-info"><div class="si-name">${esc(m.name)}</div>
+        <div class="si-meta">${m.price!=null?fmtMoney(m.price):"χωρίς τιμή"}${m.materials&&m.materials.length?` · ${m.materials.length} υλικά`:""}</div></div>
+      <button class="btn ghost sm" onclick="openModelModal('${m.id}')">✎</button>
+    </div>`).join("");
+  html+=`<div style="margin-top:12px"><button class="btn ghost" style="width:100%" onclick="openModelModal()">+ Νέο μοντέλο</button></div>`;
+  return html;
+}
+async function importModels(){
+  const sug=modelSuggestions();
+  const picked=[...document.querySelectorAll(".ms-chk")].filter(c=>c.checked).map(c=>sug[+c.dataset.i]).filter(Boolean);
+  if(!picked.length){ adminFlash("Δεν επέλεξες μοντέλα"); return; }
+  modelCat = picked.map(m=>({id:"m"+Math.random().toString(36).slice(2,9), name:m.name, price:m.price, materials:[], image_url:null}));
+  await saveSetting("models", modelCat, true);
+  renderStock(); adminFlash(`Προστέθηκαν ${picked.length} μοντέλα ✓`);
+}
+let editingModelId=null;
+function openModelModal(id){
+  editingModelId=id||null;
+  const m=id?modelCat.find(x=>x.id===id):null;
+  document.getElementById("modelTitle").textContent=m?"Επεξεργασία μοντέλου":"Νέο μοντέλο";
+  document.getElementById("mName").value=m?m.name:"";
+  document.getElementById("mPrice").value=m&&m.price!=null?m.price:"";
+  document.getElementById("mImg").value=m?(m.image_url||""):"";
+  document.getElementById("modelDelBtn").classList.toggle("hidden", !id);
+  renderModelMats(m?(m.materials||[]):[]);
+  _ovOpen("modelModal");
+}
+function closeModelModal(){ _ovClose("modelModal"); }
+let modelMats=[];
+function renderModelMats(list){
+  modelMats=(list||[]).map(x=>({...x}));
+  const box=document.getElementById("mMatList");
+  const raws=(stockCache||[]).filter(it=>it.type!=="product");
+  if(!raws.length){ box.innerHTML='<div class="mat-empty">Πρόσθεσε πρώτα υλικά στην αποθήκη.</div>'; return; }
+  box.innerHTML = modelMats.length
+    ? modelMats.map(mm=>{
+        const it=raws.find(x=>x.id===mm.id);
+        return `<div class="mat-line"><span>${esc((it&&it.name)||mm.name||"—")} <span class="q">× ${fmtNum(mm.qty)}</span></span>
+          <button class="cr-x" onclick="delModelMat('${mm.id}')">✕</button></div>`;
+      }).join("")
+    : '<div class="mat-empty">Χωρίς τυπικά υλικά.</div>';
+  box.innerHTML += `<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+    <select id="mMatPick" style="flex:1 1 150px">${raws.map(it=>`<option value="${it.id}">${esc(it.name)}</option>`).join("")}</select>
+    <input id="mMatQty" inputmode="decimal" placeholder="ποσ." style="flex:0 0 70px">
+    <button class="btn ghost sm" onclick="addModelMat()">Πρόσθεσε</button></div>`;
+}
+function addModelMat(){
+  const id=document.getElementById("mMatPick").value;
+  const q=parseMoney(document.getElementById("mMatQty").value)||1;
+  const it=(stockCache||[]).find(x=>x.id===id); if(!it) return;
+  const ex=modelMats.find(x=>x.id===id);
+  if(ex) ex.qty=q; else modelMats.push({id, name:it.name, unit:it.unit||"", qty:q});
+  renderModelMats(modelMats);
+}
+function delModelMat(id){ renderModelMats(modelMats.filter(x=>x.id!==id)); }
+async function saveModel(){
+  const name=document.getElementById("mName").value.trim();
+  if(!name){ adminFlash("Συμπλήρωσε όνομα"); return; }
+  const rec={ id: editingModelId || ("m"+Math.random().toString(36).slice(2,9)),
+    name, price: parseMoney(document.getElementById("mPrice").value),
+    image_url: document.getElementById("mImg").value.trim()||null, materials: modelMats };
+  if(editingModelId) modelCat = modelCat.map(m=>m.id===editingModelId?rec:m);
+  else modelCat.push(rec);
+  await saveSetting("models", modelCat, true);
+  closeModelModal(); renderStock(); adminFlash("Αποθηκεύτηκε ✓");
+}
+async function delModel(){
+  if(!editingModelId || !confirm("Διαγραφή μοντέλου ;")) return;
+  modelCat = modelCat.filter(m=>m.id!==editingModelId);
+  await saveSetting("models", modelCat, true);
+  closeModelModal(); renderStock(); adminFlash("Διαγράφηκε ✓");
 }
 
 /* ---- Πώληση έτοιμου προϊόντος (ready-made) ---- */
