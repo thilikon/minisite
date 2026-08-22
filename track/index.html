@@ -502,8 +502,13 @@
   .fb-a:last-child{border-bottom:none}
   .fb-a-q{font-size:12.5px;color:var(--ink-soft);flex:1;line-height:1.45}
   .fb-a-v{font-size:13px;font-weight:600;text-align:right;white-space:nowrap}
-  .brief{background:var(--cream);border:1px solid var(--line);border-left:3px solid var(--ink);border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:12.5px;line-height:1.65;color:var(--ink-soft)}
-  .brief b{color:var(--ink);font-weight:700}
+  .brief{background:var(--cream);border:1px solid var(--line);border-radius:14px;padding:15px 16px 13px;margin-bottom:16px}
+  .brief-h{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px}
+  .brief-b{font-size:13px;line-height:1.7;color:var(--ink-soft)}
+  .brief-b b{color:var(--ink);font-weight:700}
+  .brief-n{font-family:'Cormorant',Georgia,serif;font-style:italic;font-size:14.5px;color:var(--muted);margin-top:11px;padding-top:10px;border-top:1px solid var(--line)}
+  .brief-pill{display:inline-block;background:var(--stone);border:1px solid var(--line);border-radius:var(--pill);padding:1px 9px;font-family:'Inter';font-size:12px;font-weight:600;color:var(--ink);cursor:pointer;line-height:1.5}
+  .brief-pill:active{background:var(--line)}
   .gear-dot{position:absolute;top:2px;right:3px;width:7px;height:7px;border-radius:50%;background:#c0266c}
   .ev-row{display:flex;align-items:flex-start;gap:11px;border:1px solid var(--line);background:var(--cream);border-radius:14px;padding:13px 15px;margin-bottom:10px;cursor:pointer;transition:.15s}
   .ev-row input{width:18px;height:18px;flex:none;margin-top:1px;cursor:pointer}
@@ -1773,6 +1778,7 @@ function setStatsYear(y){ statsYear = y; renderStats(); }
 function buildBrief(ctx){
   const DAY=86400000, now=new Date(), ins=[];
   const push=(score,txt)=>ins.push({score,txt});
+  const pill=(name,id)=>`<button class="brief-pill" onclick="editOrder('${id}')">${esc(name)}</button>`;
   const ym=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
   const ymNow=ym(now);
   const dPrev=new Date(now.getFullYear(), now.getMonth()-1, 1);
@@ -1836,9 +1842,11 @@ function buildBrief(ctx){
   /* 4. Κολλημένες παραγγελίες */
   if(ctx.stuck && ctx.stuck.length){
     const worst=ctx.stuck.slice().sort((a,b)=>b.days-a.days)[0];
+    const wid=(ordersCache.find(o=>o.customer_name===worst.name)||{}).id;
+    const who=wid?pill(worst.name,wid):`<b>${esc(worst.name)}</b>`;
     push(88, ctx.stuck.length===1
-      ? `Η παραγγελία της <b>${esc(worst.name)}</b> κάθεται <b>${worst.days} μέρες</b> στο ίδιο στάδιο.`
-      : `<b>${ctx.stuck.length} παραγγελίες</b> κάθονται πάνω από βδομάδα — η χειρότερη <b>${worst.days} μέρες</b> (${esc(worst.name)}).`);
+      ? `Μία παραγγελία περιμένει <b>${worst.days} μέρες</b> στο ίδιο στάδιο — ${who}.`
+      : `<b>${ctx.stuck.length} παραγγελίες</b> περιμένουν πάνω από βδομάδα· η παλαιότερη <b>${worst.days} μέρες</b> — ${who}.`);
   }
 
   /* 5. Παραδόσεις που πλησιάζουν / έχουν περάσει */
@@ -1848,7 +1856,7 @@ function buildBrief(ctx){
     const days=Math.ceil((new Date(it.eta)-now)/DAY);
     if(days<0) overdue++; else if(days<=3) dueSoon++;
   }));
-  if(overdue) push(95, `<b>${overdue}</b> ${overdue===1?"προϊόν ξεπέρασε":"προϊόντα ξεπέρασαν"} την υποσχεμένη ημερομηνία παράδοσης.`);
+  if(overdue) push(95, `${overdue===1?"Ένα προϊόν πέρασε":`<b>${overdue}</b> προϊόντα πέρασαν`} την ημερομηνία παράδοσης που είχες δώσει.`);
   else if(dueSoon) push(76, `<b>${dueSoon}</b> ${dueSoon===1?"παράδοση λήγει":"παραδόσεις λήγουν"} μέσα στο τριήμερο.`);
 
   /* 6. Χρήματα που εκκρεμούν */
@@ -1864,19 +1872,19 @@ function buildBrief(ctx){
   /* 7. Αποθήκη */
   const outItems=(stockCache||[]).filter(it=>!it.mm && !it.event_id && stockState(it)==="out");
   if(outItems.length) push(84, `Εξαντλήθηκε: <b>${outItems.slice(0,2).map(x=>esc(x.name)).join(" · ")}</b>${outItems.length>2?` +${outItems.length-2}`:""}.`);
-  else if(ctx.lowCount>0) push(60, `<b>${ctx.lowCount}</b> ${ctx.lowCount===1?"υλικό τελειώνει":"υλικά τελειώνουν"} — τσέκαρε πριν την επόμενη παραγγελία.`);
+  else if(ctx.lowCount>0) push(60, `<b>${ctx.lowCount}</b> ${ctx.lowCount===1?"υλικό κοντεύει":"υλικά κοντεύουν"} να τελειώσει.`);
 
   /* 8. Κέρδος & περιθώριο */
   if(ctx.revMonth>0 && !ctx.costMonthKnown){
     push(45, `Δεν έχεις βάλει κόστος υλικών αυτόν τον μήνα — το κέρδος δεν υπολογίζεται.`);
   } else if(ctx.margin!=null){
-    if(ctx.margin<35) push(66, `Το περιθώριο του μήνα είναι <b>${ctx.margin}%</b> — χαμηλό, δες τιμές ή κόστος υλικών.`);
+    if(ctx.margin<35) push(66, `Το περιθώριο του μήνα είναι <b>${ctx.margin}%</b>, χαμηλότερο από το συνηθισμένο.`);
     else if(ctx.margin>=65) push(48, `Δυνατό περιθώριο <b>${ctx.margin}%</b> αυτόν τον μήνα.`);
   }
 
   /* 9. Χρόνος παράδοσης */
   if(ctx.avgTotal!=null){
-    if(ctx.avgTotal>10) push(64, `Ο μέσος χρόνος παράδοσης ανέβηκε στις <b>${Math.round(ctx.avgTotal)} μέρες</b>.`);
+    if(ctx.avgTotal>10) push(64, `Ο μέσος χρόνος παράδοσης είναι <b>${Math.round(ctx.avgTotal)} μέρες</b>, λίγο πάνω από το κανονικό.`);
     else if(ctx.avgTotal<=4) push(42, `Παραδίδεις κατά μέσο όρο σε <b>${Math.round(ctx.avgTotal)} μέρες</b> — πολύ καλός ρυθμός.`);
   }
 
@@ -1927,13 +1935,40 @@ function buildBrief(ctx){
     const d=new Date(o.created_at);
     return ym(d)===ymNow && (o.cost==null || Number(o.cost)===0) && getItems(o).every(itemDone);
   }).length;
-  if(noCost>=3) push(56, `<b>${noCost}</b> ολοκληρωμένες παραγγελίες του μήνα δεν έχουν κόστος υλικών.`);
+  if(noCost>=3) push(56, `<b>${noCost}</b> ολοκληρωμένες παραγγελίες δεν έχουν κόστος υλικών, οπότε το κέρδος βγαίνει αισιόδοξο.`);
 
-  if(!ins.length) return "";
-  // ταξινόμηση κατά επείγον· εναλλαγή στα ισοβαθμούντα ώστε να μη λέει τα ίδια κάθε μέρα
   const seed=Math.floor(Date.now()/DAY);
+  const CLOSERS=[
+    "Βήμα-βήμα, όπως πάντα.",
+    "Κάθε τσάντα που φεύγει είναι μια πελάτισσα που θα ξαναγυρίσει.",
+    "Τα νούμερα δείχνουν τη δουλειά που έχει ήδη γίνει.",
+    "Μία-μία, στην ώρα τους.",
+    "Η συνέπεια χτίζει το brand, όχι η βιασύνη.",
+    "Ό,τι μετριέται, βελτιώνεται.",
+    "Καλή συνέχεια στο εργαστήρι.",
+    "Μικρά βήματα, σταθερή πορεία.",
+    "Η ποιότητα είναι που κάνει τη διαφορά, και την έχεις.",
+    "Σιγά σιγά χτίζεται κάτι δικό σου.",
+    "Κάθε μήνας που περνάει, το THILIKON γίνεται πιο δυνατό.",
+    "Δεν χρειάζεται να τρέχεις — χρειάζεται να μη σταματάς.",
+    "Η δουλειά σου μιλάει από μόνη της.",
+    "Οργάνωση σήμερα, ηρεμία αύριο."
+  ];
+  const closer=CLOSERS[seed % CLOSERS.length];
+
+  if(!ins.length){
+    return `<div class="brief"><div class="brief-h">Πώς πάει το THILIKON</div>
+      <div class="brief-b">Ήρεμα πράγματα — τίποτα δεν χρειάζεται την προσοχή σου αυτή τη στιγμή.</div>
+      <div class="brief-n">${closer}</div></div>`;
+  }
+  // ταξινόμηση κατά επείγον· εναλλαγή στα ισοβαθμούντα ώστε να μη λέει τα ίδια κάθε μέρα
   ins.sort((a,b)=> b.score-a.score || ((a.txt.length+seed)%3)-((b.txt.length+seed)%3));
-  return `<div class="brief">${ins.slice(0,3).map(x=>x.txt).join(" ")}</div>`;
+  const lines=ins.slice(0,3).map(x=>x.txt);
+  return `<div class="brief">
+    <div class="brief-h">Πώς πάει το THILIKON</div>
+    <div class="brief-b">${lines.join(" ")}</div>
+    <div class="brief-n">${closer}</div>
+  </div>`;
 }
 
 function renderStats(){
