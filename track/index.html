@@ -487,6 +487,13 @@
   .money-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
   .money-row .fld{margin-bottom:12px}
   .money-row .fld span{min-height:26px;display:flex;align-items:flex-end}
+  .fb-badge{display:inline-block;background:#eaf2ec;color:#2c6e49;border:1px solid #c9e0d2;font-size:10px;font-weight:700;padding:2px 9px;border-radius:var(--pill);margin-left:6px;cursor:pointer;font-family:'Inter'}
+  .fb-badge:active{background:#d9e9df}
+  .fb-a{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+  .fb-a.col{display:block}
+  .fb-a:last-child{border-bottom:none}
+  .fb-a-q{font-size:12.5px;color:var(--ink-soft);flex:1;line-height:1.45}
+  .fb-a-v{font-size:13px;font-weight:600;text-align:right;white-space:nowrap}
   .gear-dot{position:absolute;top:2px;right:3px;width:7px;height:7px;border-radius:50%;background:#c0266c}
   .ev-row{display:flex;align-items:flex-start;gap:11px;border:1px solid var(--line);background:var(--cream);border-radius:14px;padding:13px 15px;margin-bottom:10px;cursor:pointer;transition:.15s}
   .ev-row input{width:18px;height:18px;flex:none;margin-top:1px;cursor:pointer}
@@ -783,6 +790,19 @@
       <button class="btn solid" style="flex:1" id="saveBtn" onclick="saveOrder()">Αποθήκευση</button>
       <button class="btn ghost" onclick="closeOrderModal()">Κλείσιμο</button>
     </div>
+  </div>
+</div>
+
+<!-- ============ ΕΝΑ FEEDBACK (ανά παραγγελία) ============ -->
+<div id="fbOneModal" class="overlay hidden">
+  <div class="modal">
+    <div class="mh">
+      <h2 class="serif">Η γνώμη της πελάτισσας</h2>
+      <button class="x" onclick="closeOrderFeedback()">✕</button>
+    </div>
+    <div id="fbOneWho" style="font-size:12.5px;color:var(--ink-soft);margin-bottom:6px"></div>
+    <div id="fbOneBody"></div>
+    <div style="margin-top:18px"><button class="btn ghost" style="width:100%" onclick="closeOrderFeedback()">Κλείσιμο</button></div>
   </div>
 </div>
 
@@ -1947,8 +1967,35 @@ let orderFilter = "all";
 function setOrderFilter(f){ orderFilter=f; renderOrders(); }
 function orderIsDone(o){ return getItems(o).every(itemDone); }
 
+function hasFb(o){ return !!(o.track_token && (feedbackCache||[]).some(r=>r.order_token===o.track_token)); }
+function openOrderFeedback(token){
+  const rows=(feedbackCache||[]).filter(r=>r.order_token===token);
+  const o=ordersCache.find(x=>x.track_token===token);
+  const box=document.getElementById("fbOneBody");
+  document.getElementById("fbOneWho").textContent = o ? (o.customer_name||"") + (o.order_number?" · "+o.order_number:"") : "";
+  if(!rows.length){ box.innerHTML='<div class="fbd-empty">Δεν βρέθηκε απάντηση.</div>'; _ovOpen("fbOneModal"); return; }
+  box.innerHTML = rows.map(r=>{
+    let html=`<div style="font-size:11px;color:var(--muted);margin-bottom:10px">${fmtDate(r.created_at)}</div>`;
+    FB_Q.forEach(q=>{
+      if(q.sec){ html+=`<div class="stats-sub" style="margin-top:16px">${esc(q.sec)}</div>`; return; }
+      const v=r["q_"+q.k];
+      if(v===null||v===undefined||v==="") return;
+      if(q.type==="scale"){
+        html+=`<div class="fb-a"><div class="fb-a-q">${esc(q.q)}</div><div class="fb-a-v"><b>${v}</b><span style="color:var(--muted)">/5</span></div></div>`;
+      } else if(q.type==="text"){
+        html+=`<div class="fb-a col"><div class="fb-a-q">${esc(q.q)}</div><div class="fbd-cmt" style="margin-top:6px"><div class="t">„${esc(v)}”</div></div></div>`;
+      } else {
+        html+=`<div class="fb-a"><div class="fb-a-q">${esc(q.q)}</div><div class="fb-a-v">${esc(v)}</div></div>`;
+      }
+    });
+    return html;
+  }).join('<hr style="border:none;border-top:1px solid var(--line);margin:18px 0">');
+  _ovOpen("fbOneModal");
+}
+function closeOrderFeedback(){ _ovClose("fbOneModal"); }
+
 function renderOrders(){
-  const q = (document.getElementById("search").value||"").toLowerCase();
+  const q = (document.getElementById("search").value||"").trim();
   const list = document.getElementById("ordersList");
 
   // chips με μετρητές
@@ -1972,9 +2019,10 @@ function renderOrders(){
     if(orderFilter==="done" && !orderIsDone(o)) return false;
     if(orderFilter==="mix" && !evOf(o)) return false;
     if(orderFilter==="ready" && o.kind!=="ready") return false;
-    const itemNames = getItems(o).map(i=>i.name).join(" ");
-    const hay = [o.customer_name,o.product_name,o.order_number,itemNames].join(" ").toLowerCase();
-    return hay.includes(q);
+    const its=getItems(o);
+    const hay = [o.customer_name,o.product_name,o.order_number,o.customer_phone,
+      its.map(i=>i.name).join(" "), its.map(i=>i.color||"").join(" "), its.map(i=>i.label||"").join(" ")].join(" ");
+    return smartMatch(hay, q);
   });
 
   // ταξινόμηση: ενεργές πρώτα, μετά ολοκληρωμένες · μέσα σε κάθε ομάδα οι πιο πρόσφατες πάνω
@@ -2021,7 +2069,7 @@ function renderOrders(){
     return `<div class="order-row${!everyDone&&items.some(it=>itemFlow(it)==='return')?' is-return':''}">
       <div class="r-top">
         <div>
-          <div class="r-name">${esc(o.customer_name)} ${o.order_number?`<span style="color:var(--muted);font-weight:400">· ${esc(o.order_number)}</span>`:""} <span title="${pickup?'Παραλαβή διά ζώσης':'Αποστολή με courier'}" style="opacity:.6">${pickup?'🤝':'📦'}</span>${(function(){const e=evOf(o);return e?`<span class="mm-pill" style="background:${e.color}26;color:${e.ink||e.color};border-color:${e.color}">${esc(e.name)}</span>`:'';})()}${(!evOf(o)&&o.discount_pct?`<span class="mm-pill" style="background:var(--stone);color:var(--ink);border-color:var(--line)">−${Math.round(Number(o.discount_pct))}%</span>`:'')}${o.kind==='ready'?'<span class="mm-pill" style="background:#eef3f8;color:#2f5d8a;border-color:#cfe0f0">Έτοιμο</span>':''}</div>
+          <div class="r-name">${esc(o.customer_name)} ${o.order_number?`<span style="color:var(--muted);font-weight:400">· ${esc(o.order_number)}</span>`:""} <span title="${pickup?'Παραλαβή διά ζώσης':'Αποστολή με courier'}" style="opacity:.6">${pickup?'🤝':'📦'}</span>${(function(){const e=evOf(o);return e?`<span class="mm-pill" style="background:${e.color}26;color:${e.ink||e.color};border-color:${e.color}">${esc(e.name)}</span>`:'';})()}${(!evOf(o)&&o.discount_pct?`<span class="mm-pill" style="background:var(--stone);color:var(--ink);border-color:var(--line)">−${Math.round(Number(o.discount_pct))}%</span>`:'')}${o.kind==='ready'?'<span class="mm-pill" style="background:#eef3f8;color:#2f5d8a;border-color:#cfe0f0">Έτοιμο</span>':''}${hasFb(o)?`<button class="fb-badge" onclick="openOrderFeedback('${o.track_token}')">Feedback</button>`:''}</div>
           ${o.created_at?`<div class="r-created">Καταχωρήθηκε ${new Date(o.created_at).toLocaleDateString("el-GR",{day:"2-digit",month:"2-digit",year:"numeric"})}</div>`:""}
         </div>
         ${orderBadge}
@@ -2529,6 +2577,54 @@ function finalPrice(sub){
   const goods = (sub!=null && d>0) ? Math.round(sub*(1-d)*100)/100 : sub;
   return goods==null ? null : Math.round((goods + shipCost())*100)/100;   // μεταφορικά ΜΕΤΑ την έκπτωση
 }
+/* ---- Έξυπνη αναζήτηση: τόνοι, greeklish, μικρά λάθη ---- */
+const GR2LAT = {α:"a",ά:"a",β:"v",γ:"g",δ:"d",ε:"e",έ:"e",ζ:"z",η:"i",ή:"i",θ:"th",ι:"i",ί:"i",ϊ:"i",ΐ:"i",
+  κ:"k",λ:"l",μ:"m",ν:"n",ξ:"x",ο:"o",ό:"o",π:"p",ρ:"r",σ:"s",ς:"s",τ:"t",υ:"y",ύ:"y",ϋ:"y",ΰ:"y",
+  φ:"f",χ:"ch",ψ:"ps",ω:"o",ώ:"o"};
+function normText(str){
+  let t=String(str||"").toLowerCase();
+  t=t.split("").map(ch=>GR2LAT[ch]!==undefined?GR2LAT[ch]:ch).join("");
+  t=t.normalize("NFD").replace(/[\u0300-\u036f]/g,"");     // τόνοι
+  t=t.replace(/h/g,"").replace(/[yu]/g,"i").replace(/b/g,"v")
+     .replace(/[cq]/g,"k").replace(/w/g,"o").replace(/j/g,"i");
+  t=t.replace(/(.)\1+/g,"$1");                              // διπλά γράμματα
+  return t.replace(/[^a-z0-9]+/g," ").trim();
+}
+function lev(a,b){
+  if(a===b) return 0;
+  const m=a.length,n=b.length;
+  if(!m||!n) return m||n;
+  let prev=Array.from({length:n+1},(_,i)=>i), cur=new Array(n+1);
+  for(let i=1;i<=m;i++){
+    cur[0]=i;
+    for(let j=1;j<=n;j++){
+      cur[j]=Math.min(prev[j]+1, cur[j-1]+1, prev[j-1]+(a[i-1]===b[j-1]?0:1));
+    }
+    [prev,cur]=[cur,prev];
+  }
+  return prev[n];
+}
+function tokenHits(word, tok){
+  if(word.includes(tok)) return true;
+  const L=tok.length;
+  if(L<=2) return false;
+  const tol = L<=5 ? 1 : 2;
+  // σε πολύ κοντές λέξεις απαιτούμε ίδιο πρώτο γράμμα, για να μη βγάζει άσχετα
+  if(L<=3 && word[0]!==tok[0]) return false;
+  if(lev(word,tok)<=tol) return true;
+  if(word.length>L && lev(word.slice(0,L),tok)<=tol) return true;
+  return false;
+}
+function smartMatch(haystack, query){
+  const q=normText(query); if(!q) return true;
+  const hay=normText(haystack);
+  if(hay.includes(q)) return true;
+  const words=hay.split(" ").filter(Boolean);
+  return q.split(" ").filter(Boolean).every(tok=>
+    hay.includes(tok) || words.some(w=>tokenHits(w,tok))
+  );
+}
+
 /* ---- Ρυθμίσεις events (κοινές, από Supabase) ---- */
 let eventsOn = {};   // { mix:false, luxe:true }
 function evExpired(id){ const e=EVENTS[id]; return !!(e && e.autoOff && new Date() >= new Date(e.autoOff+"T00:00:00")); }
@@ -2634,9 +2730,9 @@ function renderStock(){
     <button class="tb ${stockView==='product'?'sel':''}" onclick="setStockView('product')">Έτοιμα προϊόντα${prods.length?` (${prods.length})`:''}</button>
   </div>`;
   let rows = stockView==="product" ? prods : (stockView==="mm" ? mm : raw);
-  const sq=(document.getElementById("stockSearch")?.value||"").trim().toLowerCase();
+  const sq=(document.getElementById("stockSearch")?.value||"").trim();
   const allRows=rows;
-  if(sq) rows = rows.filter(it=>((it.name||"")+" "+(it.category||"")).toLowerCase().includes(sq));
+  if(sq) rows = rows.filter(it=>smartMatch((it.name||"")+" "+(it.category||"")+" "+(it.unit||""), sq));
 
   if(!rows.length && sq){
     box.innerHTML = toggle + `<div class="fbd-empty">Κανένα αποτέλεσμα για «${esc(sq)}».</div>`;
