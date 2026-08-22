@@ -1815,7 +1815,7 @@ function buildBrief(ctx){
     if(Math.abs(d)>=30) push(58, d>0 ? `Η εβδομάδα κινήθηκε δυνατά: <b>${last7}</b> νέες παραγγελίες, ${d}% πάνω από την προηγούμενη.`
                                      : `Οι νέες παραγγελίες έπεσαν <b>${Math.abs(d)}%</b> αυτή την εβδομάδα (${last7} vs ${prev7}).`);
   } else if(last7===0 && cntNow>0){
-    push(62, `Καμία νέα παραγγελία τις τελευταίες <b>7 μέρες</b> — καλή στιγμή για ένα post ή story.`);
+    push(62, `Καμία νέα παραγγελία τις τελευταίες <b>7 μέρες</b>.`);
   }
 
   /* 3. Events: πρόοδος & χρόνος που απομένει */
@@ -1826,7 +1826,7 @@ function buildBrief(ctx){
     if(v && v.total!=null){
       const rest=v.total-v.items;
       if(rest<=0) push(85, `<b>${esc(e.name)}: sold out!</b> ${v.total===1?"Το κομμάτι έφυγε":"Και τα "+v.total+" κομμάτια έφυγαν"}.`);
-      else if(evActive(id) && left!=null && left<=3) push(92, `<b>${esc(e.name)}</b>: μένουν <b>${rest}</b> κομμάτια και <b>${left>1?left+" μέρες":"1 μέρα"}</b> — ώρα για last-call story.`);
+      else if(evActive(id) && left!=null && left<=3) push(92, `<b>${esc(e.name)}</b>: μένουν <b>${rest}</b> ${rest===1?"κομμάτι":"κομμάτια"} και <b>${left>1?left+" μέρες":"1 μέρα"}</b> μέχρι τη λήξη.`);
       else if(evActive(id)) push(72, `<b>${esc(e.name)}</b>: ${v.items}/${v.total} πουλήθηκαν${left!=null&&left>0?`, ${left} μέρες ακόμη`:""}.`);
     } else if(evActive(id) && left!=null && left<=2){
       push(74, `Το <b>${esc(e.name)}</b> κλείνει σε ${left>1?left+" μέρες":"1 μέρα"}.`);
@@ -1891,13 +1891,43 @@ function buildBrief(ctx){
   /* 12. Feedback */
   const fbCount=(feedbackCache||[]).length;
   if(ctx.satAvg!=null){
-    if(ctx.satAvg<4) push(78, `Η μέση ικανοποίηση έπεσε στο <b>${ctx.satAvg.toFixed(1)}/5</b> — αξίζει να δεις τα σχόλια.`);
+    if(ctx.satAvg<4) push(78, `Η μέση ικανοποίηση έπεσε στο <b>${ctx.satAvg.toFixed(1)}/5</b>.`);
     else if(fbCount>=3 && ctx.satAvg>=4.7) push(44, `Ικανοποίηση <b>${ctx.satAvg.toFixed(1)}/5</b> από ${fbCount} απαντήσεις.`);
   }
 
   /* 13. Έτοιμα προϊόντα που λιμνάζουν */
-  const shelf=(stockCache||[]).filter(it=>it.type==="product" && Number(it.qty)>0).length;
-  if(shelf>=4) push(40, `Έχεις <b>${shelf}</b> έτοιμα προϊόντα στο ράφι — καλό υλικό για stories.`);
+  const shelfItems=(stockCache||[]).filter(it=>it.type==="product" && Number(it.qty)>0);
+  if(shelfItems.length>=4){
+    const tied=shelfItems.reduce((a,it)=>a+(Number(it.qty)||0)*(Number(it.sell_price)||0),0);
+    push(40, `<b>${shelfItems.length}</b> έτοιμα προϊόντα αδιάθετα στο ράφι${tied>0?` — <b>${fmtMoney(tied)}</b> σε αξία πώλησης`:""}.`);
+  }
+
+  /* 14. Φόρτος εργασίας: πόσα ενεργά προϊόντα & πού είναι μαζεμένα */
+  const activeItems=[]; ordersCache.forEach(o=>getItems(o).forEach(it=>{ if(!itemDone(it)) activeItems.push({o,it}); }));
+  if(activeItems.length>=6){
+    const byStage={};
+    activeItems.forEach(({o,it})=>{ const S=stagesFor(itemFlow(it),o.delivery_method); const t=(S[itemStage(it)]||{}).title||"—"; byStage[t]=(byStage[t]||0)+1; });
+    const worst=Object.entries(byStage).sort((a,b)=>b[1]-a[1])[0];
+    push(68, `<b>${activeItems.length}</b> προϊόντα σε εξέλιξη, τα <b>${worst[1]}</b> στο «${esc(worst[0])}».`);
+  }
+
+  /* 15. Μέση αξία παραγγελίας σε σχέση με τον προηγούμενο μήνα */
+  if(cntNow>=3 && cntPrev>=3){
+    const avgNow=ctx.revMonth/cntNow, avgPrev=revPrev/cntPrev;
+    if(avgPrev>0){
+      const d=Math.round((avgNow-avgPrev)/avgPrev*100);
+      if(Math.abs(d)>=15) push(54, d>0 ? `Η μέση αξία παραγγελίας ανέβηκε <b>${d}%</b> (${fmtMoney(avgNow)}).`
+                                       : `Η μέση αξία παραγγελίας έπεσε <b>${Math.abs(d)}%</b> (${fmtMoney(avgNow)}).`);
+    }
+  }
+
+  /* 16. Παραγγελίες χωρίς δηλωμένα υλικά (χάνεται το πραγματικό κόστος) */
+  const noCost=ordersCache.filter(o=>{
+    if(!o.created_at) return false;
+    const d=new Date(o.created_at);
+    return ym(d)===ymNow && (o.cost==null || Number(o.cost)===0) && getItems(o).every(itemDone);
+  }).length;
+  if(noCost>=3) push(56, `<b>${noCost}</b> ολοκληρωμένες παραγγελίες του μήνα δεν έχουν κόστος υλικών.`);
 
   if(!ins.length) return "";
   // ταξινόμηση κατά επείγον· εναλλαγή στα ισοβαθμούντα ώστε να μη λέει τα ίδια κάθε μέρα
