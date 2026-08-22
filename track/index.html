@@ -711,7 +711,7 @@
       <div id="fbAdmin" class="hidden"></div>
       <input id="stockSearch" class="hidden" placeholder="Αναζήτηση στην αποθήκη…" oninput="renderStock()" style="margin-bottom:14px">
       <div id="stockAdmin" class="hidden"></div>
-      <input id="custSearch" class="hidden" placeholder="Αναζήτηση πελάτισσας…" oninput="renderCustomers()" style="margin-bottom:14px">
+      <input id="custSearch" class="hidden" placeholder="Αναζήτηση πελάτη…" oninput="renderCustomers()" style="margin-bottom:14px">
       <div id="custAdmin" class="hidden"></div>
     </div>
   </section>
@@ -859,7 +859,7 @@
 <div id="custModal" class="overlay hidden">
   <div class="modal">
     <div class="mh">
-      <h2 class="serif" id="custName">Πελάτισσα</h2>
+      <h2 class="serif" id="custName">Πελάτης</h2>
       <button class="x" onclick="closeCustomer()">✕</button>
     </div>
     <div id="custBody"></div>
@@ -871,7 +871,7 @@
 <div id="fbOneModal" class="overlay hidden">
   <div class="modal">
     <div class="mh">
-      <h2 class="serif">Η γνώμη της πελάτισσας</h2>
+      <h2 class="serif">Η γνώμη της πελάτηςς</h2>
       <button class="x" onclick="closeOrderFeedback()">✕</button>
     </div>
     <div id="fbOneWho" style="font-size:12.5px;color:var(--ink-soft);margin-bottom:6px"></div>
@@ -938,6 +938,7 @@
     </div>
     <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:10px">Διάλεξε ποσότητες. Στην επιβεβαίωση, το κόστος μπαίνει στην παραγγελία και οι ποσότητες αφαιρούνται από το στοκ.</p>
     <input id="matSearch" placeholder="Αναζήτηση υλικού…" oninput="renderMatPicker()" style="width:100%;margin-bottom:6px">
+    <div id="matSelTop" class="stat-row hidden" style="margin:0 0 10px"></div>
     <div id="matPickerList"><div class="spinner"></div></div>
     <div class="mat-total" id="matPickerTotal" style="margin-top:12px">Σύνολο: €0,00</div>
     <p id="matPickerMsg" class="msg err hidden" style="margin-top:10px"></p>
@@ -1338,7 +1339,7 @@ function renderTracking(o){
   document.getElementById("tItems").innerHTML = items.map(it=>renderItemCard(it, method, items.length>1)).join("");
 
   // Mix & Match event banner (πάνω-πάνω στην κάρτα του πελάτη)
-  // Επαναλαμβανόμενη πελάτισσα — διακριτικό ευχαριστώ
+  // Επαναλαμβανόμενη πελάτης — διακριτικό ευχαριστώ
   const rv = document.getElementById("tRepeat");
   if(rv){
     const v = Number(o.visit_no)||0;
@@ -1859,7 +1860,7 @@ function setStatsYear(y){ statsYear = y; renderStats(); }
 
 /* ============================================================
    ΕΞΥΠΝΟ ΣΧΟΛΙΟ — σαρώνει παραγγελίες, χρήματα, χρόνους,
-   αποθήκη, events, πελάτισσες & feedback. Κρατά τα 3 πιο επείγοντα.
+   αποθήκη, events, πελάτες & feedback. Κρατά τα 3 πιο επείγοντα.
 ============================================================ */
 function buildBrief(ctx){
   const DAY=86400000, now=new Date(), ins=[];
@@ -1977,13 +1978,25 @@ function buildBrief(ctx){
     else if(ctx.avgTotal<=4) push(42, `Παραδίδεις κατά μέσο όρο σε <b>${Math.round(ctx.avgTotal)} μέρες</b>, αρκετά πιο γρήγορα από το 1–7 που υπόσχεσαι.`);
   }
 
-  /* 10. Πελάτισσες που ξαναγύρισαν */
-  const repeat=Object.values(custCount).filter(n=>n>1).length;
-  if(repeat>=2) push(52, `<b>${repeat}</b> πελάτισσες έχουν παραγγείλει ξανά — δείχνει ότι μένουν ευχαριστημένες.`);
+  /* 10α. Πρόσφατη επιστροφή πελάτη */
+  {
+    const recent=ordersCache.filter(o=>o.created_at && (now-new Date(o.created_at))/DAY<=14 && (Number(o.visit_no)||0)>1)
+      .sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))[0];
+    if(recent){
+      const v=Number(recent.visit_no);
+      push(74, `Η <b>${esc(recent.customer_name||"")}</b> επέστρεψε για <b>${ordGr(v)} φορά</b>.`);
+    }
+  }
 
-  /* 11. Best seller του μήνα */
+  /* 10. Πελάτες που ξαναγύρισαν */
+  const repeat=Object.values(custCount).filter(n=>n>1).length;
+  if(repeat>=2) push(52, `<b>${repeat}</b> πελάτες έχουν παραγγείλει ξανά.`);
+
+  /* 11. Best seller */
   const top=Object.entries(prodCount).sort((a,b)=>b[1]-a[1])[0];
   if(top && top[1]>=3) push(46, `Το <b>${esc(top[0])}</b> είναι το πιο δημοφιλές του μήνα με <b>${top[1]}</b> κομμάτια.`);
+  else { const bs=(typeof bestSeller==="function")?bestSeller():null;
+    if(bs && bs.n>=3) push(43, `Best seller συνολικά το <b>${esc(bs.name)}</b> — <b>${bs.n}</b> πωλήσεις, ${fmtMoney(bs.rev)}.`); }
 
   /* 12. Feedback */
   const fbCount=(feedbackCache||[]).length;
@@ -2069,7 +2082,7 @@ function buildBrief(ctx){
   const q=QUOTES[(seed*7 + yr) % QUOTES.length];
   const closer=`«${q[0]}» <span class="brief-who">— ${q[1]}</span>`;
   const h=new Date().getHours();
-  const hello = h<12 ? "Καλημέρα" : (h<18 ? "Καλησπέρα" : "Καλό βράδυ");
+  const hello = (h<6 || h>=18) ? "Καλό βράδυ" : (h<12 ? "Καλημέρα" : "Καλησπέρα");
   const greet = `${hello}, Αναστασία`;
 
   if(!ins.length){
@@ -2300,6 +2313,8 @@ function renderStats(){
 }
 
 let orderFilter = "all";
+let ordersShown = 12;
+function showMoreOrders(){ ordersShown+=12; renderOrders(); }
 function setOrderFilter(f){ orderFilter=f; renderOrders(); }
 function orderIsDone(o){ return getItems(o).every(itemDone); }
 
@@ -2331,7 +2346,8 @@ function openOrderFeedback(token){
 function closeOrderFeedback(){ _ovClose("fbOneModal"); }
 
 async function backfillVisits(){
-  const missing=ordersCache.filter(o=>o.visit_no==null && o.customer_name);
+  // ξαναϋπολόγισε όσα δεν συμφωνούν (π.χ. μετά από εισαγωγή παλιών παραγγελιών)
+  const missing=ordersCache.filter(o=>o.customer_name && Number(o.visit_no||0)!==visitNoFor(o));
   if(!missing.length) return;
   let changed=0;
   for(const o of missing){
@@ -2369,20 +2385,31 @@ function customerStats(){
   Object.keys(g).forEach(k=>{ g[k].variants=[...(names[k]||[])]; g[k].auto=(names[k]||new Set()).size>1 && !ordersCache.some(o=>custKey(o)===k && custLinks[o.id]); });
   return Object.values(g).sort((a,b)=>b.last-a.last);
 }
+let custFilter="all";
+function setCustFilter(f){ custFilter=f; renderCustomers(); }
 function renderCustomers(){
   const box=document.getElementById("custAdmin");
   const q=(document.getElementById("custSearch")?.value||"").trim();
   let list=customerStats();
   if(q) list=list.filter(c=>smartMatch(c.name+" "+(c.phone||"")+" "+c.variants.join(" "), q));
-  if(!list.length){ box.innerHTML=`<div class="fbd-empty">${q?"Καμία πελάτισσα δεν ταιριάζει.":"Καμία πελάτισσα ακόμη."}</div>`; return; }
+  const owedOf=c=>Math.max(0,Math.round((c.spent-c.paid)*100)/100);
+  const nOwed=list.filter(c=>owedOf(c)>0).length;
+  if(custFilter==="owed") list=list.filter(c=>owedOf(c)>0);
+  else if(custFilter==="repeat") list=list.filter(c=>c.n>1);
+  if(!list.length){ box.innerHTML=`<div class="fbd-empty">${q?"Καμία πελάτης δεν ταιριάζει.":"Καμία πελάτης ακόμη."}</div>`; return; }
   const repeat=list.filter(c=>c.n>1).length;
   const totalSpent=list.reduce((a,c)=>a+c.spent,0);
   const owedAll=list.reduce((a,c)=>a+Math.max(0,c.spent-c.paid),0);
-  let html=`<div class="stat-grid">
-    <div class="stat dark"><div class="n">${list.length}</div><div class="l">Πελάτισσες</div></div>
-    <div class="stat"><div class="n">${repeat}</div><div class="l">Επαναλαμβανόμενες</div></div>
-    <div class="stat"><div class="n" style="font-size:20px">${fmtMoney(list.length?totalSpent/list.length:0)}</div><div class="l">Μέση αξία ανά πελάτισσα</div></div>
+  let html=`<div class="stat-grid" style="margin-bottom:16px">
+    <div class="stat dark"><div class="n">${list.length}</div><div class="l">Πελάτες</div></div>
+    <div class="stat"><div class="n">${repeat}</div><div class="l">Επαναλαμβανόμενοι</div></div>
+    <div class="stat"><div class="n" style="font-size:20px">${fmtMoney(list.length?totalSpent/list.length:0)}</div><div class="l">Μέση αξία / πελάτη</div></div>
     ${owedAll>0?`<div class="stat"><div class="n" style="font-size:20px">${fmtMoney(owedAll)}</div><div class="l">Ανεξόφλητα</div></div>`:""}
+  </div>
+  <div class="tabsw" style="margin-bottom:16px;flex-wrap:wrap">
+    <button class="tb ${custFilter==='all'?'sel':''}" onclick="setCustFilter('all')">Όλοι</button>
+    <button class="tb ${custFilter==='repeat'?'sel':''}" onclick="setCustFilter('repeat')">Επαναλαμβανόμενοι</button>
+    ${nOwed?`<button class="tb ${custFilter==='owed'?'sel':''}" onclick="setCustFilter('owed')">Ανεξόφλητα (${nOwed})</button>`:""}
   </div>`;
   const DAY=86400000;
   html+=list.map(c=>{
@@ -2404,7 +2431,7 @@ function renderCustomers(){
 }
 function newOrderFor(orderId){
   const ref=ordersCache.find(o=>o.id===orderId); if(!ref) return;
-  showAdminTab("orders");
+  returnTab="customers";
   openOrderModal();
   document.getElementById("fName").value = ref.customer_name || "";
   if(ref.customer_phone) document.getElementById("fPhone").value = ref.customer_phone;
@@ -2443,16 +2470,19 @@ function renderOrders(){
   });
 
   // ταξινόμηση: ενεργές πρώτα, μετά ολοκληρωμένες · μέσα σε κάθε ομάδα οι πιο πρόσφατες πάνω
+  const tOf=o=> new Date(o.created_at || o.updated_at || 0).getTime();
   filtered = filtered.slice().sort((a,b)=>{
     const da=orderIsDone(a)?1:0, db=orderIsDone(b)?1:0;
-    if(da!==db) return da-db;
-    return new Date(b.updated_at||b.created_at||0) - new Date(a.updated_at||a.created_at||0);
+    if(da!==db) return da-db;              // ενεργές πρώτα
+    return tOf(b)-tOf(a);                  // μετά οι πιο πρόσφατες
   });
 
   if(!filtered.length){
     list.innerHTML = `<p style="text-align:center;color:var(--muted);padding:24px 0;font-size:13px">${ordersCache.length? "Τίποτα δεν ταιριάζει με το φίλτρο ή την αναζήτηση." : "Καμία παραγγελία ακόμη. Πάτησε «+ Νέα»."}</p>`;
     return;
   }
+  const totalFound=filtered.length;
+  if(!q && filtered.length>ordersShown) filtered=filtered.slice(0,ordersShown);
   list.innerHTML = filtered.map(o=>{
     const items = getItems(o);
     const pickup = o.delivery_method === "pickup";
@@ -2482,6 +2512,9 @@ function renderOrders(){
         </div>
       </div>`;
     }).join("");
+  if(!q && totalFound>ordersShown){
+    list.innerHTML += `<button class="btn ghost" style="width:100%;margin-top:6px" onclick="showMoreOrders()">Δείξε περισσότερες (${totalFound-ordersShown} ακόμη)</button>`;
+  }
 
     return `<div class="order-row${!everyDone&&items.some(it=>itemFlow(it)==='return')?' is-return':''}">
       <div class="r-top">
@@ -2493,7 +2526,7 @@ function renderOrders(){
             <span>${pickup?'Παραλαβή':'Courier'}</span>
           </div>
           <div class="r-pills">
-            ${(function(){const e=evOf(o);return e?`<span class="mm-pill" style="background:${e.color}26;color:${e.ink||e.color};border-color:${e.color}">${esc(e.name)}</span>`:'';})()}${(!evOf(o)&&o.discount_pct?`<span class="mm-pill" style="background:var(--stone);color:var(--ink);border-color:var(--line)">−${Math.round(Number(o.discount_pct))}%</span>`:'')}${o.kind==='ready'?'<span class="mm-pill" style="background:#eef3f8;color:#2f5d8a;border-color:#cfe0f0">Έτοιμο</span>':''}${(function(){const v=o.visit_no||visitNoFor(o);return v>1?`<button class="mm-pill cust-pill" style="background:#f3efe6;color:#8a6a2e;border-color:#e4d9c2" onclick="openCustomer('${o.id}')">${ordGr(v)} παραγγελία</button>`:'';})()}${hasFb(o)?`<button class="fb-badge" onclick="openOrderFeedback('${o.track_token}')">Feedback</button>`:''}
+            ${(function(){const e=evOf(o);return e?`<span class="mm-pill" style="background:${e.color}26;color:${e.ink||e.color};border-color:${e.color}">${esc(e.name)}</span>`:'';})()}${(!evOf(o)&&o.discount_pct?`<span class="mm-pill" style="background:var(--stone);color:var(--ink);border-color:var(--line)">−${Math.round(Number(o.discount_pct))}%</span>`:'')}${o.kind==='ready'?'<span class="mm-pill" style="background:#eef3f8;color:#2f5d8a;border-color:#cfe0f0">Έτοιμο</span>':''}${(function(){const v=visitNoFor(o);return v>1?`<button class="mm-pill cust-pill" style="background:#f3efe6;color:#8a6a2e;border-color:#e4d9c2" onclick="openCustomer('${o.id}')">${ordGr(v)} παραγγελία</button>`:'';})()}${hasFb(o)?`<button class="fb-badge" onclick="openOrderFeedback('${o.track_token}')">Feedback</button>`:''}
           </div>
         </div>
         ${orderBadge}
@@ -2721,10 +2754,10 @@ function addItemRow(item){
   row.innerHTML=`
     <div class="ie-top">
       <select class="ie-pick" onchange="onPickModel(this)" style="flex:1;min-width:0"></select>
-      <input class="ie-name hidden" placeholder="όνομα custom προϊόντος">
       <input class="ie-price" inputmode="decimal" placeholder="€ τιμή" style="max-width:90px">
       <button class="ie-del" title="Αφαίρεση" type="button">✕</button>
     </div>
+    <input class="ie-name hidden" placeholder="Όνομα custom προϊόντος" style="margin-top:8px">
     <div class="ie-row" style="margin-top:8px">
       <input class="ie-color" placeholder="απόχρωση (π.χ. Μπεζ)" style="flex:1.4;min-width:0">
       <select class="ie-label" style="flex:1;min-width:0">
@@ -2819,13 +2852,18 @@ function onPickModel(sel){
   inp.classList.add("hidden");
   inp.value=sel.value;
   sel.dataset.val=sel.value;
+  const _pr=row.querySelector(".ie-price");
+  if(_pr && _pr.dataset.auto==="1") _pr.value="";     // καθάρισε την αυτόματη τιμή του προηγούμενου
   const m=(modelCat||[]).find(x=>normText(x.name)===normText(sel.value));
   if(m) applyModelToRow(m.id, row); else if(hint) hint.classList.add("hidden");
 }
 function applyModelToRow(mid, row){
   const m=(modelCat||[]).find(x=>x.id===mid); if(!m) return;
   const pr=row.querySelector(".ie-price");
-  if(pr && !pr.value && m.price!=null) pr.value=m.price;
+  if(pr && m.price!=null && (!pr.value || pr.dataset.auto==="1")){
+    pr.value=m.price; pr.dataset.auto="1";           // αυτόματη τιμή -> ενημερώνεται σε αλλαγή προϊόντος
+  }
+  if(pr) pr.oninput=()=>{ pr.dataset.auto=""; updateMoneyHint(); };
   updateMoneyHint();
   const hint=document.getElementById("matHint"); if(!hint) return;
   const mats=(m.materials||[]).map(mm=>{
@@ -2968,7 +3006,11 @@ function editOrder(id){
   _ovOpen("orderModal");
 }
 
-function closeOrderModal(){ _ovClose("orderModal"); }
+let returnTab=null;
+function closeOrderModal(){
+  _ovClose("orderModal");
+  if(returnTab){ const t=returnTab; returnTab=null; showAdminTab(t); }
+}
 
 function copyLink(){
   const t=document.getElementById("modalLink").dataset.token;
@@ -3021,8 +3063,18 @@ async function saveOrder(){
       const fullyPaid = payload.price!=null && payload.amount_paid!=null && Number(payload.amount_paid)>=Number(payload.price)-0.01;
       payload.paid_at = fullyPaid ? ((prevO && prevO.paid_at) || new Date().toISOString()) : null;
     }
+    // μάθε τιμές: αν η προδιαγραφή δεν έχει τιμή, κράτα αυτή που έβαλε
+    try{
+      let changed=false;
+      items.forEach(it=>{
+        if(it.price==null) return;
+        const m=(modelCat||[]).find(x=>normText(x.name)===normText(it.name));
+        if(m && (m.price==null)){ m.price=Number(it.price); changed=true; }
+      });
+      if(changed) saveSetting("models", modelCat, true);
+    }catch(e){}
     if(!editingId){
-      // πόσες φορές έχει ξαναπαραγγείλει αυτή η πελάτισσα
+      // πόσες φορές έχει ξαναπαραγγείλει αυτός ο πελάτης
       payload.visit_no = visitNoFor({id:null, customer_name:payload.customer_name, customer_phone:payload.customer_phone, created_at:new Date().toISOString()});
     } else {
       const prevO=ordersCache.find(x=>x.id===editingId);
@@ -3099,13 +3151,34 @@ function finalPrice(sub){
   const goods = (sub!=null && d>0) ? Math.round(sub*(1-d)*100)/100 : sub;
   return goods==null ? null : Math.round((goods + shipCost())*100)/100;   // μεταφορικά ΜΕΤΑ την έκπτωση
 }
-/* ---- Αναγνώριση επαναλαμβανόμενης πελάτισσας (αυτόματα, χωρίς καρτέλες) ---- */
+/* ---- Αναγνώριση επαναλαμβανόμενης πελάτηςς (αυτόματα, χωρίς καρτέλες) ---- */
+let _custIdx=null, _custIdxLen=-1;
+function buildCustIndex(){
+  const parent={};
+  const find=x=>{ while(parent[x]!==x){ parent[x]=parent[parent[x]]; x=parent[x]; } return x; };
+  const add=x=>{ if(parent[x]===undefined) parent[x]=x; };
+  const uni=(a,b)=>{ add(a); add(b); const ra=find(a), rb=find(b); if(ra!==rb) parent[rb]=ra; };
+  ordersCache.forEach(o=>{
+    const n=normText(o.customer_name||""); const nk=n?("n:"+n):null;
+    const ph=String(o.customer_phone||"").replace(/\D/g,""); const pk=ph.length>=9?("p:"+ph.slice(-9)):null;
+    if(nk) add(nk);
+    if(pk) add(pk);
+    if(nk&&pk) uni(nk,pk);
+  });
+  const idx={};
+  ordersCache.forEach(o=>{
+    const n=normText(o.customer_name||""); const nk=n?("n:"+n):null;
+    const ph=String(o.customer_phone||"").replace(/\D/g,""); const pk=ph.length>=9?("p:"+ph.slice(-9)):null;
+    const key=nk||pk; idx[o.id]= key?find(key):"";
+  });
+  _custIdx=idx; _custIdxLen=ordersCache.length;
+  return idx;
+}
 function custKey(o){
-  if(o.id && custLinks[o.id]) return custLinks[o.id];   // χειροκίνητη διόρθωση
-  const ph=String(o.customer_phone||"").replace(/\D/g,"");
-  if(ph.length>=9) return "p:"+ph.slice(-9);          // τηλέφωνο = πιο αξιόπιστο
-  const n=normText(o.customer_name||"");
-  return n ? "n:"+n : "";
+  if(o && o.id && custLinks[o.id]) return custLinks[o.id];      // χειροκίνητη διόρθωση
+  if(!_custIdx || _custIdxLen!==ordersCache.length) buildCustIndex();
+  if(o && o.id && _custIdx[o.id]!==undefined) return _custIdx[o.id];
+  const n=normText((o&&o.customer_name)||""); return n?("n:"+n):"";
 }
 function visitNoFor(order, list){
   const key=custKey(order); if(!key) return 1;
@@ -3121,7 +3194,7 @@ function visitNoFor(order, list){
 const ORD_GR={1:"1η",2:"2η",3:"3η",4:"4η",5:"5η",6:"6η",7:"7η",8:"8η",9:"9η",10:"10η"};
 function ordGr(n){ return ORD_GR[n] || (n+"η"); }
 
-/* ---- Προφίλ πελάτισσας (ποσοτικά + ποιοτικά) ---- */
+/* ---- Προφίλ πελάτηςς (ποσοτικά + ποιοτικά) ---- */
 function openCustomer(key){
   const orders=ordersCache.filter(o=>custKey(o)===key)
     .sort((a,b)=> new Date(b.created_at||0)-new Date(a.created_at||0));
@@ -3178,7 +3251,7 @@ function openCustomer(key){
 
   const facts=[];
   if(gap!=null) facts.push(`Παραγγέλνει κάθε <b>${gap} μέρες</b> κατά μέσο όρο`);
-  facts.push(`Πελάτισσα από <b>${fmtD(first)}</b>`);
+  facts.push(`Πελάτης από <b>${fmtD(first)}</b>`);
   if(topOf(prod)) facts.push(`Αγαπημένο: <b>${esc(topOf(prod))}</b>`);
   if(topOf(col)) facts.push(`Χρώματα: <b>${esc(topOf(col))}</b>`);
   if(topOf(lbl)) facts.push(`Ταμπελάκι: <b>${esc(topOf(lbl))}</b>`);
@@ -3219,7 +3292,7 @@ function customerGroups(){
   return Object.values(g).sort((a,b)=>b.last-a.last);
 }
 async function splitCustomer(orderId){
-  if(!confirm("Να ξεχωρίσει αυτή η παραγγελία σε δική της πελάτισσα ;")) return;
+  if(!confirm("Να ξεχωρίσει αυτή η παραγγελία σε δική της πελάτης ;")) return;
   custLinks[orderId] = "g:" + Math.random().toString(36).slice(2,10);
   await saveSetting("cust_links", custLinks, true);
   renderOrders(); renderStats();
@@ -3239,7 +3312,7 @@ async function mergeCustomer(refOrderId){
   openCustomer(refOrderId); adminFlash("Ενώθηκαν ✓");
 }
 
-/* ---- Προφίλ πελάτισσας: ποσοτικά + ποιοτικά ---- */
+/* ---- Προφίλ πελάτηςς: ποσοτικά + ποιοτικά ---- */
 function customerOrders(ref){
   const key=custKey(ref); if(!key) return [];
   return ordersCache.filter(x=>custKey(x)===key)
@@ -3274,7 +3347,7 @@ function openCustomer(orderId){
   const cadence=(list.length>1&&spanD>0)?Math.round(spanD/(list.length-1)):null;
   const sinceLast=last?Math.floor((Date.now()-last)/DAY):null;
 
-  // feedback αυτής της πελάτισσας
+  // feedback αυτής της πελάτηςς
   const tokens=list.map(o=>o.track_token).filter(Boolean);
   const fbs=(feedbackCache||[]).filter(r=>tokens.includes(r.order_token));
   const sat=fbs.map(r=>r.q_satisfaction).filter(x=>x!=null);
@@ -3285,43 +3358,34 @@ function openCustomer(orderId){
   const topOf=obj=>Object.entries(obj).sort((a,b)=>b[1]-a[1]);
   const chip=(l,v)=>`<span class="stat-pill"><b>${v}</b> ${esc(l)}</span>`;
 
-  let html=`<div class="stat-grid">
+  const DAYc=86400000;
+  const payDelays=[];
+  list.forEach(o=>{ if(o.paid_at && o.created_at){ const d=(new Date(o.paid_at)-new Date(o.created_at))/DAYc; if(d>=0) payDelays.push(d); } });
+  const payAvg=payDelays.length?payDelays.reduce((a,b)=>a+b,0)/payDelays.length:null;
+  const lastPaid=list.filter(o=>o.paid_at).sort((a,b)=>new Date(b.paid_at)-new Date(a.paid_at))[0];
+  const phone=(list.map(o=>o.customer_phone).filter(Boolean).pop())||"";
+  const owedOrders=list.filter(o=>(Number(o.price)||0)-(Number(o.amount_paid)||0)>0.01).length;
+  const biggest=list.slice().sort((a,b)=>(Number(b.price)||0)-(Number(a.price)||0))[0];
+  const evNames=Object.keys(evs);
+
+  let html=`<div class="stat-grid" style="margin-bottom:14px">
     <div class="stat dark"><div class="n">${list.length}</div><div class="l">Παραγγελίες</div></div>
     <div class="stat"><div class="n" style="font-size:20px">${fmtMoney(spent)}</div><div class="l">Σύνολο αγορών</div></div>
     <div class="stat"><div class="n" style="font-size:20px">${fmtMoney(avg)}</div><div class="l">Μέση αξία</div></div>
     <div class="stat"><div class="n">${items}</div><div class="l">Προϊόντα</div></div>
-  </div>`;
-
-  // πληρωμές
-  const payDelays=[];
-  list.forEach(o=>{
-    if(o.paid_at && o.created_at){
-      const d=(new Date(o.paid_at)-new Date(o.created_at))/DAY;
-      if(d>=0) payDelays.push(d);
-    }
-  });
-  const payAvg=payDelays.length?payDelays.reduce((a,b)=>a+b,0)/payDelays.length:null;
-  const lastPaid=list.filter(o=>o.paid_at).sort((a,b)=>new Date(b.paid_at)-new Date(a.paid_at))[0];
-
-  const bits=[];
-  if(first) bits.push(`Πρώτη παραγγελία ${fmtDateShort(first)}`);
-  if(last && list.length>1) bits.push(`τελευταία ${fmtDateShort(last)}`);
-  if(cadence!=null) bits.push(`κατά μέσο όρο κάθε <b>${cadence}</b> μέρες`);
-  if(sinceLast!=null && sinceLast>0) bits.push(`${sinceLast} μέρες από την τελευταία`);
-  if(bits.length) html+=`<div class="cust-line">${bits.join(" · ")}.</div>`;
-
-  if(payAvg!=null || lastPaid){
-    const pb=[];
-    if(payAvg!=null) pb.push(payAvg<1?`Πληρώνει <b>την ίδια μέρα</b>`:`Πληρώνει κατά μέσο όρο σε <b>${Math.round(payAvg)}</b> ${Math.round(payAvg)===1?"μέρα":"μέρες</b>"}`);
-    if(lastPaid) pb.push(`τελευταία πληρωμή ${fmtDateShort(new Date(lastPaid.paid_at))}`);
-    html+=`<div class="cust-line">${pb.join(" · ")}.</div>`;
-  }
-  html+=`<div class="stat-row" style="margin-top:12px">
-    ${owed>0?`<span class="stat-pill warn"><b>${fmtMoney(owed)}</b> ανεξόφλητα</span>`:`<span class="stat-pill"><b>✓</b> Όλα εξοφλημένα</span>`}
-    ${ship?chip("Αποστολή",ship):""}${pick?chip("Παραλαβή",pick):""}
-    ${satAvg!=null?`<span class="stat-pill"><b>${satAvg.toFixed(1)}</b> Ικανοποίηση</span>`:""}
-    ${Object.keys(evs).map(n=>chip(n,evs[n])).join("")}
-  </div>`;
+  </div>
+  <div class="stat-row">
+    ${owed>0?`<span class="stat-pill warn"><b>${fmtMoney(owed)}</b> ανεξόφλητα${owedOrders>1?` (${owedOrders})`:""}</span>`:`<span class="stat-pill"><b>✓</b> Εξοφλημένος</span>`}
+    ${phone?`<a class="stat-pill" href="tel:${esc(phone)}" style="text-decoration:none"><b>☎</b> ${esc(phone)}</a>`:""}
+    ${cadence!=null?`<span class="stat-pill">κάθε <b>${cadence}</b> μέρες</span>`:""}
+    ${sinceLast!=null?`<span class="stat-pill">πριν <b>${sinceLast}</b> μέρες</span>`:""}
+    ${payAvg!=null?`<span class="stat-pill">πληρωμή σε <b>${payAvg<1?"<1":Math.round(payAvg)}</b> ${Math.round(payAvg)===1?"μέρα":"μέρες"}</span>`:""}
+    ${biggest&&biggest.price!=null?`<span class="stat-pill">μεγαλύτερη <b>${fmtMoney(biggest.price)}</b></span>`:""}
+    ${ship?`<span class="stat-pill"><b>${ship}</b> αποστολή</span>`:""}${pick?`<span class="stat-pill"><b>${pick}</b> παραλαβή</span>`:""}
+    ${satAvg!=null?`<span class="stat-pill"><b>${satAvg.toFixed(1)}</b> ικανοποίηση</span>`:""}
+    ${evNames.map(n=>`<span class="stat-pill">${esc(n)} <b>${evs[n]}</b></span>`).join("")}
+  </div>
+  <div class="cust-line">${first?`Πρώτη ${fmtDateShort(first)}`:""}${last&&list.length>1?` · τελευταία ${fmtDateShort(last)}`:""}${lastPaid?` · τελευταία πληρωμή ${fmtDateShort(new Date(lastPaid.paid_at))}`:""}.</div>`;
 
   const mList=topOf(models), cList=topOf(colors), lList=topOf(labels);
   if(mList.length){
@@ -3351,11 +3415,11 @@ function openCustomer(orderId){
         <div class="cr-r"><div class="cr-p">${o.price!=null?fmtMoney(o.price):"—"}</div>
         <div class="cr-s">${done?"ολοκληρώθηκε":"σε εξέλιξη"}</div></div>
       </button>
-      ${list.length>1?`<button class="cr-x" title="Δεν είναι η ίδια πελάτισσα" onclick="splitCustomer('${o.id}')">✕</button>`:""}
+      ${list.length>1?`<button class="cr-x" title="Δεν είναι η ίδια πελάτης" onclick="splitCustomer('${o.id}')">✕</button>`:""}
     </div>`;
   }).join("");
 
-  // σύνδεση με άλλη πελάτισσα (αν η αναγνώριση δεν τις ένωσε)
+  // σύνδεση με άλλη πελάτης (αν η αναγνώριση δεν τις ένωσε)
   const others=customerGroups().filter(g=>g.key!==custKey(ref));
   if(others.length){
     html+=`<div class="stats-sub">Διόρθωση</div>
@@ -3412,7 +3476,14 @@ function tokenHits(word, tok){
   if(word.length>L && lev(word.slice(0,L),tok)<=tol) return true;
   return false;
 }
+function looksLikeCode(q){ return /\d/.test(q) && /^[a-z0-9\-\s#]+$/i.test(q); }
 function smartMatch(haystack, query){
+  const raw=String(query||"").trim();
+  if(looksLikeCode(raw)){                    // κωδικός: μόνο ακριβές ταίριασμα
+    const h=String(haystack||"").toLowerCase().replace(/\s+/g,"");
+    const n=raw.toLowerCase().replace(/[\s#]+/g,"");
+    return h.includes(n);
+  }
   const q=normText(query); if(!q) return true;
   const hay=normText(haystack);
   if(hay.includes(q)) return true;
@@ -3448,6 +3519,29 @@ async function loadSettings(){
   });
   if(changed){ eventsOn._autoOff=ao; saveSetting("events", eventsOn, true); }
   updateEventBadge();
+  if(!modelCat.length){ await seedModelsFromAnasa(); }
+}
+async function seedModelsFromAnasa(){
+  const sug=modelSuggestions();
+  modelCat = sug.filter(m=>m.anasa || m.count>0).map(m=>({
+    id:"m"+Math.random().toString(36).slice(2,9), name:m.name, price:m.price,
+    materials:[], image_url:m.image_url||null, anasa:!!m.anasa, cat:m.cat||null
+  }));
+  if(modelCat.length) await saveSetting("models", modelCat, true);
+}
+// πόσες φορές πουλήθηκε το κάθε προϊόν
+function modelSales(name){
+  let n=0, rev=0;
+  ordersCache.forEach(o=>getItems(o).forEach(it=>{
+    const a=anasaOf(it.name)||{name:it.name};
+    if(normText(a.name)===normText(name)){ n++; rev+=Number(it.price)||0; }
+  }));
+  return {n, rev};
+}
+function bestSeller(){
+  const list=(modelCat||[]).map(m=>({name:m.name, ...modelSales(m.name)}))
+    .filter(x=>x.n>0).sort((a,b)=>b.n-a.n || b.rev-a.rev);
+  return list[0]||null;
 }
 async function saveSetting(key, value, silent){
   try{
@@ -3827,24 +3921,16 @@ function renderModels(){
       <div class="ms-s" style="margin-top:8px">Οι τιμές έρχονται από τις παραγγελίες σου. Μπορείς να τις αλλάξεις μετά.</div>`;
     return html;
   }
-  const mism=priceMismatches();
-  if(mism.length){
-    const byModel={};
-    mism.forEach(x=>{ const k=x.model.id; (byModel[k]=byModel[k]||{m:x.model,prices:new Set()}).prices.add(x.price); });
-    html+=Object.values(byModel).map(g=>{
-      const list=[...g.prices].sort((a,b)=>a-b);
-      return `<div style="background:#fdf6ea;border:1px solid #f0e0c4;border-left:3px solid #c9922e;border-radius:12px;padding:11px 13px;margin-bottom:10px;font-size:12.5px;color:#8a5a1e;line-height:1.6">
-        <b>${esc(g.m.name)}</b>: η προδιαγραφή λέει ${fmtMoney(g.m.price)}, αλλά έχεις χρεώσει ${list.map(fmtMoney).join(" · ")}.
-        ${list.length===1?`<button class="btn ghost sm" style="margin-top:8px" onclick="fixModelPrice('${g.m.id}',${list[0]})">Άλλαξε σε ${fmtMoney(list[0])}</button>`:""}
-      </div>`;
-    }).join("");
-  }
-  html+=modelCat.map(m=>`<div class="stock-item">
+  const bs=bestSeller();
+  html+=modelCat.slice().sort((a,b)=>modelSales(b.name).n-modelSales(a.name).n).map(m=>{
+    const sl=modelSales(m.name);
+    return `<div class="stock-item">
       ${m.image_url?`<img class="si-img" src="${esc(m.image_url)}" alt="">`:`<div class="si-img"></div>`}
-      <div class="si-info"><div class="si-name">${esc(m.name)}${m.anasa?' <span class="mm-pill" style="background:var(--stone);color:var(--muted);border-color:var(--line)">ANASA</span>':''}</div>
-        <div class="si-meta">${m.price!=null?fmtMoney(m.price):"χωρίς τιμή"}${m.materials&&m.materials.length?` · ${m.materials.length} υλικά`:""}</div></div>
+      <div class="si-info"><div class="si-name">${esc(m.name)}${bs&&bs.name===m.name?' <span class="mm-pill" style="background:#f3efe6;color:#8a6a2e;border-color:#e4d9c2">best seller</span>':''}</div>
+        <div class="si-meta">${m.price!=null?fmtMoney(m.price):"χωρίς τιμή"} · ${sl.n?`<b style="color:var(--ink)">${sl.n}</b> ${sl.n===1?"πώληση":"πωλήσεις"} · ${fmtMoney(sl.rev)}`:"καμία πώληση"}${m.materials&&m.materials.length?` · ${m.materials.length} υλικά`:""}</div></div>
       <button class="btn ghost sm" onclick="openModelModal('${m.id}')">✎</button>
-    </div>`).join("");
+    </div>`;
+  }).join("");
   html+=`<div style="margin-top:12px"><button class="btn ghost" style="width:100%" onclick="openModelModal()">+ Νέο προϊόν</button></div>`;
   return html;
 }
@@ -4027,6 +4113,16 @@ function matRowHtml(it){
   </div>`;
 }
 const MAT_CAT_ORDER = ["Νήμα","Ταμπελάκι","Συσκευασία","Free Gift","Άλλο","Άσπρα & Μαύρα","Πράσινα & Γκρι","Κίτρινα","Καφέ & Μπεζ","Μπλε","Ροζ & Μωβ","Κόκκινα"];
+function matSelSummary(){
+  const box=document.getElementById("matSelTop"); if(!box) return;
+  const ids=Object.keys(matDraft).filter(id=>matDraft[id]>0);
+  if(!ids.length){ box.classList.add("hidden"); box.innerHTML=""; return; }
+  box.innerHTML = ids.map(id=>{
+    const it=(stockCache||[]).find(x=>x.id===id) || (matRows.find(r=>r.id===id)||{});
+    return `<span class="stat-pill"><b>${fmtNum(matDraft[id])}</b> ${esc(it.name||"")}</span>`;
+  }).join("");
+  box.classList.remove("hidden");
+}
 function renderMatPicker(){
   const list=document.getElementById("matPickerList");
   if(!matRows.length){ list.innerHTML='<div class="mat-empty">Δεν υπάρχει διαθέσιμο στοκ. Πρόσθεσε είδη από την καρτέλα «Αποθήκη».</div>'; matPickerTotalUpdate(); return; }
@@ -4053,6 +4149,7 @@ function renderMatPicker(){
   }
   list.innerHTML=html;
   matPickerTotalUpdate();
+  matSelSummary();
   if(ov) ov.scrollTop=st;
 }
 function closeMatPicker(){ _ovClose("matModal"); }
@@ -4065,8 +4162,9 @@ function matStep(id, delta){
   if(q<0)q=0; if(q>avail)q=avail;
   const was=matDraft[id]||0;
   matDraft[id]=q;
-  if((was===0)!==(q===0)) renderMatPicker();      // μπήκε/βγήκε από τα Επιλεγμένα -> αναδόμηση
-  else { const el=document.getElementById("mv-"+id); if(el) el.textContent=q; matPickerTotalUpdate(); }
+  const el=document.getElementById("mv-"+id); if(el) el.textContent=q;
+  matPickerTotalUpdate();
+  matSelSummary();      // ενημέρωση μετρητή χωρίς να κλείσει η κατηγορία
 }
 function matPickerTotalUpdate(){
   let total=0;
