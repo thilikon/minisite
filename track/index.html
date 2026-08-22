@@ -503,10 +503,11 @@
   .fb-a-q{font-size:12.5px;color:var(--ink-soft);flex:1;line-height:1.45}
   .fb-a-v{font-size:13px;font-weight:600;text-align:right;white-space:nowrap}
   .brief{background:var(--cream);border:1px solid var(--line);border-radius:14px;padding:15px 16px 13px;margin-bottom:16px}
-  .brief-h{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px}
+  .brief-h{font-family:'Cormorant',Georgia,serif;font-size:23px;font-weight:600;color:var(--ink);margin-bottom:9px;letter-spacing:-.01em}
   .brief-b{font-size:13px;line-height:1.7;color:var(--ink-soft)}
   .brief-b b{color:var(--ink);font-weight:700}
-  .brief-n{font-family:'Cormorant',Georgia,serif;font-style:italic;font-size:14.5px;color:var(--muted);margin-top:11px;padding-top:10px;border-top:1px solid var(--line)}
+  .brief-n{font-family:'Cormorant',Georgia,serif;font-style:italic;font-size:15px;color:var(--ink-soft);margin-top:12px;padding-top:11px;border-top:1px solid var(--line);line-height:1.5}
+  .brief-who{font-family:'Inter';font-style:normal;font-size:10.5px;letter-spacing:.04em;color:var(--muted);white-space:nowrap}
   .brief-pill{display:inline-block;background:var(--stone);border:1px solid var(--line);border-radius:var(--pill);padding:1px 9px;font-family:'Inter';font-size:12px;font-weight:600;color:var(--ink);cursor:pointer;line-height:1.5}
   .brief-pill:active{background:var(--line)}
   .gear-dot{position:absolute;top:2px;right:3px;width:7px;height:7px;border-radius:50%;background:#c0266c}
@@ -1806,10 +1807,10 @@ function buildBrief(ctx){
     if(dayOfMonth<daysInMonth-4){
       const proj=ctx.revMonth/dayOfMonth*daysInMonth;
       const pdiff=Math.round((proj-revPrev)/revPrev*100);
-      push(70, `Με τον ρυθμό του μήνα κλείνεις γύρω στα <b>${fmtMoney(proj)}</b> — ${pdiff>=0?`<b>${pdiff}% πάνω</b>`:`<b>${Math.abs(pdiff)}% κάτω</b>`} από τον προηγούμενο.`);
+      push(70, `Ο μήνας έχει φέρει <b>${fmtMoney(ctx.revMonth)}</b> από ${cntNow} ${cntNow===1?"παραγγελία":"παραγγελίες"} σε ${dayOfMonth} μέρες· με αυτόν τον ρυθμό κλείνει γύρω στα <b>${fmtMoney(proj)}</b>, ${pdiff>=0?`<b>${pdiff}% πάνω</b>`:`<b>${Math.abs(pdiff)}% κάτω</b>`} από τον προηγούμενο (${fmtMoney(revPrev)}).`);
     } else {
-      push(70, diff>=0 ? `Ο μήνας έκλεισε <b>${diff}% πάνω</b> από τον προηγούμενο (${fmtMoney(ctx.revMonth)}).`
-                       : `Ο μήνας είναι <b>${Math.abs(diff)}% κάτω</b> από τον προηγούμενο (${fmtMoney(ctx.revMonth)}).`);
+      push(70, diff>=0 ? `Ο μήνας κλείνει με <b>${fmtMoney(ctx.revMonth)}</b> από ${cntNow} παραγγελίες, <b>${diff}% πάνω</b> από τον προηγούμενο (${fmtMoney(revPrev)}).`
+                       : `Ο μήνας κλείνει με <b>${fmtMoney(ctx.revMonth)}</b>, <b>${Math.abs(diff)}% κάτω</b> από τον προηγούμενο (${fmtMoney(revPrev)}) — ${cntNow} έναντι ${cntPrev} παραγγελίες.`);
     }
   } else if(ctx.revMonth>0){
     push(55, `Τζίρος μήνα <b>${fmtMoney(ctx.revMonth)}</b> από ${ctx.monthCount} ${ctx.monthCount===1?"παραγγελία":"παραγγελίες"}.`);
@@ -1845,8 +1846,8 @@ function buildBrief(ctx){
     const wid=(ordersCache.find(o=>o.customer_name===worst.name)||{}).id;
     const who=wid?pill(worst.name,wid):`<b>${esc(worst.name)}</b>`;
     push(88, ctx.stuck.length===1
-      ? `Μία παραγγελία περιμένει <b>${worst.days} μέρες</b> στο ίδιο στάδιο — ${who}.`
-      : `<b>${ctx.stuck.length} παραγγελίες</b> περιμένουν πάνω από βδομάδα· η παλαιότερη <b>${worst.days} μέρες</b> — ${who}.`);
+      ? `Μία παραγγελία περιμένει <b>${worst.days} μέρες</b> στο «${esc(worst.stage||"ίδιο στάδιο")}» — ${who}.`
+      : `<b>${ctx.stuck.length} παραγγελίες</b> περιμένουν πάνω από βδομάδα· η παλαιότερη <b>${worst.days} μέρες</b> στο «${esc(worst.stage||"ίδιο στάδιο")}» — ${who}.`);
   }
 
   /* 5. Παραδόσεις που πλησιάζουν / έχουν περάσει */
@@ -1866,13 +1867,16 @@ function buildBrief(ctx){
       return rem>0 && o.created_at && (now-new Date(o.created_at))/DAY>21;
     }).length;
     if(unpaidOld) push(80, `Εκκρεμούν <b>${fmtMoney(ctx.outstanding)}</b>, με <b>${unpaidOld}</b> ${unpaidOld===1?"παραγγελία":"παραγγελίες"} πάνω από 3 βδομάδες απλήρωτες.`);
-    else push(50, `Εκκρεμούν <b>${fmtMoney(ctx.outstanding)}</b> σε εισπράξεις.`);
+    else push(50, `Εκκρεμούν <b>${fmtMoney(ctx.outstanding)}</b> σε εισπράξεις${ctx.revMonth>0?`, δηλαδή όσο το ${Math.round(ctx.outstanding/ctx.revMonth*100)}% του τζίρου του μήνα`:""}.`);
   }
 
   /* 7. Αποθήκη */
   const outItems=(stockCache||[]).filter(it=>!it.mm && !it.event_id && stockState(it)==="out");
   if(outItems.length) push(84, `Εξαντλήθηκε: <b>${outItems.slice(0,2).map(x=>esc(x.name)).join(" · ")}</b>${outItems.length>2?` +${outItems.length-2}`:""}.`);
-  else if(ctx.lowCount>0) push(60, `<b>${ctx.lowCount}</b> ${ctx.lowCount===1?"υλικό κοντεύει":"υλικά κοντεύουν"} να τελειώσει.`);
+  else if(ctx.lowCount>0) {
+      const lowNames=(stockCache||[]).filter(it=>!it.mm && !it.event_id && stockState(it)==="low").slice(0,2).map(x=>esc(x.name));
+      push(60, `<b>${ctx.lowCount}</b> ${ctx.lowCount===1?"υλικό κοντεύει":"υλικά κοντεύουν"} να τελειώσει${lowNames.length?` — ${lowNames.join(", ")}${ctx.lowCount>lowNames.length?" κ.ά.":""}`:""}.`);
+    }
 
   /* 8. Κέρδος & περιθώριο */
   if(ctx.revMonth>0 && !ctx.costMonthKnown){
@@ -1885,7 +1889,7 @@ function buildBrief(ctx){
   /* 9. Χρόνος παράδοσης */
   if(ctx.avgTotal!=null){
     if(ctx.avgTotal>10) push(64, `Ο μέσος χρόνος παράδοσης είναι <b>${Math.round(ctx.avgTotal)} μέρες</b>, λίγο πάνω από το κανονικό.`);
-    else if(ctx.avgTotal<=4) push(42, `Παραδίδεις κατά μέσο όρο σε <b>${Math.round(ctx.avgTotal)} μέρες</b> — πολύ καλός ρυθμός.`);
+    else if(ctx.avgTotal<=4) push(42, `Παραδίδεις κατά μέσο όρο σε <b>${Math.round(ctx.avgTotal)} μέρες</b>, αρκετά πιο γρήγορα από το 1–7 που υπόσχεσαι.`);
   }
 
   /* 10. Πελάτισσες που ξαναγύρισαν */
@@ -1916,7 +1920,7 @@ function buildBrief(ctx){
     const byStage={};
     activeItems.forEach(({o,it})=>{ const S=stagesFor(itemFlow(it),o.delivery_method); const t=(S[itemStage(it)]||{}).title||"—"; byStage[t]=(byStage[t]||0)+1; });
     const worst=Object.entries(byStage).sort((a,b)=>b[1]-a[1])[0];
-    push(68, `<b>${activeItems.length}</b> προϊόντα σε εξέλιξη, τα <b>${worst[1]}</b> στο «${esc(worst[0])}».`);
+    push(68, `Έχεις <b>${activeItems.length}</b> προϊόντα σε εξέλιξη — τα <b>${worst[1]}</b> στέκονται στο «${esc(worst[0])}», εκεί μαζεύεται η δουλειά.`);
   }
 
   /* 15. Μέση αξία παραγγελίας σε σχέση με τον προηγούμενο μήνα */
@@ -1938,34 +1942,61 @@ function buildBrief(ctx){
   if(noCost>=3) push(56, `<b>${noCost}</b> ολοκληρωμένες παραγγελίες δεν έχουν κόστος υλικών, οπότε το κέρδος βγαίνει αισιόδοξο.`);
 
   const seed=Math.floor(Date.now()/DAY);
-  const CLOSERS=[
-    "Βήμα-βήμα, όπως πάντα.",
-    "Κάθε τσάντα που φεύγει είναι μια πελάτισσα που θα ξαναγυρίσει.",
-    "Τα νούμερα δείχνουν τη δουλειά που έχει ήδη γίνει.",
-    "Μία-μία, στην ώρα τους.",
-    "Η συνέπεια χτίζει το brand, όχι η βιασύνη.",
-    "Ό,τι μετριέται, βελτιώνεται.",
-    "Καλή συνέχεια στο εργαστήρι.",
-    "Μικρά βήματα, σταθερή πορεία.",
-    "Η ποιότητα είναι που κάνει τη διαφορά, και την έχεις.",
-    "Σιγά σιγά χτίζεται κάτι δικό σου.",
-    "Κάθε μήνας που περνάει, το THILIKON γίνεται πιο δυνατό.",
-    "Δεν χρειάζεται να τρέχεις — χρειάζεται να μη σταματάς.",
-    "Η δουλειά σου μιλάει από μόνη της.",
-    "Οργάνωση σήμερα, ηρεμία αύριο."
+  const QUOTES=[
+    ["Αγόραζε λιγότερα, διάλεγε καλά, κάνε τα να κρατήσουν.","Vivienne Westwood"],
+    ["Η μόδα ξεθωριάζει, το στυλ είναι αιώνιο.","Yves Saint Laurent"],
+    ["Για να είσαι αναντικατάστατη, πρέπει πάντα να είσαι διαφορετική.","Coco Chanel"],
+    ["Δεν ονειρεύτηκα ποτέ την επιτυχία. Δούλεψα γι' αυτήν.","Estée Lauder"],
+    ["Η κομψότητα δεν είναι να ξεχωρίζεις, αλλά να σε θυμούνται.","Giorgio Armani"],
+    ["Ό,τι μετριέται, διοικείται.","Peter Drucker"],
+    ["Η τιμή είναι αυτό που πληρώνεις. Η αξία είναι αυτό που παίρνεις.","Warren Buffett"],
+    ["Το brand σου είναι ό,τι λένε για σένα όταν λείπεις.","Jeff Bezos"],
+    ["Ποιότητα σημαίνει να το κάνεις σωστά όταν δεν κοιτάζει κανείς.","Henry Ford"],
+    ["Οι λεπτομέρειες δεν είναι λεπτομέρειες. Αυτές φτιάχνουν το σχέδιο.","Charles Eames"],
+    ["Ο κόσμος δεν αγοράζει αυτό που κάνεις, αγοράζει το γιατί.","Simon Sinek"],
+    ["Θα ξεχάσουν τι είπες, αλλά όχι πώς τους έκανες να νιώσουν.","Maya Angelou"],
+    ["Καλό σχέδιο είναι όσο το δυνατόν λιγότερο σχέδιο.","Dieter Rams"],
+    ["Ο τρόπος να ξεκινήσεις είναι να σταματήσεις να μιλάς και να αρχίσεις.","Walt Disney"],
+    ["Η επιτυχία δεν είναι το αποτέλεσμα, είναι όσα μαθαίνεις στον δρόμο.","Vera Wang"],
+    ["Μη σε τρομάζει αυτό που δεν ξέρεις.","Sara Blakely"],
+    ["Η ποιότητα είναι πιο σημαντική από την ποσότητα.","Steve Jobs"],
+    ["Το ντύσιμο με φροντίδα είναι μια μορφή καλών τρόπων.","Tom Ford"],
+    ["Η κομψότητα είναι άρνηση.","Coco Chanel"],
+    ["Το σχέδιο είναι μια συνεχής ισορροπία ανάμεσα σε άνεση και πολυτέλεια.","Donna Karan"],
+    ["Μη ψάχνεις πελάτες για τα προϊόντα σου· βρες προϊόντα για τους πελάτες σου.","Seth Godin"],
+    ["Αυτό που φοράς είναι ο τρόπος που συστήνεσαι στον κόσμο.","Miuccia Prada"],
+    ["Η μόδα αφορά τη γυναίκα που φοράει τα ρούχα.","Oscar de la Renta"],
+    ["Φτιάξε το δικό σου προσωπικό στυλ.","Anna Wintour"],
+    ["Η εξυπηρέτηση δεν είναι τμήμα· είναι ολόκληρη η εταιρεία.","Tony Hsieh"],
+    ["Το περισσότερο είναι περισσότερο και το λιγότερο βαρετό.","Iris Apfel"],
+    ["Φρόντισε τους ανθρώπους σου κι εκείνοι θα φροντίσουν τη δουλειά.","Richard Branson"],
+    ["Το trendy είναι το τελευταίο στάδιο πριν το κακόγουστο.","Karl Lagerfeld"],
+    ["Η μόδα πρέπει να είναι μια μορφή απόδρασης.","Alexander McQueen"],
+    ["Απλότητα, καλό γούστο και φροντίδα: τα τρία θεμέλια.","Christian Dior"],
+    ["Η υπομονή είναι πικρή, αλλά ο καρπός της γλυκός.","Αριστοτέλης"],
+    ["Ξεκίνα από εκεί που είσαι. Χρησιμοποίησε ό,τι έχεις.","Arthur Ashe"],
+    ["Μεγάλα πράγματα φτιάχνονται από μια σειρά μικρών.","Vincent van Gogh"],
+    ["Η τελειότητα φτάνει όταν δεν έχεις τίποτα να αφαιρέσεις.","Antoine de Saint-Exupéry"],
+    ["Η δημιουργικότητα χρειάζεται θάρρος.","Henri Matisse"],
+    ["Κάνε τα μικρά πράγματα με ασυνήθιστο τρόπο.","Booker T. Washington"]
   ];
-  const closer=CLOSERS[seed % CLOSERS.length];
+  const yr=new Date().getFullYear();
+  const q=QUOTES[(seed*7 + yr) % QUOTES.length];
+  const closer=`«${q[0]}» <span class="brief-who">— ${q[1]}</span>`;
+  const h=new Date().getHours();
+  const hello = h<12 ? "Καλημέρα" : (h<18 ? "Καλησπέρα" : "Καλό βράδυ");
+  const greet = `${hello}, Αναστασία`;
 
   if(!ins.length){
-    return `<div class="brief"><div class="brief-h">Πώς πάει το THILIKON</div>
-      <div class="brief-b">Ήρεμα πράγματα — τίποτα δεν χρειάζεται την προσοχή σου αυτή τη στιγμή.</div>
+    return `<div class="brief"><div class="brief-h">${greet}</div>
+      <div class="brief-b">Ήρεμα πράγματα σήμερα — καμία παραγγελία δεν καθυστερεί, τίποτα δεν λείπει από την αποθήκη και δεν εκκρεμούν εισπράξεις.</div>
       <div class="brief-n">${closer}</div></div>`;
   }
   // ταξινόμηση κατά επείγον· εναλλαγή στα ισοβαθμούντα ώστε να μη λέει τα ίδια κάθε μέρα
   ins.sort((a,b)=> b.score-a.score || ((a.txt.length+seed)%3)-((b.txt.length+seed)%3));
   const lines=ins.slice(0,3).map(x=>x.txt);
   return `<div class="brief">
-    <div class="brief-h">Πώς πάει το THILIKON</div>
+    <div class="brief-h">${greet}</div>
     <div class="brief-b">${lines.join(" ")}</div>
     <div class="brief-n">${closer}</div>
   </div>`;
