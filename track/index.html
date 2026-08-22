@@ -1777,12 +1777,25 @@ function renderStats(){
   const stockVal = _stock.reduce((s,it)=>s+(Number(it.qty)||0)*(Number(it.unit_cost)||0),0);
   const lowCount = _stock.filter(it=>stockState(it)!=="ok").length;
   const mmColors = _stock.filter(it=>it.mm).length;
+  const yearNow=new Date().getFullYear();
   const evStats={};
   ordersCache.forEach(o=>{
     const e=evOf(o); if(!e) return;
-    const st=evStats[e.id]=evStats[e.id]||{name:e.name,color:e.color,ink:e.ink,n:0,rev:0,items:0};
+    const d=o.created_at?new Date(o.created_at):null;
+    if(!d || d.getFullYear()!==yearNow) return;          // μετρητής ανά έτος — μηδενίζει τον Ιανουάριο
+    const st=evStats[e.id]=evStats[e.id]||{name:e.name,color:e.color,ink:e.ink,n:0,rev:0,items:0,total:null};
     st.n++; if(o.price!=null) st.rev+=Number(o.price);
     st.items+=getItems(o).length;
+  });
+  // events με μετρημένα κομμάτια (χωρίς σταθερή έκπτωση): πόσα από πόσα
+  Object.keys(EVENTS).forEach(id=>{
+    if(EVENTS[id].discount>0) return;
+    const total=(stockCache||[]).filter(it=>it.type==="product" && (it.event_id===id)).length;
+    if(total>0){
+      const e=EVENTS[id];
+      evStats[id]=evStats[id]||{name:e.name,color:e.color,ink:e.ink,n:0,rev:0,items:0};
+      evStats[id].total=total;
+    }
   });
   const _fb = feedbackCache||[];
   const _sat = _fb.map(r=>r.q_satisfaction).filter(x=>x!=null);
@@ -1816,7 +1829,7 @@ function renderStats(){
   const avgTotal = totalDays.length ? totalDays.reduce((a,b)=>a+b,0)/totalDays.length : null;
   const fastest = totalDays.length ? Math.min(...totalDays) : null;
   const slowest = totalDays.length ? Math.max(...totalDays) : null;
-  const fmtDays = d => d==null ? "—" : (d<1 ? "<1 μέρα" : (Math.round(d*10)/10)+" μέρες");
+  const fmtDays = d => { if(d==null) return "—"; const n=Math.round(d); return n<1 ? "<1 μέρα" : (n===1?"1 μέρα":n+" μέρες"); };
   const stageKeys = Object.keys(stageDur);
   const stageAvgMax = stageKeys.length ? Math.max(...stageKeys.map(k=>stageDur[k]/stageN[k])) : 0;
   const hasTime = stageKeys.length || totalDays.length;
@@ -1891,7 +1904,7 @@ function renderStats(){
     <div class="stat-row">
       <span class="stat-pill"><b>${totalItems}</b> Προϊόντα</span>
       ${returnTotal?`<span class="stat-pill warn"><b>${returnTotal}</b> Επιστροφές${returnActive?` · ${returnActive} ενεργές`:""}</span>`:""}
-      ${Object.keys(evStats).map(id=>{const v=evStats[id];return `<span class="stat-pill" style="background:${v.color}1f;border-color:${v.color};color:${v.ink||v.color}"><b style="color:${v.ink||v.color}">${v.n}</b> ${esc(v.name)}</span>`;}).join("")}
+
       <span class="stat-pill blue"><b>${readyCount}</b> Ραφιού</span>
       <span class="stat-pill"><b>${ship}</b> Αποστολή</span>
       <span class="stat-pill"><b>${pickup}</b> Παραλαβή</span>
@@ -1911,9 +1924,10 @@ function renderStats(){
 
     ${timeBlock}
 
-    ${Object.keys(evStats).length?`<div class="stats-sub">Events</div>
+    ${Object.keys(evStats).length?`<div class="stats-sub">Events ${yearNow}</div>
     <div class="stat-grid">${Object.keys(evStats).map(id=>{const v=evStats[id];
-      return `<div class="stat"><div class="n" style="font-size:20px;color:${v.ink||v.color}">${v.items}</div><div class="l">${esc(v.name)}<br><span style="opacity:.7">${fmtMoney(v.rev)}</span></div></div>`;
+      const big = v.total!=null ? `${v.items}<span style="font-size:14px;opacity:.55"> / ${v.total}</span>` : v.items;
+      return `<div class="stat"><div class="n" style="font-size:20px;color:${v.ink||v.color}">${big}</div><div class="l">${esc(v.name)}<br><span style="opacity:.7">${fmtMoney(v.rev)}</span></div></div>`;
     }).join("")}</div>`:""}
 
     <div class="stats-sub">Αποθήκη</div>
@@ -2550,13 +2564,12 @@ function updateEventBadge(){
 function openSettings(){
   const box=document.getElementById("settingsBody");
   box.innerHTML = Object.keys(EVENTS).map(id=>{
-    const e=EVENTS[id], off=evExpired(id), on=evActive(id);
+    const e=EVENTS[id], on=evActive(id);
     return `<label class="ev-row ${on?'on':''}" style="${on?`border-color:${e.color};background:${e.color}1f`:''}">
       <input type="checkbox" ${on?"checked":""} onchange="toggleEvent('${id}',this.checked)" style="accent-color:${e.color}">
       <div style="flex:1;min-width:0">
         <div class="ev-name" style="${on?`color:${e.ink||e.color}`:''}">${esc(e.name)}</div>
         <div class="ev-sub">${esc(e.tagline)}${e.discount?` · αυτόματο −${Math.round(e.discount*100)}%`:" · χειροκίνητη έκπτωση"}</div>
-        ${off?`<div class="ev-sub" style="color:#8a5a1e">Έληξε ${new Date(e.autoOff).toLocaleDateString("el-GR")} — άνοιξέ το ξανά αν χρειαστεί</div>`:""}
       </div>
     </label>`;
   }).join("");
@@ -2637,7 +2650,12 @@ function renderStock(){
     html+=`<div class="r-hint" style="color:#8a5a1e;background:#fdf6ea;margin-bottom:14px">${stockView==="product"?"Λίγα κομμάτια":"Τελειώνουν"}: ${lowItems.map(it=>esc(it.name)+(stockState(it)==="out"?" (0)":` (${fmtNum(it.qty)})`)).join(" · ")}</div>`;
   }
   const cats={}; rows.forEach(it=>{ const c=it.category||"Άλλο"; (cats[c]=cats[c]||[]).push(it); });
-  Object.keys(cats).forEach(cat=>{
+  const CAT_ORDER=["Νήμα","Ταμπελάκι","Συσκευασία","Free Gift","Άλλο","Τσάντα","Αξεσουάρ","Little Luxuries",
+    "Άσπρα & Μαύρα","Πράσινα & Γκρι","Κίτρινα","Καφέ & Μπεζ","Μπλε","Ροζ & Μωβ","Κόκκινα"];
+  Object.keys(cats).sort((a,b)=>{
+    const ia=CAT_ORDER.indexOf(a), ib=CAT_ORDER.indexOf(b);
+    return (ia<0?99:ia)-(ib<0?99:ib) || a.localeCompare(b,"el");
+  }).forEach(cat=>{
     html+=`<div class="stock-cat">${esc(cat)}</div>`;
     cats[cat].forEach(it=>{
       const st=stockState(it), unit=it.unit||"τεμ.";
@@ -2724,12 +2742,16 @@ const STOCK_CATS = {
   raw:["Νήμα","Ταμπελάκι","Συσκευασία","Free Gift","Άλλο"],
   product:["Τσάντα","Αξεσουάρ","Άλλο"]
 };
+function productCats(){
+  const extra = activeEvents().filter(id=>EVENTS[id].discount===0).map(id=>EVENTS[id].name);
+  return [...extra, ...STOCK_CATS.product];
+}
 const MM_CATS = ["Άσπρα & Μαύρα","Πράσινα & Γκρι","Κίτρινα","Καφέ & Μπεζ","Μπλε","Ροζ & Μωβ","Κόκκινα"];
 function rebuildStockCats(){
   const isProd = document.getElementById("sType").value==="product";
   const isMM = (document.getElementById("sEvent")||{}).value==="mix";
   const cat = document.getElementById("sCat"); const prev = cat.value;
-  let opts = isMM ? MM_CATS.slice() : (isProd ? STOCK_CATS.product.slice() : STOCK_CATS.raw.slice());
+  let opts = isMM ? MM_CATS.slice() : (isProd ? productCats() : STOCK_CATS.raw.slice());
   if(prev && !opts.includes(prev)) opts.push(prev); // ποτέ μη χάσεις την τρέχουσα κατηγορία
   cat.innerHTML = opts.map(o=>`<option>${o}</option>`).join("");
   cat.value = opts.includes(prev) ? prev : opts[0];
