@@ -756,7 +756,7 @@
     <div id="fbReadout" class="fb-readout hidden"></div>
 
     <div style="display:block">
-      <label class="fld"><span>Όνομα πελάτη *</span><input id="fName"></label>
+      <label class="fld"><span>Όνομα πελάτη *</span><input id="fName" placeholder="π.χ. Μαρία Π."></label>
       <div class="ord-meta">
         <span class="meta-chip"><b>Αρ.</b> <span id="fOrderNoView">αυτόματο</span></span>
         <span class="meta-chip"><b>Καταχ.</b> <span id="fCreatedView">—</span></span>
@@ -832,8 +832,8 @@
 <!-- ============ ΜΟΝΤΕΛΟ ============ -->
 <div id="modelModal" class="overlay hidden">
   <div class="modal">
-    <div class="mh"><h2 class="serif" id="modelTitle">Νέο μοντέλο</h2><button class="x" onclick="closeModelModal()">✕</button></div>
-    <label class="fld"><span>Όνομα μοντέλου</span><input id="mName" placeholder="π.χ. KELLY"></label>
+    <div class="mh"><h2 class="serif" id="modelTitle">Νέο προϊόν</h2><button class="x" onclick="closeModelModal()">✕</button></div>
+    <label class="fld"><span>Όνομα προϊόντος</span><input id="mName" placeholder="π.χ. KELLY"></label>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       <label class="fld" style="flex:1 1 120px"><span>Βασική τιμή €</span><input id="mPrice" inputmode="decimal" placeholder="0"></label>
       <label class="fld" style="flex:2 1 160px"><span>Φωτογραφία (URL)</span><input id="mImg" placeholder="https://…"></label>
@@ -1336,7 +1336,7 @@ function renderTracking(o){
   if(rv){
     const v = Number(o.visit_no)||0;
     if(v>1){
-      rv.innerHTML = `Η <b>${ordGr(v)} δημιουργία σου</b> στο THILIKON. Σε ευχαριστούμε 🤍`;
+      rv.innerHTML = `Αυτή είναι η <b>${ordGr(v)} δημιουργία σου</b> από το THILIKÓN. Σε ευχαριστούμε 🤍`;
       rv.classList.remove("hidden");
     } else rv.classList.add("hidden");
   }
@@ -2712,22 +2712,59 @@ function refreshModelList(){
 }
 function onModelPick(inp){
   const row=inp.closest(".ie-item"); if(!row) return;
-  const m=(modelCat||[]).find(x=>normText(x.name)===normText(inp.value));
-  if(!m) return;
-  const pr=row.querySelector(".ie-price");
-  if(pr && !pr.value && m.price!=null) pr.value=m.price;     // δεν πατάει ό,τι έχεις ήδη γράψει
-  if(m.materials && m.materials.length && !pickedMaterials.length && !stockApplied){
-    document.getElementById("matHint").innerHTML =
-      `Το <b>${esc(m.name)}</b> χρειάζεται συνήθως ${m.materials.length} υλικά. <button type="button" class="btn ghost sm" style="margin-left:6px" onclick="applyModelMaterials('${m.id}')">Φόρτωσέ τα</button>`;
-    document.getElementById("matHint").classList.remove("hidden");
-  }
+  const hint=document.getElementById("matHint");
+  const val=(inp.value||"").trim();
+  if(!val || !(modelCat||[]).length){ if(hint) hint.classList.add("hidden"); return; }
+  const exact=(modelCat||[]).find(x=>normText(x.name)===normText(val));
+  if(exact){ applyModelToRow(exact.id, row); return; }
+  // χαλαρό ταίριασμα -> ρωτάει πρώτα
+  const near=(modelCat||[]).find(x=>smartMatch(x.name, val));
+  if(near && hint){
+    row.dataset.suggest=near.id;
+    hint.innerHTML=`Εννοείς την <b>${esc(near.name)}</b> ; <button type="button" class="btn ghost sm" style="margin-left:6px" onclick="acceptSuggest('${near.id}')">Ναι</button>`;
+    hint.classList.remove("hidden");
+  } else if(hint) hint.classList.add("hidden");
 }
-function applyModelMaterials(mid){
+function acceptSuggest(mid){
+  const row=document.querySelector('#itemsEditor .ie-item[data-suggest="'+mid+'"]') || document.querySelector('#itemsEditor .ie-item');
+  const m=(modelCat||[]).find(x=>x.id===mid); if(!m||!row) return;
+  row.querySelector(".ie-name").value=m.name;
+  applyModelToRow(mid, row);
+}
+function applyModelToRow(mid, row){
   const m=(modelCat||[]).find(x=>x.id===mid); if(!m) return;
-  matDraft={}; (m.materials||[]).forEach(mm=>{ if((stockCache||[]).some(x=>x.id===mm.id)) matDraft[mm.id]=mm.qty; });
-  const rows=stockCache.filter(it=>it.type!=="product" && (isMix()||!stEv(it)||curEventId()===((stEv(it)||{}).id)) && (Number(it.qty)>0||matDraft[it.id]));
-  showMatPicker(rows);
+  const pr=row.querySelector(".ie-price");
+  if(pr && !pr.value && m.price!=null) pr.value=m.price;   // δεν πατάει ό,τι έχεις γράψει
+  updateMoneyHint();
+  const hint=document.getElementById("matHint"); if(!hint) return;
+  const mats=(m.materials||[]).map(mm=>{
+    const it=(stockCache||[]).find(x=>x.id===mm.id);
+    return { ...mm, name:(it&&it.name)||mm.name, cat:(it&&it.category)||"" };
+  });
+  if(!mats.length || stockApplied || pickedMaterials.length){ hint.classList.add("hidden"); return; }
+  const fixed=mats.filter(x=>x.cat!=="Νήμα");     // νήμα = διαφορετικό χρώμα κάθε φορά
+  const yarn=mats.filter(x=>x.cat==="Νήμα");
+  hint.innerHTML =
+    `<b>${esc(m.name)}</b> — συνήθως: ${mats.map(x=>`${esc(x.name)} ×${fmtNum(x.qty)}`).join(" · ")}.` +
+    (yarn.length?`<br><span style="color:var(--muted)">Το νήμα διάλεξέ το εσύ (αλλάζει χρώμα κάθε φορά).</span>`:"") +
+    (fixed.length?` <button type="button" class="btn ghost sm" style="margin-top:8px" onclick="loadModelFixed('${m.id}')">Φόρτωσε τα σταθερά</button>`:"");
+  hint.classList.remove("hidden");
+}
+function loadModelFixed(mid){
+  const m=(modelCat||[]).find(x=>x.id===mid); if(!m) return;
+  matDraft={};
+  (m.materials||[]).forEach(mm=>{
+    const it=(stockCache||[]).find(x=>x.id===mm.id);
+    if(it && it.category!=="Νήμα" && Number(it.qty)>0) matDraft[mm.id]=mm.qty;
+  });
+  openMatPickerWithDraft();
   document.getElementById("matHint").classList.add("hidden");
+}
+function openMatPickerWithDraft(){
+  const keep={...matDraft};
+  openMatPicker();
+  matDraft=keep;
+  renderMatPicker();
 }
 function collectItems(){
   const out=[];
@@ -3382,7 +3419,7 @@ function renderStock(){
   const mm=all.filter(it=>it.type!=="product" && stEv(it));
   const prods=all.filter(it=>it.type==="product");
   const toggle=`<div class="tabsw" style="margin-bottom:16px;flex-wrap:wrap">
-    <button class="tb ${stockView==='models'?'sel':''}" onclick="setStockView('models')">Μοντέλα${modelCat.length?` (${modelCat.length})`:''}</button>
+    <button class="tb ${stockView==='models'?'sel':''}" onclick="setStockView('models')">Προδιαγραφές${modelCat.length?` (${modelCat.length})`:''}</button>
     <button class="tb ${stockView==='raw'?'sel':''}" onclick="setStockView('raw')">Πρώτες ύλες${raw.length?` (${raw.length})`:''}</button>
     <button class="tb ${stockView==='mm'?'sel':''}" onclick="setStockView('mm')" ${stockView==='mm'?'style="background:#c0266c;border-color:#c0266c"':''}>Mix &amp; Match${mm.length?` (${mm.length})`:''}</button>
     <button class="tb ${stockView==='product'?'sel':''}" onclick="setStockView('product')">Έτοιμα προϊόντα${prods.length?` (${prods.length})`:''}</button>
@@ -3595,6 +3632,22 @@ async function delStock(){
   }catch(e){ adminFlash("Σφάλμα διαγραφής"); }
 }
 
+/* ---- Συλλογή ANASA (από το mini-site) ---- */
+const ANASA = [
+  {name:"Loopi",          cat:"Marshmallow",    img:"https://i.imgur.com/4H32v0k.png"},
+  {name:"Hug",            cat:"Marshmallow",    img:"https://i.imgur.com/P8iXkZS.png"},
+  {name:"Grace",          cat:"T-Shirt Yarn",   img:"https://i.imgur.com/0RWHLZd.png"},
+  {name:"Bella",          cat:"T-Shirt Yarn",   img:"https://i.imgur.com/w5xTAYJ.png"},
+  {name:"Kelly",          cat:"T-Shirt Yarn",   img:"https://i.imgur.com/DZp7X0K.png"},
+  {name:"Nicole",         cat:"T-Shirt Yarn",   img:"https://i.imgur.com/oWKEiNp.png"},
+  {name:"Perla",          cat:"Acrylic Beads",  img:"https://i.imgur.com/zBxPh48.png"},
+  {name:"Laluna",         cat:"Crystal Beads",  img:"https://i.imgur.com/bV80dHm.png"},
+  {name:"Cardholder",     cat:"Accessories",    img:"https://i.imgur.com/K2nwZ3v.png"},
+  {name:"Heart Keychain", cat:"Accessories",    img:"https://i.imgur.com/U2lZbn4.png"},
+  {name:"Knit Basket",    cat:"Accessories",    img:"https://i.imgur.com/VIlFAAc.png"}
+];
+function anasaOf(name){ const n=normText(name||""); return n ? ANASA.find(a=>normText(a.name)===n || n.includes(normText(a.name))) : null; }
+
 /* ---- Κατάλογος μοντέλων ---- */
 function modelSuggestions(){
   // μαθαίνει από το ιστορικό: όνομα, τυπική τιμή, συνηθισμένα χρώματα
@@ -3611,28 +3664,31 @@ function modelSuggestions(){
   return Object.values(map).sort((a,b)=>b.count-a.count).map(m=>{
     const ps=m.prices.slice().sort((a,b)=>a-b);
     const med=ps.length?ps[Math.floor(ps.length/2)]:null;
-    return {name:m.name, count:m.count, price:med,
+    const a=anasaOf(m.name);
+    const match=(stockCache||[]).find(it=>it.image_url && normText(it.name).includes(normText(m.name)));
+    return {name:(a?a.name:m.name), count:m.count, price:med, image_url:(a&&a.img)||(match&&match.image_url)||null, anasa:!!a, cat:(a?a.cat:null),
             colors:Object.entries(m.colors).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0])};
   });
 }
 function renderModels(){
-  let html=`<div class="cust-line" style="margin:0 0 14px">Τα μοντέλα σου: όνομα και βασική τιμή. Όταν καταχωρείς παραγγελία, τα διαλέγεις έτοιμα.</div>`;
+  let html=`<div class="cust-line" style="margin:0 0 14px">Οι προδιαγραφές των προϊόντων σου: όνομα, βασική τιμή και τι βάζεις συνήθως. Στην καταχώρηση σου τα προτείνει έτοιμα.</div>`;
   if(!modelCat.length){
     const sug=modelSuggestions();
-    html+=`<div class="fbd-empty" style="padding:18px 0 12px">Δεν έχεις καταχωρήσει μοντέλα ακόμη.</div>`;
+    html+=`<div class="fbd-empty" style="padding:18px 0 12px">Δεν έχεις καταχωρήσει προδιαγραφές ακόμη.</div>`;
     if(sug.length){
-      html+=`<div class="cust-line" style="margin-bottom:10px">Βρήκα <b>${sug.length}</b> ${sug.length===1?"μοντέλο":"μοντέλα"} από τις παραγγελίες σου. Δες τα και κράτα όσα ισχύουν:</div>`;
+      html+=`<div class="cust-line" style="margin-bottom:10px">Βρήκα <b>${sug.length}</b> ${sug.length===1?"προϊόν":"προϊόντα"} από τις παραγγελίες σου. Δες τα και κράτα όσα ισχύουν:</div>`;
       html+=sug.map((m,i)=>`<label class="ms-row">
         <input type="checkbox" class="ms-chk" data-i="${i}" checked>
+        ${m.image_url?`<img class="si-img" style="width:34px;height:34px" src="${esc(m.image_url)}" alt="">`:""}
         <div style="flex:1;min-width:0">
           <div class="ms-n">${esc(m.name)}</div>
-          <div class="ms-s">${m.count} ${m.count===1?"παραγγελία":"παραγγελίες"}${m.price!=null?` · συνήθως ${fmtMoney(m.price)}`:""}${m.colors.length?` · ${m.colors.map(esc).join(", ")}`:""}</div>
+          <div class="ms-s">${m.anasa?`<b style="color:var(--ink)">ANASA</b> · ${esc(m.cat)} · `:""}${m.count} ${m.count===1?"παραγγελία":"παραγγελίες"}${m.price!=null?` · συνήθως ${fmtMoney(m.price)}`:""}${m.colors.length?` · ${m.colors.map(esc).join(", ")}`:""}</div>
         </div>
       </label>`).join("");
       html+=`<div style="margin-top:12px"><button class="btn solid" style="width:100%" onclick="importModels()">Πρόσθεσε τα επιλεγμένα</button></div>
-        <div class="ms-s" style="margin-top:8px">Μπορείς να αλλάξεις όνομα και τιμή σε καθένα μετά.</div>`;
+        <div class="ms-s" style="margin-top:8px">Μπορείς να αλλάξεις όνομα, τιμή και φωτογραφία σε καθένα μετά.</div>`;
     }
-    html+=`<div style="margin-top:10px"><button class="btn ghost" style="width:100%" onclick="openModelModal()">+ Νέο μοντέλο</button></div>`;
+    html+=`<div style="margin-top:10px"><button class="btn ghost" style="width:100%" onclick="openModelModal()">+ Νέο προϊόν</button></div>`;
     return html;
   }
   html+=modelCat.map(m=>`<div class="stock-item">
@@ -3641,22 +3697,22 @@ function renderModels(){
         <div class="si-meta">${m.price!=null?fmtMoney(m.price):"χωρίς τιμή"}${m.materials&&m.materials.length?` · ${m.materials.length} υλικά`:""}</div></div>
       <button class="btn ghost sm" onclick="openModelModal('${m.id}')">✎</button>
     </div>`).join("");
-  html+=`<div style="margin-top:12px"><button class="btn ghost" style="width:100%" onclick="openModelModal()">+ Νέο μοντέλο</button></div>`;
+  html+=`<div style="margin-top:12px"><button class="btn ghost" style="width:100%" onclick="openModelModal()">+ Νέο προϊόν</button></div>`;
   return html;
 }
 async function importModels(){
   const sug=modelSuggestions();
   const picked=[...document.querySelectorAll(".ms-chk")].filter(c=>c.checked).map(c=>sug[+c.dataset.i]).filter(Boolean);
-  if(!picked.length){ adminFlash("Δεν επέλεξες μοντέλα"); return; }
-  modelCat = picked.map(m=>({id:"m"+Math.random().toString(36).slice(2,9), name:m.name, price:m.price, materials:[], image_url:null}));
+  if(!picked.length){ adminFlash("Δεν επέλεξες προϊόντα"); return; }
+  modelCat = picked.map(m=>({id:"m"+Math.random().toString(36).slice(2,9), name:m.name, price:m.price, materials:[], image_url:m.image_url||null, anasa:!!m.anasa, cat:m.cat||null}));
   await saveSetting("models", modelCat, true);
-  renderStock(); adminFlash(`Προστέθηκαν ${picked.length} μοντέλα ✓`);
+  renderStock(); adminFlash(`Προστέθηκαν ${picked.length} προδιαγραφές ✓`);
 }
 let editingModelId=null;
 function openModelModal(id){
   editingModelId=id||null;
   const m=id?modelCat.find(x=>x.id===id):null;
-  document.getElementById("modelTitle").textContent=m?"Επεξεργασία μοντέλου":"Νέο μοντέλο";
+  document.getElementById("modelTitle").textContent=m?"Προδιαγραφή προϊόντος":"Νέο προϊόν";
   document.getElementById("mName").value=m?m.name:"";
   document.getElementById("mPrice").value=m&&m.price!=null?m.price:"";
   document.getElementById("mImg").value=m?(m.image_url||""):"";
@@ -3704,7 +3760,7 @@ async function saveModel(){
   closeModelModal(); renderStock(); adminFlash("Αποθηκεύτηκε ✓");
 }
 async function delModel(){
-  if(!editingModelId || !confirm("Διαγραφή μοντέλου ;")) return;
+  if(!editingModelId || !confirm("Διαγραφή προδιαγραφής ;")) return;
   modelCat = modelCat.filter(m=>m.id!==editingModelId);
   await saveSetting("models", modelCat, true);
   closeModelModal(); renderStock(); adminFlash("Διαγράφηκε ✓");
