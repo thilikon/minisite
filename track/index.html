@@ -664,6 +664,7 @@
       <div id="adminMsg" class="msg ok hidden"></div>
       <div id="ordersList"><div class="spinner"></div></div>
       <div id="fbAdmin" class="hidden"></div>
+      <input id="stockSearch" class="hidden" placeholder="Αναζήτηση στην αποθήκη…" oninput="renderStock()" style="margin-bottom:14px">
       <div id="stockAdmin" class="hidden"></div>
     </div>
   </section>
@@ -1643,6 +1644,7 @@ function showAdminTab(tab){
   document.getElementById("newStockBtn").classList.toggle("hidden", !isStock);
   document.getElementById("fbAdmin").classList.toggle("hidden", !isFb);
   document.getElementById("stockAdmin").classList.toggle("hidden", !isStock);
+  document.getElementById("stockSearch").classList.toggle("hidden", !isStock);
   if(isFb) renderFbDashboard();
   if(isStock){ if(stockCache.length) renderStock(); else { document.getElementById("stockAdmin").innerHTML='<div class="spinner"></div>'; loadStock(); } }
 }
@@ -1906,6 +1908,9 @@ function renderStats(){
       ${returnTotal?`<span class="stat-pill warn"><b>${returnTotal}</b> Επιστροφές${returnActive?` · ${returnActive} ενεργές`:""}</span>`:""}
 
       <span class="stat-pill blue"><b>${readyCount}</b> Ραφιού</span>
+      ${Object.keys(evStats).map(id=>{const v=evStats[id];
+        return `<span class="stat-pill" style="background:${v.color}1f;border-color:${v.color};color:${v.ink||v.color}"><b style="color:${v.ink||v.color}">${v.total!=null?v.items+"/"+v.total:v.n}</b> ${esc(v.name)}</span>`;
+      }).join("")}
       <span class="stat-pill"><b>${ship}</b> Αποστολή</span>
       <span class="stat-pill"><b>${pickup}</b> Παραλαβή</span>
       ${satAvg!=null?`<span class="stat-pill"><b>${satAvg.toFixed(1)}</b> Ικανοποίηση</span>`:""}
@@ -2628,8 +2633,15 @@ function renderStock(){
     <button class="tb ${stockView==='mm'?'sel':''}" onclick="setStockView('mm')" ${stockView==='mm'?'style="background:#c0266c;border-color:#c0266c"':''}>Mix &amp; Match${mm.length?` (${mm.length})`:''}</button>
     <button class="tb ${stockView==='product'?'sel':''}" onclick="setStockView('product')">Έτοιμα προϊόντα${prods.length?` (${prods.length})`:''}</button>
   </div>`;
-  const rows = stockView==="product" ? prods : (stockView==="mm" ? mm : raw);
+  let rows = stockView==="product" ? prods : (stockView==="mm" ? mm : raw);
+  const sq=(document.getElementById("stockSearch")?.value||"").trim().toLowerCase();
+  const allRows=rows;
+  if(sq) rows = rows.filter(it=>((it.name||"")+" "+(it.category||"")).toLowerCase().includes(sq));
 
+  if(!rows.length && sq){
+    box.innerHTML = toggle + `<div class="fbd-empty">Κανένα αποτέλεσμα για «${esc(sq)}».</div>`;
+    return;
+  }
   if(!rows.length){
     let empty;
     if(stockView==="product") empty=`<div class="fbd-empty">Δεν υπάρχουν έτοιμα προϊόντα. Πάτα «+ Είδος» και επίλεξε τύπο «Έτοιμο προϊόν».</div>`;
@@ -2639,12 +2651,12 @@ function renderStock(){
     return;
   }
 
-  const totalVal=rows.reduce((s,it)=>s+(Number(it.qty)||0)*(Number(it.unit_cost)||0),0);
-  const lowItems=rows.filter(it=>stockState(it)!=="ok");
+  const totalVal=allRows.reduce((s,it)=>s+(Number(it.qty)||0)*(Number(it.unit_cost)||0),0);
+  const lowItems=allRows.filter(it=>stockState(it)!=="ok");
   const isMM = stockView==="mm";
   let html=toggle+`<div class="stock-sum">
-    <div class="stat ${isMM?'':'dark'}" ${isMM?'style="background:#c0266c;color:#fff"':''}><div class="n" style="font-size:22px">${isMM?rows.length:fmtMoney(totalVal)}</div><div class="l" ${isMM?'style="color:#fff;opacity:.85"':''}>${isMM?"Αποχρώσεις":"Αξία (κόστος)"}</div></div>
-    <div class="stat"><div class="n">${isMM?fmtMoney(totalVal):rows.length}</div><div class="l">${isMM?"Αξία (κόστος)":(stockView==="product"?"Προϊόντα":"Είδη")}</div></div>
+    <div class="stat ${isMM?'':'dark'}" ${isMM?'style="background:#c0266c;color:#fff"':''}><div class="n" style="font-size:22px">${isMM?allRows.length:fmtMoney(totalVal)}</div><div class="l" ${isMM?'style="color:#fff;opacity:.85"':''}>${isMM?"Αποχρώσεις":"Αξία (κόστος)"}</div></div>
+    <div class="stat"><div class="n">${isMM?fmtMoney(totalVal):allRows.length}</div><div class="l">${isMM?"Αξία (κόστος)":(stockView==="product"?"Προϊόντα":"Είδη")}</div></div>
   </div>`;
   if(lowItems.length){
     html+=`<div class="r-hint" style="color:#8a5a1e;background:#fdf6ea;margin-bottom:14px">${stockView==="product"?"Λίγα κομμάτια":"Τελειώνουν"}: ${lowItems.map(it=>esc(it.name)+(stockState(it)==="out"?" (0)":` (${fmtNum(it.qty)})`)).join(" · ")}</div>`;
