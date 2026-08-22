@@ -445,6 +445,10 @@
     .order-head h1{font-size:37px}
   }
   /* ---------- Mix & Match + Στοκ ---------- */
+  .ink-toggle{display:flex;align-items:center;gap:9px;border:1px solid var(--line);background:var(--cream);border-radius:14px;padding:11px 14px;cursor:pointer;margin:2px 0 12px;user-select:none}
+  .ink-toggle input{width:18px;height:18px;accent-color:var(--ink);cursor:pointer;flex:none}
+  .ink-toggle .it-l{font-size:13px;font-weight:600}
+  .ink-toggle .it-s{font-size:11.5px;color:var(--muted)}
   .mm-toggle{display:flex;align-items:center;gap:9px;border:1px solid var(--line);background:var(--cream);border-radius:14px;padding:11px 14px;cursor:pointer;margin:2px 0 12px;transition:.15s;user-select:none}
   .mm-toggle input{width:18px;height:18px;accent-color:#c0266c;cursor:pointer}
   .mm-toggle .mm-l{font-size:13px;font-weight:600}
@@ -498,6 +502,8 @@
   .fb-a:last-child{border-bottom:none}
   .fb-a-q{font-size:12.5px;color:var(--ink-soft);flex:1;line-height:1.45}
   .fb-a-v{font-size:13px;font-weight:600;text-align:right;white-space:nowrap}
+  .brief{background:var(--cream);border:1px solid var(--line);border-left:3px solid var(--ink);border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:12.5px;line-height:1.65;color:var(--ink-soft)}
+  .brief b{color:var(--ink);font-weight:700}
   .gear-dot{position:absolute;top:2px;right:3px;width:7px;height:7px;border-radius:50%;background:#c0266c}
   .ev-row{display:flex;align-items:flex-start;gap:11px;border:1px solid var(--line);background:var(--cream);border-radius:14px;padding:13px 15px;margin-bottom:10px;cursor:pointer;transition:.15s}
   .ev-row input{width:18px;height:18px;flex:none;margin-top:1px;cursor:pointer}
@@ -790,10 +796,10 @@
       <div class="link-box"><code id="modalLink"></code><button class="btn solid sm" onclick="copyLink()">Copy</button></div>
     </div>
 
-    <div style="display:flex;gap:10px;margin-top:18px">
-      <button class="btn solid" style="flex:1" id="saveBtn" onclick="saveOrder()">Αποθήκευση</button>
-      <button class="btn danger sm hidden" id="orderDelBtn" onclick="delOrderFromModal()">Διαγραφή</button>
-      <button class="btn ghost" onclick="closeOrderModal()">Κλείσιμο</button>
+    <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
+      <button class="btn solid" style="flex:1 1 100%" id="saveBtn" onclick="saveOrder()">Αποθήκευση</button>
+      <button class="btn ghost" style="flex:1 1 auto" onclick="closeOrderModal()">Κλείσιμο</button>
+      <button class="btn danger hidden" style="flex:0 1 auto" id="orderDelBtn" onclick="delOrderFromModal()">Διαγραφή</button>
     </div>
   </div>
 </div>
@@ -844,9 +850,9 @@
       <button type="button" class="btn ghost sm sell-m sel" data-m="pickup" onclick="pickSellMethod('pickup')">🤝 Παραλαβή</button>
       <button type="button" class="btn ghost sm sell-m" data-m="shipping" onclick="pickSellMethod('shipping')">📦 Αποστολή</button>
     </div>
-    <label class="mm-toggle" id="sellPaidToggle" onclick="setTimeout(()=>document.getElementById('sellPaidToggle').classList.toggle('on',document.getElementById('sellPaid').checked),0)" style="border-radius:14px">
-      <input type="checkbox" id="sellPaid" checked style="accent-color:var(--ink)">
-      <span><span class="mm-l" style="color:var(--ink)">Εξοφλήθηκε</span> <span class="mm-s">— καταχωρείται ως πληρωμένη</span></span>
+    <label class="ink-toggle" id="sellPaidToggle">
+      <input type="checkbox" id="sellPaid" checked>
+      <span><span class="it-l">Εξοφλήθηκε</span> <span class="it-s">— καταχωρείται ως πληρωμένη</span></span>
     </label>
     <p id="sellMsg" class="msg err hidden"></p>
     <div id="sellLinkWrap" class="hidden">
@@ -1760,6 +1766,146 @@ async function loadOrders(){
 
 function setStatsYear(y){ statsYear = y; renderStats(); }
 
+/* ============================================================
+   ΕΞΥΠΝΟ ΣΧΟΛΙΟ — σαρώνει παραγγελίες, χρήματα, χρόνους,
+   αποθήκη, events, πελάτισσες & feedback. Κρατά τα 3 πιο επείγοντα.
+============================================================ */
+function buildBrief(ctx){
+  const DAY=86400000, now=new Date(), ins=[];
+  const push=(score,txt)=>ins.push({score,txt});
+  const ym=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+  const ymNow=ym(now);
+  const dPrev=new Date(now.getFullYear(), now.getMonth()-1, 1);
+  const ymPrev=ym(dPrev);
+
+  let revPrev=0, cntPrev=0, cntNow=0, last7=0, prev7=0;
+  const custCount={}, prodCount={};
+  ordersCache.forEach(o=>{
+    if(!o.created_at) return;
+    const d=new Date(o.created_at), k=ym(d), price=Number(o.price)||0;
+    if(k===ymPrev){ revPrev+=price; cntPrev++; }
+    if(k===ymNow){ cntNow++; }
+    const age=(now-d)/DAY;
+    if(age<=7) last7++; else if(age<=14) prev7++;
+    const nm=(o.customer_name||"").trim().toLowerCase();
+    if(nm) custCount[nm]=(custCount[nm]||0)+1;
+    if(k===ymNow) getItems(o).forEach(it=>{ const n=(it.name||"").trim(); if(n) prodCount[n]=(prodCount[n]||0)+1; });
+  });
+
+  /* 1. Ρυθμός μήνα — με πρόβλεψη αν είμαστε στη μέση */
+  const dayOfMonth=now.getDate();
+  const daysInMonth=new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+  if(revPrev>0 && ctx.revMonth>0){
+    const diff=Math.round((ctx.revMonth-revPrev)/revPrev*100);
+    if(dayOfMonth<daysInMonth-4){
+      const proj=ctx.revMonth/dayOfMonth*daysInMonth;
+      const pdiff=Math.round((proj-revPrev)/revPrev*100);
+      push(70, `Με τον ρυθμό του μήνα κλείνεις γύρω στα <b>${fmtMoney(proj)}</b> — ${pdiff>=0?`<b>${pdiff}% πάνω</b>`:`<b>${Math.abs(pdiff)}% κάτω</b>`} από τον προηγούμενο.`);
+    } else {
+      push(70, diff>=0 ? `Ο μήνας έκλεισε <b>${diff}% πάνω</b> από τον προηγούμενο (${fmtMoney(ctx.revMonth)}).`
+                       : `Ο μήνας είναι <b>${Math.abs(diff)}% κάτω</b> από τον προηγούμενο (${fmtMoney(ctx.revMonth)}).`);
+    }
+  } else if(ctx.revMonth>0){
+    push(55, `Τζίρος μήνα <b>${fmtMoney(ctx.revMonth)}</b> από ${ctx.monthCount} ${ctx.monthCount===1?"παραγγελία":"παραγγελίες"}.`);
+  }
+
+  /* 2. Ρυθμός εβδομάδας */
+  if(prev7>0 && last7!==prev7){
+    const d=Math.round((last7-prev7)/prev7*100);
+    if(Math.abs(d)>=30) push(58, d>0 ? `Η εβδομάδα κινήθηκε δυνατά: <b>${last7}</b> νέες παραγγελίες, ${d}% πάνω από την προηγούμενη.`
+                                     : `Οι νέες παραγγελίες έπεσαν <b>${Math.abs(d)}%</b> αυτή την εβδομάδα (${last7} vs ${prev7}).`);
+  } else if(last7===0 && cntNow>0){
+    push(62, `Καμία νέα παραγγελία τις τελευταίες <b>7 μέρες</b> — καλή στιγμή για ένα post ή story.`);
+  }
+
+  /* 3. Events: πρόοδος & χρόνος που απομένει */
+  Object.keys(EVENTS).forEach(id=>{
+    const e=EVENTS[id], v=(ctx.evStats||{})[id];
+    if(!evActive(id) && !(v&&v.total!=null)) return;
+    const left=e.autoOff ? Math.ceil((new Date(e.autoOff)-now)/DAY) : null;
+    if(v && v.total!=null){
+      const rest=v.total-v.items;
+      if(rest<=0) push(85, `<b>${esc(e.name)}: sold out!</b> ${v.total===1?"Το κομμάτι έφυγε":"Και τα "+v.total+" κομμάτια έφυγαν"}.`);
+      else if(evActive(id) && left!=null && left<=3) push(92, `<b>${esc(e.name)}</b>: μένουν <b>${rest}</b> κομμάτια και <b>${left>1?left+" μέρες":"1 μέρα"}</b> — ώρα για last-call story.`);
+      else if(evActive(id)) push(72, `<b>${esc(e.name)}</b>: ${v.items}/${v.total} πουλήθηκαν${left!=null&&left>0?`, ${left} μέρες ακόμη`:""}.`);
+    } else if(evActive(id) && left!=null && left<=2){
+      push(74, `Το <b>${esc(e.name)}</b> κλείνει σε ${left>1?left+" μέρες":"1 μέρα"}.`);
+    }
+  });
+
+  /* 4. Κολλημένες παραγγελίες */
+  if(ctx.stuck && ctx.stuck.length){
+    const worst=ctx.stuck.slice().sort((a,b)=>b.days-a.days)[0];
+    push(88, ctx.stuck.length===1
+      ? `Η παραγγελία της <b>${esc(worst.name)}</b> κάθεται <b>${worst.days} μέρες</b> στο ίδιο στάδιο.`
+      : `<b>${ctx.stuck.length} παραγγελίες</b> κάθονται πάνω από βδομάδα — η χειρότερη <b>${worst.days} μέρες</b> (${esc(worst.name)}).`);
+  }
+
+  /* 5. Παραδόσεις που πλησιάζουν / έχουν περάσει */
+  let dueSoon=0, overdue=0;
+  ordersCache.forEach(o=>getItems(o).forEach(it=>{
+    if(!it.eta || itemDone(it)) return;
+    const days=Math.ceil((new Date(it.eta)-now)/DAY);
+    if(days<0) overdue++; else if(days<=3) dueSoon++;
+  }));
+  if(overdue) push(95, `<b>${overdue}</b> ${overdue===1?"προϊόν ξεπέρασε":"προϊόντα ξεπέρασαν"} την υποσχεμένη ημερομηνία παράδοσης.`);
+  else if(dueSoon) push(76, `<b>${dueSoon}</b> ${dueSoon===1?"παράδοση λήγει":"παραδόσεις λήγουν"} μέσα στο τριήμερο.`);
+
+  /* 6. Χρήματα που εκκρεμούν */
+  if(ctx.outstanding>0){
+    const unpaidOld=ordersCache.filter(o=>{
+      const rem=(Number(o.price)||0)-(Number(o.amount_paid)||0);
+      return rem>0 && o.created_at && (now-new Date(o.created_at))/DAY>21;
+    }).length;
+    if(unpaidOld) push(80, `Εκκρεμούν <b>${fmtMoney(ctx.outstanding)}</b>, με <b>${unpaidOld}</b> ${unpaidOld===1?"παραγγελία":"παραγγελίες"} πάνω από 3 βδομάδες απλήρωτες.`);
+    else push(50, `Εκκρεμούν <b>${fmtMoney(ctx.outstanding)}</b> σε εισπράξεις.`);
+  }
+
+  /* 7. Αποθήκη */
+  const outItems=(stockCache||[]).filter(it=>!it.mm && !it.event_id && stockState(it)==="out");
+  if(outItems.length) push(84, `Εξαντλήθηκε: <b>${outItems.slice(0,2).map(x=>esc(x.name)).join(" · ")}</b>${outItems.length>2?` +${outItems.length-2}`:""}.`);
+  else if(ctx.lowCount>0) push(60, `<b>${ctx.lowCount}</b> ${ctx.lowCount===1?"υλικό τελειώνει":"υλικά τελειώνουν"} — τσέκαρε πριν την επόμενη παραγγελία.`);
+
+  /* 8. Κέρδος & περιθώριο */
+  if(ctx.revMonth>0 && !ctx.costMonthKnown){
+    push(45, `Δεν έχεις βάλει κόστος υλικών αυτόν τον μήνα — το κέρδος δεν υπολογίζεται.`);
+  } else if(ctx.margin!=null){
+    if(ctx.margin<35) push(66, `Το περιθώριο του μήνα είναι <b>${ctx.margin}%</b> — χαμηλό, δες τιμές ή κόστος υλικών.`);
+    else if(ctx.margin>=65) push(48, `Δυνατό περιθώριο <b>${ctx.margin}%</b> αυτόν τον μήνα.`);
+  }
+
+  /* 9. Χρόνος παράδοσης */
+  if(ctx.avgTotal!=null){
+    if(ctx.avgTotal>10) push(64, `Ο μέσος χρόνος παράδοσης ανέβηκε στις <b>${Math.round(ctx.avgTotal)} μέρες</b>.`);
+    else if(ctx.avgTotal<=4) push(42, `Παραδίδεις κατά μέσο όρο σε <b>${Math.round(ctx.avgTotal)} μέρες</b> — πολύ καλός ρυθμός.`);
+  }
+
+  /* 10. Πελάτισσες που ξαναγύρισαν */
+  const repeat=Object.values(custCount).filter(n=>n>1).length;
+  if(repeat>=2) push(52, `<b>${repeat}</b> πελάτισσες έχουν παραγγείλει ξανά — δείχνει ότι μένουν ευχαριστημένες.`);
+
+  /* 11. Best seller του μήνα */
+  const top=Object.entries(prodCount).sort((a,b)=>b[1]-a[1])[0];
+  if(top && top[1]>=3) push(46, `Το <b>${esc(top[0])}</b> είναι το πιο δημοφιλές του μήνα με <b>${top[1]}</b> κομμάτια.`);
+
+  /* 12. Feedback */
+  const fbCount=(feedbackCache||[]).length;
+  if(ctx.satAvg!=null){
+    if(ctx.satAvg<4) push(78, `Η μέση ικανοποίηση έπεσε στο <b>${ctx.satAvg.toFixed(1)}/5</b> — αξίζει να δεις τα σχόλια.`);
+    else if(fbCount>=3 && ctx.satAvg>=4.7) push(44, `Ικανοποίηση <b>${ctx.satAvg.toFixed(1)}/5</b> από ${fbCount} απαντήσεις.`);
+  }
+
+  /* 13. Έτοιμα προϊόντα που λιμνάζουν */
+  const shelf=(stockCache||[]).filter(it=>it.type==="product" && Number(it.qty)>0).length;
+  if(shelf>=4) push(40, `Έχεις <b>${shelf}</b> έτοιμα προϊόντα στο ράφι — καλό υλικό για stories.`);
+
+  if(!ins.length) return "";
+  // ταξινόμηση κατά επείγον· εναλλαγή στα ισοβαθμούντα ώστε να μη λέει τα ίδια κάθε μέρα
+  const seed=Math.floor(Date.now()/DAY);
+  ins.sort((a,b)=> b.score-a.score || ((a.txt.length+seed)%3)-((b.txt.length+seed)%3));
+  return `<div class="brief">${ins.slice(0,3).map(x=>x.txt).join(" ")}</div>`;
+}
+
 function renderStats(){
   const all = ordersCache;
   const total = all.length;
@@ -1927,7 +2073,13 @@ function renderStats(){
       <span class="cnt">${c}</span>
     </div>`).join("");
 
+  /* ---- Έξυπνο σχόλιο: σαρώνει τα πάντα, δείχνει τα 3 πιο σημαντικά ---- */
+  const briefHtml = buildBrief({revMonth, profitMonth, monthCount, outstanding, stuck,
+    evStats, lowCount, stockVal, avgTotal, costMonthKnown, satAvg, readyCount, margin});
+
+
   document.getElementById("statsBody").innerHTML = `
+    ${briefHtml}
     <div class="stat-grid">${tiles}</div>
     <div class="stat-row">
       <span class="stat-pill"><b>${totalItems}</b> Προϊόντα</span>
@@ -2461,6 +2613,8 @@ function editOrder(id){
   // feedback readout
   const fr = document.getElementById("fbReadout");
   const fbRows = (feedbackCache||[]).filter(r=>r.order_token && r.order_token===o.track_token);
+  fr.onclick = fbRows.length ? (()=>openOrderFeedback(o.track_token)) : null;
+  fr.style.cursor = fbRows.length ? "pointer" : "";
   if(fbRows.length){
     fr.innerHTML = fbRows.map(r=>{
       const parts = [];
@@ -2471,7 +2625,8 @@ function editOrder(id){
       return `<div>💬 ${parts.join(" · ")}` +
         (r.q_open?`<br>«${esc(r.q_open)}»`:"") +
         `<br><span style="color:var(--muted)">${fmtDate(r.created_at)}</span></div>`;
-    }).join('<hr style="border:none;border-top:1px solid var(--line);margin:8px 0">');
+    }).join('<hr style="border:none;border-top:1px solid var(--line);margin:8px 0">')
+      + '<div style="font-size:11px;color:var(--muted);margin-top:8px;text-decoration:underline">Δες όλες τις απαντήσεις</div>';
     fr.classList.remove("hidden");
   } else fr.classList.add("hidden");
   const lw=document.getElementById("modalLinkWrap"); lw.classList.remove("hidden");
