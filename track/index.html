@@ -503,9 +503,17 @@
   .ms-s{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.45}
   .cust-card{display:flex;align-items:center;gap:8px;background:var(--card,#fff);border:1px solid var(--line);border-radius:14px;padding:6px 10px 6px 14px;margin-bottom:9px}
   .cc-main{flex:1;display:flex;background:none;border:none;text-align:left;padding:8px 0;cursor:pointer;font-family:'Inter';min-width:0}
+  .cc-btns{display:flex;flex-direction:column;gap:6px;flex:none}
   .cc-n{font-size:14px;font-weight:600}
   .cc-s{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.45}
   .cust-pill{cursor:pointer;font-family:'Inter'}
+  .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:10px}
+  .pcardx{background:var(--cream);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .pcardx img,.pcardx .ph{width:100%;height:104px;object-fit:cover;display:block;background:var(--stone)}
+  .pcx-b{padding:9px 11px 11px}
+  .pcx-n{font-size:13px;font-weight:600;line-height:1.3}
+  .pcx-x{font-size:11px;color:var(--muted);font-weight:600}
+  .pcx-s{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4}
   .cust-line{font-size:12.5px;color:var(--ink-soft);line-height:1.7;margin-top:10px}
   .cust-line b{color:var(--ink);font-weight:600}
   .cust-row{display:flex;align-items:center;gap:6px;background:var(--cream);border:1px solid var(--line);border-radius:12px;padding:4px 6px 4px 13px;margin-bottom:8px}
@@ -855,7 +863,23 @@
   </div>
 </div>
 
-<!-- ============ ΠΡΟΦΙΛ ΠΕΛΑΤΙΣΣΑΣ ============ -->
+<!-- ============ ΕΞΟΦΛΗΣΗ ============ -->
+<div id="payModal" class="overlay hidden">
+  <div class="modal">
+    <div class="mh"><h2 class="serif">Εξόφληση</h2><button class="x" onclick="closePay()">✕</button></div>
+    <div id="payWho" style="font-size:13px;font-weight:600;margin-bottom:2px"></div>
+    <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:12px">Πάτα ένα ποσό για να συμπληρωθεί, ή γράψε όσα έλαβες. Καλύπτονται πρώτα οι παλαιότερες.</p>
+    <div class="mat-block" id="payList"></div>
+    <label class="fld"><span>Ποσό που έλαβες €</span><input id="payAmount" inputmode="decimal" placeholder="0"></label>
+    <p id="payMsg" class="msg err hidden"></p>
+    <div style="display:flex;gap:10px;margin-top:6px;flex-wrap:wrap">
+      <button class="btn solid" style="flex:1 1 100%" id="payBtn" onclick="applyPay()">Καταχώρηση πληρωμής</button>
+      <button class="btn ghost" style="flex:1" onclick="closePay()">Κλείσιμο</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ΠΡΟΦΙΛ ΠΕΛΑΤΗ ============ -->
 <div id="custModal" class="overlay hidden">
   <div class="modal">
     <div class="mh">
@@ -2424,11 +2448,70 @@ function renderCustomers(){
           ${owed>0?`<div class="cc-s" style="color:#8a5a1e">Ανεξόφλητα ${fmtMoney(owed)}</div>`:""}
         </div>
       </button>
-      <button class="btn ghost sm" onclick="newOrderFor('${c.anyId}')">+ Παραγγελία</button>
+      <div class="cc-btns">
+        ${owed>0?`<button class="btn solid sm" onclick="openPay('${c.anyId}')">Εξόφληση</button>`:""}
+        <button class="btn ghost sm" onclick="newOrderFor('${c.anyId}')">+ Παραγγελία</button>
+      </div>
     </div>`;
   }).join("");
   box.innerHTML=html;
 }
+let payCtx={key:null, list:[]};
+function unpaidOrders(ref){
+  return customerOrders(ref).filter(o=>((Number(o.price)||0)-(Number(o.amount_paid)||0))>0.01)
+    .sort((a,b)=> new Date(a.created_at||0)-new Date(b.created_at||0));   // παλαιότερη πρώτα
+}
+function openPay(orderId){
+  const ref=ordersCache.find(o=>o.id===orderId); if(!ref) return;
+  payCtx={key:custKey(ref), list:unpaidOrders(ref)};
+  const total=payCtx.list.reduce((a,o)=>a+((Number(o.price)||0)-(Number(o.amount_paid)||0)),0);
+  document.getElementById("payWho").textContent = ref.customer_name||"";
+  document.getElementById("payAmount").value = Math.round(total*100)/100;
+  document.getElementById("payMsg").classList.add("hidden");
+  const rows=payCtx.list.map(o=>{
+    const rem=Math.round(((Number(o.price)||0)-(Number(o.amount_paid)||0))*100)/100;
+    const nm=getItems(o).map(i=>esc(i.name)).join(", ");
+    return `<div class="mat-line"><span>${nm||"—"} <span class="q">${o.created_at?fmtDateShort(new Date(o.created_at)):""}${o.order_number?" · "+esc(o.order_number):""}</span></span>
+      <button class="btn ghost sm" onclick="setPay(${rem})">${fmtMoney(rem)}</button></div>`;
+  }).join("");
+  document.getElementById("payList").innerHTML = rows +
+    `<div class="mat-total"><span>Σύνολο οφειλής</span><span>${fmtMoney(total)}</span></div>`;
+  _ovOpen("payModal");
+}
+function closePay(){ _ovClose("payModal"); }
+function setPay(v){ document.getElementById("payAmount").value=v; }
+async function applyPay(){
+  const msg=document.getElementById("payMsg");
+  let amount=parseMoney(document.getElementById("payAmount").value);
+  if(amount==null || amount<=0){ msg.textContent="Βάλε ποσό."; msg.classList.remove("hidden"); return; }
+  const btn=document.getElementById("payBtn"); btn.disabled=true; btn.textContent="Καταχώρηση…";
+  // έξυπνη κατανομή: αν ταιριάζει ακριβώς σε μία παραγγελία, πάει εκεί· αλλιώς παλαιότερη πρώτα
+  const exact=payCtx.list.find(o=>Math.abs(((Number(o.price)||0)-(Number(o.amount_paid)||0))-amount)<0.01);
+  const queue = exact ? [exact] : payCtx.list;
+  const now=new Date().toISOString();
+  let left=amount, done=0;
+  try{
+    for(const o of queue){
+      if(left<=0.005) break;
+      const rem=(Number(o.price)||0)-(Number(o.amount_paid)||0);
+      const give=Math.min(rem,left);
+      const np=Math.round(((Number(o.amount_paid)||0)+give)*100)/100;
+      const full=np>=(Number(o.price)||0)-0.01;
+      const body={amount_paid:np}; if(full) body.paid_at=o.paid_at||now;
+      const res=await authFetch(REST + "/orders?id=eq."+o.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify(body)});
+      if(!res.ok) throw new Error();
+      o.amount_paid=np; if(full) o.paid_at=body.paid_at;
+      left=Math.round((left-give)*100)/100; done++;
+    }
+    closePay(); renderCustomers(); renderOrders(); renderStats();
+    adminFlash(left>0.005 ? `Καταχωρήθηκαν ${fmtMoney(amount-left)} · περίσσεψαν ${fmtMoney(left)}` : `Εξοφλήθηκαν ${done===1?"1 παραγγελία":done+" παραγγελίες"} ✓`);
+  }catch(e){
+    btn.disabled=false; btn.textContent="Καταχώρηση πληρωμής";
+    msg.textContent="Σφάλμα. Δοκίμασε ξανά."; msg.classList.remove("hidden");
+  }
+  btn.disabled=false; btn.textContent="Καταχώρηση πληρωμής";
+}
+
 function newOrderFor(orderId){
   const ref=ordersCache.find(o=>o.id===orderId); if(!ref) return;
   returnTab="customers";
@@ -3191,8 +3274,7 @@ function visitNoFor(order, list){
   }).length;
   return prior+1;
 }
-const ORD_GR={1:"1η",2:"2η",3:"3η",4:"4η",5:"5η",6:"6η",7:"7η",8:"8η",9:"9η",10:"10η"};
-function ordGr(n){ return ORD_GR[n] || (n+"η"); }
+function ordGr(n){ const v=Math.max(1, Math.floor(Number(n)||1)); return v+"η"; }
 
 /* ---- Προφίλ πελάτηςς (ποσοτικά + ποιοτικά) ---- */
 function openCustomer(key){
@@ -3387,13 +3469,43 @@ function openCustomer(orderId){
   </div>
   <div class="cust-line">${first?`Πρώτη ${fmtDateShort(first)}`:""}${last&&list.length>1?` · τελευταία ${fmtDateShort(last)}`:""}${lastPaid?` · τελευταία πληρωμή ${fmtDateShort(new Date(lastPaid.paid_at))}`:""}.</div>`;
 
-  const mList=topOf(models), cList=topOf(colors), lList=topOf(labels);
-  if(mList.length){
-    html+=`<div class="stats-sub">Τι αγοράζει</div><div class="cust-line">`;
-    html+=`Προϊόντα: ${mList.map(([k,v])=>`<b>${esc(k)}</b>${v>1?` ×${v}`:""}`).join(" · ")}.`;
-    if(cList.length) html+=`<br>Χρώματα: ${cList.map(([k,v])=>`${esc(k)}${v>1?` ×${v}`:""}`).join(" · ")}.`;
-    if(lList.length) html+=`<br>Ταμπελάκι: ${lList.map(([k,v])=>`${esc(k)}${v>1?` ×${v}`:""}`).join(" · ")}.`;
-    html+=`</div>`;
+  // ---- Τι αγοράζει: grid με φωτογραφίες & προτιμήσεις ----
+  const prod={};
+  list.forEach(o=>getItems(o).forEach(it=>{
+    const a=anasaOf(it.name)||{name:(it.name||"—")};
+    const k=normText(a.name)||"x";
+    const P=prod[k]=prod[k]||{name:a.name, n:0, spent:0, colors:{}, labels:{}, last:0,
+      img:(a.img)||((modelCat||[]).find(m=>normText(m.name)===normText(a.name))||{}).image_url||null};
+    P.n++; P.spent+=Number(it.price)||0;
+    if(it.color) P.colors[it.color]=(P.colors[it.color]||0)+1;
+    if(it.label) P.labels[it.label]=(P.labels[it.label]||0)+1;
+    const t=o.created_at?new Date(o.created_at).getTime():0; if(t>P.last) P.last=t;
+  }));
+  const plist=Object.values(prod).sort((a,b)=>b.n-a.n || b.spent-a.spent);
+  const topOfObj=o=>Object.entries(o).sort((a,b)=>b[1]-a[1]);
+  if(plist.length){
+    html+=`<div class="stats-sub">Τι αγοράζει</div>
+      <div class="pgrid">${plist.map(P=>{
+        const c=topOfObj(P.colors), l=topOfObj(P.labels);
+        return `<div class="pcardx">
+          ${P.img?`<img src="${esc(P.img)}" alt="">`:`<div class="ph"></div>`}
+          <div class="pcx-b">
+            <div class="pcx-n">${esc(P.name)}${P.n>1?` <span class="pcx-x">×${P.n}</span>`:""}</div>
+            <div class="pcx-s">${fmtMoney(P.spent)}</div>
+            ${c.length?`<div class="pcx-s">${c.map(([k,v])=>esc(k)+(v>1?` ×${v}`:"")).join(" · ")}</div>`:""}
+            ${l.length?`<div class="pcx-s">${l.map(([k,v])=>esc(k)+(v>1?` ×${v}`:"")).join(" · ")}</div>`:""}
+          </div>
+        </div>`;}).join("")}</div>`;
+
+    // προτιμήσεις με λόγια
+    const allC=topOfObj(colors), allL=topOfObj(labels);
+    const bits2=[];
+    if(allC.length) bits2.push(allC[0][1]>1 ? `Ξαναδιαλέγει <b>${esc(allC[0][0])}</b>` : `Τελευταίο χρώμα <b>${esc(allC[0][0])}</b>`);
+    if(allL.length && allL[0][1]>1) bits2.push(`προτιμά <b>${esc(allL[0][0])}</b> ταμπελάκι`);
+    else if(allL.length) bits2.push(`ταμπελάκι <b>${esc(allL[0][0])}</b>`);
+    if(plist.length>1) bits2.push(`έχει δοκιμάσει <b>${plist.length}</b> διαφορετικά σχέδια`);
+    else if(plist[0] && plist[0].n>1) bits2.push(`μένει σταθερά στο <b>${esc(plist[0].name)}</b>`);
+    if(bits2.length) html+=`<div class="cust-line">${bits2.join(" · ")}.</div>`;
   }
 
   if(fbs.length){
@@ -3519,7 +3631,24 @@ async function loadSettings(){
   });
   if(changed){ eventsOn._autoOff=ao; saveSetting("events", eventsOn, true); }
   updateEventBadge();
-  if(!modelCat.length){ await seedModelsFromAnasa(); }
+  await ensureAnasa();
+}
+async function ensureAnasa(){
+  const missing=ANASA.filter(a=>!(modelCat||[]).some(m=>normText(m.name)===normText(a.name)));
+  if(!missing.length) return 0;
+  const sug=modelSuggestions();
+  missing.forEach(a=>{
+    const s2=sug.find(x=>normText(x.name)===normText(a.name))||{};
+    modelCat.push({id:"m"+Math.random().toString(36).slice(2,9), name:a.name, price:(s2.price!=null?s2.price:null),
+      materials:[], image_url:a.img, anasa:true, cat:a.cat});
+  });
+  await saveSetting("models", modelCat, true);
+  return missing.length;
+}
+async function addAnasaNow(){
+  const n=await ensureAnasa();
+  renderStock();
+  adminFlash(n?`Προστέθηκαν ${n} προϊόντα ✓`:"Η συλλογή είναι ήδη πλήρης");
 }
 async function seedModelsFromAnasa(){
   const sug=modelSuggestions();
@@ -3931,7 +4060,9 @@ function renderModels(){
       <button class="btn ghost sm" onclick="openModelModal('${m.id}')">✎</button>
     </div>`;
   }).join("");
-  html+=`<div style="margin-top:12px"><button class="btn ghost" style="width:100%" onclick="openModelModal()">+ Νέο προϊόν</button></div>`;
+  const miss=ANASA.filter(a=>!modelCat.some(m=>normText(m.name)===normText(a.name))).length;
+  if(miss) html+=`<div style="margin-top:12px"><button class="btn solid" style="width:100%" onclick="addAnasaNow()">Φόρτωσε τη συλλογή ANASA (${miss} λείπουν)</button></div>`;
+  html+=`<div style="margin-top:10px"><button class="btn ghost" style="width:100%" onclick="openModelModal()">+ Νέο προϊόν</button></div>`;
   return html;
 }
 async function fixModelPrice(mid, price){
