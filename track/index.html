@@ -483,7 +483,11 @@
   .mat-group[open] summary::after{transform:rotate(180deg)}
   .mat-sel-h{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);padding:6px 2px 4px}
   .oi-spec{font-size:11.5px;color:var(--muted);margin-top:1px}
-  .r-created{font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:.02em}
+  .r-meta{font-size:11px;color:var(--muted);margin-top:3px;display:flex;flex-wrap:wrap;gap:4px 10px}
+  .r-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+  .r-pills:empty{display:none}
+  .r-pills .mm-pill{margin-left:0}
+  .fb-badge{margin-left:0}
   .money-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
   .money-row .fld{margin-bottom:12px}
   .money-row .fld span{min-height:26px;display:flex;align-items:flex-end}
@@ -699,7 +703,7 @@
 <div id="notifyModal" class="overlay hidden">
   <div class="modal">
     <div class="mh">
-      <h2>📣 Ειδοποίηση πελάτη</h2>
+      <h2>Ειδοποίηση πελάτη</h2>
       <button class="x" onclick="closeNotify()">✕</button>
     </div>
     <p style="font-size:12.5px;color:var(--muted);margin:0 0 10px">Διάλεξε τι ενημέρωση στέλνεις , φτιάχνεται έτοιμο μήνυμα. Αντίγραψέ το και στείλ’ το από το Instagram.</p>
@@ -788,6 +792,7 @@
 
     <div style="display:flex;gap:10px;margin-top:18px">
       <button class="btn solid" style="flex:1" id="saveBtn" onclick="saveOrder()">Αποθήκευση</button>
+      <button class="btn danger sm hidden" id="orderDelBtn" onclick="delOrderFromModal()">Διαγραφή</button>
       <button class="btn ghost" onclick="closeOrderModal()">Κλείσιμο</button>
     </div>
   </div>
@@ -1675,6 +1680,7 @@ async function loadFeedback(){
     if(res.status===401) return;
     feedbackCache = await res.json();
     if(!document.getElementById("fbAdmin").classList.contains("hidden")) renderFbDashboard();
+    if(ordersCache.length && !document.getElementById("ordersList").classList.contains("hidden")) renderOrders();
   }catch(e){}
 }
 
@@ -2054,14 +2060,14 @@ function renderOrders(){
       const spec=[it.color, it.label?it.label+" ταμπελάκι":null].filter(Boolean).join(" · ")||it.details;
       return `<div class="oi ${statusCls}">
         <div class="oi-info">
-          <div class="oi-name">${esc(it.name)}${ret?' <span class="oi-rt">♻</span>':''}</div>
+          <div class="oi-name">${esc(it.name)}${ret?' <span class="oi-rt">↺</span>':''}</div>
           ${spec?`<div class="oi-spec">${esc(spec)}</div>`:""}
           <div class="oi-stage">${STG[s].title}${ret?` · επιστροφή ${s}/${N}`:` · ${s}/${N}`}</div>
-          ${it.note?`<div class="oi-note">📝 ${esc(it.note)}</div>`:""}
+          ${it.note?`<div class="oi-note">${esc(it.note)}</div>`:""}
         </div>
         <div class="oi-act">
           ${!d?`<button class="btn solid sm" title="Επόμενο στάδιο" onclick="advanceItem('${o.id}','${it.id}')">→</button>`:`<span class="oi-ok">✓</span>`}
-          ${!ret?`<button class="btn ghost sm" title="Δήλωση επιστροφής" onclick="declareReturnItem('${o.id}','${it.id}','${esc(it.name)}')">♻</button>`:""}
+          ${!ret?`<button class="btn ghost sm" title="Δήλωση επιστροφής" onclick="declareReturnItem('${o.id}','${it.id}','${esc(it.name)}')">↺</button>`:""}
         </div>
       </div>`;
     }).join("");
@@ -2069,20 +2075,26 @@ function renderOrders(){
     return `<div class="order-row${!everyDone&&items.some(it=>itemFlow(it)==='return')?' is-return':''}">
       <div class="r-top">
         <div>
-          <div class="r-name">${esc(o.customer_name)} ${o.order_number?`<span style="color:var(--muted);font-weight:400">· ${esc(o.order_number)}</span>`:""} <span title="${pickup?'Παραλαβή διά ζώσης':'Αποστολή με courier'}" style="opacity:.6">${pickup?'🤝':'📦'}</span>${(function(){const e=evOf(o);return e?`<span class="mm-pill" style="background:${e.color}26;color:${e.ink||e.color};border-color:${e.color}">${esc(e.name)}</span>`:'';})()}${(!evOf(o)&&o.discount_pct?`<span class="mm-pill" style="background:var(--stone);color:var(--ink);border-color:var(--line)">−${Math.round(Number(o.discount_pct))}%</span>`:'')}${o.kind==='ready'?'<span class="mm-pill" style="background:#eef3f8;color:#2f5d8a;border-color:#cfe0f0">Έτοιμο</span>':''}${hasFb(o)?`<button class="fb-badge" onclick="openOrderFeedback('${o.track_token}')">Feedback</button>`:''}</div>
-          ${o.created_at?`<div class="r-created">Καταχωρήθηκε ${new Date(o.created_at).toLocaleDateString("el-GR",{day:"2-digit",month:"2-digit",year:"numeric"})}</div>`:""}
+          <div class="r-name">${esc(o.customer_name)}</div>
+          <div class="r-meta">
+            ${o.order_number?`<span>${esc(o.order_number)}</span>`:""}
+            ${o.created_at?`<span>${new Date(o.created_at).toLocaleDateString("el-GR",{day:"2-digit",month:"2-digit",year:"numeric"})}</span>`:""}
+            <span>${pickup?'Παραλαβή':'Courier'}</span>
+          </div>
+          <div class="r-pills">
+            ${(function(){const e=evOf(o);return e?`<span class="mm-pill" style="background:${e.color}26;color:${e.ink||e.color};border-color:${e.color}">${esc(e.name)}</span>`:'';})()}${(!evOf(o)&&o.discount_pct?`<span class="mm-pill" style="background:var(--stone);color:var(--ink);border-color:var(--line)">−${Math.round(Number(o.discount_pct))}%</span>`:'')}${o.kind==='ready'?'<span class="mm-pill" style="background:#eef3f8;color:#2f5d8a;border-color:#cfe0f0">Έτοιμο</span>':''}${hasFb(o)?`<button class="fb-badge" onclick="openOrderFeedback('${o.track_token}')">Feedback</button>`:''}
+          </div>
         </div>
         ${orderBadge}
       </div>
       <div class="order-items">${itemsHtml}</div>
-      ${everyReady && !everyDone && !pickup && !o.tracking_number ? `<div class="r-hint">📦 Όλα έτοιμα — πρόσθεσε courier/tracking από «Επεξεργασία» και προχώρα τα στάδια.</div>` : ""}
-      ${everyReady && !everyDone && pickup ? `<div class="r-hint">🤝 Όλα έτοιμα — κανόνισε παραλαβή με τον πελάτη.</div>` : ""}
+      ${everyReady && !everyDone && !pickup && !o.tracking_number ? `<div class="r-hint">Όλα έτοιμα — πρόσθεσε courier/tracking από «Επεξεργασία» και προχώρα τα στάδια.</div>` : ""}
+      ${everyReady && !everyDone && pickup ? `<div class="r-hint">Όλα έτοιμα — κανόνισε παραλαβή με τον πελάτη.</div>` : ""}
       ${moneyLine(o)}
       <div class="r-actions">
-        <button class="btn ghost sm" onclick="copyLinkFor('${o.track_token}')">📋 Link</button>
-        <button class="btn ghost sm" onclick="notifyCustomer('${o.id}')">📣 Ειδοποίηση</button>
+        <button class="btn ghost sm" onclick="copyLinkFor('${o.track_token}')">Link</button>
+        <button class="btn ghost sm" onclick="notifyCustomer('${o.id}')">Ειδοποίηση</button>
         <button class="btn ghost sm" onclick="editOrder('${o.id}')">Επεξεργασία</button>
-        <button class="btn danger sm" onclick="delOrder('${o.id}','${esc(o.customer_name)}')">Διαγραφή</button>
       </div>
     </div>`;
   }).join("");
@@ -2247,6 +2259,11 @@ async function declareReturnItem(orderId, itemId, name){
   }catch(e){ adminFlash("Σφάλμα ενημέρωσης."); }
 }
 
+function delOrderFromModal(){
+  const o=ordersCache.find(x=>x.id===editingId); if(!o) return;
+  closeOrderModal();
+  delOrder(o.id, o.customer_name||"");
+}
 async function delOrder(id,name){
   if(!confirm("Διαγραφή παραγγελίας για «"+name+"»; Δεν αναιρείται.")) return;
   const o = ordersCache.find(x=>x.id===id);
@@ -2397,6 +2414,7 @@ function openOrderModal(){
   document.getElementById("fbReadout").classList.add("hidden");
   document.getElementById("modalMsg").classList.add("hidden");
   document.getElementById("saveBtn").textContent="Δημιουργία";
+  document.getElementById("orderDelBtn").classList.add("hidden");
   fillEventSelect("");
   document.getElementById("fDisc").value="";
   document.getElementById("fDisc").disabled=false;
@@ -2414,6 +2432,7 @@ function editOrder(id){
   document.getElementById("modalTitle").textContent="Επεξεργασία";
   document.getElementById("fName").value=o.customer_name||"";
   document.getElementById("fOrderNoView").textContent=o.order_number||"—";
+  document.getElementById("orderDelBtn").classList.remove("hidden");
   document.getElementById("fCreatedView").textContent = o.created_at ? new Date(o.created_at).toLocaleDateString("el-GR",{day:"2-digit",month:"2-digit",year:"numeric"}) : "—";
   document.getElementById("fPhone").value=o.customer_phone||"";
   document.getElementById("fNote").value=o.note||"";
