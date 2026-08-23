@@ -2171,7 +2171,7 @@ function renderStats(){
   let ship=0, pickup=0, monthCount=0;
   let activeOrders=0, doneOrders=0, returnActive=0, returnTotal=0, totalItems=0;
   // financials
-  let revMonth=0, revCosted=0, profitMonth=0, outstanding=0, priceSum=0, priceN=0, mixCount=0, readyCount=0, readyRevMonth=0, costMonthKnown=false;
+  let revMonth=0, revCosted=0, profitMonth=0, monthCosted=0, monthOrders=0, outstanding=0, priceSum=0, priceN=0, mixCount=0, readyCount=0, readyRevMonth=0, costMonthKnown=false;
   const now = new Date(); const ymNow = now.getFullYear()+"-"+now.getMonth();
   const monthly = {}; // "YYYY-M" -> revenue
   all.forEach(o=>{
@@ -2195,7 +2195,7 @@ function renderStats(){
     if(price!=null){
       priceSum+=price; priceN++;
       monthly[ym] = (monthly[ym]||0) + price;
-      if(ym===ymNow){ revMonth+=price; if(cost!=null){ profitMonth += (price-cost); revCosted += price; costMonthKnown=true; } if(isReady) readyRevMonth+=price; }
+      if(ym===ymNow){ revMonth+=price; monthOrders++; if(cost!=null){ profitMonth += (price-cost); revCosted += price; monthCosted++; costMonthKnown=true; } if(isReady) readyRevMonth+=price; }
       const rem = price - paid;
       if(rem>0) outstanding += rem;
     }
@@ -2204,6 +2204,7 @@ function renderStats(){
   const done = doneOrders;
   const avgOrder = priceN ? priceSum/priceN : null;
   const customRevMonth = revMonth - readyRevMonth;
+  const partial = revCosted>0 && revCosted < revMonth-0.01;
   const margin = (revCosted>0 && costMonthKnown) ? Math.round(profitMonth/revCosted*100) : null;
   const _stock = stockCache||[];
   const stockVal = _stock.reduce((s,it)=>s+(Number(it.qty)||0)*(Number(it.unit_cost)||0),0);
@@ -2291,8 +2292,9 @@ function renderStats(){
 
   const money = [
     {n:fmtMoney(revMonth), l:"Τζίρος μήνα", dark:true},
-    {n:costMonthKnown?fmtMoney(profitMonth):"—", l:(revCosted>0&&revCosted<revMonth-0.01)?"Κέρδος (όσες έχουν κόστος)":"Κέρδος μήνα"},
-    {n:margin!=null?margin+"%":"—", l:(revCosted>0&&revCosted<revMonth-0.01)?"Περιθώριο (μερικό)":"Περιθώριο"},
+    {n:costMonthKnown?fmtMoney(profitMonth):"—", l:partial?`Κέρδος από ${fmtMoney(revCosted)}`:"Κέρδος μήνα"},
+    {n:margin!=null?margin+"%":"—", l:"Περιθώριο"},
+    ...(partial&&margin!=null?[{n:"≈"+fmtMoney(revMonth*margin/100), l:"Εκτ. κέρδος μήνα"}]:[]),
     {n:avgOrder!=null?fmtMoney(avgOrder):"—", l:"Μέση αξία"},
     {n:fmtMoney(outstanding), l:"Εκκρεμείς"},
     {n:fmtMoney(priceSum), l:"Τζίρος σύνολο"}
@@ -2353,6 +2355,9 @@ function renderStats(){
 
     <div class="stats-sub">Οικονομικά — τρέχων μήνας</div>
     <div class="stat-grid">${money}</div>
+    ${partial?`<div style="background:#fdf6ea;border:1px solid #f0e0c4;border-left:3px solid #c9922e;border-radius:12px;padding:10px 13px;margin-top:10px;font-size:12px;color:#8a5a1e;line-height:1.6">
+      Κόστος υλικών έχουν <b>${monthCosted}</b> από <b>${monthOrders}</b> παραγγελίες του μήνα. Το κέρδος αφορά μόνο αυτές — η εκτίμηση προβάλλει το ίδιο περιθώριο σε όλο τον τζίρο.
+    </div>`:(costMonthKnown?"":`<div style="font-size:11.5px;color:var(--muted);margin-top:8px">Καμία παραγγελία του μήνα δεν έχει κόστος υλικών, οπότε το κέρδος δεν υπολογίζεται.</div>`)}
     ${readyRevMonth>0?`<div class="split-bar"><div class="split-seg" style="width:${Math.round(customRevMonth/revMonth*100)}%;background:var(--ink)"></div><div class="split-seg" style="width:${Math.round(readyRevMonth/revMonth*100)}%;background:#2f5d8a"></div></div>
     <div class="split-leg"><span>Custom <b>${fmtMoney(customRevMonth)}</b></span><span>Ραφιού <b style="color:#2f5d8a">${fmtMoney(readyRevMonth)}</b></span></div>`:""}
 
