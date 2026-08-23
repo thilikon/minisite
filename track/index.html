@@ -1048,6 +1048,13 @@ function shade(hex,amt){
   const c=v=>Math.max(0,Math.min(255,v));
   return "#"+((1<<24)+(c(r)<<16)+(c(g)<<8)+c(b)).toString(16).slice(1);
 }
+// Παλιές παραγγελίες από το τετράδιο: μετράνε σε τζίρο, αλλά δεν ζητάμε συμπλήρωση στοιχείων
+function isArchive(o){ return /^TH-2026-\d{3}$/.test(String((o&&o.order_number)||"")); }
+function needsCost(o){
+  if(!o || isArchive(o)) return false;
+  if(o.kind==="ready") return false;                 // ραφιού: το κόστος μπαίνει από το προϊόν
+  return (o.cost==null || Number(o.cost)===0);
+}
 function evOf(o){ const id=o&&(o.event_id || (o.mix_match?"mix":null)); return id&&EVENTS[id] ? Object.assign({id},EVENTS[id]) : null; }
 const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtZHdsY2t6enB4ampmY3Z5aXVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MjQyNjgsImV4cCI6MjA5NzIwMDI2OH0.JADjEDrk1Yflimp3ZEzXOpG-IE3_7xyL2jCoG38XNmU";
 const REST = SUPABASE_URL + "/rest/v1";
@@ -2032,6 +2039,18 @@ function buildBrief(ctx){
     else if(ctx.avgTotal<=4) push(42, `Παραδίδεις κατά μέσο όρο σε <b>${Math.round(ctx.avgTotal)} μέρες</b>, αρκετά πιο γρήγορα από το 1–7 που υπόσχεσαι.`);
   }
 
+  /* 9α. Λείπει κόστος υλικών (μόνο νέες παραγγελίες) */
+  {
+    const miss=ordersCache.filter(needsCost)
+      .sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
+    if(miss.length){
+      const shown=miss.slice(0,2).map(o=>pill((o.customer_name||"δες").split(" ")[0], o.id)).join(" ");
+      push(72, miss.length===1
+        ? `Μία παραγγελία δεν έχει κόστος υλικών — ${shown}. Συμπλήρωσέ το για σωστό κέρδος.`
+        : `<b>${miss.length}</b> παραγγελίες δεν έχουν κόστος υλικών (${shown}${miss.length>2?" κ.ά.":""}) — χωρίς αυτό το κέρδος βγαίνει αισιόδοξο.`);
+    }
+  }
+
   /* 9β. Διπλότυπες παραγγελίες */
   {
     const seen={}, dups=[];
@@ -2094,14 +2113,6 @@ function buildBrief(ctx){
                                        : `Η μέση αξία παραγγελίας έπεσε <b>${Math.abs(d)}%</b> (${fmtMoney(avgNow)}).`);
     }
   }
-
-  /* 16. Παραγγελίες χωρίς δηλωμένα υλικά (χάνεται το πραγματικό κόστος) */
-  const noCost=ordersCache.filter(o=>{
-    if(!o.created_at) return false;
-    const d=new Date(o.created_at);
-    return ym(d)===ymNow && (o.cost==null || Number(o.cost)===0) && getItems(o).every(itemDone);
-  }).length;
-  if(noCost>=3) push(56, `<b>${noCost}</b> ολοκληρωμένες παραγγελίες δεν έχουν κόστος υλικών, οπότε το κέρδος βγαίνει αισιόδοξο.`);
 
   const seed=Math.floor(Date.now()/DAY);
   const QUOTES=[
@@ -2195,7 +2206,7 @@ function renderStats(){
     if(price!=null){
       priceSum+=price; priceN++;
       monthly[ym] = (monthly[ym]||0) + price;
-      if(ym===ymNow){ revMonth+=price; monthOrders++; if(cost!=null){ profitMonth += (price-cost); revCosted += price; monthCosted++; costMonthKnown=true; } if(isReady) readyRevMonth+=price; }
+      if(ym===ymNow){ revMonth+=price; if(!isArchive(o)) monthOrders++; if(cost!=null){ profitMonth += (price-cost); revCosted += price; if(!isArchive(o)) monthCosted++; costMonthKnown=true; } if(isReady) readyRevMonth+=price; }
       const rem = price - paid;
       if(rem>0) outstanding += rem;
     }
@@ -2356,7 +2367,7 @@ function renderStats(){
     <div class="stats-sub">Οικονομικά — τρέχων μήνας</div>
     <div class="stat-grid">${money}</div>
     ${partial?`<div style="background:#fdf6ea;border:1px solid #f0e0c4;border-left:3px solid #c9922e;border-radius:12px;padding:10px 13px;margin-top:10px;font-size:12px;color:#8a5a1e;line-height:1.6">
-      Κόστος υλικών έχουν <b>${monthCosted}</b> από <b>${monthOrders}</b> παραγγελίες του μήνα. Το κέρδος αφορά μόνο αυτές — η εκτίμηση προβάλλει το ίδιο περιθώριο σε όλο τον τζίρο.
+      ${monthOrders>0?`Κόστος υλικών έχουν <b>${monthCosted}</b> από <b>${monthOrders}</b> παραγγελίες του μήνα. `:""}Το κέρδος αφορά μόνο όσες έχουν κόστος — η εκτίμηση προβάλλει το ίδιο περιθώριο σε όλο τον τζίρο.
     </div>`:(costMonthKnown?"":`<div style="font-size:11.5px;color:var(--muted);margin-top:8px">Καμία παραγγελία του μήνα δεν έχει κόστος υλικών, οπότε το κέρδος δεν υπολογίζεται.</div>`)}
     ${readyRevMonth>0?`<div class="split-bar"><div class="split-seg" style="width:${Math.round(customRevMonth/revMonth*100)}%;background:var(--ink)"></div><div class="split-seg" style="width:${Math.round(readyRevMonth/revMonth*100)}%;background:#2f5d8a"></div></div>
     <div class="split-leg"><span>Custom <b>${fmtMoney(customRevMonth)}</b></span><span>Ραφιού <b style="color:#2f5d8a">${fmtMoney(readyRevMonth)}</b></span></div>`:""}
@@ -2576,10 +2587,11 @@ function renderOrders(){
     active: ordersCache.filter(o=>!orderIsDone(o)).length,
     done: ordersCache.filter(orderIsDone).length,
     mix: ordersCache.filter(o=>!!evOf(o)).length,
+    nocost: ordersCache.filter(needsCost).length,
     ready: ordersCache.filter(o=>o.kind==="ready").length
   };
   const chips = [
-    ["all","Όλες"],["active","Σε εξέλιξη"],["done","Ολοκληρωμένες"],["mix","Event"],["ready","Ραφιού"]
+    ["all","Όλες"],["active","Σε εξέλιξη"],["done","Ολοκληρωμένες"],["mix","Event"],["nocost","Χωρίς κόστος"],["ready","Ραφιού"]
   ].filter(([k])=> k==="all" || counts[k]>0 || orderFilter===k);
   const fbox=document.getElementById("orderFilters");
   if(fbox) fbox.innerHTML = chips.map(([k,l])=>
@@ -2590,6 +2602,7 @@ function renderOrders(){
     if(orderFilter==="active" && orderIsDone(o)) return false;
     if(orderFilter==="done" && !orderIsDone(o)) return false;
     if(orderFilter==="mix" && !evOf(o)) return false;
+    if(orderFilter==="nocost" && !needsCost(o)) return false;
     if(orderFilter==="ready" && o.kind!=="ready") return false;
     const its=getItems(o);
     const hay = [o.customer_name,o.product_name,o.order_number,o.customer_phone,
