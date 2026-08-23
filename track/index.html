@@ -2032,6 +2032,16 @@ function buildBrief(ctx){
     else if(ctx.avgTotal<=4) push(42, `Παραδίδεις κατά μέσο όρο σε <b>${Math.round(ctx.avgTotal)} μέρες</b>, αρκετά πιο γρήγορα από το 1–7 που υπόσχεσαι.`);
   }
 
+  /* 9β. Διπλότυπες παραγγελίες */
+  {
+    const seen={}, dups=[];
+    ordersCache.forEach(o=>{
+      const k=(o.order_number||"").trim(); if(!k) return;
+      if(seen[k]) dups.push(o); else seen[k]=o;
+    });
+    if(dups.length) push(90, `Βρήκα <b>${dups.length}</b> ${dups.length===1?"διπλότυπη παραγγελία":"διπλότυπες παραγγελίες"} (ίδιος κωδικός) — ${dups.slice(0,2).map(o=>pill(o.order_number||"δες", o.id)).join(" ")} — σβήσε ${dups.length===1?"την":"τις"} για σωστά νούμερα.`);
+  }
+
   /* 10α. Πρόσφατη επιστροφή πελάτη */
   {
     const recent=ordersCache.filter(o=>o.created_at && (now-new Date(o.created_at))/DAY<=14 && (Number(o.visit_no)||0)>1)
@@ -3323,14 +3333,16 @@ function custKey(o){
 }
 function visitNoFor(order, list){
   const key=custKey(order); if(!key) return 1;
-  const t=order.created_at?new Date(order.created_at).getTime():Date.now();
-  const prior=(list||ordersCache).filter(x=>{
-    if(x.id===order.id) return false;
-    if(custKey(x)!==key) return false;
-    const xt=x.created_at?new Date(x.created_at).getTime():0;
-    return xt<t;
-  }).length;
-  return prior+1;
+  const mine=(list||ordersCache).filter(x=>custKey(x)===key);
+  // σταθερή σειρά: ημερομηνία, μετά αριθμός παραγγελίας, μετά id — χωρίς ισοπαλίες
+  const rank=o=>[ new Date(o.created_at||0).getTime()||0, String(o.order_number||""), String(o.id||"") ];
+  const cmp=(a,b)=>{ const A=rank(a),B=rank(b);
+    return (A[0]-B[0]) || A[1].localeCompare(B[1]) || A[2].localeCompare(B[2]); };
+  mine.sort(cmp);
+  const i=mine.findIndex(x=>String(x.id)===String(order.id));
+  if(i>=0) return i+1;
+  // νέα παραγγελία που δεν είναι ακόμη στη λίστα
+  return mine.filter(x=>cmp(x,order)<0).length + 1;
 }
 function ordGr(n){ const v=Math.max(1, Math.floor(Number(n)||1)); return v+"η"; }
 
