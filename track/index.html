@@ -552,6 +552,15 @@
   .brief{background:var(--cream);border:1px solid var(--line);border-radius:14px;padding:15px 16px 13px;margin-bottom:16px}
   .brief-h{font-family:'Cormorant',Georgia,serif;font-size:23px;font-weight:600;color:var(--ink);margin-bottom:9px;letter-spacing:-.01em}
   .brief-b{font-size:13px;line-height:1.7;color:var(--ink-soft)}
+  .brief-sec{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:14px 0 7px}
+  .brief-list{list-style:none;margin:0;padding:0}
+  .brief-list li{position:relative;padding-left:15px;font-size:12.5px;line-height:1.65;color:var(--ink-soft);margin-bottom:8px}
+  .brief-list li:last-child{margin-bottom:0}
+  .brief-list li:before{content:"";position:absolute;left:2px;top:8px;width:5px;height:5px;border-radius:50%;background:var(--muted)}
+  .brief-list b{color:var(--ink);font-weight:700}
+  .brief-ok{font-size:12.5px;color:var(--ink-soft);margin-top:12px}
+  .brief-win{margin-top:12px;background:#eef4ef;border:1px solid #cfe2d5;border-radius:11px;padding:9px 12px;font-size:12.5px;color:#2c6e49;line-height:1.55}
+  .brief-win b{color:#215539}
   .brief-b b{color:var(--ink);font-weight:700}
   .brief-n{font-family:'Cormorant',Georgia,serif;font-style:italic;font-size:15px;color:var(--ink-soft);margin-top:12px;padding-top:11px;border-top:1px solid var(--line);line-height:1.5}
   .brief-who{font-family:'Inter';font-style:normal;font-size:10.5px;letter-spacing:.04em;color:var(--muted);white-space:nowrap}
@@ -1995,207 +2004,172 @@ async function loadOrders(){
 function setStatsYear(y){ statsYear = y; renderStats(); }
 
 /* ============================================================
-   ΕΞΥΠΝΟ ΣΧΟΛΙΟ — σαρώνει παραγγελίες, χρήματα, χρόνους,
-   αποθήκη, events, πελάτες & feedback. Κρατά τα 3 πιο επείγοντα.
+   ΤΟ ΣΗΜΕΡΙΝΟ ΣΗΜΕΙΩΜΑ
+   1. Πώς πάει ο μήνας   2. Τι θέλει προσοχή   3. Τι πήγε καλά
 ============================================================ */
 function buildBrief(ctx){
-  const DAY=86400000, now=new Date(), ins=[];
-  const push=(score,txt)=>ins.push({score,txt});
-  const pill=(name,id)=>`<button class="brief-pill" onclick="editOrder('${id}')">${esc(name)}</button>`;
-  const cpill=(name,id)=>`<button class="brief-pill" onclick="openCustomer('${id}')">${esc(name)}</button>`;
-  const orderOfCustomer=n=>{ const o=ordersCache.slice().sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0)).find(x=>normText(x.customer_name||"")===normText(n)); return o?o.id:null; };
+  const DAY=86400000, now=new Date();
   const ym=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
   const ymNow=ym(now);
   const dPrev=new Date(now.getFullYear(), now.getMonth()-1, 1);
   const ymPrev=ym(dPrev);
+  const pill =(name,id)=>`<button class="brief-pill" onclick="editOrder('${id}')">${esc(name)}</button>`;
+  const cpill=(name,id)=>`<button class="brief-pill" onclick="openCustomer('${id}')">${esc(name)}</button>`;
 
-  let revPrev=0, cntPrev=0, cntNow=0, last7=0, prev7=0, revPrevSoFar=0;
-  const custCount={}, prodCount={};
+  /* ---------- δεδομένα ---------- */
+  let revPrevSoFar=0, revPrevAll=0, cntNow=0, cntPrev=0, last7=0, prev7=0;
+  const custCount={}, monthByKey={};
   ordersCache.forEach(o=>{
     if(!o.created_at) return;
     const d=new Date(o.created_at), k=ym(d), price=Number(o.price)||0;
-    if(k===ymPrev){ revPrev+=price; cntPrev++; if(d.getDate()<=now.getDate()) revPrevSoFar+=price; }
-    if(k===ymNow){ cntNow++; }
+    monthByKey[k]=(monthByKey[k]||0)+price;
+    if(k===ymPrev){ revPrevAll+=price; cntPrev++; if(d.getDate()<=now.getDate()) revPrevSoFar+=price; }
+    if(k===ymNow) cntNow++;
     const age=(now-d)/DAY;
     if(age<=7) last7++; else if(age<=14) prev7++;
-    const nm=(o.customer_name||"").trim().toLowerCase();
-    if(nm) custCount[nm]=(custCount[nm]||0)+1;
-    if(k===ymNow) getItems(o).forEach(it=>{ const n=(it.name||"").trim(); if(n) prodCount[n]=(prodCount[n]||0)+1; });
+    const nm=normText(o.customer_name||""); if(nm) custCount[nm]=(custCount[nm]||0)+1;
   });
 
-  /* 1. Ρυθμός μήνα — σύγκριση με τις ίδιες μέρες του προηγούμενου */
-  const dayOfMonth=now.getDate();
-  const daysInMonth=new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
-  const monthName=GR_MONTHS_FULL[now.getMonth()], prevName=GR_MONTHS_ACC[dPrev.getMonth()];
-  if(ctx.revMonth>0 || revPrev>0){
-    const base=revPrevSoFar;
-    const profitTxt = ctx.costMonthKnown ? ` και κέρδος <b>${fmtMoney(ctx.profitMonth)}</b>` : "";
-    if(base>0){
-      const diff=Math.round((ctx.revMonth-base)/base*100);
-      push(70, `Ο ${monthName} έχει φέρει <b>${fmtMoney(ctx.revMonth)}</b>${profitTxt} από ${cntNow} ${cntNow===1?"παραγγελία":"παραγγελίες"} — ${diff>=0?`<b>${diff}% πάνω</b>`:`<b>${Math.abs(diff)}% κάτω</b>`} από τον ${prevName} τις ίδιες μέρες (${fmtMoney(base)}).`);
-    } else if(ctx.revMonth>0){
-      push(70, `Ο ${monthName} έχει φέρει <b>${fmtMoney(ctx.revMonth)}</b>${profitTxt} από ${cntNow} ${cntNow===1?"παραγγελία":"παραγγελίες"}${revPrev>0?` — ο ${prevName} έκλεισε στα ${fmtMoney(revPrev)}`:""}.`);
+  /* ---------- 1. Πώς πάει ---------- */
+  const M=GR_MONTHS_FULL[now.getMonth()], Mprev=GR_MONTHS_ACC[dPrev.getMonth()];
+  let head;
+  if(ctx.revMonth>0){
+    const bits=[`Ο <b>${M}</b> έχει φέρει <b>${fmtMoney(ctx.revMonth)}</b> από ${cntNow} ${cntNow===1?"παραγγελία":"παραγγελίες"}`];
+    if(ctx.costMonthKnown) bits.push(`με κέρδος <b>${fmtMoney(ctx.profitMonth)}</b>`);
+    let line=bits.join(" ")+".";
+    if(revPrevSoFar>0){
+      const d=Math.round((ctx.revMonth-revPrevSoFar)/revPrevSoFar*100);
+      line += d>=0
+        ? ` Είσαι <b>${d}% πάνω</b> από τον ${Mprev} τις ίδιες μέρες (${fmtMoney(revPrevSoFar)}).`
+        : ` Είσαι <b>${Math.abs(d)}% κάτω</b> από τον ${Mprev} τις ίδιες μέρες (${fmtMoney(revPrevSoFar)}).`;
     }
+    head=line;
+  } else if(revPrevAll>0){
+    head=`Ο ${M} δεν έχει παραγγελίες ακόμη. Ο ${Mprev} είχε κλείσει στα <b>${fmtMoney(revPrevAll)}</b>.`;
+  } else {
+    head=`Καμία παραγγελία ακόμη αυτόν τον μήνα.`;
   }
 
-  /* 2. Ρυθμός εβδομάδας */
-  if(prev7>0 && last7!==prev7){
-    const d=Math.round((last7-prev7)/prev7*100);
-    if(Math.abs(d)>=30) push(58, d>0 ? `Αυτή την εβδομάδα <b>${last7}</b> νέες παραγγελίες, ${d}% πάνω από την προηγούμενη.`
-                                     : `Αυτή την εβδομάδα <b>${last7}</b> νέες παραγγελίες, ${Math.abs(d)}% κάτω από την προηγούμενη (${prev7}).`);
-  } else if(last7===0 && cntNow>0){
-    push(62, `Καμία νέα παραγγελία τις τελευταίες <b>7 μέρες</b>.`);
-  }
+  /* ---------- 2. Τι θέλει προσοχή ---------- */
+  const todo=[];
+  const add=(score,txt)=>todo.push({score,txt});
 
-  /* 3. Events: πρόοδος & χρόνος που απομένει */
-  Object.keys(EVENTS).forEach(id=>{
-    const e=EVENTS[id], v=(ctx.evStats||{})[id];
-    if(!evActive(id) && !(v&&v.total!=null)) return;
-    const left=e.autoOff ? Math.ceil((new Date(e.autoOff)-now)/DAY) : null;
-    if(v && v.total!=null){
-      const rest=v.total-v.items;
-      if(rest<=0) push(85, `<b>${esc(e.name)}: sold out!</b> ${v.total===1?"Το κομμάτι έφυγε":"Και τα "+v.total+" κομμάτια έφυγαν"}.`);
-      else if(evActive(id) && left!=null && left<=3) push(92, `<b>${esc(e.name)}</b>: μένουν <b>${rest}</b> ${rest===1?"κομμάτι":"κομμάτια"} και <b>${left>1?left+" μέρες":"1 μέρα"}</b> μέχρι τη λήξη.`);
-      else if(evActive(id)) push(72, `<b>${esc(e.name)}</b>: ${v.items}/${v.total} πουλήθηκαν${left!=null&&left>0?`, ${left} μέρες ακόμη`:""}.`);
-    } else if(evActive(id) && left!=null && left<=2){
-      push(74, `Το <b>${esc(e.name)}</b> κλείνει σε ${left>1?left+" μέρες":"1 μέρα"}.`);
-    }
-  });
-
-  /* 4. Κολλημένες παραγγελίες */
-  if(ctx.stuck && ctx.stuck.length){
-    const worst=ctx.stuck.slice().sort((a,b)=>b.days-a.days)[0];
-    const wid=(ordersCache.find(o=>o.customer_name===worst.name)||{}).id;
-    const who=wid?pill(worst.name,wid):`<b>${esc(worst.name)}</b>`;
-    push(88, ctx.stuck.length===1
-      ? `Μία παραγγελία περιμένει <b>${worst.days} μέρες</b> στο «${esc(worst.stage||"ίδιο στάδιο")}» — ${who}.`
-      : `<b>${ctx.stuck.length} παραγγελίες</b> περιμένουν πάνω από βδομάδα· η παλαιότερη <b>${worst.days} μέρες</b> στο «${esc(worst.stage||"ίδιο στάδιο")}» — ${who}.`);
-  }
-
-  /* 5. Παραδόσεις που πλησιάζουν / έχουν περάσει */
-  let dueSoon=0, overdue=0, overdueO=null;
+  // παραδόσεις που πέρασαν
+  let overdue=[], dueSoon=0;
   ordersCache.forEach(o=>getItems(o).forEach(it=>{
     if(!it.eta || itemDone(it)) return;
     const days=Math.ceil((new Date(it.eta)-now)/DAY);
-    if(days<0){ overdue++; if(!overdueO) overdueO=o; } else if(days<=3) dueSoon++;
+    if(days<0) overdue.push({o,days:-days}); else if(days<=3) dueSoon++;
   }));
-  if(overdue) push(95, overdue===1
-    ? `Πέρασε η ημερομηνία παράδοσης σε 1 προϊόν — ${pill(overdueO.customer_name||"δες το", overdueO.id)}.`
-    : `<b>${overdue}</b> προϊόντα πέρασαν την ημερομηνία παράδοσης.`);
-  else if(dueSoon) push(76, `<b>${dueSoon}</b> ${dueSoon===1?"παράδοση λήγει":"παραδόσεις λήγουν"} μέσα στο τριήμερο.`);
+  if(overdue.length===1) add(100, `Η παραγγελία ${pill(firstName(overdue[0].o.customer_name)||"—", overdue[0].o.id)} έχει ξεπεράσει την ημερομηνία παράδοσης κατά <b>${overdue[0].days} ${overdue[0].days===1?"μέρα":"μέρες"}</b>.`);
+  else if(overdue.length>1) add(100, `<b>${overdue.length} παραγγελίες</b> έχουν ξεπεράσει την ημερομηνία παράδοσης — η χειρότερη ${pill(firstName(overdue[0].o.customer_name)||"—", overdue[0].o.id)} κατά ${overdue[0].days} μέρες.`);
+  else if(dueSoon) add(70, `<b>${dueSoon}</b> ${dueSoon===1?"παράδοση λήγει":"παραδόσεις λήγουν"} μέσα στο τριήμερο.`);
 
-  /* 6. Χρήματα που εκκρεμούν */
+  // κολλημένες
+  if(ctx.stuck && ctx.stuck.length){
+    const w=ctx.stuck.slice().sort((a,b)=>b.days-a.days)[0];
+    const o=ordersCache.find(x=>x.customer_name===w.name);
+    const who=o?pill(firstName(w.name), o.id):`<b>${esc(w.name)}</b>`;
+    add(92, ctx.stuck.length===1
+      ? `Η παραγγελία ${who} μένει <b>${w.days} μέρες</b> στο ίδιο στάδιο${w.stage?` («${esc(w.stage)}»)`:""}.`
+      : `<b>${ctx.stuck.length} παραγγελίες</b> έχουν κολλήσει πάνω από βδομάδα· η παλαιότερη ${who} με <b>${w.days} μέρες</b>${w.stage?` στο «${esc(w.stage)}»`:""}.`);
+  }
+
+  // απλήρωτες
   if(ctx.outstanding>0){
-    const unpaidOld=ordersCache.filter(o=>{
-      const rem=(Number(o.price)||0)-(Number(o.amount_paid)||0);
-      return rem>0 && o.created_at && (now-new Date(o.created_at))/DAY>21;
-    }).length;
-    if(unpaidOld){
-      const oldest=ordersCache.filter(o=>((Number(o.price)||0)-(Number(o.amount_paid)||0))>0.01 && o.created_at)
-        .sort((a,b)=>new Date(a.created_at)-new Date(b.created_at))[0];
-      push(80, `Εκκρεμούν <b>${fmtMoney(ctx.outstanding)}</b>, με <b>${unpaidOld}</b> ${unpaidOld===1?"παραγγελία":"παραγγελίες"} πάνω από 3 βδομάδες απλήρωτες${oldest?` — παλαιότερη ${cpill(oldest.customer_name||"", oldest.id)}`:""}.`);
+    const unpaid=ordersCache.filter(o=>((Number(o.price)||0)-(Number(o.amount_paid)||0))>0.01 && o.created_at)
+      .sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+    const old=unpaid.filter(o=>(now-new Date(o.created_at))/DAY>21);
+    if(old.length){
+      const o=old[0], d=Math.floor((now-new Date(o.created_at))/DAY);
+      add(84, `Εκκρεμούν <b>${fmtMoney(ctx.outstanding)}</b> σε εισπράξεις. Η παλαιότερη είναι ${cpill(firstName(o.customer_name), o.id)} εδώ και <b>${d} μέρες</b>.`);
+    } else {
+      add(46, `Εκκρεμούν <b>${fmtMoney(ctx.outstanding)}</b> σε εισπράξεις από ${unpaid.length} ${unpaid.length===1?"παραγγελία":"παραγγελίες"}.`);
     }
-    else push(50, `Εκκρεμούν <b>${fmtMoney(ctx.outstanding)}</b> σε εισπράξεις${ctx.revMonth>0?`, δηλαδή όσο το ${Math.round(ctx.outstanding/ctx.revMonth*100)}% του τζίρου του μήνα`:""}.`);
   }
 
-  /* 7. Αποθήκη */
-  const outItems=(stockCache||[]).filter(it=>!it.mm && !it.event_id && stockState(it)==="out");
-  if(outItems.length) push(84, `Εξαντλήθηκε: <b>${outItems.slice(0,2).map(x=>esc(x.name)).join(" · ")}</b>${outItems.length>2?` +${outItems.length-2}`:""}.`);
-  else if(ctx.lowCount>0) {
-      const lowNames=(stockCache||[]).filter(it=>!it.mm && !it.event_id && stockState(it)==="low").slice(0,2).map(x=>esc(x.name));
-      push(60, `${ctx.lowCount===1?"Τελειώνει":"Τελειώνουν"} <b>${ctx.lowCount}</b> ${ctx.lowCount===1?"υλικό":"υλικά"}${lowNames.length?`: ${lowNames.join(", ")}${ctx.lowCount>lowNames.length?" κ.ά.":""}`:""}.`);
-    }
-
-  /* 8. Κέρδος & περιθώριο */
-  if(ctx.revMonth>0 && !ctx.costMonthKnown){
-    push(45, `Δεν έχεις βάλει κόστος υλικών αυτόν τον μήνα — το κέρδος δεν υπολογίζεται.`);
-  } else if(ctx.margin!=null){
-    if(ctx.margin<35) push(66, `Περιθώριο μήνα <b>${ctx.margin}%</b>.`);
-    else if(ctx.margin>=65) push(48, `Περιθώριο μήνα <b>${ctx.margin}%</b>.`);
+  // υλικά που τελείωσαν / τελειώνουν
+  const outSt=(stockCache||[]).filter(it=>!isWholesale(it) && stockState(it)==="out" && !stEv(it));
+  if(outSt.length) add(88, `${outSt.length===1?"Εξαντλήθηκε":"Εξαντλήθηκαν"} στην αποθήκη: <b>${outSt.slice(0,3).map(x=>esc(x.name)).join(", ")}</b>${outSt.length>3?` +${outSt.length-3}`:""}.`);
+  else if(ctx.lowCount>0){
+    const low=(stockCache||[]).filter(it=>stockState(it)==="low" && !stEv(it)).slice(0,3).map(x=>esc(x.name));
+    add(58, `${ctx.lowCount===1?"Τελειώνει":"Τελειώνουν"} <b>${ctx.lowCount}</b> ${ctx.lowCount===1?"υλικό":"υλικά"}${low.length?`: ${low.join(", ")}`:""}.`);
   }
 
-  /* 9. Χρόνος παράδοσης */
-  if(ctx.avgTotal!=null){
-    if(ctx.avgTotal>10) push(64, `Μέσος χρόνος παράδοσης <b>${Math.round(ctx.avgTotal)} μέρες</b>.`);
-    else if(ctx.avgTotal<=4) push(42, `Μέσος χρόνος παράδοσης <b>${Math.round(ctx.avgTotal)} μέρες</b>.`);
-  }
-
-  /* 9α. Λείπει κόστος υλικών (μόνο νέες παραγγελίες) */
+  // κόστος υλικών που λείπει
   {
-    const miss=ordersCache.filter(needsCost)
-      .sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
+    const miss=ordersCache.filter(needsCost).sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
     if(miss.length){
-      const shown=miss.slice(0,2).map(o=>pill((o.customer_name||"δες").split(" ")[0], o.id)).join(" ");
-      const missRev=miss.reduce((a,o)=>a+(Number(o.price)||0),0);
-      push(72, miss.length===1
-        ? `Χωρίς κόστος υλικών: <b>1</b> παραγγελία (${shown}).`
-        : `Χωρίς κόστος υλικών: <b>${miss.length}</b> παραγγελίες, <b>${fmtMoney(missRev)}</b> τζίρου (${shown}${miss.length>2?" κ.ά.":""}).`);
+      const rev=miss.reduce((a,o)=>a+(Number(o.price)||0),0);
+      add(66, miss.length===1
+        ? `Η παραγγελία ${pill(firstName(miss[0].customer_name)||"—", miss[0].id)} δεν έχει καταχωρημένα υλικά, οπότε δεν ξέρουμε το κέρδος της.`
+        : `<b>${miss.length} παραγγελίες</b> (${fmtMoney(rev)}) δεν έχουν καταχωρημένα υλικά — το κέρδος του μήνα δείχνει μεγαλύτερο απ' ό,τι είναι.`);
     }
   }
 
-  /* 9β. Διπλότυπες παραγγελίες */
+  // παρακαταθήκη σε καταστήματα
+  {
+    const cons=ordersCache.filter(o=>isWholesale(o) && o.deal_type==="consignment");
+    let left=0, oldest=null;
+    cons.forEach(o=>{ const t=wTotals(o); left+=t.left;
+      if(t.left>0 && (!oldest || new Date(o.created_at||0)<new Date(oldest.created_at||0))) oldest=o; });
+    if(left>0 && oldest){
+      const d=Math.floor((now-new Date(oldest.created_at||now))/DAY);
+      add(62, `<b>${left}</b> ${left===1?"κομμάτι κάθεται":"κομμάτια κάθονται"} σε καταστήματα με παρακαταθήκη — το παλαιότερο ${pill(oldest.customer_name||"—", oldest.id)} εδώ και ${d} μέρες.`);
+    }
+  }
+
+  // διπλότυπα
   {
     const seen={}, dups=[];
-    ordersCache.forEach(o=>{
-      const k=(o.order_number||"").trim(); if(!k) return;
-      if(seen[k]) dups.push(o); else seen[k]=o;
-    });
-    if(dups.length) push(90, `Διπλότυπες παραγγελίες: <b>${dups.length}</b> με ίδιο κωδικό — ${dups.slice(0,2).map(o=>pill(o.order_number||"δες", o.id)).join(" ")}.`);
+    ordersCache.forEach(o=>{ const k=(o.order_number||"").trim(); if(!k) return; if(seen[k]) dups.push(o); else seen[k]=o; });
+    if(dups.length) add(90, `Υπάρχ${dups.length===1?"ει":"ουν"} <b>${dups.length}</b> ${dups.length===1?"διπλοκαταχωρημένη παραγγελία":"διπλοκαταχωρημένες παραγγελίες"} με ίδιο κωδικό: ${dups.slice(0,2).map(o=>pill(o.order_number||"δες", o.id)).join(" ")}.`);
   }
 
-  /* 10α. Πρόσφατη επιστροφή πελάτη */
+  // event που κλείνει
+  Object.keys(EVENTS).forEach(id=>{
+    if(!evActive(id)) return;
+    const e=EVENTS[id], v=(ctx.evStats||{})[id];
+    const daysLeft=e.autoOff?Math.ceil((new Date(e.autoOff)-now)/DAY):null;
+    if(daysLeft!=null && daysLeft>=0 && daysLeft<=3){
+      const rest=v&&v.total!=null?(v.total-v.items):null;
+      add(76, `Το <b>${esc(e.name)}</b> κλείνει σε ${daysLeft===0?"σήμερα":(daysLeft===1?"1 μέρα":daysLeft+" μέρες")}${rest!=null?` και μένουν ${rest} ${rest===1?"κομμάτι":"κομμάτια"}`:""}.`);
+    }
+  });
+
+  // χαμηλή ικανοποίηση
+  if(ctx.satAvg!=null && ctx.satAvg<4 && (feedbackCache||[]).length>=2)
+    add(80, `Η μέση ικανοποίηση έπεσε στο <b>${ctx.satAvg.toFixed(1)}/5</b> — αξίζει μια ματιά στα σχόλια.`);
+
+  // φόρτος
   {
-    const recent=ordersCache.filter(o=>o.created_at && (now-new Date(o.created_at))/DAY<=14 && (Number(o.visit_no)||0)>1)
-      .sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))[0];
-    if(recent){
-      const v=Number(recent.visit_no);
-      push(74, `${cpill(recent.customer_name||"", recent.id)} επέστρεψε για <b>${ordGr(v)} φορά</b>.`);
+    const active=[]; ordersCache.forEach(o=>getItems(o).forEach(it=>{ if(!itemDone(it)) active.push({o,it}); }));
+    if(active.length>=6){
+      const byStage={};
+      active.forEach(({o,it})=>{ const S=stagesFor(itemFlow(it),o.delivery_method); const t=(S[itemStage(it)]||{}).title||"—"; byStage[t]=(byStage[t]||0)+1; });
+      const w=Object.entries(byStage).sort((a,b)=>b[1]-a[1])[0];
+      add(50, `Έχεις <b>${active.length}</b> προϊόντα σε εξέλιξη και τα <b>${w[1]}</b> βρίσκονται στο «${esc(w[0])}».`);
     }
   }
 
-  /* 10. Πελάτες που ξαναγύρισαν */
+  /* ---------- 3. Τι πήγε καλά ---------- */
+  const wins=[];
+  const monthsSorted=Object.entries(monthByKey).sort((a,b)=>b[1]-a[1]);
+  if(monthsSorted.length>1 && monthsSorted[0][0]===ymNow && ctx.revMonth>0)
+    wins.push(`Είναι ο καλύτερος μήνας σου μέχρι τώρα.`);
   const repeat=Object.values(custCount).filter(n=>n>1).length;
-  if(repeat>=2) push(52, `<b>${repeat}</b> πελάτες με πάνω από μία παραγγελία.`);
+  if(repeat>=2) wins.push(`<b>${repeat}</b> πελάτες έχουν παραγγείλει ξανά.`);
+  if(last7>=3) wins.push(`<b>${last7}</b> νέες παραγγελίες μέσα στην εβδομάδα.`);
+  if(ctx.margin!=null && ctx.margin>=60) wins.push(`Το περιθώριο του μήνα είναι <b>${ctx.margin}%</b>.`);
+  if(ctx.avgTotal!=null && ctx.avgTotal<=5) wins.push(`Παραδίδεις κατά μέσο όρο σε <b>${Math.round(ctx.avgTotal)} μέρες</b>.`);
+  if(ctx.satAvg!=null && ctx.satAvg>=4.7 && (feedbackCache||[]).length>=3)
+    wins.push(`Ικανοποίηση <b>${ctx.satAvg.toFixed(1)}/5</b> από ${(feedbackCache||[]).length} απαντήσεις.`);
+  Object.keys(ctx.evStats||{}).forEach(id=>{ const v=ctx.evStats[id];
+    if(v.total!=null && v.items>=v.total && v.total>0) wins.push(`Το <b>${esc(v.name)}</b> πούλησε και τα ${v.total} κομμάτια.`); });
+  const totalOrders=ordersCache.length;
+  [10,25,50,100,150,200].forEach(m=>{ if(totalOrders===m) wins.push(`Έφτασες τις <b>${m} παραγγελίες</b> συνολικά.`); });
 
-  /* 11. Best seller */
-  const top=Object.entries(prodCount).sort((a,b)=>b[1]-a[1])[0];
-  if(top && top[1]>=3) push(46, `Το <b>${esc(top[0])}</b> είναι το πιο δημοφιλές του μήνα με <b>${top[1]}</b> κομμάτια.`);
-  else { const bs=(typeof bestSeller==="function")?bestSeller():null;
-    if(bs && bs.n>=3) push(43, `Best seller συνολικά το <b>${esc(bs.name)}</b> — <b>${bs.n}</b> πωλήσεις, ${fmtMoney(bs.rev)}.`); }
-
-  /* 12. Feedback */
-  const fbCount=(feedbackCache||[]).length;
-  if(ctx.satAvg!=null){
-    if(ctx.satAvg<4) push(78, `Η μέση ικανοποίηση έπεσε στο <b>${ctx.satAvg.toFixed(1)}/5</b>.`);
-    else if(fbCount>=3 && ctx.satAvg>=4.7) push(44, `Ικανοποίηση <b>${ctx.satAvg.toFixed(1)}/5</b> από ${fbCount} απαντήσεις.`);
-  }
-
-  /* 13. Έτοιμα προϊόντα που λιμνάζουν */
-  const shelfItems=(stockCache||[]).filter(it=>it.type==="product" && Number(it.qty)>0);
-  if(shelfItems.length>=4){
-    const tied=shelfItems.reduce((a,it)=>a+(Number(it.qty)||0)*(Number(it.sell_price)||0),0);
-    push(40, `Στο ράφι <b>${shelfItems.length}</b> έτοιμα προϊόντα${tied>0?`, αξίας <b>${fmtMoney(tied)}</b>`:""}.`);
-  }
-
-  /* 14. Φόρτος εργασίας: πόσα ενεργά προϊόντα & πού είναι μαζεμένα */
-  const activeItems=[]; ordersCache.forEach(o=>getItems(o).forEach(it=>{ if(!itemDone(it)) activeItems.push({o,it}); }));
-  if(activeItems.length>=6){
-    const byStage={};
-    activeItems.forEach(({o,it})=>{ const S=stagesFor(itemFlow(it),o.delivery_method); const t=(S[itemStage(it)]||{}).title||"—"; byStage[t]=(byStage[t]||0)+1; });
-    const worst=Object.entries(byStage).sort((a,b)=>b[1]-a[1])[0];
-    push(68, `<b>${activeItems.length}</b> προϊόντα σε εξέλιξη · τα <b>${worst[1]}</b> στο «${esc(worst[0])}».`);
-  }
-
-  /* 15. Μέση αξία παραγγελίας σε σχέση με τον προηγούμενο μήνα */
-  if(cntNow>=3 && cntPrev>=3){
-    const avgNow=ctx.revMonth/cntNow, avgPrev=revPrev/cntPrev;
-    if(avgPrev>0){
-      const d=Math.round((avgNow-avgPrev)/avgPrev*100);
-      if(Math.abs(d)>=15) push(54, d>0 ? `Η μέση αξία παραγγελίας ανέβηκε <b>${d}%</b> (${fmtMoney(avgNow)}).`
-                                       : `Η μέση αξία παραγγελίας έπεσε <b>${Math.abs(d)}%</b> (${fmtMoney(avgNow)}).`);
-    }
-  }
-
+  /* ---------- render ---------- */
   const seed=Math.floor(Date.now()/DAY);
   const QUOTES=[
     ["Αγόραζε λιγότερα, διάλεγε καλά, κάνε τα να κρατήσουν.","Vivienne Westwood"],
@@ -2235,25 +2209,22 @@ function buildBrief(ctx){
     ["Η δημιουργικότητα χρειάζεται θάρρος.","Henri Matisse"],
     ["Κάνε τα μικρά πράγματα με ασυνήθιστο τρόπο.","Booker T. Washington"]
   ];
-  const yr=new Date().getFullYear();
-  const q=QUOTES[(seed*7 + yr) % QUOTES.length];
-  const closer=`«${q[0]}» <span class="brief-who">— ${q[1]}</span>`;
-  const h=new Date().getHours();
-  const hello = (h<6 || h>=18) ? "Καλό βράδυ" : (h<12 ? "Καλημέρα" : "Καλησπέρα");
-  const greet = `${hello}, Αναστασία`;
+  const q=QUOTES[(seed*7 + now.getFullYear()) % QUOTES.length];
+  const h=now.getHours();
+  const hello=(h<6||h>=18)?"Καλό βράδυ":(h<12?"Καλημέρα":"Καλησπέρα");
 
-  if(!ins.length){
-    return `<div class="brief"><div class="brief-h">${greet}</div>
-      <div class="brief-b">Ήρεμα πράγματα σήμερα — καμία παραγγελία δεν καθυστερεί, τίποτα δεν λείπει από την αποθήκη και δεν εκκρεμούν εισπράξεις.</div>
-      <div class="brief-n">${closer}</div></div>`;
-  }
-  // ταξινόμηση κατά επείγον· εναλλαγή στα ισοβαθμούντα ώστε να μη λέει τα ίδια κάθε μέρα
-  ins.sort((a,b)=> b.score-a.score || ((a.txt.length+seed)%3)-((b.txt.length+seed)%3));
-  const lines=ins.slice(0,3).map(x=>x.txt);
+  todo.sort((a,b)=> b.score-a.score || ((a.txt.length+seed)%3)-((b.txt.length+seed)%3));
+  const items=todo.slice(0,3);
+  const win = wins.length ? wins[(seed)%wins.length] : null;
+
   return `<div class="brief">
-    <div class="brief-h">${greet}</div>
-    <div class="brief-b">${lines.join(" ")}</div>
-    <div class="brief-n">${closer}</div>
+    <div class="brief-h">${hello}, Αναστασία</div>
+    <div class="brief-b">${head}</div>
+    ${items.length?`<div class="brief-sec">Θέλουν προσοχή</div>
+      <ul class="brief-list">${items.map(x=>`<li>${x.txt}</li>`).join("")}</ul>`
+     :`<div class="brief-ok">Τίποτα δεν εκκρεμεί αυτή τη στιγμή — όλα κυλούν ομαλά.</div>`}
+    ${win?`<div class="brief-win">${win}</div>`:""}
+    <div class="brief-n">«${q[0]}» <span class="brief-who">— ${q[1]}</span></div>
   </div>`;
 }
 
