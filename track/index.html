@@ -501,6 +501,19 @@
   .ms-row input{width:18px;height:18px;accent-color:var(--ink);flex:none}
   .ms-n{font-size:13.5px;font-weight:600}
   .ms-s{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.45}
+  .w-card{background:var(--card,#fff);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:11px}
+  .w-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .w-shop{font-size:15px;font-weight:600}
+  .w-meta{font-size:11px;color:var(--muted);margin-top:3px}
+  .w-items{margin:11px 0 10px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:9px 0}
+  .w-item{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:3px 0}
+  .w-q{font-weight:600;white-space:nowrap}
+  .w-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+  .w-val{font-size:13.5px;font-weight:700}
+  .st-row{display:flex;align-items:center;gap:8px;background:var(--cream);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;flex-wrap:wrap}
+  .st-in{flex:0 0 68px}
+  .st-in span{display:block;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+  .st-in input{width:100%;text-align:center;padding:8px 6px;border:1px solid var(--line);border-radius:9px;background:#fff;font-family:'Inter';font-size:16px}
   .cust-card{display:flex;align-items:center;gap:8px;background:var(--card,#fff);border:1px solid var(--line);border-radius:14px;padding:6px 10px 6px 14px;margin-bottom:9px}
   .cc-main{flex:1;display:flex;background:none;border:none;text-align:left;padding:8px 0;cursor:pointer;font-family:'Inter';min-width:0}
   .cc-btns{display:flex;flex-direction:column;gap:6px;flex:none}
@@ -702,6 +715,7 @@
           <button class="tb sel" id="tabOrders" onclick="showAdminTab('orders')">Παραγγελίες</button>
           <button class="tb" id="tabStock" onclick="showAdminTab('stock')">Αποθήκη</button>
           <button class="tb" id="tabCust" onclick="showAdminTab('customers')">Πελάτες</button>
+          <button class="tb" id="tabWhole" onclick="showAdminTab('wholesale')">Χονδρική</button>
           <button class="tb" id="tabFb" onclick="showAdminTab('feedback')">Feedback</button>
         </div>
         <div style="display:flex;gap:8px">
@@ -727,6 +741,7 @@
       <div id="stockAdmin" class="hidden"></div>
       <input id="custSearch" class="hidden" placeholder="Αναζήτηση πελάτη…" oninput="renderCustomers()" style="margin-bottom:14px">
       <div id="custAdmin" class="hidden"></div>
+      <div id="wholeAdmin" class="hidden"></div>
     </div>
   </section>
 
@@ -817,6 +832,18 @@
 
     <label class="fld"><span>Σημείωση προς πελάτη (όλη η παραγγελία)</span><textarea id="fNote" placeholder="προαιρετικό μήνυμα που θα δει ο πελάτης"></textarea></label>
 
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <label class="fld" style="flex:1 1 150px"><span>Τύπος</span>
+        <select id="fKind" onchange="onKindChange()">
+          <option value="custom">Πελάτης (λιανική)</option>
+          <option value="wholesale">Κατάστημα (χονδρική)</option>
+        </select></label>
+      <label class="fld hidden" id="dealWrap" style="flex:1 1 170px"><span>Πληρωμή</span>
+        <select id="fDeal">
+          <option value="paid">Με την παράδοση</option>
+          <option value="consignment">Παρακαταθήκη (πληρώνει ό,τι πουλήσει)</option>
+        </select></label>
+    </div>
     <label class="fld hidden" id="evWrap"><span>Event</span>
       <select id="fEvent" onchange="onEventChange()"><option value="">— καμία</option></select>
     </label>
@@ -877,6 +904,20 @@
       <button class="btn solid" style="flex:1 1 100%" onclick="saveModel()">Αποθήκευση</button>
       <button class="btn ghost" style="flex:1 1 auto" onclick="closeModelModal()">Κλείσιμο</button>
       <button class="btn danger hidden" id="modelDelBtn" onclick="delModel()">Διαγραφή</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ΕΚΚΑΘΑΡΙΣΗ ΠΑΡΑΚΑΤΑΘΗΚΗΣ ============ -->
+<div id="settleModal" class="overlay hidden">
+  <div class="modal">
+    <div class="mh"><h2 class="serif">Εκκαθάριση</h2><button class="x" onclick="closeSettle()">✕</button></div>
+    <div id="settleShop" style="font-size:13px;font-weight:600;margin-bottom:2px"></div>
+    <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:12px">Πόσα πούλησε το κατάστημα και πόσα γυρίζουν πίσω. Η οφειλή υπολογίζεται μόνο στα πουλημένα.</p>
+    <div id="settleBody"></div>
+    <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+      <button class="btn solid" style="flex:1 1 100%" onclick="applySettle()">Αποθήκευση</button>
+      <button class="btn ghost" style="flex:1" onclick="closeSettle()">Κλείσιμο</button>
     </div>
   </div>
 </div>
@@ -1219,10 +1260,12 @@ function fmtMoney(n){
   if(n===null||n===undefined||isNaN(n)) return "—";
   return "€" + Number(n).toLocaleString("el-GR",{minimumFractionDigits:2,maximumFractionDigits:2});
 }
+function rowQty(row){ const q=row.querySelector(".ie-qty"); return Math.max(1, parseInt(q&&q.value,10)||1); }
 function itemsTotal(){
   let sum=0, any=false;
-  document.querySelectorAll("#itemsEditor .ie-price").forEach(inp=>{
-    const v=parseMoney(inp.value); if(v!=null){ sum+=v; any=true; }
+  document.querySelectorAll("#itemsEditor .ie-item").forEach(row=>{
+    const v=parseMoney(row.querySelector(".ie-price").value);
+    if(v!=null){ sum += v*rowQty(row); any=true; }     // τιμή ανά τεμάχιο × ποσότητα
   });
   return any ? Math.round(sum*100)/100 : null;
 }
@@ -1517,7 +1560,7 @@ function renderItemCard(it, method, showPrice){
                 : `<span class="item-badge">Σε εξέλιξη</span>`);
 
   const sub = [];
-  const spec = [it.color, it.label ? it.label + " ταμπελάκι" : null].filter(Boolean).join(" · ") || it.details;
+  const spec = [(it.qty>1?("×"+it.qty):null), it.color, it.label ? it.label + " ταμπελάκι" : null].filter(Boolean).join(" · ") || it.details;
   if(spec) sub.push(`<span>${esc(spec)}</span>`);
   if(showPrice && it.price!=null) sub.push(`<span class="iprice">${fmtMoney(Number(it.price))}</span>`);
   if(isReturn) sub.push(`<span class="rtag">♻ Επιστροφή</span>`);
@@ -1824,11 +1867,12 @@ async function enterPanel(){
 }
 
 function showAdminTab(tab){
-  const isOrders = tab==="orders", isStock = tab==="stock", isFb = tab==="feedback", isCust = tab==="customers";
+  const isOrders = tab==="orders", isStock = tab==="stock", isFb = tab==="feedback", isCust = tab==="customers", isWhole = tab==="wholesale";
   document.getElementById("tabOrders").classList.toggle("sel", isOrders);
   document.getElementById("tabStock").classList.toggle("sel", isStock);
   document.getElementById("tabFb").classList.toggle("sel", isFb);
   document.getElementById("tabCust").classList.toggle("sel", isCust);
+  document.getElementById("tabWhole").classList.toggle("sel", isWhole);
   ["statsBox","search","orderFilters","ordersList"].forEach(id=>{
     const el = document.getElementById(id);
     if(el) el.classList.toggle("hidden", !isOrders);
@@ -1841,7 +1885,9 @@ function showAdminTab(tab){
   document.getElementById("stockSearch").classList.toggle("hidden", !isStock);
   document.getElementById("custAdmin").classList.toggle("hidden", !isCust);
   document.getElementById("custSearch").classList.toggle("hidden", !isCust);
+  document.getElementById("wholeAdmin").classList.toggle("hidden", !isWhole);
   if(isCust) renderCustomers();
+  if(isWhole) renderWholesale();
   if(isFb) renderFbDashboard();
   if(isStock){ if(stockCache.length) renderStock(); else { document.getElementById("stockAdmin").innerHTML='<div class="spinner"></div>'; loadStock(); } }
 }
@@ -2487,6 +2533,133 @@ function customerStats(){
 }
 let custFilter="all";
 function setCustFilter(f){ custFilter=f; renderCustomers(); }
+/* ============ ΧΟΝΔΡΙΚΗ ============
+   Δύο τρόποι:
+   • «paid»        → το κατάστημα πληρώνει με την παράδοση
+   • «consignment» → παρακαταθήκη: πληρώνει όσα πουλήσει, τα υπόλοιπα γυρίζουν πίσω
+============================================ */
+function isWholesale(o){ return o && o.kind==="wholesale"; }
+function wItems(o){ return getItems(o).map(it=>({...it, qty:Math.max(1,Number(it.qty)||1)})); }
+function wTotals(o){
+  const its=wItems(o);
+  let units=0, sold=0, ret=0, value=0, soldValue=0;
+  its.forEach(it=>{
+    const q=it.qty, sd=Math.max(0,Number(it.sold)||0), rt=Math.max(0,Number(it.returned)||0);
+    units+=q; sold+=sd; ret+=rt;
+    value+=q*(Number(it.price)||0);
+    soldValue+=sd*(Number(it.price)||0);
+  });
+  const settled = (o.deal_type==="consignment") ? (sold+ret>=units) : true;
+  const due = (o.deal_type==="consignment") ? soldValue : value;
+  return {units, sold, ret, left:Math.max(0,units-sold-ret), value, soldValue, due, settled};
+}
+function renderWholesale(){
+  const box=document.getElementById("wholeAdmin");
+  const list=ordersCache.filter(isWholesale)
+    .sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
+  let html=`<div style="display:flex;gap:10px;margin-bottom:16px"><button class="btn solid" style="flex:1" onclick="newWholesale()">+ Νέα παράδοση σε κατάστημα</button></div>`;
+  if(!list.length){
+    box.innerHTML=html+`<div class="fbd-empty">Καμία παράδοση χονδρικής ακόμη.</div>`;
+    return;
+  }
+  // σύνοψη
+  let totVal=0, totDue=0, onShelf=0, shops=new Set();
+  list.forEach(o=>{ const t=wTotals(o); totVal+=t.value; shops.add(normText(o.customer_name||""));
+    const paid=Number(o.amount_paid)||0; totDue+=Math.max(0,t.due-paid);
+    if(o.deal_type==="consignment") onShelf+=t.left; });
+  html+=`<div class="stat-grid" style="margin-bottom:16px">
+    <div class="stat dark"><div class="n">${shops.size}</div><div class="l">Καταστήματα</div></div>
+    <div class="stat"><div class="n" style="font-size:20px">${fmtMoney(totVal)}</div><div class="l">Αξία παραδόσεων</div></div>
+    ${onShelf?`<div class="stat"><div class="n">${onShelf}</div><div class="l">Σε ράφι καταστήματος</div></div>`:""}
+    ${totDue>0?`<div class="stat"><div class="n" style="font-size:20px">${fmtMoney(totDue)}</div><div class="l">Οφειλές</div></div>`:""}
+  </div>`;
+
+  html+=list.map(o=>{
+    const t=wTotals(o), paid=Number(o.amount_paid)||0, owed=Math.max(0,Math.round((t.due-paid)*100)/100);
+    const cons=o.deal_type==="consignment";
+    const its=wItems(o).map(it=>`<div class="w-item"><span>${esc(it.name)}${it.color?` · ${esc(it.color)}`:""}</span>
+      <span class="w-q">×${it.qty}${cons&&(it.sold||it.returned)?` <span style="color:var(--muted)">(${it.sold||0} πουλ. · ${it.returned||0} πίσω)</span>`:""}</span></div>`).join("");
+    return `<div class="w-card">
+      <div class="w-head">
+        <div><div class="w-shop">${esc(o.customer_name||"—")}</div>
+          <div class="w-meta">${o.created_at?fmtMonthDate(o.created_at):""} · ${cons?"παρακαταθήκη":"πληρωμή με την παράδοση"}${o.order_number?" · "+esc(o.order_number):""}</div></div>
+        <span class="mm-pill" style="${owed>0?'background:#fdf6ea;color:#8a5a1e;border-color:#e4d9c2':'background:#eaf2ec;color:#2c6e49;border-color:#c9e0d2'}">${owed>0?fmtMoney(owed)+" οφειλή":"εξοφλημένη"}</span>
+      </div>
+      <div class="w-items">${its}</div>
+      <div class="w-foot">
+        <span class="w-val">${fmtMoney(t.value)}${cons?` <span style="color:var(--muted);font-weight:400">· πουλήθηκαν ${fmtMoney(t.soldValue)}</span>`:""}</span>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          ${cons && t.left>0?`<button class="btn ghost sm" onclick="openSettle('${o.id}')">Εκκαθάριση</button>`:""}
+          ${owed>0?`<button class="btn solid sm" onclick="openPayW('${o.id}')">Πληρωμή</button>`:""}
+          <button class="btn ghost sm" onclick="editOrder('${o.id}')">Επεξεργασία</button>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+  box.innerHTML=html;
+}
+function newWholesale(){
+  returnTab="wholesale";
+  openOrderModal();
+  document.getElementById("fKind").value="wholesale";
+  onKindChange();
+}
+async function openPayW(id){
+  const o=ordersCache.find(x=>x.id===id); if(!o) return;
+  const t=wTotals(o), paid=Number(o.amount_paid)||0;
+  const owed=Math.round((t.due-paid)*100)/100;
+  const v=prompt(`Πόσα έλαβες από ${o.customer_name}; (οφειλή ${fmtMoney(owed)})`, String(owed));
+  if(v===null) return;
+  const amt=parseMoney(v); if(amt==null||amt<=0) return;
+  const np=Math.round((paid+amt)*100)/100;
+  const body={amount_paid:np};
+  if(np>=t.due-0.01) body.paid_at=o.paid_at||new Date().toISOString();
+  try{
+    const res=await authFetch(REST + "/orders?id=eq."+id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify(body)});
+    if(!res.ok) throw new Error();
+    o.amount_paid=np; if(body.paid_at) o.paid_at=body.paid_at;
+    renderWholesale(); renderStats(); adminFlash("Καταχωρήθηκε ✓");
+  }catch(e){ adminFlash("Σφάλμα."); }
+}
+let settleId=null;
+function openSettle(id){
+  const o=ordersCache.find(x=>x.id===id); if(!o) return;
+  settleId=id;
+  document.getElementById("settleShop").textContent=o.customer_name||"";
+  document.getElementById("settleBody").innerHTML = wItems(o).map((it,i)=>{
+    const left=it.qty-(Number(it.sold)||0)-(Number(it.returned)||0);
+    return `<div class="st-row">
+      <div style="flex:1;min-width:0"><div class="cr-t">${esc(it.name)}${it.color?` · ${esc(it.color)}`:""}</div>
+        <div class="cr-s">${it.qty} τεμ. · ${fmtMoney(it.price)}/τεμ · απομένουν ${left}</div></div>
+      <label class="st-in"><span>πούλησε</span><input id="st-s-${i}" inputmode="numeric" value="${Number(it.sold)||0}"></label>
+      <label class="st-in"><span>πίσω</span><input id="st-r-${i}" inputmode="numeric" value="${Number(it.returned)||0}"></label>
+    </div>`;
+  }).join("");
+  _ovOpen("settleModal");
+}
+function closeSettle(){ _ovClose("settleModal"); }
+async function applySettle(){
+  const o=ordersCache.find(x=>x.id===settleId); if(!o) return;
+  const its=wItems(o); const out=[]; let restock=[];
+  for(let i=0;i<its.length;i++){
+    const it=its[i];
+    let sd=Math.max(0,parseInt(document.getElementById("st-s-"+i).value,10)||0);
+    let rt=Math.max(0,parseInt(document.getElementById("st-r-"+i).value,10)||0);
+    if(sd+rt>it.qty){ adminFlash("Πουλημένα + επιστροφές > ποσότητα"); return; }
+    const addBack = rt-(Number(it.returned)||0);
+    if(addBack>0) restock.push({name:it.name, qty:addBack});
+    out.push({...it, sold:sd, returned:rt});
+  }
+  try{
+    const res=await authFetch(REST + "/orders?id=eq."+o.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},
+      body:JSON.stringify({items:out})});
+    if(!res.ok) throw new Error();
+    o.items=out;
+    closeSettle(); renderWholesale(); renderStats();
+    adminFlash(restock.length?`Ενημερώθηκε ✓ · ${restock.reduce((a,x)=>a+x.qty,0)} τεμ. γύρισαν πίσω`:"Ενημερώθηκε ✓");
+  }catch(e){ adminFlash("Σφάλμα."); }
+}
+
 function renderCustomers(){
   const box=document.getElementById("custAdmin");
   const q=(document.getElementById("custSearch")?.value||"").trim();
@@ -2659,7 +2832,7 @@ function renderOrders(){
       const STG=stagesFor(flow, pickup?"pickup":"shipping");
       const ret = flow==="return";
       const statusCls = d?'i-done':(ret?'i-ret':'');
-      const spec=[it.color, it.label?it.label+" ταμπελάκι":null].filter(Boolean).join(" · ")||it.details;
+      const spec=[(it.qty>1?("×"+it.qty):null), it.color, it.label?it.label+" ταμπελάκι":null].filter(Boolean).join(" · ")||it.details;
       return `<div class="oi ${statusCls}">
         <div class="oi-info">
           <div class="oi-name">${esc(it.name)}${ret?' <span class="oi-rt">↺</span>':''}</div>
@@ -2914,6 +3087,7 @@ function addItemRow(item){
   row.innerHTML=`
     <div class="ie-top">
       <select class="ie-pick" onchange="onPickModel(this)" style="flex:1;min-width:0"></select>
+      <input class="ie-qty" inputmode="numeric" value="1" title="ποσότητα" oninput="updateMoneyHint()" style="flex:0 0 46px;text-align:center">
       <input class="ie-price" inputmode="decimal" placeholder="€ τιμή" style="max-width:90px">
       <button class="ie-del" title="Αφαίρεση" type="button">✕</button>
     </div>
@@ -2936,6 +3110,7 @@ function addItemRow(item){
     <input class="ie-track" placeholder="αρ. αποστολής γι' αυτό το προϊόν" style="display:none">`;
   wrap.appendChild(row);
   row.querySelector(".ie-name").value=item.name||"";
+  row.querySelector(".ie-qty").value = item.qty && item.qty>1 ? item.qty : 1;
   row.querySelector(".ie-price").value=(item.price!=null?item.price:"");
   const _pick=row.querySelector(".ie-pick"); if(_pick){ _pick.dataset.val=item.name||""; }
   row.querySelector(".ie-color").value = item.color || item.details || "";
@@ -3120,6 +3295,7 @@ function collectItems(){
       id: row.dataset.id || newItemId(),
       name,
       price: parseMoney(row.querySelector(".ie-price").value),
+      qty: Math.max(1, parseInt(row.querySelector(".ie-qty").value,10)||1),
       color: row.querySelector(".ie-color").value.trim()||null,
       label: row.querySelector(".ie-label").value||null,
       flow: row.querySelector(".ie-flow").value==="return"?"return":"normal",
@@ -3156,6 +3332,9 @@ function openOrderModal(){
   document.getElementById("orderDelBtn").classList.add("hidden");
   fillPickers();
   document.getElementById("matHint").classList.add("hidden");
+  document.getElementById("fKind").value="custom";
+  document.getElementById("fDeal").value="paid";
+  onKindChange();
   fillEventSelect("");
   document.getElementById("fDisc").value="";
   document.getElementById("fDisc").disabled=false;
@@ -3184,6 +3363,9 @@ function editOrder(id){
   document.getElementById("fPaid").value  = o.amount_paid!=null ? o.amount_paid : "";
   fillPickers();
   document.getElementById("matHint").classList.add("hidden");
+  document.getElementById("fKind").value = (o.kind==="wholesale") ? "wholesale" : "custom";
+  document.getElementById("fDeal").value = o.deal_type || "paid";
+  onKindChange();
   fillEventSelect(o.event_id || (o.mix_match?"mix":""));
   document.getElementById("fDisc").value = o.discount_pct!=null ? o.discount_pct : "";
   document.getElementById("fShip").value = o.shipping_cost!=null ? o.shipping_cost : "";
@@ -3267,6 +3449,8 @@ async function saveOrder(){
     amount_paid: parseMoney(document.getElementById("fPaid").value),
     visit_no: null,
     paid_at: null,
+    kind: isWholeMode() ? "wholesale" : "custom",
+    deal_type: isWholeMode() ? document.getElementById("fDeal").value : null,
     event_id: curEventId() || null,
     mix_match: isMix(),
     discount_pct: (curEvent()&&curEvent().discount>0) ? null : discPct(),
@@ -3366,6 +3550,15 @@ function fillEventSelect(currentId){
   document.getElementById("evWrap").classList.toggle("hidden", ids.length===0);
 }
 function onEventChange(){ updateMoneyHint(); }
+function isWholeMode(){ const e=document.getElementById("fKind"); return e && e.value==="wholesale"; }
+function onKindChange(){
+  const w=isWholeMode();
+  document.getElementById("dealWrap").classList.toggle("hidden", !w);
+  document.getElementById("fName").closest("label").querySelector("span").textContent = w ? "Κατάστημα *" : "Όνομα *";
+  document.getElementById("fLast").closest("label").classList.toggle("hidden", w);
+  document.getElementById("evWrap").classList.toggle("hidden", w || !activeEvents().length);
+  const fb=document.getElementById("fbReadout"); if(w && fb) fb.classList.add("hidden");
+}
 function discPct(){ const v=parseMoney((document.getElementById("fDisc")||{}).value); return (v!=null && v>0 && v<100) ? v : null; }
 function shipCost(){ if(pickedMethod==="pickup") return 0; const v=parseMoney((document.getElementById("fShip")||{}).value); return (v!=null && v>0) ? v : 0; }
 function activeDiscount(){ const e=curEvent(); if(e && e.discount>0) return e.discount; return discPct()!=null ? discPct()/100 : 0; }
