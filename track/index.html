@@ -771,7 +771,7 @@
     <div id="fbReadout" class="fb-readout hidden"></div>
 
     <div style="display:block">
-      <label class="fld"><span>Όνομα πελάτη *</span><input id="fName" placeholder="π.χ. Μαρία Π."></label>
+      <label class="fld"><span>Όνομα πελάτη *</span><input id="fName" placeholder="π.χ. Μαρία Π." oninput="suggestPhone()" onchange="suggestPhone()"></label>
       <div class="ord-meta">
         <span class="meta-chip"><b>Αρ.</b> <span id="fOrderNoView">αυτόματο</span></span>
         <span class="meta-chip"><b>Καταχ.</b> <span id="fCreatedView">—</span></span>
@@ -1121,6 +1121,30 @@ function phaseIndex(o){
 let _iid = 0;
 function newItemId(){ return "i" + (Date.now().toString(36)) + (_iid++); }
 function plusDays(n){ const d=new Date(); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); } // YYYY-MM-DD
+const GR_MONTHS=["Ιαν","Φεβ","Μάρ","Απρ","Μάι","Ιούν","Ιούλ","Αύγ","Σεπ","Οκτ","Νοέ","Δεκ"];
+const GR_MONTHS_FULL=["Ιανουάριος","Φεβρουάριος","Μάρτιος","Απρίλιος","Μάιος","Ιούνιος","Ιούλιος","Αύγουστος","Σεπτέμβριος","Οκτώβριος","Νοέμβριος","Δεκέμβριος"];
+const GR_MONTHS_ACC=["Ιανουάριο","Φεβρουάριο","Μάρτιο","Απρίλιο","Μάιο","Ιούνιο","Ιούλιο","Αύγουστο","Σεπτέμβριο","Οκτώβριο","Νοέμβριο","Δεκέμβριο"];
+function fmtAgo(days){
+  const d=Math.round(days);
+  if(d<=0) return "σήμερα";
+  if(d===1) return "χθες";
+  if(d<30) return `πριν ${d} μέρες`;
+  const m=Math.round(d/30.4);
+  if(m<12) return m===1?"πριν έναν μήνα":`πριν ${m} μήνες`;
+  const y=Math.floor(m/12), rm=m%12;
+  return `πριν ${y===1?"έναν χρόνο":y+" χρόνια"}${rm?` και ${rm} ${rm===1?"μήνα":"μήνες"}`:""}`;
+}
+function fmtEvery(days){
+  const d=Math.round(days);
+  if(d<45) return `${d} μέρες`;
+  const m=Math.round(d/30.4);
+  return m<12 ? (m===1?"έναν μήνα":`${m} μήνες`) : `${Math.round(m/12)} χρόνια`;
+}
+function fmtMonthDate(v){
+  const d=(v instanceof Date)?v:new Date(v);
+  if(isNaN(d)) return "";
+  return `${d.getDate()} ${GR_MONTHS[d.getMonth()]} ${String(d.getFullYear()).slice(2)}`;
+}
 function fmtDateShort(v){
   try{
     const d = (v instanceof Date) ? v : new Date(typeof v==="string" && v.length<=10 ? v+"T00:00:00" : v);
@@ -1890,17 +1914,19 @@ function buildBrief(ctx){
   const DAY=86400000, now=new Date(), ins=[];
   const push=(score,txt)=>ins.push({score,txt});
   const pill=(name,id)=>`<button class="brief-pill" onclick="editOrder('${id}')">${esc(name)}</button>`;
+  const cpill=(name,id)=>`<button class="brief-pill" onclick="openCustomer('${id}')">${esc(name)}</button>`;
+  const orderOfCustomer=n=>{ const o=ordersCache.slice().sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0)).find(x=>normText(x.customer_name||"")===normText(n)); return o?o.id:null; };
   const ym=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
   const ymNow=ym(now);
   const dPrev=new Date(now.getFullYear(), now.getMonth()-1, 1);
   const ymPrev=ym(dPrev);
 
-  let revPrev=0, cntPrev=0, cntNow=0, last7=0, prev7=0;
+  let revPrev=0, cntPrev=0, cntNow=0, last7=0, prev7=0, revPrevSoFar=0;
   const custCount={}, prodCount={};
   ordersCache.forEach(o=>{
     if(!o.created_at) return;
     const d=new Date(o.created_at), k=ym(d), price=Number(o.price)||0;
-    if(k===ymPrev){ revPrev+=price; cntPrev++; }
+    if(k===ymPrev){ revPrev+=price; cntPrev++; if(d.getDate()<=now.getDate()) revPrevSoFar+=price; }
     if(k===ymNow){ cntNow++; }
     const age=(now-d)/DAY;
     if(age<=7) last7++; else if(age<=14) prev7++;
@@ -1909,21 +1935,19 @@ function buildBrief(ctx){
     if(k===ymNow) getItems(o).forEach(it=>{ const n=(it.name||"").trim(); if(n) prodCount[n]=(prodCount[n]||0)+1; });
   });
 
-  /* 1. Ρυθμός μήνα — με πρόβλεψη αν είμαστε στη μέση */
+  /* 1. Ρυθμός μήνα — σύγκριση με τις ίδιες μέρες του προηγούμενου */
   const dayOfMonth=now.getDate();
   const daysInMonth=new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
-  if(revPrev>0 && ctx.revMonth>0){
-    const diff=Math.round((ctx.revMonth-revPrev)/revPrev*100);
-    if(dayOfMonth<daysInMonth-4){
-      const proj=ctx.revMonth/dayOfMonth*daysInMonth;
-      const pdiff=Math.round((proj-revPrev)/revPrev*100);
-      push(70, `Ο μήνας έχει φέρει <b>${fmtMoney(ctx.revMonth)}</b>${ctx.costMonthKnown?` με καθαρό κέρδος <b>${fmtMoney(ctx.profitMonth)}</b>`:""} από ${cntNow} ${cntNow===1?"παραγγελία":"παραγγελίες"} σε ${dayOfMonth} μέρες· με αυτόν τον ρυθμό κλείνει γύρω στα <b>${fmtMoney(proj)}</b>, ${pdiff>=0?`<b>${pdiff}% πάνω</b>`:`<b>${Math.abs(pdiff)}% κάτω</b>`} από τον προηγούμενο (${fmtMoney(revPrev)}).`);
-    } else {
-      push(70, diff>=0 ? `Ο μήνας κλείνει με <b>${fmtMoney(ctx.revMonth)}</b>${ctx.costMonthKnown?` και κέρδος <b>${fmtMoney(ctx.profitMonth)}</b>`:""} από ${cntNow} παραγγελίες, <b>${diff}% πάνω</b> από τον προηγούμενο (${fmtMoney(revPrev)}).`
-                       : `Ο μήνας κλείνει με <b>${fmtMoney(ctx.revMonth)}</b>, <b>${Math.abs(diff)}% κάτω</b> από τον προηγούμενο (${fmtMoney(revPrev)}) — ${cntNow} έναντι ${cntPrev} παραγγελίες.`);
+  const monthName=GR_MONTHS_FULL[now.getMonth()], prevName=GR_MONTHS_ACC[dPrev.getMonth()];
+  if(ctx.revMonth>0 || revPrev>0){
+    const base=revPrevSoFar;
+    const profitTxt = ctx.costMonthKnown ? ` και κέρδος <b>${fmtMoney(ctx.profitMonth)}</b>` : "";
+    if(base>0){
+      const diff=Math.round((ctx.revMonth-base)/base*100);
+      push(70, `Ο ${monthName} έχει φέρει <b>${fmtMoney(ctx.revMonth)}</b>${profitTxt} από ${cntNow} ${cntNow===1?"παραγγελία":"παραγγελίες"} — ${diff>=0?`<b>${diff}% πάνω</b>`:`<b>${Math.abs(diff)}% κάτω</b>`} από τον ${prevName} τις ίδιες μέρες (${fmtMoney(base)}).`);
+    } else if(ctx.revMonth>0){
+      push(70, `Ο ${monthName} έχει φέρει <b>${fmtMoney(ctx.revMonth)}</b>${profitTxt} από ${cntNow} ${cntNow===1?"παραγγελία":"παραγγελίες"}${revPrev>0?` — ο ${prevName} έκλεισε στα ${fmtMoney(revPrev)}`:""}.`);
     }
-  } else if(ctx.revMonth>0){
-    push(55, `Τζίρος μήνα <b>${fmtMoney(ctx.revMonth)}</b>${ctx.costMonthKnown?` · κέρδος <b>${fmtMoney(ctx.profitMonth)}</b>`:""} από ${ctx.monthCount} ${ctx.monthCount===1?"παραγγελία":"παραγγελίες"}.`);
   }
 
   /* 2. Ρυθμός εβδομάδας */
@@ -1961,13 +1985,15 @@ function buildBrief(ctx){
   }
 
   /* 5. Παραδόσεις που πλησιάζουν / έχουν περάσει */
-  let dueSoon=0, overdue=0;
+  let dueSoon=0, overdue=0, overdueO=null;
   ordersCache.forEach(o=>getItems(o).forEach(it=>{
     if(!it.eta || itemDone(it)) return;
     const days=Math.ceil((new Date(it.eta)-now)/DAY);
-    if(days<0) overdue++; else if(days<=3) dueSoon++;
+    if(days<0){ overdue++; if(!overdueO) overdueO=o; } else if(days<=3) dueSoon++;
   }));
-  if(overdue) push(95, `${overdue===1?"Ένα προϊόν πέρασε":`<b>${overdue}</b> προϊόντα πέρασαν`} την ημερομηνία παράδοσης που είχες δώσει.`);
+  if(overdue) push(95, overdue===1
+    ? `Ένα προϊόν πέρασε την ημερομηνία παράδοσης — ${pill(overdueO.customer_name||"δες το", overdueO.id)}.`
+    : `<b>${overdue}</b> προϊόντα πέρασαν την ημερομηνία παράδοσης που είχες δώσει.`);
   else if(dueSoon) push(76, `<b>${dueSoon}</b> ${dueSoon===1?"παράδοση λήγει":"παραδόσεις λήγουν"} μέσα στο τριήμερο.`);
 
   /* 6. Χρήματα που εκκρεμούν */
@@ -1976,7 +2002,11 @@ function buildBrief(ctx){
       const rem=(Number(o.price)||0)-(Number(o.amount_paid)||0);
       return rem>0 && o.created_at && (now-new Date(o.created_at))/DAY>21;
     }).length;
-    if(unpaidOld) push(80, `Εκκρεμούν <b>${fmtMoney(ctx.outstanding)}</b>, με <b>${unpaidOld}</b> ${unpaidOld===1?"παραγγελία":"παραγγελίες"} πάνω από 3 βδομάδες απλήρωτες.`);
+    if(unpaidOld){
+      const oldest=ordersCache.filter(o=>((Number(o.price)||0)-(Number(o.amount_paid)||0))>0.01 && o.created_at)
+        .sort((a,b)=>new Date(a.created_at)-new Date(b.created_at))[0];
+      push(80, `Εκκρεμούν <b>${fmtMoney(ctx.outstanding)}</b>, με <b>${unpaidOld}</b> ${unpaidOld===1?"παραγγελία":"παραγγελίες"} πάνω από 3 βδομάδες απλήρωτες${oldest?` — παλαιότερη ${cpill(oldest.customer_name||"", oldest.id)}`:""}.`);
+    }
     else push(50, `Εκκρεμούν <b>${fmtMoney(ctx.outstanding)}</b> σε εισπράξεις${ctx.revMonth>0?`, δηλαδή όσο το ${Math.round(ctx.outstanding/ctx.revMonth*100)}% του τζίρου του μήνα`:""}.`);
   }
 
@@ -2008,7 +2038,7 @@ function buildBrief(ctx){
       .sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))[0];
     if(recent){
       const v=Number(recent.visit_no);
-      push(74, `Η <b>${esc(recent.customer_name||"")}</b> επέστρεψε για <b>${ordGr(v)} φορά</b>.`);
+      push(74, `${cpill(recent.customer_name||"", recent.id)} επέστρεψε για <b>${ordGr(v)} φορά</b>.`);
     }
   }
 
@@ -2131,7 +2161,7 @@ function renderStats(){
   let ship=0, pickup=0, monthCount=0;
   let activeOrders=0, doneOrders=0, returnActive=0, returnTotal=0, totalItems=0;
   // financials
-  let revMonth=0, profitMonth=0, outstanding=0, priceSum=0, priceN=0, mixCount=0, readyCount=0, readyRevMonth=0, costMonthKnown=false;
+  let revMonth=0, revCosted=0, profitMonth=0, outstanding=0, priceSum=0, priceN=0, mixCount=0, readyCount=0, readyRevMonth=0, costMonthKnown=false;
   const now = new Date(); const ymNow = now.getFullYear()+"-"+now.getMonth();
   const monthly = {}; // "YYYY-M" -> revenue
   all.forEach(o=>{
@@ -2155,7 +2185,7 @@ function renderStats(){
     if(price!=null){
       priceSum+=price; priceN++;
       monthly[ym] = (monthly[ym]||0) + price;
-      if(ym===ymNow){ revMonth+=price; if(cost!=null){ profitMonth += (price-cost); costMonthKnown=true; } if(isReady) readyRevMonth+=price; }
+      if(ym===ymNow){ revMonth+=price; if(cost!=null){ profitMonth += (price-cost); revCosted += price; costMonthKnown=true; } if(isReady) readyRevMonth+=price; }
       const rem = price - paid;
       if(rem>0) outstanding += rem;
     }
@@ -2164,7 +2194,7 @@ function renderStats(){
   const done = doneOrders;
   const avgOrder = priceN ? priceSum/priceN : null;
   const customRevMonth = revMonth - readyRevMonth;
-  const margin = (revMonth>0 && costMonthKnown) ? Math.round(profitMonth/revMonth*100) : null;
+  const margin = (revCosted>0 && costMonthKnown) ? Math.round(profitMonth/revCosted*100) : null;
   const _stock = stockCache||[];
   const stockVal = _stock.reduce((s,it)=>s+(Number(it.qty)||0)*(Number(it.unit_cost)||0),0);
   const lowCount = _stock.filter(it=>stockState(it)!=="ok").length;
@@ -2251,8 +2281,8 @@ function renderStats(){
 
   const money = [
     {n:fmtMoney(revMonth), l:"Τζίρος μήνα", dark:true},
-    {n:costMonthKnown?fmtMoney(profitMonth):"—", l:"Κέρδος μήνα"},
-    {n:margin!=null?margin+"%":"—", l:"Περιθώριο"},
+    {n:costMonthKnown?fmtMoney(profitMonth):"—", l:(revCosted>0&&revCosted<revMonth-0.01)?"Κέρδος (όσες έχουν κόστος)":"Κέρδος μήνα"},
+    {n:margin!=null?margin+"%":"—", l:(revCosted>0&&revCosted<revMonth-0.01)?"Περιθώριο (μερικό)":"Περιθώριο"},
     {n:avgOrder!=null?fmtMoney(avgOrder):"—", l:"Μέση αξία"},
     {n:fmtMoney(outstanding), l:"Εκκρεμείς"},
     {n:fmtMoney(priceSum), l:"Τζίρος σύνολο"}
@@ -2291,7 +2321,7 @@ function renderStats(){
     </div>`).join("");
 
   /* ---- Έξυπνο σχόλιο: σαρώνει τα πάντα, δείχνει τα 3 πιο σημαντικά ---- */
-  const briefHtml = buildBrief({revMonth, profitMonth, monthCount, outstanding, stuck,
+  const briefHtml = buildBrief({revMonth, revCosted, profitMonth, monthCount, outstanding, stuck,
     evStats, lowCount, stockVal, avgTotal, costMonthKnown, satAvg, readyCount, margin});
 
 
@@ -2443,7 +2473,7 @@ function renderCustomers(){
       <button class="cc-main" onclick="openCustomer('${c.anyId}')">
         <div style="flex:1;min-width:0">
           <div class="cc-n">${esc(c.name)}${c.n>1?` <span class="mm-pill" style="background:#f3efe6;color:#8a6a2e;border-color:#e4d9c2">${c.n}×</span>`:""}${c.auto?` <span class="mm-pill" title="Ενώθηκαν αυτόματα" style="background:var(--stone);color:var(--muted);border-color:var(--line)">auto</span>`:""}</div>
-          <div class="cc-s">${fmtMoney(c.spent)} σύνολο · ${c.items} ${c.items===1?"προϊόν":"προϊόντα"}${days!=null?` · πριν ${days} μέρες`:""}</div>
+          <div class="cc-s">${fmtMoney(c.spent)} σύνολο · ${c.items} ${c.items===1?"προϊόν":"προϊόντα"}${days!=null?` · ${fmtAgo(days)}`:""}</div>
           ${c.auto&&c.variants.length>1?`<div class="cc-s" style="color:#8a6a2e">ως: ${c.variants.map(esc).join(" / ")}</div>`:""}
           ${owed>0?`<div class="cc-s" style="color:#8a5a1e">Ανεξόφλητα ${fmtMoney(owed)}</div>`:""}
         </div>
@@ -2595,10 +2625,6 @@ function renderOrders(){
         </div>
       </div>`;
     }).join("");
-  if(!q && totalFound>ordersShown){
-    list.innerHTML += `<button class="btn ghost" style="width:100%;margin-top:6px" onclick="showMoreOrders()">Δείξε περισσότερες (${totalFound-ordersShown} ακόμη)</button>`;
-  }
-
     return `<div class="order-row${!everyDone&&items.some(it=>itemFlow(it)==='return')?' is-return':''}">
       <div class="r-top">
         <div>
@@ -2625,6 +2651,9 @@ function renderOrders(){
       </div>
     </div>`;
   }).join("");
+  if(!q && totalFound>ordersShown){
+    list.insertAdjacentHTML("beforeend", `<button class="btn ghost" style="width:100%;margin-top:6px" onclick="showMoreOrders()">Δείξε περισσότερες (${totalFound-ordersShown} ακόμη)</button>`);
+  }
 }
 
 function esc(s){ return (s||"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -2973,6 +3002,33 @@ function loadModelFixed(mid){
   openMatPicker(); matDraft=keep; renderMatPicker();
   document.getElementById("matHint").classList.add("hidden");
 }
+function knownPhoneFor(name){
+  const n=normText(name||""); if(!n) return "";
+  let best="";
+  ordersCache.forEach(o=>{
+    if(!o.customer_phone) return;
+    if(normText(o.customer_name||"")===n) best=o.customer_phone;
+  });
+  return best;
+}
+function suggestPhone(){
+  const ph=document.getElementById("fPhone");
+  if(!ph || ph.value.trim()) return;                 // δεν πατάει ό,τι έχεις γράψει
+  const known=knownPhoneFor(document.getElementById("fName").value);
+  if(known){ ph.value=known; ph.dataset.auto="1"; }
+}
+// αν προστεθεί τηλέφωνο σε πελάτη που δεν είχε, ενημέρωσε και τις παλιές του παραγγελίες
+async function propagatePhone(name, phone){
+  const n=normText(name||""); const ph=String(phone||"").trim();
+  if(!n || !ph) return;
+  const targets=ordersCache.filter(o=>normText(o.customer_name||"")===n && !o.customer_phone);
+  for(const o of targets){
+    try{
+      const res=await authFetch(REST + "/orders?id=eq."+o.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({customer_phone:ph})});
+      if(res.ok) o.customer_phone=ph;
+    }catch(e){}
+  }
+}
 function collectItems(){
   const out=[];
   document.querySelectorAll("#itemsEditor .ie-item").forEach(row=>{
@@ -3188,6 +3244,8 @@ async function saveOrder(){
     document.getElementById("modalTitle").textContent="Αποθηκεύτηκε ✓";
     document.getElementById("saveBtn").textContent="Αποθήκευση";
     await loadOrders();
+    await propagatePhone(payload.customer_name, payload.customer_phone);
+    backfillVisits();
   }catch(e){
     msg.textContent="Σφάλμα: "+e.message; msg.classList.remove("hidden");
   }finally{ btn.disabled=false; }
@@ -3459,15 +3517,16 @@ function openCustomer(orderId){
   <div class="stat-row">
     ${owed>0?`<span class="stat-pill warn"><b>${fmtMoney(owed)}</b> ανεξόφλητα${owedOrders>1?` (${owedOrders})`:""}</span>`:`<span class="stat-pill"><b>✓</b> Εξοφλημένος</span>`}
     ${phone?`<a class="stat-pill" href="tel:${esc(phone)}" style="text-decoration:none"><b>☎</b> ${esc(phone)}</a>`:""}
-    ${cadence!=null?`<span class="stat-pill">κάθε <b>${cadence}</b> μέρες</span>`:""}
-    ${sinceLast!=null?`<span class="stat-pill">πριν <b>${sinceLast}</b> μέρες</span>`:""}
-    ${payAvg!=null?`<span class="stat-pill">πληρωμή σε <b>${payAvg<1?"<1":Math.round(payAvg)}</b> ${Math.round(payAvg)===1?"μέρα":"μέρες"}</span>`:""}
-    ${biggest&&biggest.price!=null?`<span class="stat-pill">μεγαλύτερη <b>${fmtMoney(biggest.price)}</b></span>`:""}
-    ${ship?`<span class="stat-pill"><b>${ship}</b> αποστολή</span>`:""}${pick?`<span class="stat-pill"><b>${pick}</b> παραλαβή</span>`:""}
-    ${satAvg!=null?`<span class="stat-pill"><b>${satAvg.toFixed(1)}</b> ικανοποίηση</span>`:""}
+    ${cadence!=null?`<span class="stat-pill">επιστρέφει κάθε <b>${fmtEvery(cadence)}</b></span>`:""}
+    ${sinceLast!=null?`<span class="stat-pill">τελευταία παραγγελία <b>${fmtAgo(sinceLast)}</b></span>`:""}
+    ${payAvg!=null?`<span class="stat-pill">πληρώνει σε <b>${payAvg<1?"αυθημερόν":(Math.round(payAvg)===1?"1 μέρα":Math.round(payAvg)+" μέρες")}</b></span>`:""}
+    ${biggest&&biggest.price!=null?`<span class="stat-pill">μεγαλύτερη παραγγελία <b>${fmtMoney(biggest.price)}</b></span>`:""}
+    ${lastPaid?`<span class="stat-pill">τελευταία πληρωμή <b>${fmtMonthDate(lastPaid.paid_at)}</b></span>`:""}
+    ${ship?`<span class="stat-pill"><b>${ship}</b> με courier</span>`:""}${pick?`<span class="stat-pill"><b>${pick}</b> με παραλαβή</span>`:""}
+    ${satAvg!=null?`<span class="stat-pill">ικανοποίηση <b>${satAvg.toFixed(1)}/5</b></span>`:""}
     ${evNames.map(n=>`<span class="stat-pill">${esc(n)} <b>${evs[n]}</b></span>`).join("")}
   </div>
-  <div class="cust-line">${first?`Πρώτη ${fmtDateShort(first)}`:""}${last&&list.length>1?` · τελευταία ${fmtDateShort(last)}`:""}${lastPaid?` · τελευταία πληρωμή ${fmtDateShort(new Date(lastPaid.paid_at))}`:""}.</div>`;
+  <div class="cust-line">${first?`Πελάτης από <b>${fmtMonthDate(first)}</b>`:""}${last&&list.length>1?` · τελευταία παραγγελία ${fmtMonthDate(last)}`:""}.</div>`;
 
   // ---- Τι αγοράζει: grid με φωτογραφίες & προτιμήσεις ----
   const prod={};
