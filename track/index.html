@@ -531,6 +531,7 @@
   .pcx-n{font-size:13px;font-weight:600;line-height:1.3}
   .pcx-x{font-size:11px;color:var(--muted);font-weight:600}
   .pcx-s{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4}
+  .cust-note{background:#fdf9ef;border:1px solid #eee0c4;border-left:3px solid #c9a24a;border-radius:12px;padding:10px 13px;font-size:12.5px;color:#7a5f22;line-height:1.6;margin-bottom:12px}
   .cust-line{font-size:12.5px;color:var(--ink-soft);line-height:1.7;margin-top:10px}
   .cust-line b{color:var(--ink);font-weight:600}
   .cust-row{display:flex;align-items:center;gap:6px;background:var(--cream);border:1px solid var(--line);border-radius:12px;padding:4px 6px 4px 13px;margin-bottom:8px}
@@ -803,6 +804,9 @@
           <input id="fLast" placeholder="π.χ. Παπαδοπούλου" autocomplete="off" oninput="onNameType()"></label>
         <div id="nameSug" class="name-sug hidden"></div>
       </div>
+      <div id="custNoteBox" class="cust-note hidden" style="margin:2px 0 12px"></div>
+      <div style="display:none">
+      </div>
       <div class="ord-meta">
         <span class="meta-chip"><b>Αρ.</b> <span id="fOrderNoView">αυτόματο</span></span>
         <span class="meta-chip"><b>Καταχ.</b> <span id="fCreatedView">—</span></span>
@@ -908,6 +912,30 @@
       <button class="btn solid" style="flex:1 1 100%" onclick="saveModel()">Αποθήκευση</button>
       <button class="btn ghost" style="flex:1 1 auto" onclick="closeModelModal()">Κλείσιμο</button>
       <button class="btn danger hidden" id="modelDelBtn" onclick="delModel()">Διαγραφή</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ΙΣΤΟΡΙΚΟ ΠΩΛΗΣΕΩΝ ============ -->
+<div id="salesModal" class="overlay hidden">
+  <div class="modal">
+    <div class="mh"><h2 class="serif" id="salesTitle">Πωλήσεις</h2><button class="x" onclick="closeSales()">✕</button></div>
+    <div id="salesBody"></div>
+    <div style="margin-top:16px"><button class="btn ghost" style="width:100%" onclick="closeSales()">Κλείσιμο</button></div>
+  </div>
+</div>
+
+<!-- ============ ΣΤΟΙΧΕΙΑ ΠΕΛΑΤΗ ============ -->
+<div id="custEditModal" class="overlay hidden">
+  <div class="modal">
+    <div class="mh"><h2 class="serif">Στοιχεία πελάτη</h2><button class="x" onclick="closeCustEdit()">✕</button></div>
+    <div id="ceName" style="font-size:13px;font-weight:600;margin-bottom:12px"></div>
+    <label class="fld"><span>Τηλέφωνο</span><input id="cePhone" inputmode="tel" placeholder="π.χ. 6971234567"></label>
+    <label class="fld"><span>Σημείωση (τη βλέπεις όταν του καταχωρείς παραγγελία)</span>
+      <textarea id="ceNote" rows="3" placeholder="π.χ. προτιμά ασημί ταμπελάκι · παραλαβή από το μαγαζί · πληρώνει με μεταφορά"></textarea></label>
+    <div style="display:flex;gap:10px;margin-top:6px;flex-wrap:wrap">
+      <button class="btn solid" style="flex:1 1 100%" onclick="saveCustEdit()">Αποθήκευση</button>
+      <button class="btn ghost" style="flex:1" onclick="closeCustEdit()">Κλείσιμο</button>
     </div>
   </div>
 </div>
@@ -3252,7 +3280,7 @@ function onNameType(){
   if(q.length<2){ box.classList.add("hidden"); return; }
   const groups=customerStats().filter(c=>smartMatch(c.name+" "+(c.variants||[]).join(" "), q)).slice(0,6);
   const exact=groups.length===1 && normText(groups[0].name)===normText(q);
-  if(!groups.length || exact){ box.classList.add("hidden"); suggestPhone(); return; }
+  if(!groups.length || exact){ box.classList.add("hidden"); suggestPhone(); showCustNote(); return; }
   box.innerHTML=groups.map(c=>`<button type="button" class="ns-row" onclick="pickCustomer('${c.anyId}')">
       <span class="ns-n">${esc(c.name)}</span>
       <span class="ns-s">${c.n} ${c.n===1?"παραγγελία":"παραγγελίες"}${c.phone?" · "+esc(c.phone):""}</span>
@@ -3268,9 +3296,11 @@ function pickCustomer(orderId){
   const ph=(customerOrders(o).map(x=>x.customer_phone).filter(Boolean).pop())||o.customer_phone;
   if(ph) document.getElementById("fPhone").value=ph;
   document.getElementById("nameSug").classList.add("hidden");
+  showCustNote();
 }
 function knownPhoneFor(name){
   const n=normText(name||""); if(!n) return "";
+  const info=custInfoFor(name,""); if(info && info.phone) return info.phone;
   let best="";
   ordersCache.forEach(o=>{
     if(!o.customer_phone) return;
@@ -3278,11 +3308,18 @@ function knownPhoneFor(name){
   });
   return best;
 }
+function showCustNote(){
+  const box=document.getElementById("custNoteBox"); if(!box) return;
+  const info=custInfoFor(fullName(), document.getElementById("fPhone").value);
+  if(info && info.note){ box.textContent=info.note; box.classList.remove("hidden"); }
+  else box.classList.add("hidden");
+}
 function suggestPhone(){
   const ph=document.getElementById("fPhone");
   if(!ph || ph.value.trim()) return;                 // δεν πατάει ό,τι έχεις γράψει
   const known=knownPhoneFor(fullName());
   if(known){ ph.value=known; ph.dataset.auto="1"; }
+  showCustNote();
 }
 // αν προστεθεί τηλέφωνο σε πελάτη που δεν είχε, ενημέρωσε και τις παλιές του παραγγελίες
 async function propagatePhone(name, phone){
@@ -3713,6 +3750,35 @@ function openCustomer(key){
   _ovOpen("custModal");
 }
 function closeCustomer(){ _ovClose("custModal"); }
+let custEditId=null;
+function openCustEdit(){
+  const ref=ordersCache.find(o=>o.id===custEditId); if(!ref) return;
+  const info=custInfo[custKey(ref)]||{};
+  document.getElementById("ceName").textContent=document.getElementById("custName").textContent;
+  document.getElementById("cePhone").value = info.phone || (customerOrders(ref).map(o=>o.customer_phone).filter(Boolean).pop()||"");
+  document.getElementById("ceNote").value = info.note || "";
+  _ovOpen("custEditModal");
+}
+function closeCustEdit(){ _ovClose("custEditModal"); }
+async function saveCustEdit(){
+  const ref=ordersCache.find(o=>o.id===custEditId); if(!ref) return;
+  const k=custKey(ref);
+  const phone=document.getElementById("cePhone").value.trim();
+  const note=document.getElementById("ceNote").value.trim();
+  custInfo[k]={ phone: phone||null, note: note||null };
+  await saveSetting("cust_info", custInfo, true);
+  if(phone) await propagatePhone(ref.customer_name, phone);
+  closeCustEdit(); renderCustomers(); openCustomer(custEditId);
+  adminFlash("Αποθηκεύτηκε ✓");
+}
+function custInfoFor(name, phone){
+  const probe={id:null, customer_name:name, customer_phone:phone};
+  const k=custKey(probe);
+  if(custInfo[k]) return custInfo[k];
+  const n=normText(name||"");
+  const hit=ordersCache.find(o=>normText(o.customer_name||"")===n);
+  return hit ? (custInfo[custKey(hit)]||null) : null;
+}
 function customerGroups(){
   const g={};
   ordersCache.forEach(o=>{ const k=custKey(o); if(!k) return;
@@ -3755,6 +3821,7 @@ function openCustomer(orderId){
   const list=customerOrders(ref);
   const box=document.getElementById("custBody");
   document.getElementById("custName").textContent = list.reduce((acc,o)=>bestName(acc,o.customer_name), ref.customer_name||"—");
+  custEditId = ref.id;
 
   const DAY=86400000;
   let spent=0, paid=0, items=0, ship=0, pick=0;
@@ -3911,6 +3978,9 @@ function openCustomer(orderId){
       </div>`;
   }
 
+  const info=custInfo[custKey(ref)]||{};
+  if(info.note) html = `<div class="cust-note">${esc(info.note)}</div>` + html;
+  html += `<div style="margin-top:14px"><button class="btn ghost" style="width:100%" onclick="openCustEdit()">Επεξεργασία στοιχείων</button></div>`;
   box.innerHTML=html;
   _ovOpen("custModal");
 }
@@ -3980,6 +4050,7 @@ function evExpired(id){ const e=EVENTS[id]; return !!(e && e.autoOff && new Date
 function evActive(id){ return !!eventsOn[id]; }
 function activeEvents(){ return Object.keys(EVENTS).filter(evActive); }
 let custLinks = {};   // orderId -> groupId (χειροκίνητες διορθώσεις ταυτοποίησης)
+let custInfo = {};    // custKey -> {phone, note}
 let modelCat = [];    // κατάλογος μοντέλων
 
 async function loadSettings(){
@@ -3990,8 +4061,9 @@ async function loadSettings(){
     const map={}; (rows||[]).forEach(r=> map[r.key]=r.value);
     eventsOn  = map.events || {};
     custLinks = map.cust_links || {};
+    custInfo  = map.cust_info  || {};
     modelCat  = Array.isArray(map.models) ? map.models : [];
-  }catch(e){ eventsOn={}; custLinks={}; modelCat=[]; }
+  }catch(e){ eventsOn={}; custLinks={}; custInfo={}; modelCat=[]; }
   // αυτόματο κλείσιμο event στη λήξη — γίνεται ΜΙΑ φορά, μετά ελέγχεις εσύ
   const ao = eventsOn._autoOff || {};
   let changed=false;
@@ -4407,7 +4479,10 @@ function renderModels(){
       ${m.image_url?`<img class="si-img" src="${esc(m.image_url)}" alt="">`:`<div class="si-img"></div>`}
       <div class="si-info"><div class="si-name">${esc(m.name)}${bs&&bs.name===m.name?' <span class="mm-pill" style="background:#f3efe6;color:#8a6a2e;border-color:#e4d9c2">best seller</span>':''}</div>
         <div class="si-meta">${m.price!=null?fmtMoney(m.price):"χωρίς τιμή"} · ${sl.n?`<b style="color:var(--ink)">${sl.n}</b> ${sl.n===1?"πώληση":"πωλήσεις"} · ${fmtMoney(sl.rev)}`:"καμία πώληση"}${m.materials&&m.materials.length?` · ${m.materials.length} υλικά`:""}</div></div>
-      <button class="btn ghost sm" onclick="openModelModal('${m.id}')">✎</button>
+      <div style="display:flex;gap:6px;flex:none">
+        ${sl.n?`<button class="btn ghost sm" title="Ιστορικό πωλήσεων" onclick="openSales('${esc(m.name)}')">${sl.n}×</button>`:""}
+        <button class="btn ghost sm" onclick="openModelModal('${m.id}')">✎</button>
+      </div>
     </div>`;
   }).join("")).join("");
   const miss=ANASA.filter(a=>!modelCat.some(m=>normText(m.name)===normText(a.name))).length;
@@ -4423,6 +4498,40 @@ async function importModels(){
   await saveSetting("models", modelCat, true);
   renderStock(); adminFlash(`Προστέθηκαν ${picked.length} προδιαγραφές ✓`);
 }
+function salesOf(name){
+  const out=[];
+  ordersCache.forEach(o=>getItems(o).forEach(it=>{
+    const a=anasaOf(it.name)||{name:it.name};
+    if(normText(a.name)!==normText(name)) return;
+    out.push({o, it, qty:Math.max(1,Number(it.qty)||1), when:o.created_at?new Date(o.created_at).getTime():0});
+  }));
+  return out.sort((a,b)=>b.when-a.when);
+}
+function openSales(name){
+  const rows=salesOf(name);
+  const units=rows.reduce((a,r)=>a+r.qty,0);
+  const rev=rows.reduce((a,r)=>a+r.qty*(Number(r.it.price)||0),0);
+  const buyers=new Set(rows.map(r=>custKey(r.o))).size;
+  const colors={}; rows.forEach(r=>{ if(r.it.color) colors[r.it.color]=(colors[r.it.color]||0)+r.qty; });
+  const top=Object.entries(colors).sort((a,b)=>b[1]-a[1]).slice(0,4);
+  document.getElementById("salesTitle").textContent=name;
+  document.getElementById("salesBody").innerHTML=`
+    <div class="stat-grid" style="margin-bottom:12px">
+      <div class="stat dark"><div class="n">${units}</div><div class="l">Κομμάτια</div></div>
+      <div class="stat"><div class="n" style="font-size:20px">${fmtMoney(rev)}</div><div class="l">Τζίρος</div></div>
+      <div class="stat"><div class="n">${buyers}</div><div class="l">Πελάτες</div></div>
+    </div>
+    ${top.length?`<div class="cust-line" style="margin-top:0">Χρώματα: ${top.map(([k,v])=>`<b>${esc(k)}</b>${v>1?` ×${v}`:""}`).join(" · ")}.</div>`:""}
+    <div class="stats-sub">Ποιοι το πήραν</div>
+    ${rows.map(r=>`<div class="cust-row">
+      <button class="cr-main" onclick="closeSales();editOrder('${r.o.id}')">
+        <div style="flex:1;min-width:0"><div class="cr-t">${esc(r.o.customer_name||"—")}${r.qty>1?` <span style="color:var(--muted)">×${r.qty}</span>`:""}${isWholesale(r.o)?' <span class="mm-pill" style="background:#eef3f8;color:#2f5d8a;border-color:#cfe0f0">χονδρική</span>':''}</div>
+        <div class="cr-s">${r.o.created_at?fmtMonthDate(r.o.created_at):""}${r.it.color?" · "+esc(r.it.color):""}${r.it.label?" · "+esc(r.it.label):""}</div></div>
+        <div class="cr-r"><div class="cr-p">${fmtMoney((Number(r.it.price)||0)*r.qty)}</div></div>
+      </button></div>`).join("")}`;
+  _ovOpen("salesModal");
+}
+function closeSales(){ _ovClose("salesModal"); }
 let editingModelId=null;
 function collections(){
   const set=new Set(["ANASA"]);
