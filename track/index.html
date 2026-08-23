@@ -88,7 +88,7 @@
   .btn.solid{background:var(--ink);color:#fff}
   .btn.solid:hover{background:#000}
   .btn.ghost:hover{background:var(--ink);color:#fff}
-  .btn.sm{padding:9px 15px;font-size:10.5px;letter-spacing:.06em}
+  .btn.sm{padding:11px 15px;font-size:10.5px;letter-spacing:.06em;min-height:40px}
   .btn:disabled{opacity:.45;cursor:not-allowed}
   .btn.danger{border-color:#b54b3a;color:#b54b3a}
   .btn.danger:hover{background:#b54b3a;color:#fff}
@@ -299,13 +299,17 @@
   .fbd-cmt .d{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:7px}
   .fbd-empty{text-align:center;color:var(--muted);font-size:13px;padding:34px 0}
   .tabsw{display:flex;gap:7px}
-  .tabsw .tb{font-family:'Inter';font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:8px 15px;border-radius:var(--pill);border:1px solid var(--line);background:var(--cream);color:var(--ink-soft);cursor:pointer;transition:.15s}
+  .tabsw.main{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px;margin-bottom:10px}
+  .tabsw.main::-webkit-scrollbar{display:none}
+  .tabsw.main .tb{flex:0 0 auto}
+  .tabsw .tb{font-family:'Inter';font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:11px 16px;min-height:40px;border-radius:var(--pill);border:1px solid var(--line);background:var(--cream);color:var(--ink-soft);cursor:pointer;transition:.15s}
   .tabsw .tb.sel{background:var(--ink);color:#fff;border-color:var(--ink)}
 
   /* ---------- admin ---------- */
   .admin-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:18px}
   .admin-bar .e{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:600}
   .admin-bar .tabsw{flex-wrap:wrap}
+  .admin-bar .tabsw.main{flex-wrap:nowrap}
   .order-row{
     border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px;background:#fff;
   }
@@ -336,7 +340,7 @@
   .oi-stage{font-size:12px;color:var(--ink-soft);margin-top:1px}
   .oi-note{font-size:12px;color:#8a5a1e;margin-top:3px}
   .oi-act{display:flex;gap:6px;align-items:center;flex:none}
-  .oi-act .btn.sm{padding:7px 11px}
+  .oi-act .btn.sm{padding:9px 12px;min-height:38px}
   .oi-ok{color:#2c6e49;font-weight:700;font-size:15px;padding:0 6px}
   .fb-readout{background:var(--cream);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:13px}
   .fb-readout b{color:#a07b1e}
@@ -711,7 +715,7 @@
     <!-- panel -->
     <div id="adminPanel" class="hidden">
       <div class="admin-bar">
-        <div class="tabsw">
+        <div class="tabsw main">
           <button class="tb sel" id="tabOrders" onclick="showAdminTab('orders')">Παραγγελίες</button>
           <button class="tb" id="tabStock" onclick="showAdminTab('stock')">Αποθήκη</button>
           <button class="tb" id="tabCust" onclick="showAdminTab('customers')">Πελάτες</button>
@@ -1175,13 +1179,6 @@ function stagesFor(flow, method){
 }
 function stageCount(flow){ return flow==="return"?6:4; }
 // φάση για στατιστικά (λειτουργεί και για κανονική και για επιστροφή)
-function phaseIndex(o){
-  const flow=flowOf(o); const N=stageCount(flow);
-  const s=Math.min(Math.max(o.stage||1,1),N);
-  if(s>=N) return 3;                       // Ολοκληρωμένες
-  if(flow==="return") return s>=5?2 : (s===4?1:0);
-  return s===1?0 : (s===2?1:2);
-}
 
 // ---- items helpers (multi-product) ----
 let _iid = 0;
@@ -1238,12 +1235,6 @@ function phaseIndexItem(it){
   return s===1?0:(s===2?1:2);
 }
 // σύντομες ετικέτες για τον stage picker του admin
-function shortLabels(flow, method){
-  const pk = method==="pickup";
-  if(flow==="return") return ["Αναμονή","Παρέλαβα","Δημιουργία", pk?"Έτοιμο":"Αποστολή", pk?"Παραλήφθηκε":"Παραδόθηκε"];
-  if(flow==="ready") return ["Καταχώρηση", pk?"Συσκευασία":"Ετοιμάζεται", pk?"Έτοιμο":"Στάλθηκε", pk?"Παραλήφθηκε":"Παραδόθηκε"];
-  return ["Υλικά","Δημιουργία", pk?"Έτοιμο":"Αποστολή", pk?"Παραλήφθηκε":"Παραδόθηκε"];
-}
 
 // BoxNow tracking link builder
 function boxnowUrl(num){ return num ? ("https://boxnow.gr/?track=" + encodeURIComponent(num)) : ""; }
@@ -1759,14 +1750,6 @@ function renderFeedbackForm(mount, orderToken, source){
   };
 }
 
-function stepHtml(num,title,dur,state){
-  const icon = state==="done" ? "✓" : num;
-  return `<div class="step ${state}">
-    <div class="dot">${icon}</div>
-    <h3 class="serif">${title}</h3>
-    <div class="dur">${dur}</div>
-  </div>`;
-}
 
 /* ============================================================
    ADMIN
@@ -2517,8 +2500,11 @@ function customerStats(){
   ordersCache.forEach(o=>{
     const k=custKey(o); if(!k) return;
     const t=o.created_at?new Date(o.created_at).getTime():0;
-    const st=g[k]=g[k]||{key:k,name:o.customer_name||"—",anyId:o.id,n:0,spent:0,paid:0,items:0,first:t||Infinity,last:0,phone:o.customer_phone||"",auto:false};
-    st.n++; st.spent+=Number(o.price)||0; st.paid+=Number(o.amount_paid)||0;
+    const st=g[k]=g[k]||{key:k,name:o.customer_name||"—",anyId:o.id,n:0,spent:0,paid:0,items:0,first:t||Infinity,last:0,phone:o.customer_phone||"",auto:false,shop:false};
+    if(isWholesale(o)) st.shop=true;
+    st.n++;
+    const val=isWholesale(o) ? wTotals(o).due : (Number(o.price)||0);
+    st.spent+=val; st.paid+=Number(o.amount_paid)||0;
     st.items+=getItems(o).length;
     if(t && t<st.first) st.first=t;
     if(t>=st.last){ st.last=t; st.anyId=o.id; }
@@ -2667,8 +2653,11 @@ function renderCustomers(){
   if(q) list=list.filter(c=>smartMatch(c.name+" "+(c.phone||"")+" "+c.variants.join(" "), q));
   const owedOf=c=>Math.max(0,Math.round((c.spent-c.paid)*100)/100);
   const nOwed=list.filter(c=>owedOf(c)>0).length;
+  const nShops=list.filter(c=>c.shop).length;
   if(custFilter==="owed") list=list.filter(c=>owedOf(c)>0);
   else if(custFilter==="repeat") list=list.filter(c=>c.n>1);
+  else if(custFilter==="shops") list=list.filter(c=>c.shop);
+  else if(custFilter==="retail") list=list.filter(c=>!c.shop);
   if(!list.length){ box.innerHTML=`<div class="fbd-empty">${q?"Καμία πελάτης δεν ταιριάζει.":"Καμία πελάτης ακόμη."}</div>`; return; }
   const repeat=list.filter(c=>c.n>1).length;
   const totalSpent=list.reduce((a,c)=>a+c.spent,0);
@@ -2682,6 +2671,8 @@ function renderCustomers(){
   <div class="tabsw" style="margin-bottom:16px;flex-wrap:wrap">
     <button class="tb ${custFilter==='all'?'sel':''}" onclick="setCustFilter('all')">Όλοι</button>
     <button class="tb ${custFilter==='repeat'?'sel':''}" onclick="setCustFilter('repeat')">Επαναλαμβανόμενοι</button>
+    ${nShops?`<button class="tb ${custFilter==='retail'?'sel':''}" onclick="setCustFilter('retail')">Λιανική</button>`:""}
+    ${nShops?`<button class="tb ${custFilter==='shops'?'sel':''}" onclick="setCustFilter('shops')">Καταστήματα (${nShops})</button>`:""}
     ${nOwed?`<button class="tb ${custFilter==='owed'?'sel':''}" onclick="setCustFilter('owed')">Ανεξόφλητα (${nOwed})</button>`:""}
   </div>`;
   const DAY=86400000;
@@ -2691,7 +2682,7 @@ function renderCustomers(){
     return `<div class="cust-card">
       <button class="cc-main" onclick="openCustomer('${c.anyId}')">
         <div style="flex:1;min-width:0">
-          <div class="cc-n">${esc(c.name)}${c.n>1?` <span class="mm-pill" style="background:#f3efe6;color:#8a6a2e;border-color:#e4d9c2">${c.n}×</span>`:""}${c.auto?` <span class="mm-pill" title="Ενώθηκαν αυτόματα" style="background:var(--stone);color:var(--muted);border-color:var(--line)">auto</span>`:""}</div>
+          <div class="cc-n">${esc(c.name)}${c.n>1?` <span class="mm-pill" style="background:#f3efe6;color:#8a6a2e;border-color:#e4d9c2">${c.n}×</span>`:""}${c.shop?` <span class="mm-pill" style="background:#eef3f8;color:#2f5d8a;border-color:#cfe0f0">κατάστημα</span>`:""}${c.auto?` <span class="mm-pill" title="Ενώθηκαν αυτόματα" style="background:var(--stone);color:var(--muted);border-color:var(--line)">auto</span>`:""}</div>
           <div class="cc-s">${fmtMoney(c.spent)} σύνολο · ${c.items} ${c.items===1?"προϊόν":"προϊόντα"}${days!=null?` · ${fmtAgo(days)}`:""}</div>
           ${c.auto&&c.variants.length>1?`<div class="cc-s" style="color:#8a6a2e">ως: ${c.variants.map(esc).join(" / ")}</div>`:""}
           ${owed>0?`<div class="cc-s" style="color:#8a5a1e">Ανεξόφλητα ${fmtMoney(owed)}</div>`:""}
@@ -2699,7 +2690,7 @@ function renderCustomers(){
       </button>
       <div class="cc-btns">
         ${owed>0?`<button class="btn solid sm" onclick="openPay('${c.anyId}')">Εξόφληση</button>`:""}
-        <button class="btn ghost sm" onclick="newOrderFor('${c.anyId}')">+ Παραγγελία</button>
+        <button class="btn ghost sm" onclick="newOrderFor('${c.anyId}')">${c.shop?"+ Παράδοση":"+ Παραγγελία"}</button>
       </div>
     </div>`;
   }).join("");
@@ -2765,6 +2756,11 @@ function newOrderFor(orderId){
   const ref=ordersCache.find(o=>o.id===orderId); if(!ref) return;
   returnTab="customers";
   openOrderModal();
+  if(isWholesale(ref)){
+    document.getElementById("fKind").value="wholesale";
+    document.getElementById("fDeal").value=ref.deal_type||"paid";
+    onKindChange();
+  }
   {const sp=splitName(ref.customer_name); document.getElementById("fName").value=sp.first; document.getElementById("fLast").value=sp.last;}
   if(ref.customer_phone) document.getElementById("fPhone").value = ref.customer_phone;
   adminFlash("Νέα παραγγελία για " + (ref.customer_name||""));
@@ -2868,6 +2864,7 @@ function renderOrders(){
       <div class="r-actions">
         <button class="btn ghost sm" onclick="copyLinkFor('${o.track_token}')">Link</button>
         <button class="btn ghost sm" onclick="notifyCustomer('${o.id}')">Ειδοποίηση</button>
+        ${(Number(o.price)||0)-(Number(o.amount_paid)||0)>0.01?`<button class="btn ghost sm" onclick="quickPaid('${o.id}')">✓ Πληρώθηκε</button>`:""}
         <button class="btn ghost sm" onclick="editOrder('${o.id}')">Επεξεργασία</button>
       </div>
     </div>`;
@@ -3040,6 +3037,19 @@ function delOrderFromModal(){
   const o=ordersCache.find(x=>x.id===editingId); if(!o) return;
   closeOrderModal();
   delOrder(o.id, o.customer_name||"");
+}
+async function quickPaid(id){
+  const o=ordersCache.find(x=>x.id===id); if(!o) return;
+  const rem=Math.round(((Number(o.price)||0)-(Number(o.amount_paid)||0))*100)/100;
+  if(!confirm(`Να καταχωρηθεί πληρωμή ${fmtMoney(rem)} από ${o.customer_name||""};`)) return;
+  const now=new Date().toISOString();
+  try{
+    const res=await authFetch(REST + "/orders?id=eq."+id,{method:"PATCH",headers:{"Prefer":"return=minimal"},
+      body:JSON.stringify({amount_paid:Number(o.price)||0, paid_at:o.paid_at||now})});
+    if(!res.ok) throw new Error();
+    o.amount_paid=Number(o.price)||0; o.paid_at=o.paid_at||now;
+    renderOrders(); renderStats(); adminFlash("Εξοφλήθηκε ✓");
+  }catch(e){ adminFlash("Σφάλμα."); }
 }
 async function delOrder(id,name){
   if(!confirm("Διαγραφή παραγγελίας για «"+name+"»; Δεν αναιρείται.")) return;
@@ -3410,6 +3420,7 @@ function editOrder(id){
 }
 
 let returnTab=null;
+const missingCols=new Set();
 function closeOrderModal(){
   _ovClose("orderModal");
   if(returnTab){ const t=returnTab; returnTab=null; showAdminTab(t); }
@@ -3468,8 +3479,9 @@ async function saveOrder(){
       const fullyPaid = payload.price!=null && payload.amount_paid!=null && Number(payload.amount_paid)>=Number(payload.price)-0.01;
       payload.paid_at = fullyPaid ? ((prevO && prevO.paid_at) || new Date().toISOString()) : null;
     }
-    // μάθε τιμές: αν η προδιαγραφή δεν έχει τιμή, κράτα αυτή που έβαλε
+    // μάθε τιμές — ΜΟΝΟ από λιανική (η χονδρική έχει χαμηλότερες τιμές)
     try{
+      if(isWholeMode()) throw 0;
       let changed=false;
       items.forEach(it=>{
         if(it.price==null) return;
@@ -3486,19 +3498,22 @@ async function saveOrder(){
       payload.visit_no = (prevO && prevO.visit_no) ? prevO.visit_no
         : visitNoFor({id:editingId, customer_name:payload.customer_name, customer_phone:payload.customer_phone, created_at:(prevO&&prevO.created_at)||new Date().toISOString()});
     }
-    if(editingId){
-      res = await authFetch(REST + "/orders?id=eq."+editingId, {
-        method:"PATCH", headers:{ "Prefer":"return=representation" },
-        body: JSON.stringify(payload)
-      });
-    }else{
-      res = await authFetch(REST + "/orders", {
-        method:"POST", headers:{ "Prefer":"return=representation" },
-        body: JSON.stringify(payload)
-      });
+    // αν λείπει κάποια νέα στήλη στη βάση, ξαναστέλνουμε χωρίς αυτήν αντί να σκάσει
+    const send = async (body)=> editingId
+      ? authFetch(REST + "/orders?id=eq."+editingId, {method:"PATCH", headers:{ "Prefer":"return=representation" }, body: JSON.stringify(body)})
+      : authFetch(REST + "/orders", {method:"POST", headers:{ "Prefer":"return=representation" }, body: JSON.stringify(body)});
+    let body = {...payload}, data = null;
+    for(let attempt=0; attempt<6; attempt++){
+      res = await send(body);
+      data = await res.json();
+      if(res.ok) break;
+      const msg = (data && data.message) || "";
+      const m = msg.match(/'([a-z_]+)' column/i) || msg.match(/column "([a-z_]+)"/i);
+      if(m && m[1] in body){ delete body[m[1]]; missingCols.add(m[1]); continue; }
+      throw new Error(msg || "Σφάλμα");
     }
-    const data = await res.json();
-    if(!res.ok) throw new Error(data.message || "Σφάλμα");
+    if(!res.ok) throw new Error("Σφάλμα αποθήκευσης");
+    if(missingCols.size) console.warn("Λείπουν στήλες στη βάση:", [...missingCols].join(", "));
     const row = Array.isArray(data)?data[0]:data;
     document.getElementById("fOrderNoView").textContent = row.order_number || "—";
     if(row.created_at) document.getElementById("fCreatedView").textContent = new Date(row.created_at).toLocaleDateString("el-GR",{day:"2-digit",month:"2-digit",year:"numeric"});
@@ -4004,14 +4019,6 @@ async function addAnasaNow(){
   renderStock();
   adminFlash(n?`Προστέθηκαν ${n} προϊόντα ✓`:"Η συλλογή είναι ήδη πλήρης");
 }
-async function seedModelsFromAnasa(){
-  const sug=modelSuggestions();
-  modelCat = sug.filter(m=>m.anasa || m.count>0).map(m=>({
-    id:"m"+Math.random().toString(36).slice(2,9), name:m.name, price:m.price,
-    materials:[], image_url:m.image_url||null, anasa:!!m.anasa, cat:m.cat||null
-  }));
-  if(modelCat.length) await saveSetting("models", modelCat, true);
-}
 // πόσες φορές πουλήθηκε το κάθε προϊόν
 function modelSales(name){
   let n=0, rev=0;
@@ -4373,20 +4380,6 @@ function modelSuggestions(){
   return out.sort((a,b)=>b.count-a.count || a.name.localeCompare(b.name));
 }
 // παραγγελίες με τιμή που δεν συμφωνεί με την προδιαγραφή
-function priceMismatches(){
-  const out=[];
-  (modelCat||[]).forEach(m=>{
-    if(m.price==null) return;
-    ordersCache.forEach(o=>getItems(o).forEach(it=>{
-      if(it.price==null) return;
-      const a=anasaOf(it.name)||{name:it.name};
-      if(normText(a.name)!==normText(m.name)) return;
-      const d=Math.abs(Number(it.price)-Number(m.price));
-      if(d>0.5) out.push({model:m, order:o, price:Number(it.price)});
-    }));
-  });
-  return out;
-}
 function renderModels(){
   let html=`<div class="cust-line" style="margin:0 0 14px">Οι προδιαγραφές των προϊόντων σου: όνομα, βασική τιμή και τι βάζεις συνήθως. Στην καταχώρηση τα διαλέγεις έτοιμα.</div>`;
   if(!modelCat.length){
@@ -4421,11 +4414,6 @@ function renderModels(){
   if(miss) html+=`<div style="margin-top:12px"><button class="btn solid" style="width:100%" onclick="addAnasaNow()">Φόρτωσε τη συλλογή ANASA (${miss} λείπουν)</button></div>`;
   html+=`<div style="margin-top:10px"><button class="btn ghost" style="width:100%" onclick="openModelModal()">+ Νέο προϊόν</button></div>`;
   return html;
-}
-async function fixModelPrice(mid, price){
-  modelCat=modelCat.map(m=>m.id===mid?{...m, price}:m);
-  await saveSetting("models", modelCat, true);
-  renderStock(); adminFlash("Ενημερώθηκε ✓");
 }
 async function importModels(){
   const sug=modelSuggestions();
