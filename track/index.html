@@ -929,7 +929,10 @@
 <div id="custEditModal" class="overlay hidden">
   <div class="modal">
     <div class="mh"><h2 class="serif">Στοιχεία πελάτη</h2><button class="x" onclick="closeCustEdit()">✕</button></div>
-    <div id="ceName" style="font-size:13px;font-weight:600;margin-bottom:12px"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <label class="fld" style="flex:1 1 130px"><span>Όνομα</span><input id="ceFirst" placeholder="π.χ. Μαρία"></label>
+      <label class="fld" style="flex:1 1 130px"><span>Επίθετο</span><input id="ceLast" placeholder="π.χ. Παπαδοπούλου"></label>
+    </div>
     <label class="fld"><span>Τηλέφωνο</span><input id="cePhone" inputmode="tel" placeholder="π.χ. 6971234567"></label>
     <label class="fld"><span>Σημείωση (τη βλέπεις όταν του καταχωρείς παραγγελία)</span>
       <textarea id="ceNote" rows="3" placeholder="π.χ. προτιμά ασημί ταμπελάκι · παραλαβή από το μαγαζί · πληρώνει με μεταφορά"></textarea></label>
@@ -1353,10 +1356,12 @@ function _ovOpen(id){
     b.style.position="fixed"; b.style.top=(-_ovY)+"px";
     b.style.left="0"; b.style.right="0"; b.style.width="100%";
   }
+  el.style.zIndex = String(50 + _ovCount*2);   // πάντα πάνω από το προηγούμενο
   el.classList.remove("hidden");
   el.scrollTop=0;
 }
 function _ovClose(id){
+  const _e=document.getElementById(id); if(_e) _e.style.zIndex="";
   const el=document.getElementById(id);
   if(!el || el.classList.contains("hidden")) return;
   el.classList.add("hidden");
@@ -2036,8 +2041,8 @@ function buildBrief(ctx){
   /* 2. Ρυθμός εβδομάδας */
   if(prev7>0 && last7!==prev7){
     const d=Math.round((last7-prev7)/prev7*100);
-    if(Math.abs(d)>=30) push(58, d>0 ? `Η εβδομάδα κινήθηκε δυνατά: <b>${last7}</b> νέες παραγγελίες, ${d}% πάνω από την προηγούμενη.`
-                                     : `Οι νέες παραγγελίες έπεσαν <b>${Math.abs(d)}%</b> αυτή την εβδομάδα (${last7} vs ${prev7}).`);
+    if(Math.abs(d)>=30) push(58, d>0 ? `Αυτή την εβδομάδα <b>${last7}</b> νέες παραγγελίες, ${d}% πάνω από την προηγούμενη.`
+                                     : `Αυτή την εβδομάδα <b>${last7}</b> νέες παραγγελίες, ${Math.abs(d)}% κάτω από την προηγούμενη (${prev7}).`);
   } else if(last7===0 && cntNow>0){
     push(62, `Καμία νέα παραγγελία τις τελευταίες <b>7 μέρες</b>.`);
   }
@@ -2075,8 +2080,8 @@ function buildBrief(ctx){
     if(days<0){ overdue++; if(!overdueO) overdueO=o; } else if(days<=3) dueSoon++;
   }));
   if(overdue) push(95, overdue===1
-    ? `Ένα προϊόν πέρασε την ημερομηνία παράδοσης — ${pill(overdueO.customer_name||"δες το", overdueO.id)}.`
-    : `<b>${overdue}</b> προϊόντα πέρασαν την ημερομηνία παράδοσης που είχες δώσει.`);
+    ? `Πέρασε η ημερομηνία παράδοσης σε 1 προϊόν — ${pill(overdueO.customer_name||"δες το", overdueO.id)}.`
+    : `<b>${overdue}</b> προϊόντα πέρασαν την ημερομηνία παράδοσης.`);
   else if(dueSoon) push(76, `<b>${dueSoon}</b> ${dueSoon===1?"παράδοση λήγει":"παραδόσεις λήγουν"} μέσα στο τριήμερο.`);
 
   /* 6. Χρήματα που εκκρεμούν */
@@ -2098,21 +2103,21 @@ function buildBrief(ctx){
   if(outItems.length) push(84, `Εξαντλήθηκε: <b>${outItems.slice(0,2).map(x=>esc(x.name)).join(" · ")}</b>${outItems.length>2?` +${outItems.length-2}`:""}.`);
   else if(ctx.lowCount>0) {
       const lowNames=(stockCache||[]).filter(it=>!it.mm && !it.event_id && stockState(it)==="low").slice(0,2).map(x=>esc(x.name));
-      push(60, `<b>${ctx.lowCount}</b> ${ctx.lowCount===1?"υλικό κοντεύει":"υλικά κοντεύουν"} να τελειώσει${lowNames.length?` — ${lowNames.join(", ")}${ctx.lowCount>lowNames.length?" κ.ά.":""}`:""}.`);
+      push(60, `${ctx.lowCount===1?"Τελειώνει":"Τελειώνουν"} <b>${ctx.lowCount}</b> ${ctx.lowCount===1?"υλικό":"υλικά"}${lowNames.length?`: ${lowNames.join(", ")}${ctx.lowCount>lowNames.length?" κ.ά.":""}`:""}.`);
     }
 
   /* 8. Κέρδος & περιθώριο */
   if(ctx.revMonth>0 && !ctx.costMonthKnown){
     push(45, `Δεν έχεις βάλει κόστος υλικών αυτόν τον μήνα — το κέρδος δεν υπολογίζεται.`);
   } else if(ctx.margin!=null){
-    if(ctx.margin<35) push(66, `Το περιθώριο του μήνα είναι <b>${ctx.margin}%</b>, χαμηλότερο από το συνηθισμένο.`);
-    else if(ctx.margin>=65) push(48, `Δυνατό περιθώριο <b>${ctx.margin}%</b> αυτόν τον μήνα.`);
+    if(ctx.margin<35) push(66, `Περιθώριο μήνα <b>${ctx.margin}%</b>.`);
+    else if(ctx.margin>=65) push(48, `Περιθώριο μήνα <b>${ctx.margin}%</b>.`);
   }
 
   /* 9. Χρόνος παράδοσης */
   if(ctx.avgTotal!=null){
-    if(ctx.avgTotal>10) push(64, `Ο μέσος χρόνος παράδοσης είναι <b>${Math.round(ctx.avgTotal)} μέρες</b>, λίγο πάνω από το κανονικό.`);
-    else if(ctx.avgTotal<=4) push(42, `Παραδίδεις κατά μέσο όρο σε <b>${Math.round(ctx.avgTotal)} μέρες</b>, αρκετά πιο γρήγορα από το 1–7 που υπόσχεσαι.`);
+    if(ctx.avgTotal>10) push(64, `Μέσος χρόνος παράδοσης <b>${Math.round(ctx.avgTotal)} μέρες</b>.`);
+    else if(ctx.avgTotal<=4) push(42, `Μέσος χρόνος παράδοσης <b>${Math.round(ctx.avgTotal)} μέρες</b>.`);
   }
 
   /* 9α. Λείπει κόστος υλικών (μόνο νέες παραγγελίες) */
@@ -2123,8 +2128,8 @@ function buildBrief(ctx){
       const shown=miss.slice(0,2).map(o=>pill((o.customer_name||"δες").split(" ")[0], o.id)).join(" ");
       const missRev=miss.reduce((a,o)=>a+(Number(o.price)||0),0);
       push(72, miss.length===1
-        ? `Μία παραγγελία (${shown}) περιμένει τα υλικά της από την αποθήκη — μόλις μπουν, το κέρδος γίνεται πραγματικό νούμερο.`
-        : `<b>${miss.length}</b> παραγγελίες αξίας <b>${fmtMoney(missRev)}</b> δεν έχουν υλικά από την αποθήκη (${shown}${miss.length>2?" κ.ά.":""}). Με τις προδιαγραφές παίρνει λίγα δευτερόλεπτα η καθεμία.`);
+        ? `Χωρίς κόστος υλικών: <b>1</b> παραγγελία (${shown}).`
+        : `Χωρίς κόστος υλικών: <b>${miss.length}</b> παραγγελίες, <b>${fmtMoney(missRev)}</b> τζίρου (${shown}${miss.length>2?" κ.ά.":""}).`);
     }
   }
 
@@ -2135,7 +2140,7 @@ function buildBrief(ctx){
       const k=(o.order_number||"").trim(); if(!k) return;
       if(seen[k]) dups.push(o); else seen[k]=o;
     });
-    if(dups.length) push(90, `Βρήκα <b>${dups.length}</b> ${dups.length===1?"διπλότυπη παραγγελία":"διπλότυπες παραγγελίες"} (ίδιος κωδικός) — ${dups.slice(0,2).map(o=>pill(o.order_number||"δες", o.id)).join(" ")} — σβήσε ${dups.length===1?"την":"τις"} για σωστά νούμερα.`);
+    if(dups.length) push(90, `Διπλότυπες παραγγελίες: <b>${dups.length}</b> με ίδιο κωδικό — ${dups.slice(0,2).map(o=>pill(o.order_number||"δες", o.id)).join(" ")}.`);
   }
 
   /* 10α. Πρόσφατη επιστροφή πελάτη */
@@ -2150,7 +2155,7 @@ function buildBrief(ctx){
 
   /* 10. Πελάτες που ξαναγύρισαν */
   const repeat=Object.values(custCount).filter(n=>n>1).length;
-  if(repeat>=2) push(52, `<b>${repeat}</b> πελάτες έχουν παραγγείλει ξανά.`);
+  if(repeat>=2) push(52, `<b>${repeat}</b> πελάτες με πάνω από μία παραγγελία.`);
 
   /* 11. Best seller */
   const top=Object.entries(prodCount).sort((a,b)=>b[1]-a[1])[0];
@@ -2169,7 +2174,7 @@ function buildBrief(ctx){
   const shelfItems=(stockCache||[]).filter(it=>it.type==="product" && Number(it.qty)>0);
   if(shelfItems.length>=4){
     const tied=shelfItems.reduce((a,it)=>a+(Number(it.qty)||0)*(Number(it.sell_price)||0),0);
-    push(40, `<b>${shelfItems.length}</b> έτοιμα προϊόντα αδιάθετα στο ράφι${tied>0?` — <b>${fmtMoney(tied)}</b> σε αξία πώλησης`:""}.`);
+    push(40, `Στο ράφι <b>${shelfItems.length}</b> έτοιμα προϊόντα${tied>0?`, αξίας <b>${fmtMoney(tied)}</b>`:""}.`);
   }
 
   /* 14. Φόρτος εργασίας: πόσα ενεργά προϊόντα & πού είναι μαζεμένα */
@@ -2178,7 +2183,7 @@ function buildBrief(ctx){
     const byStage={};
     activeItems.forEach(({o,it})=>{ const S=stagesFor(itemFlow(it),o.delivery_method); const t=(S[itemStage(it)]||{}).title||"—"; byStage[t]=(byStage[t]||0)+1; });
     const worst=Object.entries(byStage).sort((a,b)=>b[1]-a[1])[0];
-    push(68, `Έχεις <b>${activeItems.length}</b> προϊόντα σε εξέλιξη — τα <b>${worst[1]}</b> στέκονται στο «${esc(worst[0])}», εκεί μαζεύεται η δουλειά.`);
+    push(68, `<b>${activeItems.length}</b> προϊόντα σε εξέλιξη · τα <b>${worst[1]}</b> στο «${esc(worst[0])}».`);
   }
 
   /* 15. Μέση αξία παραγγελίας σε σχέση με τον προηγούμενο μήνα */
@@ -2571,7 +2576,7 @@ function renderWholesale(){
   const box=document.getElementById("wholeAdmin");
   const list=ordersCache.filter(isWholesale)
     .sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
-  let html=`<div style="display:flex;gap:10px;margin-bottom:16px"><button class="btn solid" style="flex:1" onclick="newWholesale()">+ Νέα παράδοση σε κατάστημα</button></div>`;
+  let html=`<div style="display:flex;gap:10px;margin-bottom:16px"><button class="btn solid" style="flex:1" onclick="newWholesale()">📦 Νέα παράδοση σε κατάστημα</button></div>`;
   if(!list.length){
     box.innerHTML=html+`<div class="fbd-empty">Καμία παράδοση χονδρικής ακόμη.</div>`;
     return;
@@ -2603,9 +2608,9 @@ function renderWholesale(){
       <div class="w-foot">
         <span class="w-val">${fmtMoney(t.value)}${cons?` <span style="color:var(--muted);font-weight:400">· πουλήθηκαν ${fmtMoney(t.soldValue)}</span>`:""}</span>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          ${cons && t.left>0?`<button class="btn ghost sm" onclick="openSettle('${o.id}')">Εκκαθάριση</button>`:""}
-          ${owed>0?`<button class="btn solid sm" onclick="openPayW('${o.id}')">Πληρωμή</button>`:""}
-          <button class="btn ghost sm" onclick="editOrder('${o.id}')">Επεξεργασία</button>
+          ${cons && t.left>0?`<button class="btn ghost sm" onclick="openSettle('${o.id}')">🧾 Εκκαθάριση</button>`:""}
+          ${owed>0?`<button class="btn solid sm" onclick="openPayW('${o.id}')">💶 Πληρωμή</button>`:""}
+          <button class="btn ghost sm" onclick="editOrder('${o.id}')">✎ Επεξεργασία</button>
         </div>
       </div>
     </div>`;
@@ -2717,8 +2722,8 @@ function renderCustomers(){
         </div>
       </button>
       <div class="cc-btns">
-        ${owed>0?`<button class="btn solid sm" onclick="openPay('${c.anyId}')">Εξόφληση</button>`:""}
-        <button class="btn ghost sm" onclick="newOrderFor('${c.anyId}')">${c.shop?"+ Παράδοση":"+ Παραγγελία"}</button>
+        ${owed>0?`<button class="btn solid sm" onclick="openPay('${c.anyId}')">💶 Εξόφληση</button>`:""}
+        <button class="btn ghost sm" onclick="newOrderFor('${c.anyId}')">${c.shop?"📦 Παράδοση":"➕ Παραγγελία"}</button>
       </div>
     </div>`;
   }).join("");
@@ -2890,10 +2895,10 @@ function renderOrders(){
       ${everyReady && !everyDone && pickup ? `<div class="r-hint">Όλα έτοιμα — κανόνισε παραλαβή με τον πελάτη.</div>` : ""}
       ${moneyLine(o)}
       <div class="r-actions">
-        <button class="btn ghost sm" onclick="copyLinkFor('${o.track_token}')">Link</button>
-        <button class="btn ghost sm" onclick="notifyCustomer('${o.id}')">Ειδοποίηση</button>
-        ${(Number(o.price)||0)-(Number(o.amount_paid)||0)>0.01?`<button class="btn ghost sm" onclick="quickPaid('${o.id}')">✓ Πληρώθηκε</button>`:""}
-        <button class="btn ghost sm" onclick="editOrder('${o.id}')">Επεξεργασία</button>
+        <button class="btn ghost sm" onclick="copyLinkFor('${o.track_token}')">🔗 Link</button>
+        <button class="btn ghost sm" onclick="notifyCustomer('${o.id}')">📣 Ειδοποίηση</button>
+        ${(Number(o.price)||0)-(Number(o.amount_paid)||0)>0.01?`<button class="btn ghost sm" onclick="quickPaid('${o.id}')">💶 Πληρώθηκε</button>`:""}
+        <button class="btn ghost sm" onclick="editOrder('${o.id}')">✎ Επεξεργασία</button>
       </div>
     </div>`;
   }).join("");
@@ -3379,6 +3384,9 @@ function openOrderModal(){
   document.getElementById("orderDelBtn").classList.add("hidden");
   fillPickers();
   document.getElementById("matHint").classList.add("hidden");
+  document.getElementById("custNoteBox").classList.add("hidden");
+  document.getElementById("custNoteBox").textContent="";
+  document.getElementById("nameSug").classList.add("hidden");
   document.getElementById("fKind").value="custom";
   document.getElementById("fDeal").value="paid";
   onKindChange();
@@ -3402,6 +3410,7 @@ function editOrder(id){
   document.getElementById("orderDelBtn").classList.remove("hidden");
   document.getElementById("fCreatedView").textContent = o.created_at ? new Date(o.created_at).toLocaleDateString("el-GR",{day:"2-digit",month:"2-digit",year:"numeric"}) : "—";
   document.getElementById("fPhone").value=o.customer_phone||"";
+  showCustNote();
   document.getElementById("fNote").value=o.note||"";
   document.getElementById("fCourier").value=o.courier||"";
   document.getElementById("fTrackNo").value=o.tracking_number||"";
@@ -3754,7 +3763,10 @@ let custEditId=null;
 function openCustEdit(){
   const ref=ordersCache.find(o=>o.id===custEditId); if(!ref) return;
   const info=custInfo[custKey(ref)]||{};
-  document.getElementById("ceName").textContent=document.getElementById("custName").textContent;
+  const shown=document.getElementById("custName").textContent;
+  const sp=splitName(shown);
+  document.getElementById("ceFirst").value=sp.first;
+  document.getElementById("ceLast").value=sp.last;
   document.getElementById("cePhone").value = info.phone || (customerOrders(ref).map(o=>o.customer_phone).filter(Boolean).pop()||"");
   document.getElementById("ceNote").value = info.note || "";
   _ovOpen("custEditModal");
@@ -3765,9 +3777,21 @@ async function saveCustEdit(){
   const k=custKey(ref);
   const phone=document.getElementById("cePhone").value.trim();
   const note=document.getElementById("ceNote").value.trim();
+  const newName=((document.getElementById("ceFirst").value||"").trim()+" "+(document.getElementById("ceLast").value||"").trim()).trim();
   custInfo[k]={ phone: phone||null, note: note||null };
   await saveSetting("cust_info", custInfo, true);
   if(phone) await propagatePhone(ref.customer_name, phone);
+  // μετονομασία σε όλες τις παραγγελίες του πελάτη
+  const olds=customerOrders(ref);
+  if(newName && normText(newName)!==normText(ref.customer_name||"")){
+    for(const o of olds){
+      try{
+        const res=await authFetch(REST + "/orders?id=eq."+o.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({customer_name:newName})});
+        if(res.ok) o.customer_name=newName;
+      }catch(e){}
+    }
+    _custIdx=null;
+  }
   closeCustEdit(); renderCustomers(); openCustomer(custEditId);
   adminFlash("Αποθηκεύτηκε ✓");
 }
@@ -3980,7 +4004,7 @@ function openCustomer(orderId){
 
   const info=custInfo[custKey(ref)]||{};
   if(info.note) html = `<div class="cust-note">${esc(info.note)}</div>` + html;
-  html += `<div style="margin-top:14px"><button class="btn ghost" style="width:100%" onclick="openCustEdit()">Επεξεργασία στοιχείων</button></div>`;
+  html += `<div style="margin-top:14px"><button class="btn ghost" style="width:100%" onclick="openCustEdit()">✎ Επεξεργασία στοιχείων</button></div>`;
   box.innerHTML=html;
   _ovOpen("custModal");
 }
@@ -4480,7 +4504,7 @@ function renderModels(){
       <div class="si-info"><div class="si-name">${esc(m.name)}${bs&&bs.name===m.name?' <span class="mm-pill" style="background:#f3efe6;color:#8a6a2e;border-color:#e4d9c2">best seller</span>':''}</div>
         <div class="si-meta">${m.price!=null?fmtMoney(m.price):"χωρίς τιμή"} · ${sl.n?`<b style="color:var(--ink)">${sl.n}</b> ${sl.n===1?"πώληση":"πωλήσεις"} · ${fmtMoney(sl.rev)}`:"καμία πώληση"}${m.materials&&m.materials.length?` · ${m.materials.length} υλικά`:""}</div></div>
       <div style="display:flex;gap:6px;flex:none">
-        ${sl.n?`<button class="btn ghost sm" title="Ιστορικό πωλήσεων" onclick="openSales('${esc(m.name)}')">${sl.n}×</button>`:""}
+        ${sl.n?`<button class="btn ghost sm" onclick="openSales('${esc(m.name)}')">📊 Ιστορικό</button>`:""}
         <button class="btn ghost sm" onclick="openModelModal('${m.id}')">✎</button>
       </div>
     </div>`;
