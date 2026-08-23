@@ -537,6 +537,12 @@
   .brief-b b{color:var(--ink);font-weight:700}
   .brief-n{font-family:'Cormorant',Georgia,serif;font-style:italic;font-size:15px;color:var(--ink-soft);margin-top:12px;padding-top:11px;border-top:1px solid var(--line);line-height:1.5}
   .brief-who{font-family:'Inter';font-style:normal;font-size:10.5px;letter-spacing:.04em;color:var(--muted);white-space:nowrap}
+  .name-sug{position:absolute;left:0;right:0;top:100%;z-index:20;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 26px rgba(0,0,0,.10);overflow:hidden;margin-top:4px;max-height:230px;overflow-y:auto}
+  .ns-row{display:block;width:100%;text-align:left;background:none;border:none;border-bottom:1px solid var(--line);padding:10px 13px;cursor:pointer;font-family:'Inter'}
+  .ns-row:last-child{border-bottom:none}
+  .ns-row:active{background:var(--stone)}
+  .ns-n{display:block;font-size:13.5px;font-weight:600}
+  .ns-s{display:block;font-size:11px;color:var(--muted);margin-top:2px}
   .brief-pill{display:inline-block;background:var(--stone);border:1px solid var(--line);border-radius:var(--pill);padding:1px 9px;font-family:'Inter';font-size:12px;font-weight:600;color:var(--ink);cursor:pointer;line-height:1.5}
   .brief-pill:active{background:var(--line)}
   .gear-dot{position:absolute;top:2px;right:3px;width:7px;height:7px;border-radius:50%;background:#c0266c}
@@ -771,7 +777,13 @@
     <div id="fbReadout" class="fb-readout hidden"></div>
 
     <div style="display:block">
-      <label class="fld"><span>Όνομα πελάτη *</span><input id="fName" placeholder="π.χ. Μαρία Π." oninput="suggestPhone()" onchange="suggestPhone()"></label>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;position:relative">
+        <label class="fld" style="flex:1 1 140px;margin-bottom:0"><span>Όνομα *</span>
+          <input id="fName" placeholder="π.χ. Μαρία" autocomplete="off" oninput="onNameType()" onfocus="onNameType()"></label>
+        <label class="fld" style="flex:1 1 140px;margin-bottom:0"><span>Επίθετο</span>
+          <input id="fLast" placeholder="π.χ. Παπαδοπούλου" autocomplete="off" oninput="onNameType()"></label>
+        <div id="nameSug" class="name-sug hidden"></div>
+      </div>
       <div class="ord-meta">
         <span class="meta-chip"><b>Αρ.</b> <span id="fOrderNoView">αυτόματο</span></span>
         <span class="meta-chip"><b>Καταχ.</b> <span id="fCreatedView">—</span></span>
@@ -853,6 +865,12 @@
       <label class="fld" style="flex:1 1 120px"><span>Βασική τιμή €</span><input id="mPrice" inputmode="decimal" placeholder="0"></label>
       <label class="fld" style="flex:2 1 160px"><span>Φωτογραφία (URL)</span><input id="mImg" placeholder="https://…"></label>
     </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <label class="fld" style="flex:1 1 140px"><span>Collection</span>
+        <select id="mColl" onchange="onCollChange()"></select></label>
+      <label class="fld hidden" id="mCollNewWrap" style="flex:1 1 140px"><span>Όνομα νέας collection</span>
+        <input id="mCollNew" placeholder="π.χ. AURA"></label>
+    </div>
     <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:4px 0 8px">Τυπικά υλικά</p>
     <div class="mat-block" id="mMatList"></div>
     <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
@@ -895,7 +913,7 @@
 <div id="fbOneModal" class="overlay hidden">
   <div class="modal">
     <div class="mh">
-      <h2 class="serif">Η γνώμη της πελάτηςς</h2>
+      <h2 class="serif">Η γνώμη του πελάτη</h2>
       <button class="x" onclick="closeOrderFeedback()">✕</button>
     </div>
     <div id="fbOneWho" style="font-size:12.5px;color:var(--ink-soft);margin-bottom:6px"></div>
@@ -1152,6 +1170,7 @@ function fmtMonthDate(v){
   if(isNaN(d)) return "";
   return `${d.getDate()} ${GR_MONTHS[d.getMonth()]} ${String(d.getFullYear()).slice(2)}`;
 }
+function firstName(full){ return String(full||"").trim().split(/\s+/)[0] || ""; }
 function fmtDateShort(v){
   try{
     const d = (v instanceof Date) ? v : new Date(typeof v==="string" && v.length<=10 ? v+"T00:00:00" : v);
@@ -1373,7 +1392,7 @@ function renderTracking(o){
 
   // header
   document.getElementById("tOrderNo").textContent = o.order_number ? ("Παραγγελία " + o.order_number) : "Παραγγελία";
-  document.getElementById("tHello").textContent = o.customer_name ? ("Γεια σου " + o.customer_name + " 👋") : "Η παραγγελία σου";
+  document.getElementById("tHello").textContent = o.customer_name ? ("Γεια σου " + firstName(o.customer_name) + " 👋") : "Η παραγγελία σου";
 
   // σύνοψη κατάστασης
   let summary;
@@ -2045,9 +2064,10 @@ function buildBrief(ctx){
       .sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
     if(miss.length){
       const shown=miss.slice(0,2).map(o=>pill((o.customer_name||"δες").split(" ")[0], o.id)).join(" ");
+      const missRev=miss.reduce((a,o)=>a+(Number(o.price)||0),0);
       push(72, miss.length===1
-        ? `Μία παραγγελία δεν έχει κόστος υλικών — ${shown}. Συμπλήρωσέ το για σωστό κέρδος.`
-        : `<b>${miss.length}</b> παραγγελίες δεν έχουν κόστος υλικών (${shown}${miss.length>2?" κ.ά.":""}) — χωρίς αυτό το κέρδος βγαίνει αισιόδοξο.`);
+        ? `Μία παραγγελία (${shown}) περιμένει τα υλικά της από την αποθήκη — μόλις μπουν, το κέρδος γίνεται πραγματικό νούμερο.`
+        : `<b>${miss.length}</b> παραγγελίες αξίας <b>${fmtMoney(missRev)}</b> δεν έχουν υλικά από την αποθήκη (${shown}${miss.length>2?" κ.ά.":""}). Με τις προδιαγραφές παίρνει λίγα δευτερόλεπτα η καθεμία.`);
     }
   }
 
@@ -2572,7 +2592,7 @@ function newOrderFor(orderId){
   const ref=ordersCache.find(o=>o.id===orderId); if(!ref) return;
   returnTab="customers";
   openOrderModal();
-  document.getElementById("fName").value = ref.customer_name || "";
+  {const sp=splitName(ref.customer_name); document.getElementById("fName").value=sp.first; document.getElementById("fLast").value=sp.last;}
   if(ref.customer_phone) document.getElementById("fPhone").value = ref.customer_phone;
   adminFlash("Νέα παραγγελία για " + (ref.customer_name||""));
 }
@@ -2721,7 +2741,7 @@ function intlPhone(raw){
   if(d.length===10 && (d[0]==="6"||d[0]==="2")) d = "30"+d; // ελληνικός αριθμός
   return d;
 }
-const _hello = o => o.customer_name ? ("Γεια σου " + o.customer_name + "! 🤍") : "Γεια σου! 🤍";
+const _hello = o => o.customer_name ? ("Γεια σου " + firstName(o.customer_name) + "! 🤍") : "Γεια σου! 🤍";
 
 // tracking lines για όσα προϊόντα είναι σε αποστολή (ομαδοποίηση ανά κωδικό)
 function shippedTrackingLines(o){
@@ -2961,16 +2981,18 @@ function stampStages(newItems, prevItems, fallbackISO){
 
 function productOptions(){
   const seen=new Set(), out=[];
-  (modelCat||[]).forEach(m=>{ const k=normText(m.name); if(k&&!seen.has(k)){ seen.add(k); out.push({name:m.name, id:m.id}); } });
-  if(!out.length) ANASA.forEach(a=>{ const k=normText(a.name); if(!seen.has(k)){ seen.add(k); out.push({name:a.name, id:null}); } });
+  (modelCat||[]).forEach(m=>{ const k=normText(m.name); if(k&&!seen.has(k)){ seen.add(k); out.push({name:m.name, id:m.id, coll:collOf(m)}); } });
+  if(!out.length) ANASA.forEach(a=>{ const k=normText(a.name); if(!seen.has(k)){ seen.add(k); out.push({name:a.name, id:null, coll:"ANASA"}); } });
   return out;
 }
 function fillPickers(){
   const opts=productOptions();
   document.querySelectorAll("#itemsEditor .ie-pick").forEach(sel=>{
     const cur=sel.dataset.val||"";
+    const groups={}; opts.forEach(o=>{ (groups[o.coll||"Άλλα"]=groups[o.coll||"Άλλα"]||[]).push(o); });
+    const gk=Object.keys(groups).sort((a,b)=> a==="ANASA"?-1 : b==="ANASA"?1 : a.localeCompare(b,"el"));
     sel.innerHTML='<option value="">— διάλεξε προϊόν</option>'
-      + opts.map(o=>`<option value="${esc(o.name)}">${esc(o.name)}</option>`).join("")
+      + gk.map(g=>`<optgroup label="${esc(g)}">`+groups[g].map(o=>`<option value="${esc(o.name)}">${esc(o.name)}</option>`).join("")+`</optgroup>`).join("")
       + '<option value="__custom">Άλλο (custom)…</option>';
     if(cur){
       const known=opts.some(o=>normText(o.name)===normText(cur));
@@ -3030,6 +3052,38 @@ function loadModelFixed(mid){
   openMatPicker(); matDraft=keep; renderMatPicker();
   document.getElementById("matHint").classList.add("hidden");
 }
+function fullName(){
+  const a=(document.getElementById("fName").value||"").trim();
+  const b=(document.getElementById("fLast").value||"").trim();
+  return (a+" "+b).trim();
+}
+function splitName(full){
+  const parts=String(full||"").trim().split(/\s+/);
+  return { first: parts.shift()||"", last: parts.join(" ") };
+}
+function onNameType(){
+  const box=document.getElementById("nameSug"); if(!box) return;
+  const q=fullName();
+  if(q.length<2){ box.classList.add("hidden"); return; }
+  const groups=customerStats().filter(c=>smartMatch(c.name+" "+(c.variants||[]).join(" "), q)).slice(0,6);
+  const exact=groups.length===1 && normText(groups[0].name)===normText(q);
+  if(!groups.length || exact){ box.classList.add("hidden"); suggestPhone(); return; }
+  box.innerHTML=groups.map(c=>`<button type="button" class="ns-row" onclick="pickCustomer('${c.anyId}')">
+      <span class="ns-n">${esc(c.name)}</span>
+      <span class="ns-s">${c.n} ${c.n===1?"παραγγελία":"παραγγελίες"}${c.phone?" · "+esc(c.phone):""}</span>
+    </button>`).join("");
+  box.classList.remove("hidden");
+}
+function pickCustomer(orderId){
+  const o=ordersCache.find(x=>x.id===orderId); if(!o) return;
+  const sp=splitName(o.customer_name);
+  document.getElementById("fName").value=sp.first;
+  document.getElementById("fLast").value=sp.last;
+  // τηλέφωνο από οποιαδήποτε παραγγελία του ίδιου πελάτη
+  const ph=(customerOrders(o).map(x=>x.customer_phone).filter(Boolean).pop())||o.customer_phone;
+  if(ph) document.getElementById("fPhone").value=ph;
+  document.getElementById("nameSug").classList.add("hidden");
+}
 function knownPhoneFor(name){
   const n=normText(name||""); if(!n) return "";
   let best="";
@@ -3042,7 +3096,7 @@ function knownPhoneFor(name){
 function suggestPhone(){
   const ph=document.getElementById("fPhone");
   if(!ph || ph.value.trim()) return;                 // δεν πατάει ό,τι έχεις γράψει
-  const known=knownPhoneFor(document.getElementById("fName").value);
+  const known=knownPhoneFor(fullName());
   if(known){ ph.value=known; ph.dataset.auto="1"; }
 }
 // αν προστεθεί τηλέφωνο σε πελάτη που δεν είχε, ενημέρωσε και τις παλιές του παραγγελίες
@@ -3089,7 +3143,7 @@ function pickMethod(m){
 function openOrderModal(){
   editingId=null; pickedMethod="shipping";
   document.getElementById("modalTitle").textContent="Νέα παραγγελία";
-  ["fName","fNote","fTrackNo","fTrackUrl","fCost","fPaid","fPhone","fDisc","fShip"].forEach(id=>document.getElementById(id).value="");
+  ["fName","fLast","fNote","fTrackNo","fTrackUrl","fCost","fPaid","fPhone","fDisc","fShip"].forEach(id=>document.getElementById(id).value="");
   document.getElementById("fCourier").value="BoxNow";
   document.getElementById("fTotalView").textContent="€0,00";
   document.getElementById("fOrderNoView").textContent="θα δημιουργηθεί αυτόματα";
@@ -3117,7 +3171,7 @@ function editOrder(id){
   editingId=id;
   pickedMethod = o.delivery_method === "pickup" ? "pickup" : "shipping";
   document.getElementById("modalTitle").textContent="Επεξεργασία";
-  document.getElementById("fName").value=o.customer_name||"";
+  {const sp=splitName(o.customer_name); document.getElementById("fName").value=sp.first; document.getElementById("fLast").value=sp.last;}
   document.getElementById("fOrderNoView").textContent=o.order_number||"—";
   document.getElementById("orderDelBtn").classList.remove("hidden");
   document.getElementById("fCreatedView").textContent = o.created_at ? new Date(o.created_at).toLocaleDateString("el-GR",{day:"2-digit",month:"2-digit",year:"numeric"}) : "—";
@@ -3529,8 +3583,26 @@ function openCustomer(orderId){
   const chip=(l,v)=>`<span class="stat-pill"><b>${v}</b> ${esc(l)}</span>`;
 
   const DAYc=86400000;
+  // μετράμε από τη στιγμή που το προϊόν ήταν έτοιμο/παραδόθηκε — όχι από την καταχώρηση
+  const doneAt=o=>{
+    let last=null;
+    getItems(o).forEach(it=>{
+      const at=it.stageAt||{}; const N=itemN(it);
+      const t=at[N]?new Date(at[N]).getTime():null;
+      if(t && (!last || t>last)) last=t;
+    });
+    if(last) return last;
+    if(getItems(o).every(itemDone) && o.updated_at) return new Date(o.updated_at).getTime();
+    return null;
+  };
   const payDelays=[];
-  list.forEach(o=>{ if(o.paid_at && o.created_at){ const d=(new Date(o.paid_at)-new Date(o.created_at))/DAYc; if(d>=0) payDelays.push(d); } });
+  list.forEach(o=>{
+    if(!o.paid_at) return;
+    const base=doneAt(o);
+    if(!base) return;                       // δεν ξέρουμε πότε ήταν έτοιμο -> δεν το μετράμε
+    const d=(new Date(o.paid_at)-base)/DAYc;
+    if(d>=-1) payDelays.push(Math.max(0,d));
+  });
   const payAvg=payDelays.length?payDelays.reduce((a,b)=>a+b,0)/payDelays.length:null;
   const lastPaid=list.filter(o=>o.paid_at).sort((a,b)=>new Date(b.paid_at)-new Date(a.paid_at))[0];
   const phone=(list.map(o=>o.customer_phone).filter(Boolean).pop())||"";
@@ -3549,7 +3621,7 @@ function openCustomer(orderId){
     ${phone?`<a class="stat-pill" href="tel:${esc(phone)}" style="text-decoration:none"><b>☎</b> ${esc(phone)}</a>`:""}
     ${cadence!=null?`<span class="stat-pill">επιστρέφει κάθε <b>${fmtEvery(cadence)}</b></span>`:""}
     ${sinceLast!=null?`<span class="stat-pill">τελευταία παραγγελία <b>${fmtAgo(sinceLast)}</b></span>`:""}
-    ${payAvg!=null?`<span class="stat-pill">πληρώνει σε <b>${payAvg<1?"αυθημερόν":(Math.round(payAvg)===1?"1 μέρα":Math.round(payAvg)+" μέρες")}</b></span>`:""}
+    ${payAvg!=null?`<span class="stat-pill">πληρώνει <b>${payAvg<1?"με την παράδοση":(Math.round(payAvg)===1?"1 μέρα":Math.round(payAvg)+" μέρες")}</b>${payAvg>=1?" μετά την παράδοση":""}</span>`:""}
     ${biggest&&biggest.price!=null?`<span class="stat-pill">μεγαλύτερη παραγγελία <b>${fmtMoney(biggest.price)}</b></span>`:""}
     ${lastPaid?`<span class="stat-pill">τελευταία πληρωμή <b>${fmtMonthDate(lastPaid.paid_at)}</b></span>`:""}
     ${ship?`<span class="stat-pill"><b>${ship}</b> με courier</span>`:""}${pick?`<span class="stat-pill"><b>${pick}</b> με παραλαβή</span>`:""}
@@ -4140,7 +4212,10 @@ function renderModels(){
     return html;
   }
   const bs=bestSeller();
-  html+=modelCat.slice().sort((a,b)=>modelSales(b.name).n-modelSales(a.name).n).map(m=>{
+  const byColl={};
+  modelCat.forEach(m=>{ const c=collOf(m); (byColl[c]=byColl[c]||[]).push(m); });
+  const collOrder=Object.keys(byColl).sort((a,b)=> a==="ANASA"?-1 : b==="ANASA"?1 : a.localeCompare(b,"el"));
+  html+=collOrder.map(c=>`<div class="stock-cat">${esc(c)}</div>`+byColl[c].slice().sort((a,b)=>modelSales(b.name).n-modelSales(a.name).n).map(m=>{
     const sl=modelSales(m.name);
     return `<div class="stock-item">
       ${m.image_url?`<img class="si-img" src="${esc(m.image_url)}" alt="">`:`<div class="si-img"></div>`}
@@ -4148,7 +4223,7 @@ function renderModels(){
         <div class="si-meta">${m.price!=null?fmtMoney(m.price):"χωρίς τιμή"} · ${sl.n?`<b style="color:var(--ink)">${sl.n}</b> ${sl.n===1?"πώληση":"πωλήσεις"} · ${fmtMoney(sl.rev)}`:"καμία πώληση"}${m.materials&&m.materials.length?` · ${m.materials.length} υλικά`:""}</div></div>
       <button class="btn ghost sm" onclick="openModelModal('${m.id}')">✎</button>
     </div>`;
-  }).join("");
+  }).join("")).join("");
   const miss=ANASA.filter(a=>!modelCat.some(m=>normText(m.name)===normText(a.name))).length;
   if(miss) html+=`<div style="margin-top:12px"><button class="btn solid" style="width:100%" onclick="addAnasaNow()">Φόρτωσε τη συλλογή ANASA (${miss} λείπουν)</button></div>`;
   html+=`<div style="margin-top:10px"><button class="btn ghost" style="width:100%" onclick="openModelModal()">+ Νέο προϊόν</button></div>`;
@@ -4168,6 +4243,25 @@ async function importModels(){
   renderStock(); adminFlash(`Προστέθηκαν ${picked.length} προδιαγραφές ✓`);
 }
 let editingModelId=null;
+function collections(){
+  const set=new Set(["ANASA"]);
+  (modelCat||[]).forEach(m=>{ if(m.collection) set.add(m.collection); else if(m.anasa) set.add("ANASA"); });
+  return [...set];
+}
+function collOf(m){ return m.collection || (m.anasa?"ANASA":"Χωρίς collection"); }
+function fillCollSelect(cur){
+  const sel=document.getElementById("mColl"); if(!sel) return;
+  const list=collections();
+  sel.innerHTML=list.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("")
+    + '<option value="__none">— καμία —</option><option value="__new">+ Νέα collection…</option>';
+  sel.value = cur && list.includes(cur) ? cur : (cur==="Χωρίς collection" ? "__none" : list[0]);
+  document.getElementById("mCollNewWrap").classList.add("hidden");
+}
+function onCollChange(){
+  const isNew=document.getElementById("mColl").value==="__new";
+  document.getElementById("mCollNewWrap").classList.toggle("hidden", !isNew);
+  if(isNew) document.getElementById("mCollNew").focus();
+}
 function openModelModal(id){
   editingModelId=id||null;
   const m=id?modelCat.find(x=>x.id===id):null;
@@ -4176,6 +4270,8 @@ function openModelModal(id){
   document.getElementById("mPrice").value=m&&m.price!=null?m.price:"";
   document.getElementById("mImg").value=m?(m.image_url||""):"";
   document.getElementById("modelDelBtn").classList.toggle("hidden", !id);
+  fillCollSelect(m?collOf(m):"ANASA");
+  document.getElementById("mCollNew").value="";
   renderModelMats(m?(m.materials||[]):[]);
   _ovOpen("modelModal");
 }
@@ -4210,9 +4306,15 @@ function delModelMat(id){ renderModelMats(modelMats.filter(x=>x.id!==id)); }
 async function saveModel(){
   const name=document.getElementById("mName").value.trim();
   if(!name){ adminFlash("Συμπλήρωσε όνομα"); return; }
+  let coll=document.getElementById("mColl").value;
+  if(coll==="__new") coll=(document.getElementById("mCollNew").value||"").trim();
+  else if(coll==="__none") coll=null;
+  const prev=editingModelId?modelCat.find(m=>m.id===editingModelId):null;
   const rec={ id: editingModelId || ("m"+Math.random().toString(36).slice(2,9)),
     name, price: parseMoney(document.getElementById("mPrice").value),
-    image_url: document.getElementById("mImg").value.trim()||null, materials: modelMats };
+    image_url: document.getElementById("mImg").value.trim()||null, materials: modelMats,
+    collection: coll||null, anasa: coll==="ANASA" ? true : (prev?!!prev.anasa && coll==="ANASA":false),
+    cat: prev?prev.cat:null };
   if(editingModelId) modelCat = modelCat.map(m=>m.id===editingModelId?rec:m);
   else modelCat.push(rec);
   await saveSetting("models", modelCat, true);
