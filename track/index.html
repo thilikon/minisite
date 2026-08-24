@@ -2265,7 +2265,7 @@ function renderStats(){
   let ship=0, pickup=0, monthCount=0;
   let activeOrders=0, doneOrders=0, returnActive=0, returnTotal=0, totalItems=0;
   // financials
-  let revMonth=0, revCosted=0, profitMonth=0, monthCosted=0, monthOrders=0, outstanding=0, priceSum=0, priceN=0, mixCount=0, readyCount=0, readyRevMonth=0, costMonthKnown=false;
+  let revMonth=0, revCosted=0, profitMonth=0, monthCosted=0, monthOrders=0, workSecMonth=0, outstanding=0, priceSum=0, priceN=0, mixCount=0, readyCount=0, readyRevMonth=0, costMonthKnown=false;
   const now = new Date(); const ymNow = now.getFullYear()+"-"+now.getMonth();
   const monthly = {}; // "YYYY-M" -> revenue
   all.forEach(o=>{
@@ -2289,7 +2289,7 @@ function renderStats(){
     if(price!=null){
       priceSum+=price; priceN++;
       monthly[ym] = (monthly[ym]||0) + price;
-      if(ym===ymNow){ revMonth+=price; if(!isArchive(o)) monthOrders++; if(cost!=null){ profitMonth += (price-cost); revCosted += price; if(!isArchive(o)) monthCosted++; costMonthKnown=true; } if(isReady) readyRevMonth+=price; }
+      if(ym===ymNow){ revMonth+=price; workSecMonth+=workSec(o); if(!isArchive(o)) monthOrders++; if(cost!=null){ profitMonth += (price-cost); revCosted += price; if(!isArchive(o)) monthCosted++; costMonthKnown=true; } if(isReady) readyRevMonth+=price; }
       const rem = price - paid;
       if(rem>0) outstanding += rem;
     }
@@ -2397,6 +2397,7 @@ function renderStats(){
     {n:costMonthKnown?fmtMoney(profitMonth):"—", l:partial?`Κέρδος από ${fmtMoney(revCosted)}`:"Κέρδος μήνα"},
     {n:margin!=null?margin+"%":"—", l:"Περιθώριο"},
     ...(partial&&margin!=null?[{n:"≈"+fmtMoney(revMonth*margin/100), l:"Εκτ. κέρδος μήνα"}]:[]),
+    ...(workSecMonth>0?[{n:fmtMoney(Math.round((profitMonth-labourCost(workSecMonth))*100)/100), l:`Καθαρό μετά εργασία (${fmtDur(workSecMonth)})`}]:[]),
     {n:avgOrder!=null?fmtMoney(avgOrder):"—", l:"Μέση αξία"},
     {n:fmtMoney(outstanding), l:"Εκκρεμείς"},
     {n:fmtMoney(priceSum), l:"Τζίρος σύνολο"}
@@ -2457,6 +2458,7 @@ function renderStats(){
 
     <div class="stats-sub">Οικονομικά — τρέχων μήνας</div>
     <div class="stat-grid">${money}</div>
+    ${workSecMonth>0?`<div style="font-size:11.5px;color:var(--muted);margin-top:8px">Ο χρόνος εργασίας του μήνα (${fmtDur(workSecMonth)} × ${fmtMoney(hourRate)}/ώρα = ${fmtMoney(labourCost(workSecMonth))}) αφαιρείται μόνο στο «Καθαρό μετά εργασία».</div>`:""}
     ${partial?`<div style="background:#fdf6ea;border:1px solid #f0e0c4;border-left:3px solid #c9922e;border-radius:12px;padding:10px 13px;margin-top:10px;font-size:12px;color:#8a5a1e;line-height:1.6">
       ${monthOrders>0?`Κόστος υλικών έχουν <b>${monthCosted}</b> από <b>${monthOrders}</b> παραγγελίες του μήνα. `:""}Το κέρδος αφορά μόνο όσες έχουν κόστος — η εκτίμηση προβάλλει το ίδιο περιθώριο σε όλο τον τζίρο.
     </div>`:(costMonthKnown?"":`<div style="font-size:11.5px;color:var(--muted);margin-top:8px">Καμία παραγγελία του μήνα δεν έχει κόστος υλικών, οπότε το κέρδος δεν υπολογίζεται.</div>`)}
@@ -2892,6 +2894,7 @@ function renderOrders(){
             ${o.order_number?`<span>${esc(o.order_number)}</span>`:""}
             ${o.created_at?`<span>${new Date(o.created_at).toLocaleDateString("el-GR",{day:"2-digit",month:"2-digit",year:"numeric"})}</span>`:""}
             <span>${pickup?'Παραλαβή':'Courier'}</span>
+            ${workSec(o)>0?`<span title="χρόνος εργασίας">⏱ ${fmtDur(workSec(o))}</span>`:""}
           </div>
           <div class="r-pills">
             ${(function(){const e=evOf(o);return e?`<span class="mm-pill" style="background:${e.color}26;color:${e.ink||e.color};border-color:${e.color}">${esc(e.name)}</span>`:'';})()}${(!evOf(o)&&o.discount_pct?`<span class="mm-pill" style="background:var(--stone);color:var(--ink);border-color:var(--line)">−${Math.round(Number(o.discount_pct))}%</span>`:'')}${o.kind==='ready'?'<span class="mm-pill" style="background:#eef3f8;color:#2f5d8a;border-color:#cfe0f0">Έτοιμο</span>':''}${(function(){const v=visitNoFor(o);return v>1?`<button class="mm-pill cust-pill" style="background:#f3efe6;color:#8a6a2e;border-color:#e4d9c2" onclick="openCustomer('${o.id}')">${ordGr(v)} παραγγελία</button>`:'';})()}${hasFb(o)?`<button class="fb-badge" onclick="openOrderFeedback('${o.track_token}')">Feedback</button>`:''}
@@ -2906,6 +2909,7 @@ function renderOrders(){
       <div class="r-actions">
         <button class="btn ghost sm" onclick="copyLinkFor('${o.track_token}')">🔗 Link</button>
         <button class="btn ghost sm" onclick="notifyCustomer('${o.id}')">📣 Ειδοποίηση</button>
+        ${!orderIsDone(o)?`<button class="btn ghost sm" onclick="${(timer&&timer.orderId===o.id&&timer.startedAt)?'timerPause()':`timerStart('${o.id}')`}">${(timer&&timer.orderId===o.id&&timer.startedAt)?"⏸ Παύση":"⏱ Χρόνος"}</button>`:""}
         ${(Number(o.price)||0)-(Number(o.amount_paid)||0)>0.01?`<button class="btn ghost sm" onclick="quickPaid('${o.id}')">💶 Πληρώθηκε</button>`:""}
         <button class="btn ghost sm" onclick="editOrder('${o.id}')">✎ Επεξεργασία</button>
       </div>
@@ -4470,6 +4474,12 @@ function fmtDur(sec){
   if(m) return `${m}λ`;
   return `${sec}δ`;
 }
+function fmtClock(sec){
+  sec=Math.max(0,Math.floor(sec));
+  const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60), x=sec%60;
+  return h ? `${h}:${String(m).padStart(2,"0")}:${String(x).padStart(2,"0")}`
+           : `${m}:${String(x).padStart(2,"0")}`;
+}
 function workSec(o){ return Math.max(0, Number(o&&o.work_sec)||0); }
 function labourCost(sec){ return Math.round((sec/3600)*hourRate*100)/100; }
 function timerElapsed(){
@@ -4509,7 +4519,7 @@ async function timerStop(silent){
   await saveSetting("timer", null, true);
   renderTimerBar(); renderOrderTimer(); renderStats();
 }
-let _timerTick=null;
+let _timerTick=null, _wbTick=null;
 function renderTimerBar(){
   const bar=document.getElementById("timerBar"); if(!bar) return;
   if(!timer){ bar.classList.add("hidden"); if(_timerTick){clearInterval(_timerTick);_timerTick=null;} return; }
@@ -4517,7 +4527,7 @@ function renderTimerBar(){
   const paint=()=>{
     const sec=timerElapsed();
     bar.innerHTML=`<span class="tb-dot ${timer.startedAt?'live':''}"></span>
-      <span class="tb-t">${fmtDur(sec)}</span>
+      <span class="tb-t">${timer.startedAt?fmtClock(sec):fmtDur(sec)}</span>
       <span class="tb-n">${esc(o?firstName(o.customer_name):"—")}${o&&getItems(o)[0]?" · "+esc(getItems(o)[0].name):""}</span>
       <span class="tb-m">${fmtMoney(labourCost(sec))}</span>
       <button class="tb-b" onclick="${timer.startedAt?'timerPause()':`timerStart('${timer.orderId}')`}">${timer.startedAt?"⏸":"▶"}</button>
@@ -4528,6 +4538,19 @@ function renderTimerBar(){
   if(_timerTick) clearInterval(_timerTick);
   if(timer.startedAt) _timerTick=setInterval(paint,1000);
 }
+async function clearWork(id){
+  const o=ordersCache.find(x=>x.id===id); if(!o) return;
+  if(!confirm(`Να διαγραφεί ο καταγεγραμμένος χρόνος (${fmtDur(workSec(o))}) ;`)) return;
+  try{
+    const res=await authFetch(REST + "/orders?id=eq."+o.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},
+      body:JSON.stringify({work_sec:0})});
+    if(!res.ok) throw new Error();
+    o.work_sec=0;
+    if(timer && timer.orderId===o.id){ timer=null; await saveSetting("timer", null, true); }
+    renderTimerBar(); renderOrderTimer(); renderOrders(); renderStats(); updateMoneyHint();
+    adminFlash("Ο χρόνος διαγράφηκε ✓");
+  }catch(e){ adminFlash("Σφάλμα."); }
+}
 function renderOrderTimer(){
   const box=document.getElementById("workBox"); if(!box) return;
   if(!editingId){ box.classList.add("hidden"); return; }
@@ -4536,8 +4559,12 @@ function renderOrderTimer(){
   const live=(timer && timer.orderId===editingId) ? timerElapsed() : 0;
   const total=done+live;
   const running=!!(timer && timer.orderId===editingId && timer.startedAt);
+  if(_wbTick){ clearInterval(_wbTick); _wbTick=null; }
+  if(running) _wbTick=setInterval(()=>{ const el=box.querySelector(".wb-t"); if(!el){clearInterval(_wbTick);_wbTick=null;return;}
+    const t=workSec(o)+timerElapsed(); el.textContent=fmtClock(t);
+    const s2=box.querySelector(".wb-s"); if(s2) s2.textContent=`${fmtMoney(labourCost(t))} εργασία · ${fmtMoney(hourRate)}/ώρα`; },1000);
   box.innerHTML=`<div class="wb-l">
-      <div class="wb-t">${total?fmtDur(total):"—"}</div>
+      <div class="wb-t">${running?fmtClock(total):(total?fmtDur(total):"—")}</div>
       <div class="wb-s">${total?`${fmtMoney(labourCost(total))} εργασία · ${fmtMoney(hourRate)}/ώρα`:"δεν έχει μετρηθεί χρόνος"}</div>
     </div>
     <div class="wb-btns">
@@ -4546,6 +4573,7 @@ function renderOrderTimer(){
            <button type="button" class="btn solid sm" onclick="timerStop()">⏹ Τέλος</button>`
         : `<button type="button" class="btn solid sm" onclick="timerStart('${o.id}')">▶ ${(timer&&timer.orderId===o.id)?"Συνέχεια":"Ξεκίνα"}</button>
            ${(timer&&timer.orderId===o.id)?`<button type="button" class="btn ghost sm" onclick="timerStop()">⏹ Τέλος</button>`:""}`}
+      ${done>0?`<button type="button" class="btn ghost sm" onclick="clearWork('${o.id}')">🗑 Μηδένισε</button>`:""}
     </div>`;
   box.classList.remove("hidden");
 }
