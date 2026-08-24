@@ -1219,18 +1219,6 @@ function meName(){
   const u=jwtUser(adminToken)|| (store.get("th_admin_user")||"");
   return u ? u.split("@")[0] : "";
 }
-function orderLog(o){ return Array.isArray(o&&o.log) ? o.log : []; }
-async function logAction(orderId, action, extraPatch){
-  const o=ordersCache.find(x=>x.id===orderId); if(!o) return;
-  const entry={t:new Date().toISOString(), u:meName(), a:action};
-  const log=[...orderLog(o), entry].slice(-40);      // κρατάμε τις τελευταίες 40
-  try{
-    const body=Object.assign({log}, extraPatch||{});
-    const res=await authFetch(REST + "/orders?id=eq."+orderId,{method:"PATCH",headers:{"Prefer":"return=minimal"},
-      body:JSON.stringify(body)});
-    if(res.ok) o.log=log;
-  }catch(e){}
-}
 function isArchive(o){ return /^TH-2026-\d{3}$/.test(String((o&&o.order_number)||"")); }
 function needsCost(o){
   if(!o || isArchive(o)) return false;
@@ -2198,11 +2186,13 @@ function buildBrief(ctx){
   }
 
   // υλικά που τελείωσαν / τελειώνουν
-  const outSt=(stockCache||[]).filter(it=>!isWholesale(it) && stockState(it)==="out" && !stEv(it));
-  if(outSt.length) add(88, `${outSt.length===1?"Εξαντλήθηκε":"Εξαντλήθηκαν"} στην αποθήκη: <b>${outSt.slice(0,3).map(x=>esc(x.name)).join(", ")}</b>${outSt.length>3?` +${outSt.length-3}`:""}.`);
-  else if(ctx.lowCount>0){
-    const low=(stockCache||[]).filter(it=>stockState(it)==="low" && !stEv(it)).slice(0,3).map(x=>esc(x.name));
-    add(58, `${ctx.lowCount===1?"Τελειώνει":"Τελειώνουν"} <b>${ctx.lowCount}</b> ${ctx.lowCount===1?"υλικό":"υλικά"}${low.length?`: ${low.join(", ")}`:""}.`);
+  {
+    const outSt=(stockCache||[]).filter(it=>stockState(it)==="out" && !stEv(it));
+    const lowSt=(stockCache||[]).filter(it=>stockState(it)==="low" && !stEv(it));
+    if(outSt.length)
+      add(96, `${outSt.length===1?"Εξαντλήθηκε":"Εξαντλήθηκαν"}: <b>${outSt.slice(0,3).map(x=>esc(x.name)).join("</b>, <b>")}</b>${outSt.length>3?` +${outSt.length-3}`:""}.`);
+    if(lowSt.length)
+      add(86, `${lowSt.length===1?"Τελειώνει":"Τελειώνουν"}: <b>${lowSt.slice(0,3).map(x=>`${esc(x.name)} (${fmtNum(x.qty)})`).join("</b>, <b>")}</b>${lowSt.length>3?` +${lowSt.length-3}`:""}.`);
   }
 
   // κόστος υλικών που λείπει
@@ -2447,6 +2437,35 @@ function renderStats(){
   const catPerf=Object.values(catAgg).map(a=>({...a, rate: a.sec>0 ? a.net/(a.sec/3600) : 0}))
     .sort((x,y)=>y.rate-x.rate);
 
+  // top προϊόντα (φέτος)
+  const prodAgg={};
+  all.forEach(o=>{
+    if(!o.created_at || new Date(o.created_at).getFullYear()!==now.getFullYear()) return;
+    getItems(o).forEach(it=>{
+      const a=anasaOf(it.name)||{name:it.name};
+      const q=Math.max(1,Number(it.qty)||1);
+      const p=prodAgg[a.name]=prodAgg[a.name]||{name:a.name,n:0,rev:0};
+      p.n+=q; p.rev+=(Number(it.price)||0)*q;
+    });
+  });
+  const topProducts=Object.values(prodAgg).sort((a,b)=>b.rev-a.rev).slice(0,5);
+
+  // μείγμα πελατών
+  const custAgg={};
+  all.forEach(o=>{ const k=custKey(o); if(!k) return;
+    const c=custAgg[k]=custAgg[k]||{n:0,spent:0,first:null};
+    c.n++; c.spent+=Number(o.price)||0;
+    const t=o.created_at?new Date(o.created_at):null;
+    if(t && (!c.first || t<c.first)) c.first=t;
+  });
+  const custList=Object.values(custAgg);
+  const custMix={
+    total:custList.length,
+    repeat:custList.filter(c=>c.n>1).length,
+    avgValue:custList.length?custList.reduce((a,c)=>a+c.spent,0)/custList.length:0,
+    newThisMonth:custList.filter(c=>c.first && c.first.getFullYear()===now.getFullYear() && c.first.getMonth()===now.getMonth()).length
+  };
+
   const _fb = feedbackCache||[];
   const _sat = _fb.map(r=>r.q_satisfaction).filter(x=>x!=null);
   const satAvg = _sat.length ? (_sat.reduce((a,b)=>a+b,0)/_sat.length) : null;
@@ -2525,7 +2544,7 @@ function renderStats(){
 
   // δευτερεύοντα (μέσα στο «Αναλυτικά»)
   const money2 = [
-    {n:margin!=null?margin+"%":"—", l:"Περιθώριο"},
+    ...(netAfterWork!=null?[{n:margin!=null?margin+"%":"—", l:"Περιθώριο"}]:[]),
     ...(partial&&margin!=null?[{n:"≈"+fmtMoney(revMonth*margin/100), l:"Εκτ. κέρδος μήνα"}]:[]),
     ...(workSecMonth>0?[{n:fmtDur(workSecMonth), l:"Ώρες εργασίας"}]:[]),
     {n:avgOrder!=null?fmtMoney(avgOrder):"—", l:"Μέση αξία"},
@@ -2615,6 +2634,19 @@ function renderStats(){
     ${catPerf.map(c=>`<div class="fbrow"><div class="fbrow-l"><span>${esc(c.cat)} <span style="color:var(--muted)">· ${c.n} ${c.n===1?"κομμάτι":"κομμάτια"} · ${fmtDur(c.sec)}</span></span>
       <span class="fbrow-c" style="color:${c.rate>=hourRate?'#2c6e49':(c.rate>=hourRate*0.6?'#8a6a2e':'#b54b3a')}">${fmtMoney(c.rate)}/ώρα</span></div>
       <div class="track"><span class="fill" style="width:${Math.min(100,Math.round(c.rate/Math.max(hourRate,0.01)*100))}%;background:${c.rate>=hourRate?'#2c6e49':(c.rate>=hourRate*0.6?'#c9922e':'#b54b3a')}"></span></div></div>`).join("")}`:""}
+
+    ${topProducts.length?`<div class="stats-sub">Τι πουλάει</div>
+    ${topProducts.map(p=>`<div class="fbrow"><div class="fbrow-l"><span>${esc(p.name)}</span>
+      <span class="fbrow-c">${p.n} × · ${fmtMoney(p.rev)}</span></div>
+      <div class="track"><span class="fill" style="width:${Math.round(p.rev/topProducts[0].rev*100)}%"></span></div></div>`).join("")}`:""}
+
+    ${custMix.total>0?`<div class="stats-sub">Πελάτες</div>
+    <div class="stat-grid">
+      <div class="stat"><div class="n">${custMix.total}</div><div class="l">Σύνολο</div></div>
+      <div class="stat"><div class="n">${custMix.repeat}</div><div class="l">Επαναλαμβανόμενοι</div></div>
+      <div class="stat"><div class="n" style="font-size:20px">${fmtMoney(custMix.avgValue)}</div><div class="l">Αξία ανά πελάτη</div></div>
+      ${custMix.newThisMonth?`<div class="stat"><div class="n">${custMix.newThisMonth}</div><div class="l">Νέοι τον μήνα</div></div>`:""}
+    </div>`:""}
 
     <div class="stats-sub">Αποθήκη</div>
     <div class="stat-grid">
@@ -2924,7 +2956,6 @@ async function applyPay(){
       const res=await authFetch(REST + "/orders?id=eq."+o.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify(body)});
       if(!res.ok) throw new Error();
       o.amount_paid=np; if(full) o.paid_at=body.paid_at;
-      logAction(o.id, `Πληρωμή ${fmtMoney(give)}`);
       left=Math.round((left-give)*100)/100; done++;
     }
     closePay(); renderCustomers(); renderOrders(); renderStats();
@@ -3248,7 +3279,6 @@ async function advanceItem(orderId, itemId){
   try{
     await patchItems(orderId, stamped);
     const _S=stagesFor(itemFlow(it), o.delivery_method);
-    logAction(orderId, `${it.name}: ${(_S[itemStage(it)]||{}).title||("στάδιο "+itemStage(it))}`);
     await loadOrders(); adminFlash("Στάδιο ενημερώθηκε ✓");
   }
   catch(e){ adminFlash("Σφάλμα ενημέρωσης."); }
@@ -3283,7 +3313,6 @@ async function quickPaid(id){
       body:JSON.stringify({amount_paid:Number(o.price)||0, paid_at:o.paid_at||now})});
     if(!res.ok) throw new Error();
     o.amount_paid=Number(o.price)||0; o.paid_at=o.paid_at||now;
-    logAction(id, `Πληρωμή ${fmtMoney(rem)}`);
     renderOrders(); renderStats(); adminFlash("Εξοφλήθηκε ✓");
   }catch(e){ adminFlash("Σφάλμα."); }
 }
@@ -3819,7 +3848,6 @@ async function saveOrder(){
     document.getElementById("saveBtn").textContent="Αποθήκευση";
     await loadOrders();
     await propagatePhone(payload.customer_name, payload.customer_phone);
-    logAction(row.id, wasNew ? "Δημιουργήθηκε" : "Ενημερώθηκε");
     backfillVisits();
   }catch(e){
     msg.textContent="Σφάλμα: "+e.message; msg.classList.remove("hidden");
@@ -4835,14 +4863,13 @@ async function timerStop(silent){
         body:JSON.stringify({items:its})});
       if(res.ok) o.items=its;
     }catch(e){}
-    logAction(o.id, `Εργασία ${fmtDur(sec)}${target?` (${target.name})`:""}`);
     if(!silent) adminFlash(`Καταγράφηκαν ${fmtDur(sec)} · ${fmtMoney(labourCost(sec))} εργασία`);
   }
   timer=null;
   await saveSetting(meKey(), null, true);
   renderTimerBar(); renderOrderTimer(); renderStats();
 }
-let _timerTick=null, _wbTick=null;
+let _timerTick=null, _wbTick=null, logOpen=false;
 function pickWorkItem(orderId){
   const o=ordersCache.find(x=>x.id===orderId); if(!o) return;
   document.getElementById("pickWorkTitle").textContent=firstName(o.customer_name)||"Παραγγελία";
@@ -4886,16 +4913,34 @@ async function clearWork(id){
     adminFlash("Ο χρόνος διαγράφηκε ✓");
   }catch(e){ adminFlash("Σφάλμα."); }
 }
+function orderTimeline(o){
+  if(!o) return [];
+  const ev=[];
+  if(o.created_at) ev.push({t:o.created_at, a:"Καταχωρήθηκε"});
+  getItems(o).forEach(it=>{
+    const at=it.stageAt||{}; const N=itemN(it);
+    const STG=stagesFor(itemFlow(it), o.delivery_method);
+    Object.keys(at).forEach(k=>{
+      const st=+k; if(!at[k] || st===1) return;
+      ev.push({t:at[k], a:`${it.name}: ${(STG[st]||{}).title||("στάδιο "+st)}`});
+    });
+    if(itemSec(it)) ev.push({t:null, a:`${it.name}: εργασία ${fmtDur(itemSec(it))}`});
+  });
+  if(o.paid_at) ev.push({t:o.paid_at, a:`Εξοφλήθηκε ${fmtMoney(o.price||0)}`});
+  else if(Number(o.amount_paid)>0) ev.push({t:null, a:`Προκαταβολή ${fmtMoney(o.amount_paid)}`});
+  if(o.feedback_at) ev.push({t:o.feedback_at, a:"Ο πελάτης άφησε αξιολόγηση"});
+  return ev.sort((a,b)=> new Date(b.t||0) - new Date(a.t||0));
+}
 function renderOrderLog(){
   const box=document.getElementById("logBox"); if(!box) return;
   const o=editingId?ordersCache.find(x=>x.id===editingId):null;
-  const log=orderLog(o);
-  if(!o || !log.length){ box.classList.add("hidden"); return; }
-  box.innerHTML=`<details class="stats-more" style="margin:0;border:none;padding:0">
-    <summary style="padding:8px 0">Πορεία παραγγελίας (${log.length})</summary>
-    ${log.slice().reverse().map(e=>`<div class="log-row">
+  const ev=orderTimeline(o);
+  if(!o || !ev.length){ box.classList.add("hidden"); return; }
+  box.innerHTML=`<details class="stats-more" style="margin:0;border:none;padding:0" ${logOpen?"open":""} ontoggle="logOpen=this.open">
+    <summary style="padding:10px 0">Πορεία παραγγελίας (${ev.length})</summary>
+    ${ev.map(e=>`<div class="log-row">
       <span class="log-a">${esc(e.a)}</span>
-      <span class="log-m">${fmtDateShort(e.t)} ${new Date(e.t).toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit",hour12:false})}</span>
+      <span class="log-m">${e.t?`${fmtDateShort(e.t)} ${new Date(e.t).toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit",hour12:false})}`:"—"}</span>
     </div>`).join("")}
   </details>`;
   box.classList.remove("hidden");
