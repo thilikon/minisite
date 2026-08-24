@@ -570,6 +570,11 @@
     padding:10px 13px;font-size:12px;color:#7a5f22;line-height:1.6;margin:0 0 10px}
   .work-box{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
     background:var(--cream);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:14px}
+  .wb-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .wi-list{margin-top:10px;border-top:1px solid var(--line);padding-top:8px}
+  .wi-row{display:flex;align-items:center;gap:8px;padding:6px 0}
+  .wi-n{font-size:12.5px;font-weight:600}
+  .wi-s{font-size:11px;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}
   .wb-t{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums}
   .wb-s{font-size:11.5px;color:var(--muted);margin-top:2px}
   .wb-btns{display:flex;gap:8px;flex-wrap:wrap}
@@ -946,6 +951,15 @@
       <button class="btn ghost" style="flex:1 1 auto" onclick="closeModelModal()">Κλείσιμο</button>
       <button class="btn danger hidden" id="modelDelBtn" onclick="delModel()">Διαγραφή</button>
     </div>
+  </div>
+</div>
+
+<div id="pickWorkModal" class="overlay hidden">
+  <div class="modal">
+    <div class="mh"><h2 class="serif">Τι φτιάχνεις;</h2><button class="x" onclick="closePickWork()">✕</button></div>
+    <div id="pickWorkTitle" style="font-size:13px;font-weight:600;margin-bottom:10px"></div>
+    <div id="pickWorkBody"></div>
+    <div style="margin-top:14px"><button class="btn ghost" style="width:100%" onclick="closePickWork()">Άκυρο</button></div>
   </div>
 </div>
 
@@ -2351,6 +2365,24 @@ function renderStats(){
       evStats[id].total=total;
     }
   });
+  // απόδοση €/ώρα ανά κατηγορία (μόνο όπου υπάρχει μετρημένος χρόνος)
+  const catAgg={};
+  ordersCache.forEach(o=>{
+    const items=getItems(o);
+    const orderTotal=items.reduce((a,it)=>a+((Number(it.price)||0)*Math.max(1,Number(it.qty)||1)),0)||1;
+    items.forEach(it=>{
+      const sec=itemSec(it); if(!sec) return;
+      const info=priceInfo(it.name);
+      const cat=(info&&info.cat) || ((modelCat||[]).find(m=>normText(m.name)===normText(it.name))||{}).cat || "Άλλα";
+      const value=(Number(it.price)||0)*Math.max(1,Number(it.qty)||1);
+      const mat=(o.cost!=null) ? Number(o.cost)*(value/orderTotal) : 0;
+      const a=catAgg[cat]=catAgg[cat]||{cat, sec:0, net:0, n:0};
+      a.sec+=sec; a.net+=(value-mat); a.n+=Math.max(1,Number(it.qty)||1);
+    });
+  });
+  const catPerf=Object.values(catAgg).map(a=>({...a, rate: a.sec>0 ? a.net/(a.sec/3600) : 0}))
+    .sort((x,y)=>y.rate-x.rate);
+
   const _fb = feedbackCache||[];
   const _sat = _fb.map(r=>r.q_satisfaction).filter(x=>x!=null);
   const satAvg = _sat.length ? (_sat.reduce((a,b)=>a+b,0)/_sat.length) : null;
@@ -2503,6 +2535,12 @@ function renderStats(){
       const big = v.total!=null ? `${v.items}<span style="font-size:14px;opacity:.55"> / ${v.total}</span>` : v.items;
       return `<div class="stat"><div class="n" style="font-size:20px;color:${v.ink||v.color}">${big}</div><div class="l">${esc(v.name)}<br><span style="opacity:.7">${fmtMoney(v.rev)}</span></div></div>`;
     }).join("")}</div>`:""}
+
+    ${catPerf.length?`<div class="stats-sub">Απόδοση ανά κατηγορία</div>
+    <div class="cust-line" style="margin-top:0">Στόχος: <b>${fmtMoney(hourRate)}/ώρα</b>. Υπολογισμένο από όσα προϊόντα έχουν μετρημένο χρόνο.</div>
+    ${catPerf.map(c=>`<div class="fbrow"><div class="fbrow-l"><span>${esc(c.cat)} <span style="color:var(--muted)">· ${c.n} ${c.n===1?"κομμάτι":"κομμάτια"} · ${fmtDur(c.sec)}</span></span>
+      <span class="fbrow-c" style="color:${c.rate>=hourRate?'#2c6e49':(c.rate>=hourRate*0.6?'#8a6a2e':'#b54b3a')}">${fmtMoney(c.rate)}/ώρα</span></div>
+      <div class="track"><span class="fill" style="width:${Math.min(100,Math.round(c.rate/Math.max(hourRate,0.01)*100))}%;background:${c.rate>=hourRate?'#2c6e49':(c.rate>=hourRate*0.6?'#c9922e':'#b54b3a')}"></span></div></div>`).join("")}`:""}
 
     <div class="stats-sub">Αποθήκη</div>
     <div class="stat-grid">
@@ -3300,10 +3338,12 @@ function refreshPriceHints(){
     if(!name){ if(box) box.remove(); return; }
     const chips=[];
     if(info){
-      if(cur!==info.base) chips.push(`<button type="button" class="ph-c" onclick="setRowPrice(${idx},${info.base})">κλασική ${fmtMoney(info.base)}</button>`);
-      if(info.extra!=null && cur!==info.extra) chips.push(`<button type="button" class="ph-c" onclick="setRowPrice(${idx},${info.extra})">+ χρώμα ${fmtMoney(info.extra)}</button>`);
+      const L=priceLabels(info.cat);
+      if(cur!==info.base) chips.push(`<button type="button" class="ph-c" onclick="setRowPrice(${idx},${info.base})">${L.base} ${fmtMoney(info.base)}</button>`);
+      if(info.extra!=null && cur!==info.extra) chips.push(`<button type="button" class="ph-c" onclick="setRowPrice(${idx},${info.extra})">${L.extra} ${fmtMoney(info.extra)}</button>`);
     }
-    chips.push(`<button type="button" class="ph-c" onclick="bumpRowPrice(${idx},${PREMIUM_YARN})">+ premium νήμα ${fmtMoney(PREMIUM_YARN)}</button>`);
+    if(!info || info.cat!=="Beaded")
+      chips.push(`<button type="button" class="ph-c" onclick="bumpRowPrice(${idx},${PREMIUM_YARN})">+ premium νήμα ${fmtMoney(PREMIUM_YARN)}</button>`);
     if(!info) chips.push(`<button type="button" class="ph-c" onclick="bumpRowPrice(${idx},${CUSTOM_FEE})">+ σχεδιασμός ${fmtMoney(CUSTOM_FEE)}</button>`);
     if(!box){ box=document.createElement("div"); box.className="price-hint"; row.appendChild(box); }
     box.innerHTML=chips.join("");
@@ -4548,6 +4588,10 @@ const PRICE_LIST = [
   {name:"Blair",         cat:"Puffy",       base:30, extra:null, dep:true},
   {name:"Sophie",        cat:"Puffy",       base:28, extra:null, dep:true}
 ];
+function priceLabels(cat){
+  if(cat==="Beaded") return {base:"ακρυλικές", extra:"γυάλινες"};
+  return {base:"κλασική", extra:"+ χρώμα"};
+}
 function priceInfo(name){ const n=normText(name||""); return PRICE_LIST.find(p=>normText(p.name)===n)||null; }
 function needsDeposit(name){ const p=priceInfo(name); return !!(p&&p.dep); }
 
@@ -4581,25 +4625,41 @@ function fmtClock(sec){
   return h ? `${h}:${String(m).padStart(2,"0")}:${String(x).padStart(2,"0")}`
            : `${m}:${String(x).padStart(2,"0")}`;
 }
-function workSec(o){ return Math.max(0, Number(o&&o.work_sec)||0); }
+function itemSec(it){ return Math.max(0, Number(it&&it.work_sec)||0); }
+function workSec(o){
+  if(!o) return 0;
+  const items=getItems(o).reduce((a,it)=>a+itemSec(it),0);
+  return items + Math.max(0, Number(o.work_sec)||0);   // + παλιός χρόνος σε επίπεδο παραγγελίας
+}
 function labourCost(sec){ return Math.round((sec/3600)*hourRate*100)/100; }
 function timerElapsed(){
   if(!timer) return 0;
   return (timer.base||0) + (timer.startedAt ? (Date.now()-new Date(timer.startedAt).getTime())/1000 : 0);
 }
-async function timerStart(orderId){
+async function timerStart(orderId, itemId){
+  const _o=ordersCache.find(x=>x.id===orderId);
+  if(_o && !itemId){
+    const its=getItems(_o).filter(it=>!itemDone(it));
+    const pool=its.length?its:getItems(_o);
+    if(pool.length===1) itemId=pool[0].id;
+    else {
+      // πολλά προϊόντα -> διάλεξε ποιο φτιάχνεις
+      pickWorkItem(orderId); return;
+    }
+  }
   if(timer && timer.orderId!==orderId && timer.startedAt){
     if(!confirm("Τρέχει ήδη χρονόμετρο σε άλλη παραγγελία. Να σταματήσει και να ξεκινήσει εδώ ;")) return;
     await timerStop(true);
   }
   const o=ordersCache.find(x=>x.id===orderId);
-  timer={orderId, startedAt:new Date().toISOString(), base: (timer&&timer.orderId===orderId?timer.base:0) || 0};
+  const same = timer && timer.orderId===orderId && timer.itemId===itemId;
+  timer={orderId, itemId, startedAt:new Date().toISOString(), base: (same?timer.base:0) || 0};
   await saveSetting(meKey(), timer, true);
   renderTimerBar(); renderOrderTimer();
 }
 async function timerPause(){
   if(!timer || !timer.startedAt) return;
-  timer={orderId:timer.orderId, startedAt:null, base: timerElapsed()};
+  timer={orderId:timer.orderId, itemId:timer.itemId, startedAt:null, base: timerElapsed()};
   await saveSetting(meKey(), timer, true);
   renderTimerBar(); renderOrderTimer();
 }
@@ -4608,11 +4668,13 @@ async function timerStop(silent){
   const sec=Math.round(timerElapsed());
   const o=ordersCache.find(x=>x.id===timer.orderId);
   if(o && sec>0){
-    const total=workSec(o)+sec;
+    const its=getItems(o).map(it=>({...it}));
+    const target=its.find(it=>it.id===timer.itemId) || its[0];
+    if(target) target.work_sec=itemSec(target)+sec;
     try{
       const res=await authFetch(REST + "/orders?id=eq."+o.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},
-        body:JSON.stringify({work_sec:total})});
-      if(res.ok) o.work_sec=total;
+        body:JSON.stringify({items:its})});
+      if(res.ok) o.items=its;
     }catch(e){}
     if(!silent) adminFlash(`Καταγράφηκαν ${fmtDur(sec)} · ${fmtMoney(labourCost(sec))} εργασία`);
   }
@@ -4621,6 +4683,18 @@ async function timerStop(silent){
   renderTimerBar(); renderOrderTimer(); renderStats();
 }
 let _timerTick=null, _wbTick=null;
+function pickWorkItem(orderId){
+  const o=ordersCache.find(x=>x.id===orderId); if(!o) return;
+  document.getElementById("pickWorkTitle").textContent=firstName(o.customer_name)||"Παραγγελία";
+  document.getElementById("pickWorkBody").innerHTML=getItems(o).map(it=>`
+    <button class="cust-row" style="width:100%" onclick="closePickWork();timerStart('${o.id}','${it.id}')">
+      <span class="cr-main" style="pointer-events:none">
+        <span style="flex:1;min-width:0"><span class="cr-t">${esc(it.name)}${it.color?` · ${esc(it.color)}`:""}</span>
+        <span class="cr-s">${itemSec(it)?`έχει μετρηθεί ${fmtDur(itemSec(it))}`:"χωρίς χρόνο ακόμη"}${itemDone(it)?" · ολοκληρωμένο":""}</span></span>
+      </span></button>`).join("");
+  _ovOpen("pickWorkModal");
+}
+function closePickWork(){ _ovClose("pickWorkModal"); }
 function renderTimerBar(){
   const bar=document.getElementById("timerBar"); if(!bar) return;
   if(!timer){ bar.classList.add("hidden"); if(_timerTick){clearInterval(_timerTick);_timerTick=null;} return; }
@@ -4644,9 +4718,9 @@ async function clearWork(id){
   if(!confirm(`Να διαγραφεί ο καταγεγραμμένος χρόνος (${fmtDur(workSec(o))}) ;`)) return;
   try{
     const res=await authFetch(REST + "/orders?id=eq."+o.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},
-      body:JSON.stringify({work_sec:0})});
+      body:JSON.stringify({work_sec:0, items:getItems(o).map(it=>({...it, work_sec:0}))})});
     if(!res.ok) throw new Error();
-    o.work_sec=0;
+    o.work_sec=0; o.items=getItems(o).map(it=>({...it, work_sec:0}));
     if(timer && timer.orderId===o.id){ timer=null; await saveSetting(meKey(), null, true); }
     renderTimerBar(); renderOrderTimer(); renderOrders(); renderStats(); updateMoneyHint();
     adminFlash("Ο χρόνος διαγράφηκε ✓");
@@ -4656,27 +4730,42 @@ function renderOrderTimer(){
   const box=document.getElementById("workBox"); if(!box) return;
   if(!editingId){ box.classList.add("hidden"); return; }
   const o=ordersCache.find(x=>x.id===editingId); if(!o){ box.classList.add("hidden"); return; }
-  const done=workSec(o);
+  const its=getItems(o);
   const live=(timer && timer.orderId===editingId) ? timerElapsed() : 0;
-  const total=done+live;
   const running=!!(timer && timer.orderId===editingId && timer.startedAt);
-  if(_wbTick){ clearInterval(_wbTick); _wbTick=null; }
-  if(running) _wbTick=setInterval(()=>{ const el=box.querySelector(".wb-t"); if(!el){clearInterval(_wbTick);_wbTick=null;return;}
-    const t=workSec(o)+timerElapsed(); el.textContent=fmtClock(t);
-    const s2=box.querySelector(".wb-s"); if(s2) s2.textContent=`${fmtMoney(labourCost(t))} εργασία · ${fmtMoney(hourRate)}/ώρα`; },1000);
-  box.innerHTML=`<div class="wb-l">
-      <div class="wb-t">${running?fmtClock(total):(total?fmtDur(total):"—")}</div>
-      <div class="wb-s">${total?`${fmtMoney(labourCost(total))} εργασία · ${fmtMoney(hourRate)}/ώρα`:"δεν έχει μετρηθεί χρόνος"}</div>
-    </div>
-    <div class="wb-btns">
-      ${running
-        ? `<button type="button" class="btn ghost sm" onclick="timerPause()">⏸ Παύση</button>
-           <button type="button" class="btn solid sm" onclick="timerStop()">⏹ Τέλος</button>`
-        : `<button type="button" class="btn solid sm" onclick="timerStart('${o.id}')">▶ ${(timer&&timer.orderId===o.id)?"Συνέχεια":"Ξεκίνα"}</button>
-           ${(timer&&timer.orderId===o.id)?`<button type="button" class="btn ghost sm" onclick="timerStop()">⏹ Τέλος</button>`:""}`}
-      ${done>0?`<button type="button" class="btn ghost sm" onclick="clearWork('${o.id}')">🗑 Μηδένισε</button>`:""}
+  const total=workSec(o)+live;
+
+  const rows=its.map(it=>{
+    const isCur = timer && timer.orderId===editingId && timer.itemId===it.id;
+    const sec=itemSec(it)+(isCur?live:0);
+    const run=isCur && !!timer.startedAt;
+    return `<div class="wi-row">
+      <div style="flex:1;min-width:0">
+        <div class="wi-n">${esc(it.name)}${it.color?` · ${esc(it.color)}`:""}</div>
+        <div class="wi-s">${sec?`${run?fmtClock(sec):fmtDur(sec)} · ${fmtMoney(labourCost(sec))}`:"—"}</div>
+      </div>
+      ${run
+        ? `<button type="button" class="btn ghost sm" onclick="timerPause()">⏸</button>
+           <button type="button" class="btn solid sm" onclick="timerStop()">⏹</button>`
+        : `<button type="button" class="btn ${isCur?'solid':'ghost'} sm" onclick="timerStart('${o.id}','${it.id}')">▶ ${isCur?"Συνέχεια":""}</button>`}
+    </div>`;
+  }).join("");
+
+  box.innerHTML=`<div style="width:100%">
+      <div class="wb-head">
+        <div><div class="wb-t">${running?fmtClock(total):(total?fmtDur(total):"—")}</div>
+        <div class="wb-s">${total?`${fmtMoney(labourCost(total))} συνολικά · ${fmtMoney(hourRate)}/ώρα`:"δεν έχει μετρηθεί χρόνος"}</div></div>
+        ${total>0?`<button type="button" class="btn ghost sm" onclick="clearWork('${o.id}')">🗑</button>`:""}
+      </div>
+      <div class="wi-list">${rows}</div>
     </div>`;
   box.classList.remove("hidden");
+
+  if(_wbTick){ clearInterval(_wbTick); _wbTick=null; }
+  if(running) _wbTick=setInterval(()=>{
+    if(!document.getElementById("workBox") || !timer || !timer.startedAt){ clearInterval(_wbTick); _wbTick=null; return; }
+    renderOrderTimer();
+  },1000);
 }
 
 /* ---- Κατάλογος μοντέλων ---- */
@@ -4743,7 +4832,9 @@ function renderModels(){
     return `<div class="stock-item">
       ${m.image_url?`<img class="si-img" src="${esc(m.image_url)}" alt="">`:`<div class="si-img"></div>`}
       <div class="si-info"><div class="si-name">${esc(m.name)}${bs&&bs.name===m.name?' <span class="mm-pill" style="background:#f3efe6;color:#8a6a2e;border-color:#e4d9c2">best seller</span>':''}</div>
-        <div class="si-meta">${m.price!=null?fmtMoney(m.price):"χωρίς τιμή"} · ${sl.n?`<b style="color:var(--ink)">${sl.n}</b> ${sl.n===1?"πώληση":"πωλήσεις"} · ${fmtMoney(sl.rev)}`:"καμία πώληση"}${m.materials&&m.materials.length?` · ${m.materials.length} υλικά`:""}</div></div>
+        <div class="si-meta">${(function(){const L=priceLabels(m.cat); return m.price!=null
+            ? `${L.base} ${fmtMoney(m.price)}${m.price2!=null?` · ${L.extra} ${fmtMoney(m.price2)}`:""}`
+            : "χωρίς τιμή";})()} · ${sl.n?`<b style="color:var(--ink)">${sl.n}</b> ${sl.n===1?"πώληση":"πωλήσεις"} · ${fmtMoney(sl.rev)}`:"καμία πώληση"}${m.materials&&m.materials.length?` · ${m.materials.length} υλικά`:""}</div></div>
       <div style="display:flex;gap:6px;flex:none">
         ${sl.n?`<button class="btn ghost sm" onclick="openSales('${esc(m.name)}')">📊 Ιστορικό</button>`:""}
         <button class="btn ghost sm" onclick="openModelModal('${m.id}')">✎</button>
