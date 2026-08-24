@@ -562,6 +562,12 @@
   .timer-bar .tb-m{font-size:12px;font-weight:600;flex:none;opacity:.9}
   .timer-bar .tb-b{flex:none;width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.28);
     background:rgba(255,255,255,.08);color:#fff;font-size:13px;cursor:pointer}
+  .price-hint{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .ph-c{font-family:'Inter';font-size:10.5px;font-weight:600;letter-spacing:.03em;padding:7px 11px;border-radius:var(--pill);
+    border:1px dashed var(--line);background:#fff;color:var(--ink-soft);cursor:pointer}
+  .ph-c:active{background:var(--stone)}
+  .dep-hint{background:#fdf9ef;border:1px solid #eee0c4;border-left:3px solid #c9a24a;border-radius:12px;
+    padding:10px 13px;font-size:12px;color:#7a5f22;line-height:1.6;margin:0 0 10px}
   .work-box{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
     background:var(--cream);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:14px}
   .wb-t{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums}
@@ -900,6 +906,7 @@
       <div id="matList" style="margin-top:8px"><div class="mat-empty">Δεν έχουν δηλωθεί υλικά. Διάλεξε για να υπολογιστεί το κόστος και να αφαιρεθούν από το στοκ.</div></div>
     </div>
 
+    <div id="depHint" class="dep-hint hidden"></div>
     <div id="moneyHint" style="font-size:12.5px;color:var(--ink-soft);margin:-4px 0 10px"></div>
 
     <p id="modalMsg" class="msg err hidden"></p>
@@ -1322,6 +1329,7 @@ function itemsTotal(){
   });
   return any ? Math.round(sum*100)/100 : null;
 }
+function setPaid(v){ document.getElementById("fPaid").value=v; updateMoneyHint(); }
 function updateMoneyHint(){
   const sub=itemsTotal();
   const price=finalPrice(sub);
@@ -1349,6 +1357,17 @@ function updateMoneyHint(){
     tv.textContent = fmtMoney(price!=null?price:0);
   }
   const bits=[];
+  // πρόταση προκαταβολής 50% όπου χρειάζεται
+  const depBox=document.getElementById("depHint");
+  if(depBox){
+    const names=[...document.querySelectorAll("#itemsEditor .ie-name")].map(i=>i.value.trim()).filter(Boolean);
+    const need=names.some(needsDeposit);
+    if(need && price!=null && price>0 && (paid==null||paid<price*0.5-0.01)){
+      const half=Math.round(price*0.5*100)/100;
+      depBox.innerHTML=`Σε beaded / marshmallow ζητάς <b>προκαταβολή 50%</b> = ${fmtMoney(half)} <button type="button" class="ph-c" style="margin-left:6px" onclick="setPaid(${half})">Καταχώρησέ την</button>`;
+      depBox.classList.remove("hidden");
+    } else depBox.classList.add("hidden");
+  }
   if(price!=null && paid!=null){
     const rem=Math.round((price-paid)*100)/100;
     bits.push(rem>0?`Υπόλοιπο: ${fmtMoney(rem)}`:(rem<0?`Ρέστα: ${fmtMoney(-rem)}`:"Εξοφλημένο ✓"));
@@ -1856,8 +1875,16 @@ async function adminLogin(){
 }
 
 // Αποθήκευση session (access + refresh token) ώστε να μένει συνδεμένη
+function jwtUser(tok){
+  try{
+    const p=JSON.parse(decodeURIComponent(escape(atob(String(tok).split(".")[1].replace(/-/g,"+").replace(/_/g,"/")))));
+    return (p.email||p.sub||"").toLowerCase();
+  }catch(e){ return ""; }
+}
+function meKey(){ const u=jwtUser(adminToken); return u ? "timer:"+u : "timer"; }
 function saveSession(data){
   adminToken = data.access_token;
+  store.set("th_admin_user", jwtUser(data.access_token));
   store.set("th_admin_at", data.access_token);
   if(data.refresh_token) store.set("th_admin_rt", data.refresh_token);
   store.set("th_admin_exp", String(Date.now() + ((data.expires_in||3600)*1000)));
@@ -3246,9 +3273,41 @@ function onPickModel(sel){
   inp.value=sel.value;
   sel.dataset.val=sel.value;
   const _pr=row.querySelector(".ie-price");
-  if(_pr && _pr.dataset.auto==="1") _pr.value="";     // καθάρισε την αυτόματη τιμή του προηγούμενου
+  if(_pr) _pr.value="";      // νέο προϊόν -> νέα τιμή από τον τιμοκατάλογο
   const m=(modelCat||[]).find(x=>normText(x.name)===normText(sel.value));
   if(m) applyModelToRow(m.id, row); else if(hint) hint.classList.add("hidden");
+  refreshPriceHints();
+}
+function setRowPrice(rowIdx, val){
+  const row=document.querySelectorAll("#itemsEditor .ie-item")[rowIdx]; if(!row) return;
+  const pr=row.querySelector(".ie-price");
+  pr.value=val; pr.dataset.auto="1";
+  updateMoneyHint(); refreshPriceHints();
+}
+function bumpRowPrice(rowIdx, delta){
+  const row=document.querySelectorAll("#itemsEditor .ie-item")[rowIdx]; if(!row) return;
+  const pr=row.querySelector(".ie-price");
+  const cur=parseMoney(pr.value)||0;
+  pr.value=Math.round((cur+delta)*100)/100; pr.dataset.auto="";
+  updateMoneyHint(); refreshPriceHints();
+}
+function refreshPriceHints(){
+  document.querySelectorAll("#itemsEditor .ie-item").forEach((row,idx)=>{
+    let box=row.querySelector(".price-hint");
+    const name=(row.querySelector(".ie-name").value||"").trim();
+    const info=priceInfo(name);
+    const cur=parseMoney(row.querySelector(".ie-price").value);
+    if(!name){ if(box) box.remove(); return; }
+    const chips=[];
+    if(info){
+      if(cur!==info.base) chips.push(`<button type="button" class="ph-c" onclick="setRowPrice(${idx},${info.base})">κλασική ${fmtMoney(info.base)}</button>`);
+      if(info.extra!=null && cur!==info.extra) chips.push(`<button type="button" class="ph-c" onclick="setRowPrice(${idx},${info.extra})">+ χρώμα ${fmtMoney(info.extra)}</button>`);
+    }
+    chips.push(`<button type="button" class="ph-c" onclick="bumpRowPrice(${idx},${PREMIUM_YARN})">+ premium νήμα ${fmtMoney(PREMIUM_YARN)}</button>`);
+    if(!info) chips.push(`<button type="button" class="ph-c" onclick="bumpRowPrice(${idx},${CUSTOM_FEE})">+ σχεδιασμός ${fmtMoney(CUSTOM_FEE)}</button>`);
+    if(!box){ box=document.createElement("div"); box.className="price-hint"; row.appendChild(box); }
+    box.innerHTML=chips.join("");
+  });
 }
 function applyModelToRow(mid, row){
   const m=(modelCat||[]).find(x=>x.id===mid); if(!m) return;
@@ -3258,6 +3317,7 @@ function applyModelToRow(mid, row){
   }
   if(pr) pr.oninput=()=>{ pr.dataset.auto=""; updateMoneyHint(); };
   updateMoneyHint();
+  refreshPriceHints();
   const hint=document.getElementById("matHint"); if(!hint) return;
   const mats=(m.materials||[]).map(mm=>{
     const it=(stockCache||[]).find(x=>x.id===mm.id);
@@ -4104,7 +4164,7 @@ async function loadSettings(){
     custLinks = map.cust_links || {};
     custInfo  = map.cust_info  || {};
     if(map.settings && map.settings.hourRate!=null) hourRate=Number(map.settings.hourRate)||12;
-    timer = map.timer || null;
+    timer = map[meKey()] || null;
     modelCat  = Array.isArray(map.models) ? map.models : [];
   }catch(e){ eventsOn={}; custLinks={}; custInfo={}; modelCat=[]; }
   renderTimerBar();
@@ -4119,16 +4179,25 @@ async function loadSettings(){
   await ensureAnasa();
 }
 async function ensureAnasa(){
-  const missing=ANASA.filter(a=>!(modelCat||[]).some(m=>normText(m.name)===normText(a.name)));
-  if(!missing.length) return 0;
-  const sug=modelSuggestions();
-  missing.forEach(a=>{
-    const s2=sug.find(x=>normText(x.name)===normText(a.name))||{};
-    modelCat.push({id:"m"+Math.random().toString(36).slice(2,9), name:a.name, price:(s2.price!=null?s2.price:null),
-      materials:[], image_url:a.img, anasa:true, cat:a.cat});
+  let n=0;
+  PRICE_LIST.forEach(p=>{
+    const img=(ANASA.find(a=>normText(a.name)===normText(p.name))||{}).img||null;
+    const ex=(modelCat||[]).find(m=>normText(m.name)===normText(p.name));
+    if(ex){
+      // ενημέρωσε τιμές από τον επίσημο τιμοκατάλογο
+      if(ex.price==null){ ex.price=p.base; n++; }
+      if(ex.price2==null && p.extra!=null){ ex.price2=p.extra; n++; }
+      if(!ex.cat){ ex.cat=p.cat; n++; }
+      if(ex.dep===undefined){ ex.dep=p.dep; n++; }
+      if(!ex.image_url && img){ ex.image_url=img; n++; }
+    }else{
+      modelCat.push({id:"m"+Math.random().toString(36).slice(2,9), name:p.name, price:p.base, price2:p.extra,
+        materials:[], image_url:img, anasa:true, cat:p.cat, dep:p.dep, collection:"ANASA"});
+      n++;
+    }
   });
-  await saveSetting("models", modelCat, true);
-  return missing.length;
+  if(n) await saveSetting("models", modelCat, true);
+  return n;
 }
 async function addAnasaNow(){
   const n=await ensureAnasa();
@@ -4450,7 +4519,39 @@ async function delStock(){
   }catch(e){ adminFlash("Σφάλμα διαγραφής"); }
 }
 
-/* ---- Συλλογή ANASA (από το mini-site) ---- */
+/* ---- Τιμοκατάλογος THILIKÓN ----
+   base  = κλασική επιλογή (μονόχρωμη ή δίχρωμη)
+   extra = με επιπλέον χρώμα (ή μεγαλύτερο μέγεθος)
+   dep   = ζητείται προκαταβολή 50%
+   Premium νήμα (leather / velvet marshmallow κ.λπ.): +7€   */
+const PREMIUM_YARN = 7;
+const CUSTOM_FEE   = 20;
+const PRICE_LIST = [
+  {name:"Grace",         cat:"Crochet",     base:45, extra:50, dep:false},
+  {name:"Bella",         cat:"Crochet",     base:50, extra:55, dep:false},
+  {name:"Kelly",         cat:"Crochet",     base:40, extra:50, dep:false},
+  {name:"Nicole",        cat:"Crochet",     base:50, extra:55, dep:false},
+  {name:"Sarah",         cat:"Crochet",     base:40, extra:45, dep:false},
+  {name:"Zoe",           cat:"Crochet",     base:45, extra:50, dep:false},
+  {name:"Rosie",         cat:"Crochet",     base:35, extra:40, dep:false},
+  {name:"Heart Basket",  cat:"Crochet",     base:15, extra:null, dep:false},
+  {name:"Laluna",        cat:"Beaded",      base:70, extra:80, dep:true},
+  {name:"Perla",         cat:"Beaded",      base:85, extra:95, dep:true},
+  {name:"Diana",         cat:"Beaded",      base:60, extra:70, dep:true},
+  {name:"Alice",         cat:"Beaded",      base:75, extra:null, dep:true},
+  {name:"Cardholder",    cat:"Beaded",      base:25, extra:null, dep:false},
+  {name:"Beaded Heart",  cat:"Beaded",      base:8,  extra:null, dep:false},
+  {name:"Hug",           cat:"Marshmallow", base:35, extra:null, dep:true},
+  {name:"Loopi",         cat:"Marshmallow", base:45, extra:null, dep:true},
+  {name:"Softy",         cat:"Marshmallow", base:35, extra:null, dep:true},
+  {name:"Mellow",        cat:"Marshmallow", base:45, extra:null, dep:true},
+  {name:"Blair",         cat:"Puffy",       base:30, extra:null, dep:true},
+  {name:"Sophie",        cat:"Puffy",       base:28, extra:null, dep:true}
+];
+function priceInfo(name){ const n=normText(name||""); return PRICE_LIST.find(p=>normText(p.name)===n)||null; }
+function needsDeposit(name){ const p=priceInfo(name); return !!(p&&p.dep); }
+
+/* ---- Φωτογραφίες συλλογής ANASA (mini-site) ---- */
 const ANASA = [
   {name:"Loopi",          cat:"Marshmallow",    img:"https://i.imgur.com/4H32v0k.png"},
   {name:"Hug",            cat:"Marshmallow",    img:"https://i.imgur.com/P8iXkZS.png"},
@@ -4493,13 +4594,13 @@ async function timerStart(orderId){
   }
   const o=ordersCache.find(x=>x.id===orderId);
   timer={orderId, startedAt:new Date().toISOString(), base: (timer&&timer.orderId===orderId?timer.base:0) || 0};
-  await saveSetting("timer", timer, true);
+  await saveSetting(meKey(), timer, true);
   renderTimerBar(); renderOrderTimer();
 }
 async function timerPause(){
   if(!timer || !timer.startedAt) return;
   timer={orderId:timer.orderId, startedAt:null, base: timerElapsed()};
-  await saveSetting("timer", timer, true);
+  await saveSetting(meKey(), timer, true);
   renderTimerBar(); renderOrderTimer();
 }
 async function timerStop(silent){
@@ -4516,7 +4617,7 @@ async function timerStop(silent){
     if(!silent) adminFlash(`Καταγράφηκαν ${fmtDur(sec)} · ${fmtMoney(labourCost(sec))} εργασία`);
   }
   timer=null;
-  await saveSetting("timer", null, true);
+  await saveSetting(meKey(), null, true);
   renderTimerBar(); renderOrderTimer(); renderStats();
 }
 let _timerTick=null, _wbTick=null;
@@ -4546,7 +4647,7 @@ async function clearWork(id){
       body:JSON.stringify({work_sec:0})});
     if(!res.ok) throw new Error();
     o.work_sec=0;
-    if(timer && timer.orderId===o.id){ timer=null; await saveSetting("timer", null, true); }
+    if(timer && timer.orderId===o.id){ timer=null; await saveSetting(meKey(), null, true); }
     renderTimerBar(); renderOrderTimer(); renderOrders(); renderStats(); updateMoneyHint();
     adminFlash("Ο χρόνος διαγράφηκε ✓");
   }catch(e){ adminFlash("Σφάλμα."); }
