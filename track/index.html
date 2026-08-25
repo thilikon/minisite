@@ -375,10 +375,6 @@
   .empty-hint{background:var(--cream);border:1px dashed var(--line);border-radius:12px;padding:11px 13px;
     font-size:12px;color:var(--muted);line-height:1.6}
   .empty-hint b{color:var(--ink-soft)}
-  .log-row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:11.5px}
-  .log-row:last-child{border-bottom:none}
-  .log-a{color:var(--ink-soft);flex:1;min-width:0}
-  .log-m{color:var(--muted);white-space:nowrap;flex:none}
   .stats-sub{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:18px 0 9px}
   .year-tabs{display:flex;gap:7px;flex-wrap:wrap;margin:18px 0 12px;padding-top:16px;border-top:1px solid var(--line)}
   .ytab{font-family:'Inter';font-size:12px;font-weight:600;letter-spacing:.02em;padding:7px 14px;border-radius:var(--pill);border:1px solid var(--line);background:var(--cream);color:var(--ink-soft);cursor:pointer;transition:.15s}
@@ -917,7 +913,6 @@
 
     <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:6px 0 8px">Χρόνος εργασίας</p>
     <div id="workBox" class="work-box hidden"></div>
-    <div id="logBox" class="hidden" style="margin:-4px 0 14px"></div>
     <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:6px 0 8px">Οικονομικά <span style="text-transform:none;letter-spacing:0">(ο πελάτης βλέπει τις τιμές & αν εξοφλήθηκε — το κόστος υλικών μένει κρυφό)</span></p>
     <div class="money-row">
       <label class="fld" style="flex:2 1 150px"><span>Σύνολο €</span><div id="fTotalView" class="ro-field">€0,00</div></label>
@@ -3788,7 +3783,6 @@ function editOrder(id){
   document.getElementById("fOrderNoView").textContent=o.order_number||"—";
   document.getElementById("orderDelBtn").classList.remove("hidden");
   setTimeout(renderOrderTimer,0);
-  setTimeout(renderOrderLog,0);
   document.getElementById("fCustLink").classList.remove("hidden");
   document.getElementById("fCreatedView").textContent = o.created_at ? new Date(o.created_at).toLocaleDateString("el-GR",{day:"2-digit",month:"2-digit",year:"numeric"}) : "—";
   document.getElementById("fPhone").value=o.customer_phone||"";
@@ -5019,7 +5013,7 @@ async function timerStop(silent){
   await saveSetting(meKey(), null, true);
   renderTimerBar(); renderOrderTimer(); renderStats();
 }
-let _timerTick=null, _wbTick=null, logOpen=false;
+let _timerTick=null, _wbTick=null;
 function pickWorkItem(orderId){
   const o=ordersCache.find(x=>x.id===orderId); if(!o) return;
   document.getElementById("pickWorkTitle").textContent=firstName(o.customer_name)||"Παραγγελία";
@@ -5062,38 +5056,6 @@ async function clearWork(id){
     renderTimerBar(); renderOrderTimer(); renderOrders(); renderStats(); updateMoneyHint();
     adminFlash("Ο χρόνος διαγράφηκε ✓");
   }catch(e){ adminFlash("Σφάλμα."); }
-}
-function orderTimeline(o){
-  if(!o) return [];
-  const ev=[];
-  if(o.created_at) ev.push({t:o.created_at, a:"Καταχωρήθηκε"});
-  getItems(o).forEach(it=>{
-    const at=it.stageAt||{}; const N=itemN(it);
-    const STG=stagesFor(itemFlow(it), o.delivery_method);
-    Object.keys(at).forEach(k=>{
-      const st=+k; if(!at[k] || st===1) return;
-      ev.push({t:at[k], a:`${it.name}: ${(STG[st]||{}).title||("στάδιο "+st)}`});
-    });
-    if(itemSec(it)) ev.push({t:null, a:`${it.name}: εργασία ${fmtDur(itemSec(it))}`});
-  });
-  if(o.paid_at) ev.push({t:o.paid_at, a:`Εξοφλήθηκε ${fmtMoney(o.price||0)}`});
-  else if(Number(o.amount_paid)>0) ev.push({t:null, a:`Προκαταβολή ${fmtMoney(o.amount_paid)}`});
-  if(o.feedback_at) ev.push({t:o.feedback_at, a:"Ο πελάτης άφησε αξιολόγηση"});
-  return ev.sort((a,b)=> new Date(b.t||0) - new Date(a.t||0));
-}
-function renderOrderLog(){
-  const box=document.getElementById("logBox"); if(!box) return;
-  const o=editingId?ordersCache.find(x=>x.id===editingId):null;
-  const ev=orderTimeline(o);
-  if(!o || !ev.length){ box.classList.add("hidden"); return; }
-  box.innerHTML=`<details class="stats-more" style="margin:0;border:none;padding:0" ${logOpen?"open":""} ontoggle="logOpen=this.open">
-    <summary style="padding:10px 0">Πορεία παραγγελίας (${ev.length})</summary>
-    ${ev.map(e=>`<div class="log-row">
-      <span class="log-a">${esc(e.a)}</span>
-      <span class="log-m">${e.t?`${fmtDateShort(e.t)} ${new Date(e.t).toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit",hour12:false})}`:"—"}</span>
-    </div>`).join("")}
-  </details>`;
-  box.classList.remove("hidden");
 }
 function renderOrderTimer(){
   const box=document.getElementById("workBox"); if(!box) return;
