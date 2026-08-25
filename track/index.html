@@ -3601,7 +3601,7 @@ function refreshPriceHints(){
       box.innerHTML=chips.join(""); return;
     }
     if(info){
-      const L=priceLabels(info.cat);
+      const L=priceLabels(info.cat, info.name);
       if(cur!==info.base) chips.push(`<button type="button" class="ph-c" onclick="setRowPrice(${idx},${info.base})">${L.base} ${fmtMoney(info.base)}</button>`);
       if(info.extra!=null && cur!==info.extra) chips.push(`<button type="button" class="ph-c" onclick="setRowPrice(${idx},${info.extra})">${L.extra} ${fmtMoney(info.extra)}</button>`);
     }
@@ -4499,6 +4499,11 @@ async function ensureAnasa(){
     if(ex && !(modelCat||[]).some(m=>normText(m.name)===normText(newN))){ ex.name=newN; ex.image_url=ex.image_url||imgFor(newN); n++; }
   });
   const gone=(_flags&&_flags.removed)||[];
+  if(!settingsFlag("priceFix1")){
+    const k=(modelCat||[]).find(m=>normText(m.name)==="keli");
+    if(k && Number(k.price2)===50){ k.price2=45; n++; }
+    markSettingsFlag("priceFix1");
+  }
   // επιδιόρθωση: παλαιότερη έκδοση είχε βάλει τα πάντα στην ANASA
   if(!settingsFlag("collFix2")){
     PRICE_LIST.forEach(p=>{
@@ -4887,7 +4892,7 @@ const CUSTOM_FEE   = 20;
 const PRICE_LIST = [
   {name:"Grace",         cat:"Crochet",     base:45, extra:50, dep:false, coll:"ANASA"},
   {name:"Bella",         cat:"Crochet",     base:50, extra:55, dep:false, coll:"ANASA"},
-  {name:"Kelly",         cat:"Crochet",     base:40, extra:50, dep:false, coll:"ANASA"},
+  {name:"Kelly",         cat:"Crochet",     base:40, extra:45, dep:false, coll:"ANASA"},
   {name:"Nicole",        cat:"Crochet",     base:50, extra:55, dep:false, coll:"ANASA"},
   {name:"Sarah",         cat:"Crochet",     base:40, extra:45, dep:false, coll:"ANTHESIS"},
   {name:"Zoe",           cat:"Crochet",     base:45, extra:50, dep:false, coll:"ANTHESIS"},
@@ -4897,8 +4902,8 @@ const PRICE_LIST = [
   {name:"Perla",         cat:"Beaded",      base:85, extra:95, dep:true, coll:"ANASA"},
   {name:"Diana",         cat:"Beaded",      base:60, extra:70, dep:true, coll:"ANTHESIS"},
   {name:"Alice",         cat:"Beaded",      base:75, extra:null, dep:true, coll:"ANTHESIS"},
-  {name:"Cardholder",    cat:"Beaded",      base:25, extra:null, dep:false, coll:"ANASA"},
-  {name:"Heart Keychain",cat:"Beaded",      base:8,  extra:null, dep:false, coll:"ANASA"},
+  {name:"Cardholder",    cat:"Beaded",      base:25, extra:null, dep:false, coll:"ANASA", bead:"γυάλινες"},
+  {name:"Heart Keychain",cat:"Beaded",      base:8,  extra:null, dep:false, coll:"ANASA", bead:"ακρυλικές ή γυάλινες"},
   {name:"Hug",           cat:"Marshmallow", base:35, extra:null, dep:true, coll:"ANASA"},
   {name:"Loopi",         cat:"Marshmallow", base:45, extra:null, dep:true, coll:"ANASA"},
   {name:"Softy",         cat:"Marshmallow", base:35, extra:null, dep:true, coll:"ANTHESIS"},
@@ -4906,7 +4911,9 @@ const PRICE_LIST = [
   {name:"Blair",         cat:"Puffy",       base:30, extra:null, dep:true, coll:"ANTHESIS"},
   {name:"Sophie",        cat:"Puffy",       base:28, extra:null, dep:true, coll:"ANTHESIS"}
 ];
-function priceLabels(cat){
+function priceLabels(cat, name){
+  const info = name ? priceInfo(name) : null;
+  if(info && info.bead) return {base:info.bead, extra:null};   // ίδια τιμή σε κάθε χάντρα
   if(cat==="Beaded") return {base:"ακρυλικές", extra:"γυάλινες"};
   return {base:"κλασική", extra:"+ χρώμα"};
 }
@@ -5195,7 +5202,7 @@ function renderModels(){
     return `<div class="stock-item">
       ${m.image_url?`<img class="si-img" src="${esc(m.image_url)}" alt="">`:`<div class="si-img"></div>`}
       <div class="si-info"><div class="si-name">${esc(m.name)}${bs&&bs.name===m.name?' <span class="mm-pill" style="background:#f3efe6;color:#8a6a2e;border-color:#e4d9c2">best seller</span>':''}</div>
-        <div class="si-meta">${(function(){const L=priceLabels(m.cat); return m.price!=null
+        <div class="si-meta">${(function(){const L=priceLabels(m.cat, m.name); return m.price!=null
             ? `${L.base} ${fmtMoney(m.price)}${m.price2!=null?` · ${L.extra} ${fmtMoney(m.price2)}`:""}`
             : "χωρίς τιμή";})()}${m.wholesale!=null?` <span style="color:#2f5d8a">· χονδρική ${fmtMoney(m.wholesale)}</span>`:""} · ${sl.n?`<b style="color:var(--ink)">${sl.n}</b> ${sl.n===1?"πώληση":"πωλήσεις"} · ${fmtMoney(sl.rev)}`:"καμία πώληση"}${(function(){
         const st=modelStats(m.name);
