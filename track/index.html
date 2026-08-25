@@ -372,6 +372,9 @@
     border-radius:var(--pill);padding:9px 13px;font-family:'Inter';font-size:12px;font-weight:600;color:var(--ink);cursor:pointer}
   .af-chip span{font-weight:400;font-size:10.5px;color:var(--muted)}
   .af-chip:active{background:var(--stone)}
+  .empty-hint{background:var(--cream);border:1px dashed var(--line);border-radius:12px;padding:11px 13px;
+    font-size:12px;color:var(--muted);line-height:1.6}
+  .empty-hint b{color:var(--ink-soft)}
   .log-row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:11.5px}
   .log-row:last-child{border-bottom:none}
   .log-a{color:var(--ink-soft);flex:1;min-width:0}
@@ -521,6 +524,9 @@
   .ms-row input{width:18px;height:18px;accent-color:var(--ink);flex:none}
   .ms-n{font-size:13.5px;font-weight:600}
   .ms-s{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.45}
+  .w-shop-h{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:18px 0 8px}
+  .w-shop-n{font-size:15px;font-weight:700}
+  .w-shop-s{font-size:11.5px;color:var(--muted);margin-top:2px}
   .w-card{background:var(--card,#fff);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:11px}
   .w-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
   .w-shop{font-size:15px;font-weight:600}
@@ -954,7 +960,8 @@
     <div class="mh"><h2 class="serif" id="modelTitle">Νέο προϊόν</h2><button class="x" onclick="closeModelModal()">✕</button></div>
     <label class="fld"><span>Όνομα προϊόντος</span><input id="mName" placeholder="π.χ. KELLY"></label>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <label class="fld" style="flex:1 1 120px"><span>Βασική τιμή €</span><input id="mPrice" inputmode="decimal" placeholder="0"></label>
+      <label class="fld" style="flex:1 1 110px"><span>Λιανική €</span><input id="mPrice" inputmode="decimal" placeholder="0"></label>
+      <label class="fld" style="flex:1 1 110px"><span>Χονδρική €</span><input id="mWhole" inputmode="decimal" placeholder="—"></label>
       <label class="fld" style="flex:2 1 160px"><span>Φωτογραφία (URL)</span><input id="mImg" placeholder="https://…"></label>
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
@@ -2382,10 +2389,12 @@ function renderStats(){
     const cost  = o.cost!=null ? Number(o.cost) : null;
     const paid  = o.amount_paid!=null ? Number(o.amount_paid) : 0;
     if(price!=null){
-      priceSum+=price; priceN++;
-      monthly[ym] = (monthly[ym]||0) + price;
-      if(ym===ymNow){ revMonth+=price; workSecMonth+=workSec(o); if(!isArchive(o)) monthOrders++; if(cost!=null){ profitMonth += (price-cost); revCosted += price; if(!isArchive(o)) monthCosted++; costMonthKnown=true; } if(isReady) readyRevMonth+=price; }
-      const rem = price - paid;
+      const cnt = isWholesale(o) && o.deal_type==="consignment" ? wTotals(o).soldValue : price;
+      priceSum+=cnt; priceN++;
+      monthly[ym] = (monthly[ym]||0) + cnt;
+      if(ym===ymNow){ revMonth+=cnt; workSecMonth+=workSec(o); if(!isArchive(o)) monthOrders++; if(cost!=null){ profitMonth += (price-cost); revCosted += price; if(!isArchive(o)) monthCosted++; costMonthKnown=true; } if(isReady) readyRevMonth+=price; }
+      const dueNow = isWholesale(o) ? wTotals(o).due : price;   // παρακαταθήκη: μόνο τα πουλημένα
+      const rem = dueNow - paid;
       if(rem>0) outstanding += rem;
     }
   });
@@ -2436,6 +2445,35 @@ function renderStats(){
   });
   const catPerf=Object.values(catAgg).map(a=>({...a, rate: a.sec>0 ? a.net/(a.sec/3600) : 0}))
     .sort((x,y)=>y.rate-x.rate);
+
+  // ---- Collections & κανάλι πώλησης (φέτος) ----
+  const collOfName=n=>{
+    const m=(modelCat||[]).find(x=>normText(x.name)===normText(n));
+    if(m&&m.collection) return m.collection;
+    const p=priceInfo(n); return (p&&p.coll)||"Άλλα";
+  };
+  const collAgg={}, chan={retail:{rev:0,n:0,cost:0,costed:0}, whole:{rev:0,n:0,cost:0,costed:0}};
+  all.forEach(o=>{
+    if(!o.created_at || new Date(o.created_at).getFullYear()!==now.getFullYear()) return;
+    const items=getItems(o);
+    const tot=items.reduce((a,x)=>a+((Number(x.price)||0)*Math.max(1,Number(x.qty)||1)),0)||1;
+    const isW=isWholesale(o);
+    const ch=isW?chan.whole:chan.retail;
+    const val=isW ? wTotals(o).due : (Number(o.price)||0);
+    ch.rev+=val; ch.n++;
+    if(o.cost!=null){ ch.cost+=Number(o.cost); ch.costed+=val; }
+    items.forEach(it=>{
+      const c=collOfName(it.name);
+      const q=Math.max(1,Number(it.qty)||1);
+      const value=(Number(it.price)||0)*q;
+      const a=collAgg[c]=collAgg[c]||{coll:c,rev:0,units:0,sec:0,net:0};
+      a.rev+=value; a.units+=q;
+      const sec=itemSec(it);
+      if(sec){ a.sec+=sec; a.net+=(value-((o.cost!=null)?Number(o.cost)*(value/tot):0)); }
+    });
+  });
+  const collList=Object.values(collAgg).filter(c=>c.rev>0).sort((a,b)=>b.rev-a.rev);
+  const chanTotal=chan.retail.rev+chan.whole.rev;
 
   // top προϊόντα (φέτος)
   const prodAgg={};
@@ -2629,11 +2667,26 @@ function renderStats(){
       return `<div class="stat"><div class="n" style="font-size:20px;color:${v.ink||v.color}">${big}</div><div class="l">${esc(v.name)}<br><span style="opacity:.7">${fmtMoney(v.rev)}</span></div></div>`;
     }).join("")}</div>`:""}
 
+    ${!catPerf.length && totalItems>0?`<div class="stats-sub">Απόδοση ανά κατηγορία</div>
+    <div class="empty-hint">Δεν έχει μετρηθεί χρόνος ακόμη. Πάτα <b>⏱ Χρόνος</b> σε μια παραγγελία και μόλις τελειώσεις θα δεις εδώ
+      πόσο αποδίδει κάθε κατηγορία (€/ώρα), τι τιμή χρειάζεται για να πιάνει τον στόχο των ${fmtMoney(hourRate)}/ώρα, και το «Καθαρό μετά εργασία».</div>`:""}
     ${catPerf.length?`<div class="stats-sub">Απόδοση ανά κατηγορία</div>
     <div class="cust-line" style="margin-top:0">Στόχος: <b>${fmtMoney(hourRate)}/ώρα</b>. Υπολογισμένο από όσα προϊόντα έχουν μετρημένο χρόνο.</div>
     ${catPerf.map(c=>`<div class="fbrow"><div class="fbrow-l"><span>${esc(c.cat)} <span style="color:var(--muted)">· ${c.n} ${c.n===1?"κομμάτι":"κομμάτια"} · ${fmtDur(c.sec)}</span></span>
       <span class="fbrow-c" style="color:${c.rate>=hourRate?'#2c6e49':(c.rate>=hourRate*0.6?'#8a6a2e':'#b54b3a')}">${fmtMoney(c.rate)}/ώρα</span></div>
       <div class="track"><span class="fill" style="width:${Math.min(100,Math.round(c.rate/Math.max(hourRate,0.01)*100))}%;background:${c.rate>=hourRate?'#2c6e49':(c.rate>=hourRate*0.6?'#c9922e':'#b54b3a')}"></span></div></div>`).join("")}`:""}
+
+    ${collList.length>1?`<div class="stats-sub">Collections (${now.getFullYear()})</div>
+    ${collList.map(c=>`<div class="fbrow"><div class="fbrow-l"><span>${esc(c.coll)} <span style="color:var(--muted)">· ${c.units} ${c.units===1?"κομμάτι":"κομμάτια"}</span></span>
+      <span class="fbrow-c">${fmtMoney(c.rev)}${c.sec>0?` · ${fmtMoney(c.net/(c.sec/3600))}/ώρα`:""}</span></div>
+      <div class="track"><span class="fill" style="width:${Math.round(c.rev/collList[0].rev*100)}%"></span></div></div>`).join("")}`:""}
+
+    ${chan.whole.rev>0?`<div class="stats-sub">Λιανική / Χονδρική (${now.getFullYear()})</div>
+    <div class="split-bar"><div class="split-seg" style="width:${Math.round(chan.retail.rev/chanTotal*100)}%;background:var(--ink)"></div>
+      <div class="split-seg" style="width:${Math.round(chan.whole.rev/chanTotal*100)}%;background:#2f5d8a"></div></div>
+    <div class="split-leg"><span>Λιανική <b>${fmtMoney(chan.retail.rev)}</b> · ${chan.retail.n}</span>
+      <span>Χονδρική <b style="color:#2f5d8a">${fmtMoney(chan.whole.rev)}</b> · ${chan.whole.n}</span></div>
+    ${(chan.retail.costed>0||chan.whole.costed>0)?`<div class="cust-line" style="margin-top:8px">Περιθώριο: λιανική <b>${chan.retail.costed>0?Math.round((chan.retail.costed-chan.retail.cost)/chan.retail.costed*100)+"%":"—"}</b> · χονδρική <b>${chan.whole.costed>0?Math.round((chan.whole.costed-chan.whole.cost)/chan.whole.costed*100)+"%":"—"}</b></div>`:""}`:""}
 
     ${topProducts.length?`<div class="stats-sub">Τι πουλάει</div>
     ${topProducts.map(p=>`<div class="fbrow"><div class="fbrow-l"><span>${esc(p.name)}</span>
@@ -2716,7 +2769,7 @@ function customerStats(){
     const k=custKey(o); if(!k) return;
     const t=o.created_at?new Date(o.created_at).getTime():0;
     const st=g[k]=g[k]||{key:k,name:o.customer_name||"—",anyId:o.id,n:0,spent:0,paid:0,items:0,first:t||Infinity,last:0,phone:o.customer_phone||"",auto:false,shop:false};
-    if(isWholesale(o)) st.shop=true;
+    if(isWholesale(o)){ st.shop=true; if(o.deal_type==="consignment") st.onShelf=(st.onShelf||0)+wTotals(o).left; }
     st.n++;
     const val=isWholesale(o) ? wTotals(o).due : (Number(o.price)||0);
     st.spent+=val; st.paid+=Number(o.amount_paid)||0;
@@ -2764,27 +2817,49 @@ function renderWholesale(){
     return;
   }
   // σύνοψη
-  let totVal=0, totDue=0, onShelf=0, shops=new Set();
-  list.forEach(o=>{ const t=wTotals(o); totVal+=t.value; shops.add(normText(o.customer_name||""));
+  let totVal=0, totDue=0, onShelf=0, shopSet=new Set();
+  list.forEach(o=>{ const t=wTotals(o); totVal+=t.value; shopSet.add(normText(o.customer_name||""));
     const paid=Number(o.amount_paid)||0; totDue+=Math.max(0,t.due-paid);
     if(o.deal_type==="consignment") onShelf+=t.left; });
   html+=`<div class="stat-grid" style="margin-bottom:16px">
-    <div class="stat dark"><div class="n">${shops.size}</div><div class="l">Καταστήματα</div></div>
+    <div class="stat dark"><div class="n">${shopSet.size}</div><div class="l">Καταστήματα</div></div>
     <div class="stat"><div class="n" style="font-size:20px">${fmtMoney(totVal)}</div><div class="l">Αξία παραδόσεων</div></div>
     ${onShelf?`<div class="stat"><div class="n">${onShelf}</div><div class="l">Σε ράφι καταστήματος</div></div>`:""}
     ${totDue>0?`<div class="stat"><div class="n" style="font-size:20px">${fmtMoney(totDue)}</div><div class="l">Οφειλές</div></div>`:""}
   </div>`;
 
-  html+=list.map(o=>{
+  // ---- ομαδοποίηση ανά κατάστημα ----
+  const shops={};
+  list.forEach(o=>{ const k=normText(o.customer_name||"—")||"—";
+    (shops[k]=shops[k]||{name:o.customer_name||"—", rows:[], value:0, owed:0, left:0, last:0}).rows.push(o); });
+  Object.values(shops).forEach(sh=>{
+    sh.rows.forEach(o=>{ const t=wTotals(o), paid=Number(o.amount_paid)||0;
+      sh.value+=t.value; sh.owed+=Math.max(0,t.due-paid); sh.left+=(o.deal_type==="consignment"?t.left:0);
+      const d=o.created_at?new Date(o.created_at).getTime():0; if(d>sh.last) sh.last=d; });
+  });
+  const shopList=Object.values(shops).sort((a,b)=>b.last-a.last);
+
+  html+=shopList.map(sh=>`<div class="w-shop-h">
+      <div><div class="w-shop-n">${esc(sh.name)}</div>
+        <div class="w-shop-s">${sh.rows.length} ${sh.rows.length===1?"παράδοση":"παραδόσεις"} · ${fmtMoney(sh.value)}${sh.left?` · <b>${sh.left}</b> στο ράφι`:""}${sh.owed>0?` · <b style="color:#8a5a1e">${fmtMoney(sh.owed)}</b> οφειλή`:""}</div></div>
+      <button class="btn ghost sm" onclick="newWholesaleFor('${sh.rows[0].id}')">📦 Νέα</button>
+    </div>` + sh.rows.map(o=>{
     const t=wTotals(o), paid=Number(o.amount_paid)||0, owed=Math.max(0,Math.round((t.due-paid)*100)/100);
     const cons=o.deal_type==="consignment";
     const its=wItems(o).map(it=>`<div class="w-item"><span>${esc(it.name)}${it.color?` · ${esc(it.color)}`:""}</span>
       <span class="w-q">×${it.qty}${cons&&(it.sold||it.returned)?` <span style="color:var(--muted)">(${it.sold||0} πουλ. · ${it.returned||0} πίσω)</span>`:""}</span></div>`).join("");
     return `<div class="w-card">
       <div class="w-head">
-        <div><div class="w-shop">${esc(o.customer_name||"—")}</div>
-          <div class="w-meta">${o.created_at?fmtMonthDate(o.created_at):""} · ${cons?"παρακαταθήκη":"πληρωμή με την παράδοση"}${o.order_number?" · "+esc(o.order_number):""}</div></div>
-        <span class="mm-pill" style="${owed>0?'background:#fdf6ea;color:#8a5a1e;border-color:#e4d9c2':'background:#eaf2ec;color:#2c6e49;border-color:#c9e0d2'}">${owed>0?fmtMoney(owed)+" οφειλή":"εξοφλημένη"}</span>
+        <div><div class="w-meta" style="margin-top:0;font-size:12px;color:var(--ink-soft)">${o.created_at?fmtMonthDate(o.created_at):""} · ${cons?"παρακαταθήκη":"πληρωμή με την παράδοση"}${o.order_number?" · "+esc(o.order_number):""}</div></div>
+        <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex:none">
+          <span class="mm-pill" style="${owed>0?'background:#fdf6ea;color:#8a5a1e;border-color:#e4d9c2':'background:#eaf2ec;color:#2c6e49;border-color:#c9e0d2'}">${owed>0?fmtMoney(owed)+" οφειλή":"εξοφλημένη"}</span>
+          ${(function(){
+            if(!cons || t.left<=0 || !o.created_at) return "";
+            const d=Math.floor((Date.now()-new Date(o.created_at))/86400000);
+            if(d<45) return "";
+            return `<span class="mm-pill" style="background:#fbeceb;color:#b54b3a;border-color:#f0d3cf">${t.left} στο ράφι ${d} μέρες</span>`;
+          })()}
+        </div>
       </div>
       <div class="w-items">${its}</div>
       <div class="w-foot">
@@ -2796,8 +2871,19 @@ function renderWholesale(){
         </div>
       </div>
     </div>`;
-  }).join("");
+  }).join("")).join("");
   box.innerHTML=html;
+}
+function newWholesaleFor(refId){
+  const ref=ordersCache.find(o=>o.id===refId); if(!ref) return;
+  returnTab="wholesale";
+  openOrderModal();
+  document.getElementById("fKind").value="wholesale";
+  document.getElementById("fDeal").value=ref.deal_type||"paid";
+  onKindChange();
+  const sp=splitName(ref.customer_name);
+  document.getElementById("fName").value=ref.customer_name||"";
+  if(document.getElementById("fLast")) document.getElementById("fLast").value="";
 }
 function newWholesale(){
   returnTab="wholesale";
@@ -2886,7 +2972,7 @@ function renderCustomers(){
   <div class="tabsw" style="margin-bottom:16px;flex-wrap:wrap">
     <button class="tb ${custFilter==='all'?'sel':''}" onclick="setCustFilter('all')">Όλοι</button>
     <button class="tb ${custFilter==='repeat'?'sel':''}" onclick="setCustFilter('repeat')">Επαναλαμβανόμενοι</button>
-    ${nShops?`<button class="tb ${custFilter==='retail'?'sel':''}" onclick="setCustFilter('retail')">Λιανική</button>`:""}
+    ${nShops?`<button class="tb ${custFilter==='retail'?'sel':''}" onclick="setCustFilter('retail')">Λιανική (${list.length-nShops})</button>`:""}
     ${nShops?`<button class="tb ${custFilter==='shops'?'sel':''}" onclick="setCustFilter('shops')">Καταστήματα (${nShops})</button>`:""}
     ${nOwed?`<button class="tb ${custFilter==='owed'?'sel':''}" onclick="setCustFilter('owed')">Ανεξόφλητα (${nOwed})</button>`:""}
   </div>`;
@@ -2898,7 +2984,8 @@ function renderCustomers(){
       <button class="cc-main" onclick="openCustomer('${c.anyId}')">
         <div style="flex:1;min-width:0">
           <div class="cc-n">${esc(c.name)}${c.n>1?` <span class="mm-pill" style="background:#f3efe6;color:#8a6a2e;border-color:#e4d9c2">${c.n}×</span>`:""}${c.shop?` <span class="mm-pill" style="background:#eef3f8;color:#2f5d8a;border-color:#cfe0f0">κατάστημα</span>`:""}${c.auto?` <span class="mm-pill" title="Ενώθηκαν αυτόματα" style="background:var(--stone);color:var(--muted);border-color:var(--line)">auto</span>`:""}</div>
-          <div class="cc-s">${fmtMoney(c.spent)} σύνολο · ${c.items} ${c.items===1?"προϊόν":"προϊόντα"}${days!=null?` · ${fmtAgo(days)}`:""}</div>
+          <div class="cc-s">${fmtMoney(c.spent)} ${c.shop?"πουλημένα":"σύνολο"} · ${c.items} ${c.items===1?"προϊόν":"προϊόντα"}${days!=null?` · ${fmtAgo(days)}`:""}</div>
+          ${c.onShelf?`<div class="cc-s" style="color:#2f5d8a"><b>${c.onShelf}</b> ${c.onShelf===1?"κομμάτι":"κομμάτια"} στο ράφι του</div>`:""}
           ${c.auto&&c.variants.length>1?`<div class="cc-s" style="color:#8a6a2e">ως: ${c.variants.map(esc).join(" / ")}</div>`:""}
           ${owed>0?`<div class="cc-s" style="color:#8a5a1e">Ανεξόφλητα ${fmtMoney(owed)}</div>`:""}
         </div>
@@ -3491,6 +3578,15 @@ function refreshPriceHints(){
     const cur=parseMoney(row.querySelector(".ie-price").value);
     if(!name){ if(box) box.remove(); return; }
     const chips=[];
+    const spec=(modelCat||[]).find(x=>normText(x.name)===normText(name));
+    if(isWholeMode()){
+      if(spec && spec.wholesale!=null && cur!==spec.wholesale)
+        chips.push(`<button type="button" class="ph-c" onclick="setRowPrice(${idx},${spec.wholesale})">χονδρική ${fmtMoney(spec.wholesale)}</button>`);
+      if(spec && spec.price!=null && cur!==spec.price)
+        chips.push(`<button type="button" class="ph-c" onclick="setRowPrice(${idx},${spec.price})">λιανική ${fmtMoney(spec.price)}</button>`);
+      if(!box){ box=document.createElement("div"); box.className="price-hint"; row.appendChild(box); }
+      box.innerHTML=chips.join(""); return;
+    }
     if(info){
       const L=priceLabels(info.cat);
       if(cur!==info.base) chips.push(`<button type="button" class="ph-c" onclick="setRowPrice(${idx},${info.base})">${L.base} ${fmtMoney(info.base)}</button>`);
@@ -3506,8 +3602,10 @@ function refreshPriceHints(){
 function applyModelToRow(mid, row){
   const m=(modelCat||[]).find(x=>x.id===mid); if(!m) return;
   const pr=row.querySelector(".ie-price");
-  if(pr && m.price!=null && (!pr.value || pr.dataset.auto==="1")){
-    pr.value=m.price; pr.dataset.auto="1";           // αυτόματη τιμή -> ενημερώνεται σε αλλαγή προϊόντος
+  const useW = isWholeMode() && m.wholesale!=null;
+  const auto = useW ? m.wholesale : m.price;
+  if(pr && auto!=null && (!pr.value || pr.dataset.auto==="1")){
+    pr.value=auto; pr.dataset.auto="1";           // αυτόματη τιμή -> ενημερώνεται σε αλλαγή προϊόντος
   }
   if(pr) pr.oninput=()=>{ pr.dataset.auto=""; updateMoneyHint(); };
   updateMoneyHint();
@@ -4366,6 +4464,7 @@ async function loadSettings(){
     custInfo  = map.cust_info  || {};
     if(map.settings && map.settings.hourRate!=null) hourRate=Number(map.settings.hourRate)||12;
     timer = map[meKey()] || null;
+    _flags = map.flags || {};
     modelCat  = Array.isArray(map.models) ? map.models : [];
   }catch(e){ eventsOn={}; custLinks={}; custInfo={}; modelCat=[]; }
   renderTimerBar();
@@ -4381,8 +4480,19 @@ async function loadSettings(){
 }
 async function ensureAnasa(){
   let n=0;
+  // επιδιόρθωση: παλαιότερη έκδοση είχε βάλει τα πάντα στην ANASA
+  if(!settingsFlag("collFix2")){
+    PRICE_LIST.forEach(p=>{
+      const ex=(modelCat||[]).find(m=>normText(m.name)===normText(p.name));
+      if(!ex) return;
+      if(ex.collection!==p.coll){ ex.collection=p.coll; ex.anasa=(p.coll==="ANASA"); n++; }
+      const img=imgFor(p.name);
+      if(img && !ex.image_url){ ex.image_url=img; n++; }
+    });
+    markSettingsFlag("collFix2");
+  }
   PRICE_LIST.forEach(p=>{
-    const img=(ANASA.find(a=>normText(a.name)===normText(p.name))||{}).img||null;
+    const img=imgFor(p.name);
     const ex=(modelCat||[]).find(m=>normText(m.name)===normText(p.name));
     if(ex){
       // ενημέρωσε τιμές από τον επίσημο τιμοκατάλογο
@@ -4391,9 +4501,10 @@ async function ensureAnasa(){
       if(!ex.cat){ ex.cat=p.cat; n++; }
       if(ex.dep===undefined){ ex.dep=p.dep; n++; }
       if(!ex.image_url && img){ ex.image_url=img; n++; }
+      if(!ex.collection){ ex.collection=p.coll; ex.anasa=(p.coll==="ANASA"); n++; }
     }else{
       modelCat.push({id:"m"+Math.random().toString(36).slice(2,9), name:p.name, price:p.base, price2:p.extra,
-        materials:[], image_url:img, anasa:true, cat:p.cat, dep:p.dep, collection:"ANASA"});
+        materials:[], image_url:img, anasa:(p.coll==="ANASA"), cat:p.cat, dep:p.dep, collection:p.coll});
       n++;
     }
   });
@@ -4754,26 +4865,26 @@ async function delStock(){
 const PREMIUM_YARN = 7;
 const CUSTOM_FEE   = 20;
 const PRICE_LIST = [
-  {name:"Grace",         cat:"Crochet",     base:45, extra:50, dep:false},
-  {name:"Bella",         cat:"Crochet",     base:50, extra:55, dep:false},
-  {name:"Kelly",         cat:"Crochet",     base:40, extra:50, dep:false},
-  {name:"Nicole",        cat:"Crochet",     base:50, extra:55, dep:false},
-  {name:"Sarah",         cat:"Crochet",     base:40, extra:45, dep:false},
-  {name:"Zoe",           cat:"Crochet",     base:45, extra:50, dep:false},
-  {name:"Rosie",         cat:"Crochet",     base:35, extra:40, dep:false},
-  {name:"Heart Basket",  cat:"Crochet",     base:15, extra:null, dep:false},
-  {name:"Laluna",        cat:"Beaded",      base:70, extra:80, dep:true},
-  {name:"Perla",         cat:"Beaded",      base:85, extra:95, dep:true},
-  {name:"Diana",         cat:"Beaded",      base:60, extra:70, dep:true},
-  {name:"Alice",         cat:"Beaded",      base:75, extra:null, dep:true},
-  {name:"Cardholder",    cat:"Beaded",      base:25, extra:null, dep:false},
-  {name:"Beaded Heart",  cat:"Beaded",      base:8,  extra:null, dep:false},
-  {name:"Hug",           cat:"Marshmallow", base:35, extra:null, dep:true},
-  {name:"Loopi",         cat:"Marshmallow", base:45, extra:null, dep:true},
-  {name:"Softy",         cat:"Marshmallow", base:35, extra:null, dep:true},
-  {name:"Mellow",        cat:"Marshmallow", base:45, extra:null, dep:true},
-  {name:"Blair",         cat:"Puffy",       base:30, extra:null, dep:true},
-  {name:"Sophie",        cat:"Puffy",       base:28, extra:null, dep:true}
+  {name:"Grace",         cat:"Crochet",     base:45, extra:50, dep:false, coll:"ANASA"},
+  {name:"Bella",         cat:"Crochet",     base:50, extra:55, dep:false, coll:"ANASA"},
+  {name:"Kelly",         cat:"Crochet",     base:40, extra:50, dep:false, coll:"ANASA"},
+  {name:"Nicole",        cat:"Crochet",     base:50, extra:55, dep:false, coll:"ANASA"},
+  {name:"Sarah",         cat:"Crochet",     base:40, extra:45, dep:false, coll:"ANTHESIS"},
+  {name:"Zoe",           cat:"Crochet",     base:45, extra:50, dep:false, coll:"ANTHESIS"},
+  {name:"Rosie",         cat:"Crochet",     base:35, extra:40, dep:false, coll:"ANTHESIS"},
+  {name:"Heart Basket",  cat:"Crochet",     base:15, extra:null, dep:false, coll:"ANASA"},
+  {name:"Laluna",        cat:"Beaded",      base:70, extra:80, dep:true, coll:"ANASA"},
+  {name:"Perla",         cat:"Beaded",      base:85, extra:95, dep:true, coll:"ANASA"},
+  {name:"Diana",         cat:"Beaded",      base:60, extra:70, dep:true, coll:"ANTHESIS"},
+  {name:"Alice",         cat:"Beaded",      base:75, extra:null, dep:true, coll:"ANTHESIS"},
+  {name:"Cardholder",    cat:"Beaded",      base:25, extra:null, dep:false, coll:"ANASA"},
+  {name:"Beaded Heart",  cat:"Beaded",      base:8,  extra:null, dep:false, coll:"ANASA"},
+  {name:"Hug",           cat:"Marshmallow", base:35, extra:null, dep:true, coll:"ANASA"},
+  {name:"Loopi",         cat:"Marshmallow", base:45, extra:null, dep:true, coll:"ANASA"},
+  {name:"Softy",         cat:"Marshmallow", base:35, extra:null, dep:true, coll:"ANTHESIS"},
+  {name:"Mellow",        cat:"Marshmallow", base:45, extra:null, dep:true, coll:"ANTHESIS"},
+  {name:"Blair",         cat:"Puffy",       base:30, extra:null, dep:true, coll:"ANTHESIS"},
+  {name:"Sophie",        cat:"Puffy",       base:28, extra:null, dep:true, coll:"ANTHESIS"}
 ];
 function priceLabels(cat){
   if(cat==="Beaded") return {base:"ακρυλικές", extra:"γυάλινες"};
@@ -4796,6 +4907,15 @@ const ANASA = [
   {name:"Heart Keychain", cat:"Accessories",    img:"https://i.imgur.com/U2lZbn4.png"},
   {name:"Knit Basket",    cat:"Accessories",    img:"https://i.imgur.com/VIlFAAc.png"}
 ];
+const IMG_ALIAS = { "heart basket":"Knit Basket", "beaded heart":"Heart Keychain" };
+function imgFor(name){
+  const n=normText(name||"");
+  const alias=IMG_ALIAS[String(name||"").trim().toLowerCase()];
+  const hit = (alias && ANASA.find(a=>normText(a.name)===normText(alias)))
+           || ANASA.find(a=>normText(a.name)===n)
+           || ANASA.find(a=>n && n.includes(normText(a.name)));
+  return hit ? hit.img : null;
+}
 function anasaOf(name){ const n=normText(name||""); return n ? ANASA.find(a=>normText(a.name)===n || n.includes(normText(a.name))) : null; }
 
 /* ============ ΧΡΟΝΟΜΕΤΡΟ ΕΡΓΑΣΙΑΣ ============ */
@@ -5042,6 +5162,9 @@ function renderModels(){
       <div class="ms-s" style="margin-top:8px">Οι τιμές έρχονται από τις παραγγελίες σου. Μπορείς να τις αλλάξεις μετά.</div>`;
     return html;
   }
+  const anyTime=ordersCache.some(o=>getItems(o).some(it=>itemSec(it)>0));
+  if(!anyTime) html+=`<div class="empty-hint" style="margin-bottom:12px">Μόλις μετρήσεις χρόνο σε μια παραγγελία, κάθε προϊόν εδώ θα δείχνει
+    <b>πόση ώρα θέλει</b>, <b>πόσο αποδίδει</b> (€/ώρα) και <b>τι τιμή</b> χρειάζεται για τον στόχο σου.</div>`;
   const bs=bestSeller();
   const byColl={};
   modelCat.forEach(m=>{ const c=collOf(m); (byColl[c]=byColl[c]||[]).push(m); });
@@ -5053,7 +5176,7 @@ function renderModels(){
       <div class="si-info"><div class="si-name">${esc(m.name)}${bs&&bs.name===m.name?' <span class="mm-pill" style="background:#f3efe6;color:#8a6a2e;border-color:#e4d9c2">best seller</span>':''}</div>
         <div class="si-meta">${(function(){const L=priceLabels(m.cat); return m.price!=null
             ? `${L.base} ${fmtMoney(m.price)}${m.price2!=null?` · ${L.extra} ${fmtMoney(m.price2)}`:""}`
-            : "χωρίς τιμή";})()} · ${sl.n?`<b style="color:var(--ink)">${sl.n}</b> ${sl.n===1?"πώληση":"πωλήσεις"} · ${fmtMoney(sl.rev)}`:"καμία πώληση"}${(function(){
+            : "χωρίς τιμή";})()}${m.wholesale!=null?` <span style="color:#2f5d8a">· χονδρική ${fmtMoney(m.wholesale)}</span>`:""} · ${sl.n?`<b style="color:var(--ink)">${sl.n}</b> ${sl.n===1?"πώληση":"πωλήσεις"} · ${fmtMoney(sl.rev)}`:"καμία πώληση"}${(function(){
         const st=modelStats(m.name);
         if(st.avgSec==null) return "";
         const col=st.rate>=hourRate?"#2c6e49":(st.rate>=hourRate*0.6?"#8a6a2e":"#b54b3a");
@@ -5132,6 +5255,9 @@ function openSales(name){
 }
 function closeSales(){ _ovClose("salesModal"); }
 let editingModelId=null;
+let _flags=null;
+function settingsFlag(k){ return !!(_flags && _flags[k]); }
+function markSettingsFlag(k){ _flags=Object.assign({}, _flags||{}, {[k]:true}); saveSetting("flags", _flags, true); }
 function collections(){
   const set=new Set(["ANASA"]);
   (modelCat||[]).forEach(m=>{ if(m.collection) set.add(m.collection); else if(m.anasa) set.add("ANASA"); });
@@ -5158,6 +5284,7 @@ function openModelModal(id){
   document.getElementById("mName").value=m?m.name:"";
   document.getElementById("mPrice").value=m&&m.price!=null?m.price:"";
   document.getElementById("mImg").value=m?(m.image_url||""):"";
+  document.getElementById("mWhole").value=(m&&m.wholesale!=null)?m.wholesale:"";
   document.getElementById("modelDelBtn").classList.toggle("hidden", !id);
   const _ms = m ? modelStats(m.name) : null;
   const _mb = document.getElementById("mStats");
@@ -5213,6 +5340,8 @@ async function saveModel(){
   const rec={ id: editingModelId || ("m"+Math.random().toString(36).slice(2,9)),
     name, price: parseMoney(document.getElementById("mPrice").value),
     image_url: document.getElementById("mImg").value.trim()||null, materials: modelMats,
+    wholesale: parseMoney(document.getElementById("mWhole").value),
+    price2: prev?prev.price2:null,
     collection: coll||null, anasa: coll==="ANASA" ? true : (prev?!!prev.anasa && coll==="ANASA":false),
     cat: prev?prev.cat:null };
   if(editingModelId) modelCat = modelCat.map(m=>m.id===editingModelId?rec:m);
