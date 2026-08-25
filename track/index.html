@@ -3196,6 +3196,19 @@ function renderOrders(){
             ${o.order_number?`<span>${esc(o.order_number)}</span>`:""}
             ${o.created_at?`<span>${new Date(o.created_at).toLocaleDateString("el-GR",{day:"2-digit",month:"2-digit",year:"numeric"})}</span>`:""}
             <span>${pickup?'Παραλαβή':'Courier'}</span>
+            ${(function(){
+              // ημερομηνία παράδοσης: η κοντινότερη από τα προϊόντα που δεν έχουν ολοκληρωθεί
+              const open=getItems(o).filter(it=>!itemDone(it) && it.eta);
+              if(!open.length) return "";
+              const eta=open.map(it=>it.eta).sort()[0];
+              const d=new Date(eta+(String(eta).length<=10?"T00:00:00":""));
+              if(isNaN(d)) return "";
+              const days=Math.ceil((d-new Date().setHours(0,0,0,0))/86400000);
+              const col = days<0 ? "#b54b3a" : (days<=3 ? "#8a5a1e" : "var(--muted)");
+              const when = days<0 ? `${Math.abs(days)} ${Math.abs(days)===1?"μέρα":"μέρες"} πίσω`
+                        : days===0 ? "σήμερα" : days===1 ? "αύριο" : `σε ${days} μέρες`;
+              return `<span style="color:${col}" title="ημερομηνία παράδοσης">🚚 ${fmtDateShort(d)} · ${when}</span>`;
+            })()}
             ${workSec(o)>0?`<span title="χρόνος εργασίας">⏱ ${fmtDur(workSec(o))}</span>`:""}
           </div>
           <div class="r-pills">
