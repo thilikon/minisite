@@ -3912,14 +3912,16 @@ async function saveOrder(){
       const fullyPaid = payload.price!=null && payload.amount_paid!=null && Number(payload.amount_paid)>=Number(payload.price)-0.01;
       payload.paid_at = fullyPaid ? ((prevO && prevO.paid_at) || new Date().toISOString()) : null;
     }
-    // μάθε τιμές — ΜΟΝΟ από λιανική (η χονδρική έχει χαμηλότερες τιμές)
+    // μάθε τιμές: η λιανική στο «price», η χονδρική στο «wholesale» — χωρίς να πατιέται ό,τι έχει οριστεί
     try{
-      if(isWholeMode()) throw 0;
+      const whole=isWholeMode();
       let changed=false;
       items.forEach(it=>{
         if(it.price==null) return;
-        const m=(modelCat||[]).find(x=>normText(x.name)===normText(it.name));
-        if(m && (m.price==null)){ m.price=Number(it.price); changed=true; }
+        const m=(modelCat||[]).find(x=>normText(x.name)===normText(canonName(it.name)));
+        if(!m) return;
+        if(whole){ if(m.wholesale==null){ m.wholesale=Number(it.price); changed=true; } }
+        else     { if(m.price==null){     m.price=Number(it.price);     changed=true; } }
       });
       if(changed) saveSetting("models", modelCat, true);
     }catch(e){}
