@@ -4480,6 +4480,12 @@ async function loadSettings(){
 }
 async function ensureAnasa(){
   let n=0;
+  // μετονομασία παλιών ονομάτων
+  Object.entries(NAME_ALIAS).forEach(([oldN,newN])=>{
+    const ex=(modelCat||[]).find(m=>String(m.name||"").trim().toLowerCase()===oldN);
+    if(ex && !(modelCat||[]).some(m=>normText(m.name)===normText(newN))){ ex.name=newN; ex.image_url=ex.image_url||imgFor(newN); n++; }
+  });
+  const gone=(_flags&&_flags.removed)||[];
   // επιδιόρθωση: παλαιότερη έκδοση είχε βάλει τα πάντα στην ANASA
   if(!settingsFlag("collFix2")){
     PRICE_LIST.forEach(p=>{
@@ -4492,6 +4498,7 @@ async function ensureAnasa(){
     markSettingsFlag("collFix2");
   }
   PRICE_LIST.forEach(p=>{
+    if(gone.includes(normText(p.name))) return;    // την έσβησε — δεν την ξαναβάζουμε
     const img=imgFor(p.name);
     const ex=(modelCat||[]).find(m=>normText(m.name)===normText(p.name));
     if(ex){
@@ -4872,13 +4879,13 @@ const PRICE_LIST = [
   {name:"Sarah",         cat:"Crochet",     base:40, extra:45, dep:false, coll:"ANTHESIS"},
   {name:"Zoe",           cat:"Crochet",     base:45, extra:50, dep:false, coll:"ANTHESIS"},
   {name:"Rosie",         cat:"Crochet",     base:35, extra:40, dep:false, coll:"ANTHESIS"},
-  {name:"Heart Basket",  cat:"Crochet",     base:15, extra:null, dep:false, coll:"ANASA"},
+  {name:"Knit Basket",   cat:"Crochet",     base:15, extra:null, dep:false, coll:"ANASA"},
   {name:"Laluna",        cat:"Beaded",      base:70, extra:80, dep:true, coll:"ANASA"},
   {name:"Perla",         cat:"Beaded",      base:85, extra:95, dep:true, coll:"ANASA"},
   {name:"Diana",         cat:"Beaded",      base:60, extra:70, dep:true, coll:"ANTHESIS"},
   {name:"Alice",         cat:"Beaded",      base:75, extra:null, dep:true, coll:"ANTHESIS"},
   {name:"Cardholder",    cat:"Beaded",      base:25, extra:null, dep:false, coll:"ANASA"},
-  {name:"Beaded Heart",  cat:"Beaded",      base:8,  extra:null, dep:false, coll:"ANASA"},
+  {name:"Heart Keychain",cat:"Beaded",      base:8,  extra:null, dep:false, coll:"ANASA"},
   {name:"Hug",           cat:"Marshmallow", base:35, extra:null, dep:true, coll:"ANASA"},
   {name:"Loopi",         cat:"Marshmallow", base:45, extra:null, dep:true, coll:"ANASA"},
   {name:"Softy",         cat:"Marshmallow", base:35, extra:null, dep:true, coll:"ANTHESIS"},
@@ -4890,7 +4897,7 @@ function priceLabels(cat){
   if(cat==="Beaded") return {base:"ακρυλικές", extra:"γυάλινες"};
   return {base:"κλασική", extra:"+ χρώμα"};
 }
-function priceInfo(name){ const n=normText(name||""); return PRICE_LIST.find(p=>normText(p.name)===n)||null; }
+function priceInfo(name){ const n=normText(canonName(name)); return PRICE_LIST.find(p=>normText(p.name)===n)||null; }
 function needsDeposit(name){ const p=priceInfo(name); return !!(p&&p.dep); }
 
 /* ---- Φωτογραφίες συλλογής ANASA (mini-site) ---- */
@@ -4907,16 +4914,17 @@ const ANASA = [
   {name:"Heart Keychain", cat:"Accessories",    img:"https://i.imgur.com/U2lZbn4.png"},
   {name:"Knit Basket",    cat:"Accessories",    img:"https://i.imgur.com/VIlFAAc.png"}
 ];
-const IMG_ALIAS = { "heart basket":"Knit Basket", "beaded heart":"Heart Keychain" };
+const NAME_ALIAS = { "heart basket":"Knit Basket", "beaded heart":"Heart Keychain" };
+function canonName(name){
+  const k=String(name||"").trim().toLowerCase();
+  return NAME_ALIAS[k] || name;
+}
 function imgFor(name){
-  const n=normText(name||"");
-  const alias=IMG_ALIAS[String(name||"").trim().toLowerCase()];
-  const hit = (alias && ANASA.find(a=>normText(a.name)===normText(alias)))
-           || ANASA.find(a=>normText(a.name)===n)
-           || ANASA.find(a=>n && n.includes(normText(a.name)));
+  const n=normText(canonName(name));
+  const hit = ANASA.find(a=>normText(a.name)===n) || ANASA.find(a=>n && n.includes(normText(a.name)));
   return hit ? hit.img : null;
 }
-function anasaOf(name){ const n=normText(name||""); return n ? ANASA.find(a=>normText(a.name)===n || n.includes(normText(a.name))) : null; }
+function anasaOf(name){ const n=normText(canonName(name)); return n ? ANASA.find(a=>normText(a.name)===n || n.includes(normText(a.name))) : null; }
 
 /* ============ ΧΡΟΝΟΜΕΤΡΟ ΕΡΓΑΣΙΑΣ ============ */
 function fmtDur(sec){
@@ -5188,8 +5196,6 @@ function renderModels(){
       </div>
     </div>`;
   }).join("")).join("");
-  const miss=ANASA.filter(a=>!modelCat.some(m=>normText(m.name)===normText(a.name))).length;
-  if(miss) html+=`<div style="margin-top:12px"><button class="btn solid" style="width:100%" onclick="addAnasaNow()">Φόρτωσε τη συλλογή ANASA (${miss} λείπουν)</button></div>`;
   html+=`<div style="margin-top:10px"><button class="btn ghost" style="width:100%" onclick="openModelModal()">+ Νέο προϊόν</button></div>`;
   return html;
 }
@@ -5351,6 +5357,12 @@ async function saveModel(){
 }
 async function delModel(){
   if(!editingModelId || !confirm("Διαγραφή προδιαγραφής ;")) return;
+  const del=modelCat.find(m=>m.id===editingModelId);
+  if(del){
+    const gone=[...(((_flags&&_flags.removed)||[])), normText(del.name)];
+    _flags=Object.assign({}, _flags||{}, {removed:[...new Set(gone)]});
+    saveSetting("flags", _flags, true);
+  }
   modelCat = modelCat.filter(m=>m.id!==editingModelId);
   await saveSetting("models", modelCat, true);
   closeModelModal(); renderStock(); adminFlash("Διαγράφηκε ✓");
