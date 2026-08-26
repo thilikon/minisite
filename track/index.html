@@ -1317,7 +1317,7 @@ function fmtMonthDate(v){
   if(isNaN(d)) return "";
   return `${d.getDate()} ${GR_MONTHS[d.getMonth()]} ${String(d.getFullYear()).slice(2)}`;
 }
-function firstName(full){ return String(full||"").trim().split(/\s+/)[0] || ""; }
+function firstName(full){ const sp=splitName(full); return sp.first || sp.last || ""; }
 function fmtDateShort(v){
   try{
     const d = (v instanceof Date) ? v : new Date(typeof v==="string" && v.length<=10 ? v+"T00:00:00" : v);
@@ -3649,8 +3649,10 @@ function fullName(){
   return (a+" "+b).trim();
 }
 function splitName(full){
-  const parts=String(full||"").trim().split(/\s+/);
-  return { first: parts.shift()||"", last: parts.join(" ") };
+  const parts=String(full||"").trim().split(/\s+/).filter(Boolean);
+  if(parts.length<=1) return { first: parts[0]||"", last: "" };
+  const last=parts.pop();                    // επίθετο = τελευταία λέξη
+  return { first: parts.join(" "), last };   // «Χριστίνα & Νέλλη» + «Μακρή»
 }
 function onNameType(){
   const box=document.getElementById("nameSug"); if(!box) return;
@@ -3667,7 +3669,8 @@ function onNameType(){
 }
 function pickCustomer(orderId){
   const o=ordersCache.find(x=>x.id===orderId); if(!o) return;
-  const sp=splitName(o.customer_name);
+  const inf=custInfo[custKey(o)]||{};
+  const sp=(inf.first!=null||inf.last!=null) ? {first:inf.first||"", last:inf.last||""} : splitName(o.customer_name);
   document.getElementById("fName").value=sp.first;
   document.getElementById("fLast").value=sp.last;
   // τηλέφωνο από οποιαδήποτε παραγγελία του ίδιου πελάτη
@@ -4157,8 +4160,8 @@ function openCustEdit(){
   const info=custInfo[custKey(ref)]||{};
   const shown=document.getElementById("custName").textContent;
   const sp=splitName(shown);
-  document.getElementById("ceFirst").value=sp.first;
-  document.getElementById("ceLast").value=sp.last;
+  document.getElementById("ceFirst").value=(info.first!=null?info.first:sp.first);
+  document.getElementById("ceLast").value=(info.last!=null?info.last:sp.last);
   document.getElementById("cePhone").value = info.phone || (customerOrders(ref).map(o=>o.customer_phone).filter(Boolean).pop()||"");
   document.getElementById("ceNote").value = info.note || "";
   _ovOpen("custEditModal");
@@ -4170,7 +4173,9 @@ async function saveCustEdit(){
   const phone=document.getElementById("cePhone").value.trim();
   const note=document.getElementById("ceNote").value.trim();
   const newName=((document.getElementById("ceFirst").value||"").trim()+" "+(document.getElementById("ceLast").value||"").trim()).trim();
-  custInfo[k]={ phone: phone||null, note: note||null };
+  const first=(document.getElementById("ceFirst").value||"").trim();
+  const last=(document.getElementById("ceLast").value||"").trim();
+  custInfo[k]={ phone: phone||null, note: note||null, first: first||null, last: last||null };
   await saveSetting("cust_info", custInfo, true);
   if(phone) await propagatePhone(ref.customer_name, phone);
   // μετονομασία σε όλες τις παραγγελίες του πελάτη
