@@ -3713,11 +3713,20 @@ async function propagatePhone(name, phone){
 }
 function collectItems(){
   const out=[];
+  // κρατάμε ό,τι δεν επεξεργάζεται η φόρμα: χρόνο εργασίας, χρονοσημάνσεις σταδίων, παρακαταθήκη
+  const prev = editingId ? getItems(ordersCache.find(o=>o.id===editingId)||{}) : [];
   document.querySelectorAll("#itemsEditor .ie-item").forEach(row=>{
     const name=row.querySelector(".ie-name").value.trim();
     if(!name) return;
+    const id = row.dataset.id || newItemId();
+    const old = prev.find(x=>x.id===id) || {};
     out.push({
-      id: row.dataset.id || newItemId(),
+      ...(old.work_sec!=null?{work_sec:old.work_sec}:{}),
+      ...(old.stageAt?{stageAt:old.stageAt}:{}),
+      ...(old.sold!=null?{sold:old.sold}:{}),
+      ...(old.returned!=null?{returned:old.returned}:{}),
+      ...(old.sep!=null?{sep:old.sep}:{}),
+      id,
       name,
       price: parseMoney(row.querySelector(".ie-price").value),
       qty: Math.max(1, parseInt(row.querySelector(".ie-qty").value,10)||1),
@@ -5044,6 +5053,23 @@ function renderTimerBar(){
   if(_timerTick) clearInterval(_timerTick);
   if(timer.startedAt) _timerTick=setInterval(paint,1000);
 }
+async function setItemTime(orderId, itemId){
+  const o=ordersCache.find(x=>x.id===orderId); if(!o) return;
+  const it=getItems(o).find(x=>x.id===itemId); if(!it) return;
+  const cur=itemSec(it);
+  const v=prompt(`Χρόνος για «${it.name}» σε λεπτά${cur?` (τώρα ${fmtDur(cur)})`:""}:`, cur?Math.round(cur/60):"");
+  if(v===null) return;
+  const mins=Math.max(0, Math.round(parseMoney(v)||0));
+  const its=getItems(o).map(x=>x.id===itemId?{...x, work_sec:mins*60}:{...x});
+  try{
+    const res=await authFetch(REST + "/orders?id=eq."+o.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},
+      body:JSON.stringify({items:its})});
+    if(!res.ok) throw new Error();
+    o.items=its;
+    renderOrderTimer(); renderOrders(); renderStats(); updateMoneyHint();
+    adminFlash(mins?`Καταχωρήθηκαν ${fmtDur(mins*60)} ✓`:"Ο χρόνος μηδενίστηκε");
+  }catch(e){ adminFlash("Σφάλμα."); }
+}
 async function clearWork(id){
   const o=ordersCache.find(x=>x.id===id); if(!o) return;
   if(!confirm(`Να διαγραφεί ο καταγεγραμμένος χρόνος (${fmtDur(workSec(o))}) ;`)) return;
@@ -5078,7 +5104,8 @@ function renderOrderTimer(){
       ${run
         ? `<button type="button" class="btn ghost sm" onclick="timerPause()">⏸</button>
            <button type="button" class="btn solid sm" onclick="timerStop()">⏹</button>`
-        : `<button type="button" class="btn ${isCur?'solid':'ghost'} sm" onclick="timerStart('${o.id}','${it.id}')">▶ ${isCur?"Συνέχεια":""}</button>`}
+        : `<button type="button" class="btn ${isCur?'solid':'ghost'} sm" onclick="timerStart('${o.id}','${it.id}')">▶ ${isCur?"Συνέχεια":""}</button>
+           <button type="button" class="btn ghost sm" title="Καταχώρηση χρόνου με το χέρι" onclick="setItemTime('${o.id}','${it.id}')">✎</button>`}
     </div>`;
   }).join("");
 
