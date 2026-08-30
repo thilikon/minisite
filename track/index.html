@@ -3914,6 +3914,8 @@ function refreshPriceHints(){
     const info=priceInfo(name);
     const cur=parseMoney(row.querySelector(".ie-price").value);
     if(!name){ if(box) box.remove(); return; }
+    // έτοιμο κομμάτι από την αποθήκη ή event: η τιμή είναι δεδομένη, χωρίς επιλογές
+    if(row.dataset.fromStock || row.dataset.ev){ if(box) box.remove(); return; }
     const chips=[];
     const spec=(modelCat||[]).find(x=>normText(x.name)===normText(name));
     if(isWholeMode()){
