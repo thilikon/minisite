@@ -695,7 +695,7 @@
   .mix-banner::before,.mix-banner::after{content:'';position:absolute;width:20px;height:20px;border:1.5px dashed rgba(255,255,255,.4)}
   .mix-banner::before{top:9px;left:9px;border-right:none;border-bottom:none}
   .mix-banner::after{bottom:9px;right:9px;border-left:none;border-top:none}
-  .mix-banner .mix-logo{height:58px;width:auto;margin:0 auto 12px;display:block;filter:brightness(0) invert(1)}
+  .mix-banner .mix-logo{height:78px;width:auto;max-width:82%;object-fit:contain;margin:2px auto 14px;display:block;filter:brightness(0) invert(1)}
   .mix-banner.on-light .mix-logo{filter:none}
   .mix-banner.on-light::before,.mix-banner.on-light::after{border-color:rgba(20,20,20,.28)}
   .mix-banner.on-light .mix-pct{background:rgba(255,255,255,.55);border-color:currentColor}
@@ -918,6 +918,7 @@
     <div style="display:flex;justify-content:space-between;align-items:center;margin:4px 0 8px">
       <span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)">Προϊόντα</span>
       <button class="btn ghost sm" onclick="addItemRow()">+ Προσθήκη προϊόντος</button>
+      <button class="btn ghost sm" onclick="openReadyPicker()">📦 Από το ράφι</button>
     </div>
     <datalist id="modelList"></datalist>
     <div id="itemsEditor"></div>
@@ -1026,6 +1027,15 @@
     <div id="pickWorkTitle" style="font-size:13px;font-weight:600;margin-bottom:10px"></div>
     <div id="pickWorkBody"></div>
     <div style="margin-top:14px"><button class="btn ghost" style="width:100%" onclick="closePickWork()">Άκυρο</button></div>
+  </div>
+</div>
+
+<div id="readyModal" class="overlay hidden">
+  <div class="modal">
+    <div class="mh"><h2 class="serif">Από το ράφι</h2><button class="x" onclick="closeReadyPicker()">✕</button></div>
+    <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:12px">Διάλεξε έτοιμο κομμάτι για να μπει σε αυτή την παραγγελία. Θα αφαιρεθεί από την αποθήκη μόλις αποθηκεύσεις.</p>
+    <div id="readyBody"></div>
+    <div style="margin-top:14px"><button class="btn ghost" style="width:100%" onclick="closeReadyPicker()">Άκυρο</button></div>
   </div>
 </div>
 
@@ -1662,9 +1672,9 @@ function renderTracking(o){
     mb.style.setProperty("--ev-fg", fg);
     mb.classList.toggle("on-light", light);
     mb.innerHTML = `
-      ${ev.logo?`<img class="mix-logo" src="${ev.logo}" alt="">`:""}
-      <div class="mix-name">${esc(ev.name)}</div>
-      <div class="mix-tag">${esc(ev.tagline)}</div>
+      ${ev.logo
+        ? `<img class="mix-logo" src="${ev.logo}" alt="${esc(ev.name)}">`
+        : `<div class="mix-name">${esc(ev.name)}</div><div class="mix-tag">${esc(ev.tagline)}</div>`}
       <div class="mix-line">${esc(ev.line)}</div>
       ${pct?`<div class="mix-pct">−${pct}%</div>`:""}`;
     mb.classList.remove("hidden");
@@ -3800,6 +3810,8 @@ function addItemRow(item){
   row.querySelector(".ie-qty").value = item.qty && item.qty>1 ? item.qty : 1;
   row.querySelector(".ie-price").value=(item.price!=null?item.price:"");
   const _pick=row.querySelector(".ie-pick"); if(_pick){ _pick.dataset.val=item.name||""; }
+  if(item.ev) row.dataset.ev=item.ev;
+  if(item.from_stock) row.dataset.fromStock=item.from_stock;
   row.querySelector(".ie-color").value = item.color || item.details || "";
   const lblSel=row.querySelector(".ie-label");
   lblSel.value = (item.label==="Χρυσό"||item.label==="Ασημί") ? item.label : "";
@@ -4031,6 +4043,51 @@ async function propagatePhone(name, phone){
     }catch(e){}
   }
 }
+let pendingStock=[];   // έτοιμα προϊόντα που θα αφαιρεθούν από την αποθήκη με την αποθήκευση
+function openReadyPicker(){
+  const rows=(stockCache||[]).filter(it=>it.type==="product" && (Number(it.qty)||0)>0 && !isArchivedStock(it));
+  const box=document.getElementById("readyBody");
+  if(!rows.length){ box.innerHTML=`<div class="fbd-empty">Δεν υπάρχουν έτοιμα προϊόντα στο ράφι.</div>`; }
+  else{
+    const byCat={};
+    rows.forEach(it=>{ const c=it.category||"Άλλα"; (byCat[c]=byCat[c]||[]).push(it); });
+    box.innerHTML=Object.keys(byCat).map(c=>`<div class="stock-cat">${esc(c)}</div>`+byCat[c].map(it=>{
+      const e=stEv(it);
+      return `<button class="cust-row" style="width:100%" onclick="pickReady('${it.id}')">
+        <span class="cr-main" style="pointer-events:none">
+          ${it.image_url?`<img class="si-img" style="width:40px;height:40px;margin-right:10px" src="${esc(it.image_url)}" alt="">`:""}
+          <span style="flex:1;min-width:0"><span class="cr-t">${esc(it.name)}${e?` <span class="mm-pill" style="background:${e.color}22;color:${e.ink||e.color};border-color:${e.color}55">${esc(e.name)}</span>`:""}</span>
+          <span class="cr-s">${it.sell_price!=null?fmtMoney(it.sell_price):"χωρίς τιμή"} · απόθεμα ${fmtNum(it.qty)}</span></span>
+        </span></button>`;
+    }).join("")).join("");
+  }
+  _ovOpen("readyModal");
+}
+function closeReadyPicker(){ _ovClose("readyModal"); }
+function pickReady(stockId){
+  const it=(stockCache||[]).find(x=>x.id===stockId); if(!it) return;
+  const e=stEv(it);
+  addItemRow({ id:newItemId(), name:it.name, price:(it.sell_price!=null?it.sell_price:null), stage:1, flow:"ready",
+               ev:(e?e.id:null), from_stock:it.id });
+  pendingStock.push(it.id);
+  closeReadyPicker();
+  setTimeout(()=>{ fillPickers(); updateMoneyHint(); refreshPriceHints(); },0);
+  adminFlash(`${it.name} — θα αφαιρεθεί από το ράφι με την αποθήκευση`);
+}
+async function applyPendingStock(){
+  if(!pendingStock.length) return;
+  const ids=[...pendingStock]; pendingStock=[];
+  for(const id of ids){
+    const it=(stockCache||[]).find(x=>x.id===id); if(!it) continue;
+    const q=Math.max(0,(Number(it.qty)||0)-1);
+    try{
+      const res=await authFetch(REST + "/thilikon_stock?id=eq."+id,{method:"PATCH",headers:{"Prefer":"return=minimal"},
+        body:JSON.stringify({qty:q})});
+      if(res.ok) it.qty=q;
+    }catch(e){}
+  }
+  loadStock();
+}
 function collectItems(){
   const out=[];
   // κρατάμε ό,τι δεν επεξεργάζεται η φόρμα: χρόνο εργασίας, χρονοσημάνσεις σταδίων, παρακαταθήκη
@@ -4048,6 +4105,8 @@ function collectItems(){
       ...(old.sep!=null?{sep:old.sep}:{}),
       ...(old.ev!=null?{ev:old.ev}:{}),
       ...(old.from_stock!=null?{from_stock:old.from_stock}:{}),
+      ...(row.dataset.ev?{ev:row.dataset.ev}:{}),
+      ...(row.dataset.fromStock?{from_stock:row.dataset.fromStock}:{}),
       id,
       name,
       price: parseMoney(row.querySelector(".ie-price").value),
@@ -4089,6 +4148,7 @@ function openOrderModal(){
   fillPickers();
   document.getElementById("workBox").classList.add("hidden");
   document.getElementById("matHint").classList.add("hidden");
+  pendingStock=[];
   document.getElementById("custNoteBox").classList.add("hidden");
   document.getElementById("custNoteBox").textContent="";
   document.getElementById("nameSug").classList.add("hidden");
@@ -4114,6 +4174,7 @@ function editOrder(id){
   document.getElementById("fOrderNoView").textContent=o.order_number||"—";
   document.getElementById("orderDelBtn").classList.remove("hidden");
   setTimeout(renderOrderTimer,0);
+  pendingStock=[];
   document.getElementById("fCustLink").classList.remove("hidden");
   document.getElementById("fCreatedView").textContent = o.created_at ? new Date(o.created_at).toLocaleDateString("el-GR",{day:"2-digit",month:"2-digit",year:"numeric"}) : "—";
   document.getElementById("fPhone").value=o.customer_phone||"";
@@ -4285,6 +4346,7 @@ async function saveOrder(){
     document.getElementById("modalTitle").textContent="Αποθηκεύτηκε ✓";
     document.getElementById("saveBtn").textContent="Αποθήκευση";
     await loadOrders();
+    await applyPendingStock();
     await propagatePhone(payload.customer_name, payload.customer_phone);
     backfillVisits();
   }catch(e){
