@@ -1553,7 +1553,7 @@ function show(id){
 function route(){
   const params = new URLSearchParams(location.search);
   const t = params.get("t");
-  if(location.hash === "#admin"){ openAdmin(); return; }
+  if(location.hash === "#admin" || location.hash.indexOf("#/") === 0){ openAdmin(); return; }
   if(location.hash.indexOf("#feedback") === 0){
     const src = location.hash === "#feedback-card" ? "card"
               : location.hash === "#feedback-ig"   ? "ig"
