@@ -1262,7 +1262,7 @@ const EVENTS = {
     line:"Η δημιουργία σου είναι μέρος του Mix & Match. Φτιάχτηκε από τα τελευταία άμεσα διαθέσιμα νήματα, ειδικά για σένα."
   },
   luxe: {
-    name:"Little Luxuries", tagline:"a daily piece, uniquely yours", color:"#86c5ec", ink:"#8c191e", logo:"",
+    name:"Little Luxuries", tagline:"a daily piece, uniquely yours", color:"#86c5ec", ink:"#8c191e", logo:"https://i.imgur.com/x7fRqcG.png",
     discount:0, autoOff:"2026-09-02",
     line:"Το κομμάτι σου ανήκει στο Little Luxuries — Limited Time Event. Φτιάχτηκε αποκλειστικά γι\u2019 αυτό, σε ένα και μοναδικό κομμάτι."
   }
@@ -2043,15 +2043,41 @@ function authHeaders(){
 async function enterPanel(){
   document.getElementById("adminLogin").classList.add("hidden");
   document.getElementById("adminPanel").classList.remove("hidden");
-  showAdminTab("orders");
+  if(!applyRoute()) showAdminTab("orders");
   await loadOrders();
   loadFeedback();
   loadStock();
   await loadSettings();
   backfillVisits();
+  applyRoute();
   maybeShowWrap();
 }
 
+let _routeLock=false;
+function currentRoute(){
+  const t=["orders","stock","customers","wholesale","feedback"].find(x=>{
+    const el=document.getElementById("tab"+({orders:"Orders",stock:"Stock",customers:"Cust",wholesale:"Whole",feedback:"Fb"})[x]);
+    return el && el.classList.contains("sel");
+  }) || "orders";
+  return t==="stock" ? `#/stock/${stockView}` : `#/${t}`;
+}
+function syncRoute(){
+  if(_routeLock) return;
+  const r=currentRoute();
+  if(location.hash!==r) history.replaceState(null,"",r);
+}
+function applyRoute(){
+  const h=(location.hash||"").replace(/^#\/?/,"");
+  if(!h) return false;
+  const [tab,sub]=h.split("/");
+  const valid=["orders","stock","customers","wholesale","feedback"];
+  if(!valid.includes(tab)) return false;
+  _routeLock=true;
+  if(tab==="stock" && sub) stockView=sub;
+  showAdminTab(tab);
+  _routeLock=false;
+  return true;
+}
 function showAdminTab(tab){
   const isOrders = tab==="orders", isStock = tab==="stock", isFb = tab==="feedback", isCust = tab==="customers", isWhole = tab==="wholesale";
   document.getElementById("tabOrders").classList.toggle("sel", isOrders);
@@ -2074,6 +2100,7 @@ function showAdminTab(tab){
   document.getElementById("wholeAdmin").classList.toggle("hidden", !isWhole);
   if(isCust) renderCustomers();
   if(isWhole) renderWholesale();
+  syncRoute();
   if(isFb) renderFbDashboard();
   if(isStock){ if(stockCache.length) renderStock(); else { document.getElementById("stockAdmin").innerHTML='<div class="spinner"></div>'; loadStock(); } }
 }
@@ -4265,6 +4292,11 @@ async function saveOrder(){
   }finally{ btn.disabled=false; }
 }
 
+window.addEventListener("hashchange", ()=>{
+  const panel=document.getElementById("adminPanel");
+  if(panel && !panel.classList.contains("hidden")) applyRoute();
+});
+
 /* close modal on overlay click */
 document.getElementById("orderModal").addEventListener("click",e=>{
   if(e.target.id==="orderModal") closeOrderModal();
@@ -5011,7 +5043,7 @@ function stockState(it){
   if(q<=0) return "out"; if(q<=low) return "low"; return "ok";
 }
 function isPerOrder(it){ return it && it.low_threshold!=null && Number(it.low_threshold)===0; }
-function setStockView(v){ stockView=v; renderStock(); }
+function setStockView(v){ stockView=v; renderStock(); syncRoute(); }
 function renderStock(){
   const box=document.getElementById("stockAdmin"); const all=stockCache||[];
   const raw=all.filter(it=>it.type!=="product" && !stEv(it));
