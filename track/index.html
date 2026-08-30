@@ -643,6 +643,10 @@
   .brief-list li:before{content:"";position:absolute;left:2px;top:8px;width:5px;height:5px;border-radius:50%;background:var(--muted)}
   .brief-list b{color:var(--ink);font-weight:700}
   .brief-ok{font-size:12.5px;color:var(--ink-soft);margin-top:12px}
+  .wrap-cta{display:block;width:100%;margin-top:14px;border:none;cursor:pointer;font-family:'Inter';
+    font-size:12.5px;font-weight:700;letter-spacing:.02em;color:#fff;border-radius:14px;padding:14px 16px;
+    background:linear-gradient(120deg,var(--ink) 0%,#4a2b2e 55%,#8c191e 100%);box-shadow:0 8px 22px rgba(140,25,30,.22)}
+  .wrap-cta:active{transform:scale(.99)}
   .brief-win{margin-top:12px;background:#eef4ef;border:1px solid #cfe2d5;border-radius:11px;padding:9px 12px;font-size:12.5px;color:#2c6e49;line-height:1.55}
   .brief-win b{color:#215539}
   .brief-b b{color:var(--ink);font-weight:700}
@@ -1353,6 +1357,7 @@ function plusDays(n){ const d=new Date(); d.setDate(d.getDate()+n); return d.toI
 const GR_MONTHS=["Ιαν","Φεβ","Μάρ","Απρ","Μάι","Ιούν","Ιούλ","Αύγ","Σεπ","Οκτ","Νοέ","Δεκ"];
 const GR_MONTHS_FULL=["Ιανουάριος","Φεβρουάριος","Μάρτιος","Απρίλιος","Μάιος","Ιούνιος","Ιούλιος","Αύγουστος","Σεπτέμβριος","Οκτώβριος","Νοέμβριος","Δεκέμβριος"];
 const GR_MONTHS_ACC=["Ιανουάριο","Φεβρουάριο","Μάρτιο","Απρίλιο","Μάιο","Ιούνιο","Ιούλιο","Αύγουστο","Σεπτέμβριο","Οκτώβριο","Νοέμβριο","Δεκέμβριο"];
+const GR_MONTHS_GEN=["Ιανουαρίου","Φεβρουαρίου","Μαρτίου","Απριλίου","Μαΐου","Ιουνίου","Ιουλίου","Αυγούστου","Σεπτεμβρίου","Οκτωβρίου","Νοεμβρίου","Δεκεμβρίου"];
 function fmtAgo(days){
   const d=Math.round(days);
   if(d<=0) return "σήμερα";
@@ -2201,7 +2206,7 @@ function buildBrief(ctx){
     }
     head=line;
   } else if(revPrevAll>0){
-    head=`Ο ${M} δεν έχει παραγγελίες ακόμη. Ο ${Mprev} είχε κλείσει στα <b>${fmtMoney(revPrevAll)}</b>.`;
+    head=`Ο ${M} δεν έχει παραγγελίες ακόμη. Ο ${GR_MONTHS_FULL[dPrev.getMonth()]} έκλεισε στα <b>${fmtMoney(revPrevAll)}</b>.`;
   } else {
     head=`Καμία παραγγελία ακόμη αυτόν τον μήνα.`;
   }
@@ -2409,6 +2414,7 @@ function buildBrief(ctx){
       <ul class="brief-list">${items.map(x=>`<li>${x.txt}</li>`).join("")}</ul>`
      :`<div class="brief-ok">Τίποτα δεν εκκρεμεί αυτή τη στιγμή — όλα κυλούν ομαλά.</div>`}
     ${win?`<div class="brief-win">${win}</div>`:""}
+    ${wrapAvailable()?`<button class="wrap-cta" onclick="openWrap()">✨ Η ανασκόπηση ${esc(GR_MONTHS_GEN[(new Date()).getMonth()===0?11:(new Date()).getMonth()-1])} είναι έτοιμη</button>`:""}
     <div class="brief-n">«${q[0]}» <span class="brief-who">— ${q[1]}</span></div>
   </div>`;
 }
@@ -2471,9 +2477,15 @@ function renderStats(){
     st.n++; if(o.price!=null) st.rev+=Number(o.price);
     const its=getItems(o);
     const tagged=its.filter(it=>it.ev);                 // κομμάτια με δική τους σήμανση
-    st.items += tagged.length
-      ? tagged.filter(it=>it.ev===e.id).reduce((a,it)=>a+Math.max(1,Number(it.qty)||1),0)
-      : its.reduce((a,it)=>a+Math.max(1,Number(it.qty)||1),0);
+    if(tagged.length){
+      st.items += tagged.filter(it=>it.ev===e.id).reduce((a,it)=>a+Math.max(1,Number(it.qty)||1),0);
+    } else {
+      // παλιές εγγραφές χωρίς σήμανση: μέτρα όσα ταιριάζουν με προϊόντα του event
+      const evNames=(stockCache||[]).filter(x=>x.type==="product" && (x.event_id===e.id)).map(x=>normText(x.name));
+      const match=its.filter(it=>evNames.some(n=>n && (n===normText(it.name) || n.includes(normText(it.name)) || normText(it.name).includes(n))));
+      const use=match.length?match:(its.length?[its[0]]:[]);   // αλλιώς 1 ανά παραγγελία, όχι όλα
+      st.items += use.reduce((a,it)=>a+Math.max(1,Number(it.qty)||1),0);
+    }
   });
   // events με μετρημένα κομμάτια (χωρίς σταθερή έκπτωση): πόσα από πόσα
   Object.keys(EVENTS).forEach(id=>{
@@ -3055,6 +3067,18 @@ function wrapData(ref){
       .sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
     if(all.length && new Date(all[0].created_at)>=d0 && new Date(all[0].created_at)<d1) newCust++;
   });
+  // events του μήνα
+  const evAgg={};
+  cur.forEach(o=>{
+    const e=evOf(o); if(!e) return;
+    const a=evAgg[e.id]=evAgg[e.id]||{id:e.id,name:e.name,color:e.color,ink:e.ink,n:0,pieces:0,rev:0};
+    a.n++; a.rev+=valOf(o);
+    const its=getItems(o), tagged=its.filter(x=>x.ev);
+    const use = tagged.length ? tagged.filter(x=>x.ev===e.id) : (its.length?[its[0]]:[]);
+    a.pieces += use.reduce((x,it)=>x+Math.max(1,Number(it.qty)||1),0);
+  });
+  const events=Object.values(evAgg).sort((a,b)=>b.pieces-a.pieces);
+
   const profit = costed>0 ? (costed-cost) : null;
   const margin = costed>0 ? Math.round((costed-cost)/costed*100) : null;
   // καλύτερος μήνας μέχρι τώρα;
@@ -3068,7 +3092,7 @@ function wrapData(ref){
 
   return { d0, month:GR_MONTHS_FULL[d0.getMonth()], year:d0.getFullYear(),
            rev, revPrev, diff, orders:cur.length, pieces, top, topColor, topLabel,
-           custN, repeat, newCust, sec, profit, margin, isBest, key };
+           custN, repeat, newCust, sec, profit, margin, isBest, key, events };
 }
 
 const WRAP_HYPE = [
@@ -3117,6 +3141,18 @@ function wrapSlides(w){
       ${w.topColor?`<h3 class="serif wr-mid">${esc(w.topColor[0])}</h3>
         <p class="wr-sub">Το χρώμα που ζητήθηκε <b>${w.topColor[1]}</b> ${w.topColor[1]===1?"φορά":"φορές"}.</p>`:""}
       ${w.topLabel?`<p class="wr-sub" style="margin-top:14px">Και <b>${esc(w.topLabel[0])}</b> ταμπελάκι στις περισσότερες.</p>`:""}
+    </div>`);
+  }
+
+  if(w.events && w.events.length){
+    const e=w.events[0];
+    S.push(`<div class="wr-slide">
+      <div class="wr-eyebrow">Limited time</div>
+      <h3 class="serif wr-mid" style="color:${esc(e.ink||e.color||"#8c191e")}">${esc(e.name)}</h3>
+      <div class="wr-row" style="margin-top:16px"><span class="wr-num sm" data-count="${e.pieces}">${e.pieces}</span>
+        <span class="wr-lbl">${e.pieces===1?"κομμάτι έφυγε από το event":"κομμάτια έφυγαν από το event"}</span></div>
+      <p class="wr-sub">${money(e.rev)} από ${e.n} ${e.n===1?"παραγγελία":"παραγγελίες"}.
+      ${w.events[1]?`<br><span class="wr-dim">Και ${esc(w.events[1].name)}: ${w.events[1].pieces} ${w.events[1].pieces===1?"κομμάτι":"κομμάτια"}.</span>`:""}</p>
     </div>`);
   }
 
@@ -3177,6 +3213,11 @@ function showWrapSlide(i){
 }
 function wrapNext(){ showWrapSlide(wrapIdx+1); }
 function wrapPrev(){ showWrapSlide(wrapIdx-1); }
+function wrapAvailable(){
+  const d=new Date();
+  if(d.getDate()>5) return false;                 // μόνο το πρώτο 5ήμερο
+  try{ return wrapData(null).orders>0; }catch(e){ return false; }
+}
 function wrapSeenKey(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); }
 function markWrapSeen(){
   _flags=Object.assign({}, _flags||{}, {wrapSeen: wrapSeenKey()});
@@ -4924,7 +4965,44 @@ function stockThumb(it){
   return `<img class="si-img" src="${esc(u)}" alt="">
     </details>`;
 }
+function archivedIds(){ return ((_flags&&_flags.stockArchived)||[]); }
+function isArchivedStock(it){ return it && archivedIds().includes(it.id); }
+function lastUsedAt(stockId){
+  let t=0;
+  ordersCache.forEach(o=>{
+    if(!Array.isArray(o.materials) || !o.created_at) return;
+    if(!o.materials.some(m=>m.id===stockId)) return;
+    const d=new Date(o.created_at).getTime(); if(d>t) t=d;
+  });
+  return t||null;
+}
+function staleStock(it){
+  if(!it || it.type==="product" || isArchivedStock(it)) return false;
+  if((Number(it.qty)||0)>0) return false;                   // έχει απόθεμα
+  const t=lastUsedAt(it.id);
+  const ref=t || (it.created_at?new Date(it.created_at).getTime():null);
+  if(!ref) return false;
+  return (Date.now()-ref)/86400000 > 30;                     // μηδενικό & αχρησιμοποίητο 30+ μέρες
+}
+async function toggleArchiveStock(id){
+  const list=archivedIds();
+  const next=list.includes(id) ? list.filter(x=>x!==id) : [...list, id];
+  _flags=Object.assign({}, _flags||{}, {stockArchived:next});
+  await saveSetting("flags", _flags, true);
+  renderStock(); renderStats();
+  adminFlash(list.includes(id)?"Επαναφέρθηκε ✓":"Αρχειοθετήθηκε ✓");
+}
+async function archiveAllStale(){
+  const stale=(stockCache||[]).filter(staleStock).map(x=>x.id);
+  if(!stale.length) return;
+  if(!confirm(`Να αρχειοθετηθούν ${stale.length} υλικά που δεν χρησιμοποιήθηκαν πάνω από 30 μέρες;`)) return;
+  _flags=Object.assign({}, _flags||{}, {stockArchived:[...new Set([...archivedIds(), ...stale])]});
+  await saveSetting("flags", _flags, true);
+  renderStock(); renderStats();
+  adminFlash(`Αρχειοθετήθηκαν ${stale.length} ✓`);
+}
 function stockState(it){
+  if(isArchivedStock(it)) return "ok";
   if(it.mm) return "ok"; // Mix & Match: το να τελειώνει είναι φυσιολογικό, χωρίς προειδοποίηση
   if(it.type==="product") return "ok"; // έτοιμο κομμάτι: η πώλησή του είναι επιτυχία, όχι έλλειψη
   const low = it.low_threshold!=null ? Number(it.low_threshold) : 2;
@@ -4944,9 +5022,14 @@ function renderStock(){
     <button class="tb ${stockView==='raw'?'sel':''}" onclick="setStockView('raw')">Πρώτες ύλες${raw.length?` (${raw.length})`:''}</button>
     <button class="tb ${stockView==='mm'?'sel':''}" onclick="setStockView('mm')" ${stockView==='mm'?'style="background:#c0266c;border-color:#c0266c"':''}>Mix &amp; Match${mm.length?` (${mm.length})`:''}</button>
     <button class="tb ${stockView==='product'?'sel':''}" onclick="setStockView('product')">Έτοιμα προϊόντα${prods.length?` (${prods.length})`:''}</button>
+    ${archivedIds().length?`<button class="tb ${stockView==='archive'?'sel':''}" onclick="setStockView('archive')">🗄 Αρχείο (${archivedIds().length})</button>`:''}
   </div>`;
   if(stockView==="models"){ box.innerHTML = toggle + renderModels(); return; }
-  let rows = stockView==="product" ? prods : (stockView==="mm" ? mm : raw);
+  let rows = stockView==="archive" ? (stockCache||[]).filter(isArchivedStock)
+           : (stockView==="product" ? prods : (stockView==="mm" ? mm : raw));
+  if(stockView!=="archive") rows = rows.filter(it=>!isArchivedStock(it));
+  const staleN=(stockCache||[]).filter(staleStock).length;
+  const archN=archivedIds().length;
   const sq=(document.getElementById("stockSearch")?.value||"").trim();
   const allRows=rows;
   if(sq) rows = rows.filter(it=>smartMatch((it.name||"")+" "+(it.category||"")+" "+(it.unit||""), sq));
@@ -5004,7 +5087,7 @@ function renderStock(){
           ${qtyBlock}
           <button class="btn solid sm" ${Number(it.qty)>0?"":"disabled"} onclick="openSellModal('${it.id}')">Πούλησέ το</button>
           <button class="btn ghost sm" onclick="openStockModal('${it.id}')">✎</button>
-        </div>` : `${qtyBlock}<button class="btn ghost sm" title="Πού χρησιμοποιήθηκε" onclick="openMaterialUse('${it.id}')">📦</button><button class="btn ghost sm" onclick="openStockModal('${it.id}')">✎</button>`}
+        </div>` : `${qtyBlock}<button class="btn ghost sm" title="Πού χρησιμοποιήθηκε" onclick="openMaterialUse('${it.id}')">📦</button><button class="btn ghost sm" title="${isArchivedStock(it)?'Επαναφορά':'Αρχειοθέτηση'}" onclick="toggleArchiveStock('${it.id}')">${isArchivedStock(it)?'↩':'🗄'}</button><button class="btn ghost sm" onclick="openStockModal('${it.id}')">✎</button>`}
       </div>`;
     });
   });
