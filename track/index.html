@@ -652,7 +652,7 @@
   .brief-b b{color:var(--ink);font-weight:700}
   .brief-n{font-family:'Cormorant',Georgia,serif;font-style:italic;font-size:15px;color:var(--ink-soft);margin-top:12px;padding-top:11px;border-top:1px solid var(--line);line-height:1.5}
   .brief-who{font-family:'Inter';font-style:normal;font-size:10.5px;letter-spacing:.04em;color:var(--muted);white-space:nowrap}
-  .name-sug{position:absolute;left:0;right:0;top:100%;z-index:20;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 26px rgba(0,0,0,.10);overflow:hidden;margin-top:4px;max-height:230px;overflow-y:auto}
+  .name-sug{position:absolute;left:0;right:0;top:100%;z-index:60;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 26px rgba(0,0,0,.10);overflow:hidden;margin-top:4px;max-height:230px;overflow-y:auto}
   .ns-row{display:block;width:100%;text-align:left;background:none;border:none;border-bottom:1px solid var(--line);padding:10px 13px;cursor:pointer;font-family:'Inter'}
   .ns-row:last-child{border-bottom:none}
   .ns-row:active{background:var(--stone)}
@@ -1162,7 +1162,9 @@
     </div>
     <div id="sellProdName" style="font-size:14px;font-weight:600;margin-bottom:2px"></div>
     <div id="sellProdMeta" style="font-size:12px;color:var(--muted);margin-bottom:14px"></div>
-    <label class="fld"><span>Όνομα πελάτη (προαιρετικό)</span><input id="sellName" placeholder="π.χ. Μαρία"></label>
+    <label class="fld" style="position:relative;z-index:60"><span>Όνομα πελάτη (προαιρετικό)</span>
+      <input id="sellName" placeholder="π.χ. Μαρία">
+      <div id="sellSug" class="name-sug hidden"></div></label>
     <div style="display:flex;gap:10px">
       <label class="fld" style="flex:1"><span>Τηλέφωνο (προαιρετικό)</span><input id="sellPhone" placeholder="π.χ. 6971234567"></label>
       <label class="fld" style="flex:1"><span>Τιμή πώλησης €</span><input id="sellPrice" inputmode="decimal" placeholder="0"></label>
@@ -3985,6 +3987,36 @@ function splitName(full){
   const last=parts.pop();                    // επίθετο = τελευταία λέξη
   return { first: parts.join(" "), last };   // «Χριστίνα & Νέλλη» + «Μακρή»
 }
+/* Γενικό: συνδέει οποιοδήποτε πεδίο ονόματος με προτάσεις πελατών.
+   nameEl -> input ονόματος, boxEl -> κουτί προτάσεων, onPick(order) -> τι γίνεται στην επιλογή */
+function attachCustomerSuggest(nameEl, boxEl, onPick, extraEl){
+  if(!nameEl || !boxEl || nameEl.dataset.suggestOn) return;
+  nameEl.dataset.suggestOn="1";
+  nameEl.setAttribute("autocomplete","off");
+  const render=()=>{
+    const q=((nameEl.value||"")+" "+((extraEl&&extraEl.value)||"")).trim();
+    if(q.length<2){ boxEl.classList.add("hidden"); return; }
+    const groups=customerStats().filter(c=>smartMatch(c.name+" "+(c.phone||"")+" "+(c.variants||[]).join(" "), q)).slice(0,6);
+    const exact=groups.length===1 && normText(groups[0].name)===normText(q);
+    if(!groups.length || exact){ boxEl.classList.add("hidden"); return; }
+    boxEl.innerHTML=groups.map(c=>`<button type="button" class="ns-row" data-id="${c.anyId}">
+        <span class="ns-n">${esc(c.name)}</span>
+        <span class="ns-s">${c.n} ${c.n===1?"παραγγελία":"παραγγελίες"}${c.phone?" · "+esc(c.phone):""}${c.shop?" · κατάστημα":""}</span>
+      </button>`).join("");
+    boxEl.querySelectorAll(".ns-row").forEach(btn=>btn.onclick=()=>{
+      const o=ordersCache.find(x=>x.id===btn.dataset.id);
+      if(o) onPick(o);
+      boxEl.classList.add("hidden");
+    });
+    boxEl.classList.remove("hidden");
+  };
+  nameEl.addEventListener("input", render);
+  nameEl.addEventListener("focus", render);
+  if(extraEl) extraEl.addEventListener("input", render);
+  document.addEventListener("click", e=>{
+    if(!boxEl.contains(e.target) && e.target!==nameEl && e.target!==extraEl) boxEl.classList.add("hidden");
+  });
+}
 function onNameType(){
   const box=document.getElementById("nameSug"); if(!box) return;
   const q=fullName();
@@ -5855,6 +5887,19 @@ function openSellModal(id){
   document.getElementById("sellLinkWrap").classList.add("hidden");
   document.getElementById("sellBtn").textContent="Καταχώρησε πώληση";
   document.getElementById("sellBtn").disabled=false;
+  document.getElementById("sellSug").classList.add("hidden");
+  attachCustomerSuggest(
+    document.getElementById("sellName"),
+    document.getElementById("sellSug"),
+    o=>{
+      document.getElementById("sellName").value = o.customer_name || "";
+      const ph=(customerOrders(o).map(x=>x.customer_phone).filter(Boolean).pop())||o.customer_phone;
+      if(ph) document.getElementById("sellPhone").value=ph;
+      const info=custInfo[custKey(o)]||{};
+      if(info.note) adminFlash(info.note);
+    },
+    document.getElementById("sellPhone")
+  );
   _ovOpen("sellModal");
 }
 function closeSellModal(){ _ovClose("sellModal"); }
