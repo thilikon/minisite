@@ -1001,6 +1001,7 @@
     <label class="fld"><span>Όνομα προϊόντος</span><input id="mName" placeholder="π.χ. KELLY"></label>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       <label class="fld" style="flex:1 1 110px"><span>Λιανική €</span><input id="mPrice" inputmode="decimal" placeholder="0"></label>
+      <label class="fld" style="flex:1 1 110px"><span id="mPrice2Lbl">Με χρώμα €</span><input id="mPrice2" inputmode="decimal" placeholder="—"></label>
       <label class="fld" style="flex:1 1 110px"><span>Χονδρική €</span><input id="mWhole" inputmode="decimal" placeholder="—"></label>
       <label class="fld" style="flex:2 1 160px"><span>Φωτογραφία (URL)</span><input id="mImg" placeholder="https://…"></label>
     </div>
@@ -4941,6 +4942,13 @@ async function ensureAnasa(){
     if(ex && !(modelCat||[]).some(m=>normText(m.name)===normText(newN))){ ex.name=newN; ex.image_url=ex.image_url||imgFor(newN); n++; }
   });
   const gone=(_flags&&_flags.removed)||[];
+  if(!settingsFlag("priceFix3")){
+    [["Grace",38,45],["Bella",45,50],["Rosie",32,38]].forEach(([nm,b2,e2])=>{
+      const m=(modelCat||[]).find(x=>normText(x.name)===normText(nm));
+      if(m){ m.price=b2; m.price2=e2; n++; }
+    });
+    markSettingsFlag("priceFix3");
+  }
   if(!settingsFlag("priceFix1")){
     const k=(modelCat||[]).find(m=>normText(m.name)==="keli");
     if(k && Number(k.price2)===50){ k.price2=45; n++; }
@@ -5385,13 +5393,13 @@ async function delStock(){
 const PREMIUM_YARN = 7;
 const CUSTOM_FEE   = 20;
 const PRICE_LIST = [
-  {name:"Grace",         cat:"Crochet",     base:45, extra:50, dep:false, coll:"ANASA"},
-  {name:"Bella",         cat:"Crochet",     base:50, extra:55, dep:false, coll:"ANASA"},
+  {name:"Grace",         cat:"Crochet",     base:38, extra:45, dep:false, coll:"ANASA"},
+  {name:"Bella",         cat:"Crochet",     base:45, extra:50, dep:false, coll:"ANASA"},
   {name:"Kelly",         cat:"Crochet",     base:40, extra:45, dep:false, coll:"ANASA"},
   {name:"Nicole",        cat:"Crochet",     base:50, extra:55, dep:false, coll:"ANASA"},
   {name:"Sarah",         cat:"Crochet",     base:40, extra:45, dep:false, coll:"ANTHESIS"},
   {name:"Zoe",           cat:"Crochet",     base:45, extra:50, dep:false, coll:"ANTHESIS"},
-  {name:"Rosie",         cat:"Crochet",     base:35, extra:40, dep:false, coll:"ANTHESIS"},
+  {name:"Rosie",         cat:"Crochet",     base:32, extra:38, dep:false, coll:"ANTHESIS"},
   {name:"Knit Basket",   cat:"Crochet",     base:15, extra:null, dep:false, coll:"ANASA"},
   {name:"Laluna",        cat:"Beaded",      base:70, extra:80, dep:true, coll:"ANASA"},
   {name:"Perla",         cat:"Beaded",      base:85, extra:95, dep:true, coll:"ANASA"},
@@ -5792,6 +5800,9 @@ function openModelModal(id){
   document.getElementById("mPrice").value=m&&m.price!=null?m.price:"";
   document.getElementById("mImg").value=m?(m.image_url||""):"";
   document.getElementById("mWhole").value=(m&&m.wholesale!=null)?m.wholesale:"";
+  document.getElementById("mPrice2").value=(m&&m.price2!=null)?m.price2:"";
+  {const L=priceLabels(m?m.cat:null, m?m.name:null);
+   document.getElementById("mPrice2Lbl").textContent = L.extra ? (L.extra==="γυάλινες" ? "Γυάλινες €" : "Με χρώμα €") : "2η τιμή €";}
   document.getElementById("modelDelBtn").classList.toggle("hidden", !id);
   const _ms = m ? modelStats(m.name) : null;
   const _mb = document.getElementById("mStats");
@@ -5848,7 +5859,7 @@ async function saveModel(){
     name, price: parseMoney(document.getElementById("mPrice").value),
     image_url: document.getElementById("mImg").value.trim()||null, materials: modelMats,
     wholesale: parseMoney(document.getElementById("mWhole").value),
-    price2: prev?prev.price2:null,
+    price2: parseMoney(document.getElementById("mPrice2").value),
     collection: coll||null, anasa: coll==="ANASA" ? true : (prev?!!prev.anasa && coll==="ANASA":false),
     cat: prev?prev.cat:null };
   if(editingModelId) modelCat = modelCat.map(m=>m.id===editingModelId?rec:m);
