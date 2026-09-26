@@ -489,7 +489,7 @@
   .bz-hero-s{font-size:12px;color:var(--muted);margin-top:4px}
   .bz-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(146px,1fr));gap:10px}
   .bz-tile{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:7px}
-  .bz-tile .si-img{width:100%;height:96px;border-radius:10px;background-color:var(--stone);background-size:cover;background-position:center;object-fit:cover}
+  .bz-tile .si-img{width:100%;height:112px;border-radius:10px;background-color:var(--stone);background-size:cover;background-position:center;object-fit:cover;display:block;flex:none}
   .bz-tn{font-size:12.5px;font-weight:600;line-height:1.3}
   .bz-tp{font-size:14px;font-weight:700}
   .bz-sell{width:100%;padding:11px 8px;font-size:11px}
@@ -3746,6 +3746,12 @@ function moneyLine(o){
   return `<div class="r-money">${priceTxt}${priceTxt&&status?" · ":""}${status}</div>`;
 }
 
+/* Τίποτα δεν αποτυγχάνει σιωπηλά: κάθε αδιάβαστο σφάλμα γίνεται ορατό μήνυμα. */
+window.addEventListener("unhandledrejection", e=>{
+  const m=(e&&e.reason&&e.reason.message)||String((e&&e.reason)||"");
+  console.error("unhandled:", e&&e.reason);
+  try{ adminFlash("Κάτι πήγε στραβά: "+m); }catch(_){}
+});
 function adminFlash(text){
   const m=document.getElementById("adminMsg"); m.textContent=text; m.classList.remove("hidden");
   setTimeout(()=>m.classList.add("hidden"),2500);
@@ -5271,15 +5277,35 @@ function fillStockEventSelect(currentId, isProd){
   document.getElementById("sEvWrap").classList.toggle("hidden", ids.length===0);
 }
 function onStockEventChange(){ rebuildStockCats(); }
+/* Πολλά links που αντιγράφουμε από το κινητό δεν είναι η ίδια η εικόνα αλλά η σελίδα της.
+   Τα μετατρέπουμε σε απευθείας link, αλλιώς το κινητό δείχνει σπασμένη εικόνα. */
+function directImg(u){
+  u = String(u||"").trim();
+  if(!u) return "";
+  if(u.indexOf("//")===0) u = "https:"+u;
+  if(/^http:\/\//i.test(u)) u = u.replace(/^http:\/\//i,"https://");   // αλλιώς το μπλοκάρει το https
+  // imgur: σελίδα → εικόνα
+  let m = u.match(/^https?:\/\/(?:www\.)?imgur\.com\/(?:gallery\/|a\/)?([A-Za-z0-9]{5,10})(?:[/?#].*)?$/i);
+  if(m) return "https://i.imgur.com/"+m[1]+".jpeg";
+  // google drive: share link → προεπισκόπηση
+  m = u.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=)([A-Za-z0-9_-]{10,})/i);
+  if(m) return "https://drive.google.com/thumbnail?id="+m[1]+"&sz=w800";
+  // dropbox: preview → raw
+  if(/dropbox\.com\//i.test(u)) return u.replace(/[?&]dl=\d/,"").replace(/[?&]raw=\d/,"") + (u.indexOf("?")>-1?"&":"?") + "raw=1";
+  return u;
+}
 function stockThumb(it){
-  const u = it.image_url;
-  if(!u) return '<div class="si-img"></div>';
-  const m = u.match(/#f=([\d.]+),([\d.]+),([\d.]+)/);
+  const raw = it.image_url;
+  if(!raw) return '<div class="si-img"></div>';
+  const m = String(raw).match(/#f=([\d.]+),([\d.]+),([\d.]+)/);
   if(m){
-    const base = u.split("#")[0];
+    const base = directImg(String(raw).split("#")[0]);
     return `<div class="si-img" style="background-image:url('${esc(base)}');background-size:${m[3]}%;background-position:${m[1]}% ${m[2]}%;background-repeat:no-repeat"></div>`;
   }
-  return `<img class="si-img" src="${esc(u)}" alt="">`;
+  const u = directImg(raw);
+  if(!u) return '<div class="si-img"></div>';
+  // αν δεν φορτώσει, μένει το γκρι πλαίσιο αντί για σπασμένο εικονίδιο
+  return `<img class="si-img" src="${esc(u)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=&quot;si-img&quot;&gt;&lt;/div&gt;'">`;
 }
 function archivedIds(){ return ((_flags&&_flags.stockArchived)||[]); }
 function isArchivedStock(it){ return it && archivedIds().includes(it.id); }
@@ -6073,6 +6099,28 @@ async function delModel(){
 }
 
 
+
+/* Στέλνει παραγγελία και, αν λείπει κάποια στήλη στη βάση, ξαναδοκιμάζει χωρίς αυτήν.
+   Πετάει σφάλμα με το πραγματικό μήνυμα, για να μη «χάνεται» η αποτυχία. */
+/* Κόβει ένα αίτημα που δεν απαντάει, για να μη μένει το κουμπί «…» στο άπειρο. */
+function withTimeout(p, ms){
+  return Promise.race([p, new Promise((_,rej)=>setTimeout(()=>rej(new Error("Δεν υπήρξε απάντηση από τον διακομιστή")), ms||20000))]);
+}
+async function postOrder(payload){
+  let body={...payload}, data=null, res=null;
+  for(let attempt=0; attempt<6; attempt++){
+    res=await authFetch(REST + "/orders",{method:"POST",headers:{"Prefer":"return=representation"},body:JSON.stringify(body)});
+    try{ data=await res.json(); }catch(_){ data=null; }
+    if(res.ok) break;
+    const msg=(data&&data.message)||"";
+    const m=msg.match(/'([a-z_]+)' column/i)||msg.match(/column "([a-z_]+)"/i);
+    if(m && m[1] in body){ delete body[m[1]]; missingCols.add(m[1]); continue; }
+    throw new Error(msg || ("HTTP "+res.status));
+  }
+  if(!res || !res.ok) throw new Error("Η βάση δεν δέχτηκε την παραγγελία");
+  return Array.isArray(data)?data[0]:data;
+}
+
 /* ============ BAZAAR ============
    Η Αναστασία φτιάχνει κομμάτια, τα παίρνει σε ένα bazaar και πουλάει επί τόπου.
    • Τα κομμάτια ζουν ΠΑΝΤΑ στα «Έτοιμα προϊόντα» της αποθήκης — απλώς σημαδεύονται
@@ -6085,6 +6133,8 @@ async function delModel(){
    σήμανση της πώλησης μπαίνει μέσα στο items (jsonb) της παραγγελίας.
 ============================================ */
 let bzPendingTag=null;      // bazaar που θα σημαδευτεί το επόμενο νέο κομμάτι
+let bzError=null;           // τελευταίο σφάλμα πώλησης — μένει στην οθόνη μέχρι να πετύχει
+function bzSetError(txt){ bzError=txt||null; renderBazaar(); }
 function bzById(id){ return (bazaars||[]).find(b=>b.id===id)||null; }
 function b_yearOff(b){ return !!(b && b.date && new Date(b.date+"T00:00:00").getFullYear()!==new Date().getFullYear()); }
 function bzOpen(){ return (bazaars||[]).filter(b=>!b.closed); }
@@ -6278,17 +6328,23 @@ async function bzQuickSell(stockId, bzId){
   if(Number(it.qty)<=0){ adminFlash("Δεν υπάρχει διαθέσιμο κομμάτι"); return; }
   if(it.sell_price==null){ adminFlash("Βάλε πρώτα τιμή πώλησης (✎)"); openStockModal(stockId); return; }
   const btn=document.getElementById("bzs-"+stockId); if(btn){ btn.disabled=true; btn.textContent="…"; }
-  const ok=await bzRecordSale(it, Number(it.sell_price), bzId, null, null, true);
-  if(!ok && btn){ btn.disabled=false; btn.textContent="💰 Πουλήθηκε"; }
+  let ok=false;
+  try{ ok=await bzRecordSale(it, Number(it.sell_price), bzId, null, null, true); }
+  finally{
+    // ό,τι κι αν γίνει, το κουμπί ξαναζωντανεύει — δεν μένει ποτέ κολλημένο
+    const b2=document.getElementById("bzs-"+stockId);
+    if(!ok && b2){ b2.disabled=false; b2.textContent="💰 Πουλήθηκε"; }
+  }
 }
 /* κοινή καταχώρηση πώλησης bazaar (χρησιμοποιείται και από το modal) */
 async function bzRecordSale(it, price, bzId, name, phone, paid){
   const prevQty=Number(it.qty)||0;
+  let stockDone=false;
   try{
     const newQty=Math.max(0, prevQty-1);
-    let r=await authFetch(REST + "/thilikon_stock?id=eq."+it.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({qty:newQty})});
-    if(!r.ok) throw new Error("stock");
-    it.qty=newQty;
+    let r=await withTimeout(authFetch(REST + "/thilikon_stock?id=eq."+it.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({qty:newQty})}));
+    if(!r.ok){ let t=""; try{ t=(await r.json()).message||""; }catch(_){} throw new Error("Η αποθήκη δεν ενημερώθηκε"+(t?": "+t:" (HTTP "+r.status+")")); }
+    it.qty=newQty; stockDone=true;
     const item={ id:newItemId(), name:it.name, details:null, stage:1, flow:"ready", note:null, price:price,
                  ev:(stEv(it)||{}).id || null, from_stock:it.id, bz:bzId };
     const payload={
@@ -6301,19 +6357,18 @@ async function bzRecordSale(it, price, bzId, name, phone, paid){
       materials:[{id:it.id,name:it.name,unit:it.unit||"τεμ.",qty:1,unit_cost:it.unit_cost!=null?Number(it.unit_cost):0}],
       stock_applied:true, items:[item]
     };
-    r=await authFetch(REST + "/orders",{method:"POST",headers:{"Prefer":"return=representation"},body:JSON.stringify(payload)});
-    const data=await r.json();
-    if(!r.ok) throw new Error((data&&data.message)||"order");
+    await withTimeout(postOrder(payload));
     if(Number(it.qty)<=0){ delete bzItems[it.id]; await saveBzItems(true); }
+    bzError=null;
     await loadOrders(); renderBazaar(); renderStock();
     adminFlash("Πώληση ✓ "+fmtMoney(price));
     return true;
   }catch(e){
-    if(String(e.message)!=="stock"){
+    if(stockDone){   // η παραγγελία απέτυχε — γύρνα το απόθεμα πίσω
       try{ await authFetch(REST + "/thilikon_stock?id=eq."+it.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({qty:prevQty})}); it.qty=prevQty; }catch(_){}
     }
-    adminFlash("Σφάλμα καταχώρησης. Δοκίμασε ξανά.");
     console.error(e);
+    bzSetError("Η πώληση δεν καταχωρήθηκε. "+(e&&e.message?e.message:"Άγνωστο σφάλμα")+" — δοκίμασε ξανά.");
     return false;
   }
 }
@@ -6372,6 +6427,8 @@ function bzDetailHtml(b){
   const sales=bzSales(b.id).sort((a,b2)=>new Date(b2.created_at||0)-new Date(a.created_at||0));
   const when = b.date ? fmtMonthDate(b.date+"T09:00:00") : "χωρίς ημερομηνία";
   let html=`<button class="btn ghost sm" style="margin-bottom:14px" onclick="setBzView(null)">← Όλα τα bazaar</button>
+  ${bzError?`<div class="msg err" style="margin-bottom:14px;text-align:left;line-height:1.6">${esc(bzError)}
+    <button class="btn ghost sm" style="margin-top:8px" onclick="bzSetError(null)">Εντάξει</button></div>`:""}
   <div class="bz-hero">
     <div class="bz-hero-t serif">${esc(b.name)}</div>
     <div class="bz-hero-s">${esc(when)}${b.place?" · "+esc(b.place):""}${b.closed?" · έκλεισε":(d===0?" · σήμερα":(d!=null&&d>0?` · σε ${d===1?"1 μέρα":d+" μέρες"}`:""))}</div>
