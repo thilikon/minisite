@@ -514,6 +514,7 @@
   .picker-row.bz-pick{cursor:pointer}
   .picker-row.bz-pick.on{background:var(--cream);border-color:var(--ink)}
   .bz-check{flex:none;width:26px;height:26px;border-radius:8px;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;background:#fff}
+  .bz-check.add{color:var(--ink);font-size:16px}
   .picker-row.bz-pick.on .bz-check{background:var(--ink);border-color:var(--ink)}
   .mm-pill{display:inline-block;background:#fdf1f6;color:#c0266c;border:1px solid #f0c4d8;font-size:10px;font-weight:700;padding:2px 8px;border-radius:var(--pill);margin-left:6px}
   .pv-orig{text-decoration:line-through;color:var(--muted);font-weight:500;margin-right:8px}
@@ -1289,11 +1290,11 @@
 <div id="bzPickModal" class="overlay hidden">
   <div class="modal">
     <div class="mh">
-      <h2 class="serif">Τι παίρνω μαζί</h2>
+      <h2 class="serif" id="bzPickTitle">Τι παίρνω μαζί</h2>
       <button class="x" onclick="closeBzPicker()">✕</button>
     </div>
     <p id="bzPickCount" style="font-size:12px;color:var(--muted);margin-bottom:10px">Διάλεξε τι θα πάρεις μαζί σου</p>
-    <input id="bzPickSearch" placeholder="Αναζήτηση…" oninput="renderBzPicker()" style="margin-bottom:12px">
+    <input id="bzPickSearch" placeholder="Αναζήτηση…" oninput="_bzChooseCb?renderBzChoose():renderBzPicker()" style="margin-bottom:12px">
     <div id="bzPickList"></div>
     <div style="display:flex;gap:10px;margin-top:16px">
       <button class="btn solid" style="flex:1" id="bzPickSave" onclick="saveBzPick()">Αποθήκευση</button>
@@ -5521,7 +5522,7 @@ function renderStock(){
         </div>
         ${isProd ? `<div class="si-actions">
           ${qtyBlock}
-          <button class="btn solid sm" ${Number(it.qty)>0?"":"disabled"} onclick="openSellModal('${it.id}')">Πούλησέ το</button>
+          <button class="btn solid sm" ${Number(it.qty)>0?"":"disabled"} onclick="tillOpen(null,'${it.id}')">Πούλησέ το</button>
           <button class="btn ghost sm" onclick="openStockModal('${it.id}')">✎</button>
         </div>` : `${qtyBlock}<button class="btn ghost sm" title="Πού χρησιμοποιήθηκε" onclick="openMaterialUse('${it.id}')">📦</button><button class="btn ghost sm" title="${isArchivedStock(it)?'Επαναφορά':'Αρχειοθέτηση'}" onclick="toggleArchiveStock('${it.id}')">${isArchivedStock(it)?'↩':'🗄'}</button><button class="btn ghost sm" onclick="openStockModal('${it.id}')">✎</button>`}
       </div>`;
@@ -5814,12 +5815,31 @@ function canonName(name){
   const k=String(name||"").trim().toLowerCase();
   return NAME_ALIAS[k] || name;
 }
-function imgFor(name){
-  const n=normText(canonName(name));
-  const hit = ANASA.find(a=>normText(a.name)===n) || ANASA.find(a=>n && n.includes(normText(a.name)));
-  return hit ? hit.img : null;
+/* Το normText κάνει επιθετική μεταγραφή («Hug» → «ig»), οπότε το σκέτο «περιέχει»
+   έβγαζε λάθος ταιριάσματα («Beige necklace» → Hug). Συγκρίνουμε ολόκληρες λέξεις. */
+function nameTokens(s){
+  return String(s||"").split(/[^0-9A-Za-zΑ-Ωα-ωΆ-Ώά-ώϊϋΐΰ]+/)
+    .map(w=>normText(w)).filter(Boolean);
 }
-function anasaOf(name){ const n=normText(canonName(name)); return n ? ANASA.find(a=>normText(a.name)===n || n.includes(normText(a.name))) : null; }
+function nameMatches(itemName, catName){
+  const a=normText(canonName(itemName)), b=normText(catName);
+  if(!a || !b) return false;
+  if(a===b) return true;
+  const ta=nameTokens(canonName(itemName)), tb=nameTokens(catName);
+  if(!tb.length || tb.length>ta.length) return false;
+  for(let i=0;i<=ta.length-tb.length;i++){
+    let hit=true;
+    for(let j=0;j<tb.length;j++){ if(ta[i+j]!==tb[j]){ hit=false; break; } }
+    if(hit) return true;
+  }
+  return false;
+}
+function anasaOf(name){
+  if(!name) return null;
+  const n=normText(canonName(name));
+  return ANASA.find(a=>normText(a.name)===n) || ANASA.find(a=>nameMatches(name, a.name)) || null;
+}
+function imgFor(name){ const hit=anasaOf(name); return hit ? hit.img : null; }
 /* Η φωτογραφία μιας τσάντας έρχεται ΠΑΝΤΑ από το minisite — εκεί είναι η επίσημη.
    Μόνο αν δεν υπάρχει εκεί, πέφτουμε σε ό,τι έχει καταχωρηθεί στις Προδιαγραφές. */
 function minisiteImg(name){ const a=anasaOf(name); return (a && a.img) || null; }
@@ -6448,12 +6468,13 @@ function openBzPicker(id){
   (stockCache||[]).forEach(it=>{ if(bzItems[it.id]===id) bzPickDraft[it.id]=true; });
   document.getElementById("bzPickSearch").value="";
   _bzChooseCb=null;
+  document.getElementById("bzPickTitle").textContent="Τι παίρνω μαζί";
   document.getElementById("bzPickSave").classList.remove("hidden");
   document.getElementById("bzPickNew").classList.remove("hidden");
   renderBzPicker();
   _ovOpen("bzPickModal");
 }
-function closeBzPicker(){ _ovClose("bzPickModal"); }
+function closeBzPicker(){ _bzChooseCb=null; _bzChooseRows=[]; _ovClose("bzPickModal"); }
 function bzPickRows(){
   const q=(document.getElementById("bzPickSearch")?.value||"").trim();
   let rows=(stockCache||[]).filter(it=>it.type==="product" && !isArchivedStock(it)
@@ -6565,9 +6586,13 @@ async function bzRecordSale(it, price, bzId, name, phone, paid){
    και ό,τι άλλο διαλέξει (συσκευασία, δώρο) αφαιρούνται από την αποθήκη. */
 let tillBz=null, tillItems=[], tillExtras=[], tillPayWay="cash";
 function tillOpen(bzId, stockId){
-  tillBz=bzId; tillItems=[]; tillExtras=[]; tillPayWay="cash";
-  const b=bzById(bzId);
-  document.getElementById("tillWhere").textContent = b ? (b.name + (b.date?" · "+fmtMonthDate(b.date+"T09:00:00"):"")) : "";
+  // χωρίς bazaar → απλή λιανική πώληση από την αποθήκη
+  if(!bzId && stockId && bzItems[stockId]) bzId=bzItems[stockId];
+  tillBz=bzId||null; tillItems=[]; tillExtras=[]; tillPayWay="cash";
+  const b=bzById(tillBz);
+  document.getElementById("tillWhere").textContent = b
+    ? (b.name + (b.date?" · "+fmtMonthDate(b.date+"T09:00:00"):""))
+    : "Πώληση από την αποθήκη";
   document.getElementById("tillDisc").value="";
   document.getElementById("tillName").value="";
   document.getElementById("tillMsg").classList.add("hidden");
@@ -6632,12 +6657,14 @@ function tillPrice(i, v){ if(tillItems[i]){ tillItems[i].price=parseMoney(v); do
 function tillDrop(i){ tillItems.splice(i,1); renderTill(); }
 function tillDropExtra(i){ tillExtras.splice(i,1); renderTill(); }
 
-/* + Τσάντα: από ό,τι έχει μαζί της στο bazaar */
+/* + Προϊόν: ό,τι έχει μαζί της στο bazaar, αλλιώς ό,τι υπάρχει στα έτοιμα προϊόντα */
 function tillAddPiece(){
-  const rows=bzStock(tillBz);
-  if(!rows.length){ adminFlash("Δεν έχεις κομμάτια σε αυτό το bazaar"); return; }
-  bzChoose("Ποια τσάντα;", rows.map(it=>({
-    id:it.id, name:it.name, meta:(it.sell_price!=null?fmtMoney(it.sell_price):"χωρίς τιμή")+" · "+fmtNum(it.qty)+" τεμ.", it
+  const rows = tillBz ? bzStock(tillBz)
+    : (stockCache||[]).filter(it=>it.type==="product" && Number(it.qty)>0 && !isArchivedStock(it));
+  if(!rows.length){ adminFlash(tillBz?"Δεν έχεις κομμάτια σε αυτό το bazaar":"Δεν υπάρχουν έτοιμα προϊόντα"); return; }
+  bzChoose("Τι πούλησες;", rows.map(it=>({
+    id:it.id, name:it.name, cat:it.category||"Άλλο",
+    meta:(it.sell_price!=null?fmtMoney(it.sell_price):"χωρίς τιμή")+" · "+fmtNum(it.qty)+" τεμ.", it
   })), id=>{ tillPush(id); renderTill(); });
 }
 /* + Συσκευασία / άλλο: ό,τι υπάρχει στην αποθήκη, αφαιρείται χωρίς να προστίθεται τζίρος */
@@ -6645,7 +6672,8 @@ function tillAddExtra(){
   const rows=(stockCache||[]).filter(it=>it.type!=="product" && !isArchivedStock(it));
   if(!rows.length){ adminFlash("Η αποθήκη δεν έχει υλικά"); return; }
   bzChoose("Τι άλλο να αφαιρεθεί;", rows.map(it=>({
-    id:it.id, name:it.name, meta:`${fmtNum(it.qty)} ${esc(it.unit||"τεμ.")}${it.unit_cost!=null?" · "+fmtMoney(it.unit_cost):""}`, it
+    id:it.id, name:it.name, cat:it.category||"Άλλο",
+    meta:`${fmtNum(it.qty)} ${esc(it.unit||"τεμ.")}${it.unit_cost!=null?" · "+fmtMoney(it.unit_cost):""}`, it
   })), id=>{
     const it=(stockCache||[]).find(x=>x.id===id); if(!it) return;
     const ex=tillExtras.find(e=>e.id===id);
@@ -6656,24 +6684,39 @@ function tillAddExtra(){
   });
 }
 
-/* μικρός επιλογέας μέσα στο ταμείο */
+/* Επιλογέας μέσα στο ταμείο — ομαδοποιημένος ανά κατηγορία, όπως στην παραγγελία. */
+let _bzChooseCb=null, _bzChooseRows=[];
 function bzChoose(title, rows, onPick){
-  const box=document.getElementById("bzPickList");
-  document.getElementById("bzPickCount").textContent=title;
+  _bzChooseCb=onPick; _bzChooseRows=rows||[];
+  document.getElementById("bzPickTitle").textContent=title;
+  document.getElementById("bzPickCount").textContent="Πάτα για να το προσθέσεις στην πώληση";
   document.getElementById("bzPickSearch").value="";
-  box.innerHTML=rows.map(r=>`<div class="picker-row bz-pick" onclick="bzChosen('${r.id}')">
-      ${stockThumb(r.it||{})}
-      <div class="pr-info"><div class="pr-name">${esc(r.name)}</div><div class="pr-meta">${r.meta||""}</div></div>
-      <div class="bz-check">+</div>
-    </div>`).join("");
-  _bzChooseCb=onPick;
   document.getElementById("bzPickSave").classList.add("hidden");
   document.getElementById("bzPickNew").classList.add("hidden");
+  renderBzChoose();
   _ovOpen("bzPickModal");
 }
-let _bzChooseCb=null;
+const CHOOSE_CAT_ORDER = ["Τσάντα","Αξεσουάρ","Little Luxuries","Mix & Match",
+  "Νήμα","Ταμπελάκι","Συσκευασία","Free Gift","Άλλο"];
+function renderBzChoose(){
+  const box=document.getElementById("bzPickList");
+  const q=(document.getElementById("bzPickSearch")?.value||"").trim();
+  let rows=_bzChooseRows;
+  if(q) rows=rows.filter(r=>smartMatch((r.name||"")+" "+(r.cat||""), q));
+  if(!rows.length){ box.innerHTML=`<div class="fbd-empty">Κανένα αποτέλεσμα${q?` για «${esc(q)}»`:""}.</div>`; return; }
+  const cats={}; rows.forEach(r=>{ const c=r.cat||"Άλλο"; (cats[c]=cats[c]||[]).push(r); });
+  box.innerHTML=Object.keys(cats).sort((a,b)=>{
+      const ia=CHOOSE_CAT_ORDER.indexOf(a), ib=CHOOSE_CAT_ORDER.indexOf(b);
+      return (ia<0?99:ia)-(ib<0?99:ib) || a.localeCompare(b,"el");
+    }).map(cat=>`<div class="stock-cat">${esc(cat)}</div>` + cats[cat].map(r=>
+      `<div class="picker-row bz-pick" onclick="bzChosen('${r.id}')">
+        ${stockThumb(r.it||{})}
+        <div class="pr-info"><div class="pr-name">${esc(r.name)}</div><div class="pr-meta">${r.meta||""}</div></div>
+        <div class="bz-check add">+</div>
+      </div>`).join("")).join("");
+}
 function bzChosen(id){
-  const cb=_bzChooseCb; _bzChooseCb=null;
+  const cb=_bzChooseCb; _bzChooseCb=null; _bzChooseRows=[];
   _ovClose("bzPickModal");
   if(cb) cb(id);
 }
@@ -6707,7 +6750,7 @@ async function tillCheckout(){
     const items=tillItems.map(l=>{
       const st=(stockCache||[]).find(x=>x.id===l.id)||{};
       return { id:newItemId(), name:l.name, price:Number(l.price)||0, stage:1, flow:"ready",
-               from_stock:l.id, bz:tillBz, ev:(stEv(st)||{}).id || null, ...(anon?{anon:true}:{}) };
+               from_stock:l.id, ...(tillBz?{bz:tillBz}:{}), ev:(stEv(st)||{}).id || null, ...(anon?{anon:true}:{}) };
     });
     const matCost = tillItems.reduce((a,l)=>{ const st=(stockCache||[]).find(x=>x.id===l.id)||{};
                       return a + (st.unit_cost!=null?Number(st.unit_cost):0); }, 0)
@@ -6718,7 +6761,7 @@ async function tillCheckout(){
       ...tillExtras.map(e=>({id:e.id,name:e.name,unit:e.unit,qty:e.qty,unit_cost:e.unit_cost}))
     ];
     await withTimeout(postOrder({
-      customer_name: anon ? ((b&&b.name)||"Πώληση σε bazaar") : name,
+      customer_name: anon ? ((b&&b.name)||"Πώληση χωρίς όνομα") : name,
       product_name: tillItems.map(l=>l.name).join(" · ").slice(0,200),
       delivery_method:"pickup", kind:"ready",
       price: total, cost: Math.round(matCost*100)/100, amount_paid: total,
