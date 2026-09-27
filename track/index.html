@@ -1698,7 +1698,7 @@ function renderTracking(o){
 
   // header
   document.getElementById("tOrderNo").textContent = o.order_number ? ("Παραγγελία " + o.order_number) : "Παραγγελία";
-  document.getElementById("tHello").textContent = o.customer_name ? ("Γεια σου " + firstName(o.customer_name) + " 👋") : "Η παραγγελία σου";
+  document.getElementById("tHello").textContent = (o.customer_name && !isAnonSale(o)) ? ("Γεια σου " + firstName(o.customer_name) + " 👋") : "Η παραγγελία σου";
 
   // σύνοψη κατάστασης
   let summary;
@@ -2994,7 +2994,7 @@ function closeOrderFeedback(){ _ovClose("fbOneModal"); }
 
 async function backfillVisits(){
   // ξαναϋπολόγισε όσα δεν συμφωνούν (π.χ. μετά από εισαγωγή παλιών παραγγελιών)
-  const missing=ordersCache.filter(o=>o.customer_name && Number(o.visit_no||0)!==visitNoFor(o));
+  const missing=ordersCache.filter(o=>o.customer_name && !isAnonSale(o) && Number(o.visit_no||0)!==visitNoFor(o));
   if(!missing.length) return;
   let changed=0;
   for(const o of missing){
@@ -3686,7 +3686,7 @@ function renderOrders(){
     return `<div class="order-row${!everyDone&&items.some(it=>itemFlow(it)==='return')?' is-return':''}">
       <div class="r-top">
         <div>
-          <div class="r-name">${esc(o.customer_name)}</div>
+          <div class="r-name">${isAnonSale(o)?`<span style="color:var(--muted);font-weight:500">${esc(o.customer_name)}</span>`:esc(o.customer_name)}</div>
           <div class="r-meta">
             ${o.order_number?`<span>${esc(o.order_number)}</span>`:""}
             ${o.created_at?`<span>${new Date(o.created_at).toLocaleDateString("el-GR",{day:"2-digit",month:"2-digit",year:"numeric"})}</span>`:""}
@@ -4651,6 +4651,7 @@ function buildCustIndex(){
   return idx;
 }
 function custKey(o){
+  if(isAnonSale(o)) return "";                                  // πώληση χωρίς αγοραστή — δεν είναι πελάτης
   if(o && o.id && custLinks[o.id]) return custLinks[o.id];      // χειροκίνητη διόρθωση
   if(!_custIdx || _custIdxLen!==ordersCache.length) buildCustIndex();
   if(o && o.id && _custIdx[o.id]!==undefined) return _custIdx[o.id];
@@ -6169,6 +6170,10 @@ function bzOf(o){
   return it ? bzById(it.bz) : null;
 }
 function isBazaarSale(o){ return !!(o && getItems(o).some(x=>x.bz)); }
+/* Πώληση χωρίς όνομα αγοραστή: η στήλη customer_name δεν δέχεται κενό, οπότε
+   γράφουμε εκεί από πού έφυγε το κομμάτι και το σημαδεύουμε ως ανώνυμο.
+   Έτσι δεν δημιουργείται ψεύτικος πελάτης ούτε χαιρετάει το tracking με λάθος όνομα. */
+function isAnonSale(o){ return !!(o && getItems(o).some(x=>x.anon)); }
 function bzSales(id){ return (ordersCache||[]).filter(o=>getItems(o).some(x=>x.bz===id)); }
 /* οικονομικά ενός bazaar */
 function bzTotals(b){
@@ -6345,10 +6350,12 @@ async function bzRecordSale(it, price, bzId, name, phone, paid){
     let r=await withTimeout(authFetch(REST + "/thilikon_stock?id=eq."+it.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({qty:newQty})}));
     if(!r.ok){ let t=""; try{ t=(await r.json()).message||""; }catch(_){} throw new Error("Η αποθήκη δεν ενημερώθηκε"+(t?": "+t:" (HTTP "+r.status+")")); }
     it.qty=newQty; stockDone=true;
+    const anon = !String(name||"").trim();
+    const who  = anon ? ((bzById(bzId)||{}).name || "Πώληση σε bazaar") : name.trim();
     const item={ id:newItemId(), name:it.name, details:null, stage:1, flow:"ready", note:null, price:price,
-                 ev:(stEv(it)||{}).id || null, from_stock:it.id, bz:bzId };
+                 ev:(stEv(it)||{}).id || null, from_stock:it.id, bz:bzId, ...(anon?{anon:true}:{}) };
     const payload={
-      customer_name:name||null, customer_phone:phone||null,
+      customer_name:who, customer_phone:phone||null,
       product_name:it.name, delivery_method:"pickup",
       price:price, cost:it.unit_cost!=null?Number(it.unit_cost):null,
       amount_paid:(paid!==false)?price:0, kind:"ready",
@@ -6548,10 +6555,12 @@ async function sellProduct(){
     if(!r.ok) throw new Error("stock");
     it.qty=newQty;
     // 2) δημιουργία παραγγελίας ready
+    const _anon = !name;
+    const _who  = _anon ? ((sellBzId ? (bzById(sellBzId)||{}).name : null) || "Πώληση χωρίς όνομα") : name;
     const item={ id:newItemId(), name:it.name, details:null, stage:1, flow:"ready", note:null, price:price,
-                 ev:(stEv(it)||{}).id || null, from_stock:it.id, ...(sellBzId?{bz:sellBzId}:{}) };
+                 ev:(stEv(it)||{}).id || null, from_stock:it.id, ...(sellBzId?{bz:sellBzId}:{}), ...(_anon?{anon:true}:{}) };
     const payload={
-      customer_name:name||null, customer_phone:phone||null,
+      customer_name:_who, customer_phone:phone||null,
       product_name:it.name, delivery_method:sellMethod,
       price:price, cost:it.unit_cost!=null?Number(it.unit_cost):null,
       amount_paid:paid?price:0, kind:"ready",
@@ -6560,10 +6569,7 @@ async function sellProduct(){
       materials:[{id:it.id,name:it.name,unit:it.unit||"τεμ.",qty:1,unit_cost:it.unit_cost!=null?Number(it.unit_cost):0}],
       stock_applied:true, items:[item]
     };
-    r=await authFetch(REST + "/orders",{method:"POST",headers:{"Prefer":"return=representation"},body:JSON.stringify(payload)});
-    const data=await r.json();
-    if(!r.ok) throw new Error((data&&data.message)||"order");
-    const row=Array.isArray(data)?data[0]:data;
+    const row=await postOrder(payload);
     sellCreatedToken=row.track_token;
     document.getElementById("sellLink").textContent=linkFor(row.track_token);
     document.getElementById("sellLinkWrap").classList.remove("hidden");
@@ -6575,7 +6581,9 @@ async function sellProduct(){
     // rollback στοκ αν απέτυχε η παραγγελία
     if(String(e.message)!=="stock"){ try{ await authFetch(REST + "/thilikon_stock?id=eq."+it.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({qty:prevQty})}); it.qty=prevQty; }catch(_){} }
     btn.disabled=false; btn.textContent="Καταχώρησε πώληση";
-    msg.textContent="Σφάλμα καταχώρησης. Δοκίμασε ξανά."; msg.classList.remove("hidden");
+    console.error(e);
+    msg.textContent="Σφάλμα καταχώρησης. "+((e&&e.message)||"")+" Δοκίμασε ξανά.";
+    msg.classList.remove("hidden");
   }
 }
 async function copySellLink(){
