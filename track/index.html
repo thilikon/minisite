@@ -5114,6 +5114,7 @@ async function loadSettings(){
   });
   if(changed){ eventsOn._autoOff=ao; saveSetting("events", eventsOn, true); }
   updateEventBadge();
+  await loadCatalog();          // φωτογραφίες/ονόματα από το minisite, πριν συγχρονιστούν οι προδιαγραφές
   await ensureAnasa();
 }
 async function ensureAnasa(){
@@ -5157,15 +5158,46 @@ async function ensureAnasa(){
       if(ex.price2==null && p.extra!=null){ ex.price2=p.extra; n++; }
       if(!ex.cat){ ex.cat=p.cat; n++; }
       if(ex.dep===undefined){ ex.dep=p.dep; n++; }
-      if(!ex.image_url && img){ ex.image_url=img; n++; }
+      if(!ex.image_url && img){ ex.image_url=img; ex.imgAuto=true; n++; }
       if(!ex.collection){ ex.collection=p.coll; ex.anasa=(p.coll==="ANASA"); n++; }
     }else{
       modelCat.push({id:"m"+Math.random().toString(36).slice(2,9), name:p.name, price:p.base, price2:p.extra,
-        materials:[], image_url:img, anasa:(p.coll==="ANASA"), cat:p.cat, dep:p.dep, collection:p.coll});
+        materials:[], image_url:img, imgAuto:!!img, anasa:(p.coll==="ANASA"), cat:p.cat, dep:p.dep, collection:p.coll});
       n++;
     }
   });
+  n += syncMinisite();
   if(n) await saveSetting("models", modelCat, true);
+  return n;
+}
+
+/* Ό,τι υπάρχει στο minisite περνάει στις Προδιαγραφές:
+   • νέα τσάντα → μπαίνει με τη φωτογραφία και τη συλλογή της (τιμή τη βάζει η Αναστασία)
+   • υπάρχουσα → ανανεώνεται η φωτογραφία, εκτός αν έχει βάλει δική της
+   Ό,τι έχει διαγράψει η Αναστασία δεν επιστρέφει. */
+function syncMinisite(){
+  let n=0;
+  const gone=(_flags&&_flags.removed)||[];
+  const CAT_MAP={ "Marshmallow":"Marshmallow", "T-Shirt Yarn":"Crochet",
+                  "Acrylic Beads":"Beaded", "Crystal Beads":"Beaded", "Accessories":"Beaded" };
+  (ANASA||[]).forEach(a=>{
+    if(!a || !a.name) return;
+    if(gone.includes(normText(a.name))) return;
+    const ex=(modelCat||[]).find(m=>normText(m.name)===normText(a.name));
+    if(ex){
+      if(a.img && ex.image_url!==a.img && (ex.imgAuto || !ex.image_url)){ ex.image_url=a.img; ex.imgAuto=true; n++; }
+      if(a.coll && !ex.collection){ ex.collection=a.coll; ex.anasa=(a.coll==="ANASA"); n++; }
+    }else{
+      const p=PRICE_LIST.find(x=>normText(x.name)===normText(a.name));
+      modelCat.push({ id:"m"+Math.random().toString(36).slice(2,9), name:a.name,
+        price:p?p.base:null, price2:p?p.extra:null, materials:[],
+        image_url:a.img||null, imgAuto:!!a.img,
+        cat:(p&&p.cat) || CAT_MAP[a.cat] || "Crochet",
+        dep:p?p.dep:false,
+        collection:a.coll||"ANASA", anasa:(a.coll||"ANASA")==="ANASA" });
+      n++;
+    }
+  });
   return n;
 }
 async function addAnasaNow(){
@@ -5296,7 +5328,8 @@ function directImg(u){
   return u;
 }
 function stockThumb(it){
-  const raw = it.image_url;
+  // αν το είδος δεν έχει δική του φωτογραφία, παίρνει αυτή του μοντέλου από το minisite
+  const raw = it.image_url || (it.type==="product" ? photoFor(it.name) : null);
   if(!raw) return '<div class="si-img"></div>';
   const m = String(raw).match(/#f=([\d.]+),([\d.]+),([\d.]+)/);
   if(m){
@@ -5643,19 +5676,83 @@ function priceInfo(name){ const n=normText(canonName(name)); return PRICE_LIST.f
 function needsDeposit(name){ const p=priceInfo(name); return !!(p&&p.dep); }
 
 /* ---- Φωτογραφίες συλλογής ANASA (mini-site) ---- */
-const ANASA = [
-  {name:"Loopi",          cat:"Marshmallow",    img:"https://i.imgur.com/4H32v0k.png"},
-  {name:"Hug",            cat:"Marshmallow",    img:"https://i.imgur.com/P8iXkZS.png"},
-  {name:"Grace",          cat:"T-Shirt Yarn",   img:"https://i.imgur.com/0RWHLZd.png"},
-  {name:"Bella",          cat:"T-Shirt Yarn",   img:"https://i.imgur.com/w5xTAYJ.png"},
-  {name:"Kelly",          cat:"T-Shirt Yarn",   img:"https://i.imgur.com/DZp7X0K.png"},
-  {name:"Nicole",         cat:"T-Shirt Yarn",   img:"https://i.imgur.com/oWKEiNp.png"},
-  {name:"Perla",          cat:"Acrylic Beads",  img:"https://i.imgur.com/zBxPh48.png"},
-  {name:"Laluna",         cat:"Crystal Beads",  img:"https://i.imgur.com/bV80dHm.png"},
-  {name:"Cardholder",     cat:"Accessories",    img:"https://i.imgur.com/K2nwZ3v.png"},
-  {name:"Heart Keychain", cat:"Accessories",    img:"https://i.imgur.com/U2lZbn4.png"},
-  {name:"Knit Basket",    cat:"Accessories",    img:"https://i.imgur.com/VIlFAAc.png"}
+/* ============ ΚΑΤΑΛΟΓΟΣ ΑΠΟ ΤΟ MINISITE ============
+   Οι φωτογραφίες και τα ονόματα έρχονται από το minisite (thilikon.github.io/minisite),
+   ώστε κάθε νέα τσάντα που ανεβαίνει εκεί να εμφανίζεται εδώ μόνη της — χωρίς να
+   χρειάζεται να ξαναγράψει κανείς τίποτα. Η λίστα από κάτω είναι το αντίγραφο
+   ασφαλείας, για όσο δεν έχει απαντήσει ακόμη το minisite.
+==================================================== */
+const CATALOG_SEED = [
+  // ANASA
+  {name:"Loopi",          cat:"Marshmallow",    coll:"ANASA",    img:"https://i.imgur.com/4H32v0k.png"},
+  {name:"Hug",            cat:"Marshmallow",    coll:"ANASA",    img:"https://i.imgur.com/P8iXkZS.png"},
+  {name:"Grace",          cat:"T-Shirt Yarn",   coll:"ANASA",    img:"https://i.imgur.com/0RWHLZd.png"},
+  {name:"Bella",          cat:"T-Shirt Yarn",   coll:"ANASA",    img:"https://i.imgur.com/w5xTAYJ.png"},
+  {name:"Kelly",          cat:"T-Shirt Yarn",   coll:"ANASA",    img:"https://i.imgur.com/DZp7X0K.png"},
+  {name:"Nicole",         cat:"T-Shirt Yarn",   coll:"ANASA",    img:"https://i.imgur.com/oWKEiNp.png"},
+  {name:"Perla",          cat:"Acrylic Beads",  coll:"ANASA",    img:"https://i.imgur.com/zBxPh48.png"},
+  {name:"Laluna",         cat:"Crystal Beads",  coll:"ANASA",    img:"https://i.imgur.com/bV80dHm.png"},
+  {name:"Cardholder",     cat:"Accessories",    coll:"ANASA",    img:"https://i.imgur.com/K2nwZ3v.png"},
+  {name:"Heart Keychain", cat:"Accessories",    coll:"ANASA",    img:"https://i.imgur.com/U2lZbn4.png"},
+  {name:"Knit Basket",    cat:"Accessories",    coll:"ANASA",    img:"https://i.imgur.com/VIlFAAc.png"},
+  // ANTHESIS
+  {name:"Softy",          cat:"Marshmallow",    coll:"ANTHESIS", img:"https://i.imgur.com/Cs8y1oy.png"},
+  {name:"Sarah",          cat:"T-Shirt Yarn",   coll:"ANTHESIS", img:"https://i.imgur.com/JU6ACZS.png"},
+  {name:"Zoe",            cat:"T-Shirt Yarn",   coll:"ANTHESIS", img:"https://i.imgur.com/r6y7Isc.png"}
 ];
+let ANASA = CATALOG_SEED.slice();          // ό,τι ξέρουμε τώρα (seed → cache → live minisite)
+
+/* --- φόρτωση του καταλόγου από το minisite --- */
+const MINISITE_CAT = { marshmallow:"Marshmallow", tshirt:"T-Shirt Yarn", acrylic:"Acrylic Beads",
+                       crystal:"Crystal Beads", accessories:"Accessories" };
+function parseMinisite(html){
+  const blk = String(html||"").match(/const\s+bags\s*=\s*\[([\s\S]*?)\n\];/);
+  if(!blk) return null;
+  const out=[];
+  blk[1].split("\n").forEach(line=>{
+    if(line.indexOf("{id:")<0) return;
+    if(/\bsoon\s*:\s*true/.test(line)) return;               // «Coming Soon» — δεν είναι προϊόν
+    const g=(k)=>{ const m=line.match(new RegExp("(?:^|[,{])"+k+"\\s*:\\s*'([^']*)'")); return m?m[1]:null; };
+    const name=g("name"); if(!name) return;
+    const img=g("img");
+    out.push({ name, img: img||null,
+               cat: MINISITE_CAT[g("cat")] || g("cat") || null,
+               coll: (g("coll")||"anasa").toUpperCase() });
+  });
+  return out.length ? out : null;
+}
+function catalogCache(){
+  try{ const raw=localStorage.getItem("th_catalog"); const v=raw?JSON.parse(raw):null;
+       return (v && Array.isArray(v.list) && v.list.length) ? v.list : null; }catch(e){ return null; }
+}
+function mergeCatalog(list){
+  // ό,τι δίνει το minisite υπερισχύει· ό,τι λείπει το κρατάμε από το seed
+  const byName={}; CATALOG_SEED.forEach(a=>byName[normText(a.name)]=Object.assign({},a));
+  list.forEach(a=>{
+    const k=normText(a.name); const prev=byName[k]||{};
+    byName[k]=Object.assign({}, prev, a, { img: a.img || prev.img || null });
+  });
+  ANASA = Object.values(byName);
+}
+async function loadCatalog(){
+  const cached=catalogCache();
+  if(cached) mergeCatalog(cached);                            // αμέσως, χωρίς αναμονή
+  const urls=[];
+  if(/^https?:$/.test(location.protocol)) urls.push(location.origin + "/minisite/");
+  urls.push("https://thilikon.github.io/minisite/");
+  for(const u of urls){
+    try{
+      const res=await fetch(u, {cache:"no-cache"});
+      if(!res.ok) continue;
+      const list=parseMinisite(await res.text());
+      if(!list) continue;
+      mergeCatalog(list);
+      try{ localStorage.setItem("th_catalog", JSON.stringify({at:Date.now(), list})); }catch(e){}
+      return list.length;
+    }catch(e){}
+  }
+  return 0;
+}
 const NAME_ALIAS = { "heart basket":"Knit Basket", "beaded heart":"Heart Keychain" };
 function canonName(name){
   const k=String(name||"").trim().toLowerCase();
@@ -5667,6 +5764,14 @@ function imgFor(name){
   return hit ? hit.img : null;
 }
 function anasaOf(name){ const n=normText(canonName(name)); return n ? ANASA.find(a=>normText(a.name)===n || n.includes(normText(a.name))) : null; }
+/* Η φωτογραφία ενός ονόματος, όπου κι αν εμφανίζεται:
+   πρώτα το minisite, μετά ό,τι έχει καταχωρηθεί στις Προδιαγραφές. */
+function photoFor(name){
+  const a=anasaOf(name);
+  if(a && a.img) return a.img;
+  const m=(modelCat||[]).find(x=>normText(x.name)===normText(canonName(name)));
+  return (m && m.image_url) || null;
+}
 
 /* ============ ΧΡΟΝΟΜΕΤΡΟ ΕΡΓΑΣΙΑΣ ============ */
 function fmtDur(sec){
@@ -6074,9 +6179,12 @@ async function saveModel(){
   if(coll==="__new") coll=(document.getElementById("mCollNew").value||"").trim();
   else if(coll==="__none") coll=null;
   const prev=editingModelId?modelCat.find(m=>m.id===editingModelId):null;
+  const _img=document.getElementById("mImg").value.trim()||null;
   const rec={ id: editingModelId || ("m"+Math.random().toString(36).slice(2,9)),
     name, price: parseMoney(document.getElementById("mPrice").value),
-    image_url: document.getElementById("mImg").value.trim()||null, materials: modelMats,
+    image_url: _img, materials: modelMats,
+    // αν άλλαξε τη φωτογραφία μόνη της, δεν την ξαναγράφει το minisite
+    imgAuto: (prev && prev.imgAuto && prev.image_url===_img) ? true : (!_img ? true : false),
     wholesale: parseMoney(document.getElementById("mWhole").value),
     price2: parseMoney(document.getElementById("mPrice2").value),
     collection: coll||null, anasa: coll==="ANASA" ? true : (prev?!!prev.anasa && coll==="ANASA":false),
