@@ -511,8 +511,10 @@ footer img.footer-logo{height:30px;filter:invert(1);margin-bottom:18px;display:b
       <p class="footer-tagline">Handcrafted bags &amp; accessories, made with love by Anastasia.</p>
     </div>
     <div>
-      <p class="footer-col-title">The Collections</p>
-      <ul class="footer-links" id="footerLinks"></ul>
+      <p class="footer-col-title">Anthesis</p>
+      <ul class="footer-links" id="footerLinksAnthesis"></ul>
+      <p class="footer-col-title" style="margin-top:30px">Anasa</p>
+      <ul class="footer-links" id="footerLinksAnasa"></ul>
     </div>
     <div>
       <p class="footer-col-title">Thilikon</p>
@@ -871,7 +873,8 @@ bags.forEach(b => { if (!b.coll) b.coll = 'anasa'; });
 
 // render bags
 const grid=document.getElementById('bagGrid');
-const flinks=document.getElementById('footerLinks');
+const flinksAnasa=document.getElementById('footerLinksAnasa');
+const flinksAnth=document.getElementById('footerLinksAnthesis');
 bags.forEach((b,i)=>{
   const card=document.createElement('div');
   card.className='bag-card fade-up'+(b.soon?' soon':'');
@@ -885,7 +888,8 @@ bags.forEach((b,i)=>{
   } else {
     card.innerHTML=`<div class="bag-img-wrap"><img src="${b.img}" alt="${b.name}" loading="lazy" onerror="this.parentElement.style.background='#e8e4de';this.style.display='none'"><div class="bag-overlay"></div></div><div class="bag-info"><span class="bag-cat-tag">${CATS[b.cat].label}</span><h3 class="bag-name">${b.name}</h3><p class="bag-desc">${b.desc}</p><p class="bag-ooakline">Delivered within 20 days</p><span class="bag-see">See colours</span></div>`;
     card.addEventListener('click',()=>openModal(b));
-    flinks.innerHTML+=`<li><a href="#collection" onclick="event.preventDefault();scrollToBag('${b.id}')">${b.name}</a></li>`;
+    const target = b.coll==='anthesis' ? flinksAnth : flinksAnasa;
+    target.innerHTML+=`<li><a href="#collection" onclick="event.preventDefault();scrollToBag('${b.id}')">${b.name}</a></li>`;
   }
   grid.appendChild(card);
 });
