@@ -481,6 +481,44 @@
   .mm-badge{display:inline-block;background:#c0266c;color:#fff;font-size:10px;font-weight:700;letter-spacing:.04em;padding:3px 9px;border-radius:var(--pill);vertical-align:middle}
 
 
+
+  /* ---- ταμείο: απόδειξη ---- */
+  .till-add{display:flex;gap:8px;margin-top:10px}
+  .till-add button{flex:1;border:1.5px dashed var(--line);background:none;border-radius:11px;padding:11px 8px;
+    font-family:'Inter';font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--ink-soft);cursor:pointer}
+  .till-add button:active{background:var(--stone)}
+  .till-sums{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+  .till-sum{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--ink-soft);padding:3px 0}
+  .till-sum input{width:84px;text-align:right;padding:7px 9px;font-size:13px;border:1px solid var(--line);border-radius:9px;font-family:'Inter';background:#fff}
+  .till-grand{display:flex;justify-content:space-between;align-items:baseline;margin-top:10px;padding-top:11px;border-top:1.5px solid var(--ink)}
+  .till-grand .l{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .till-grand .v{font-size:27px;font-weight:700}
+  .till-cash{margin-top:14px;background:var(--cream);border:1px solid var(--line);border-radius:13px;padding:12px 13px}
+  .till-cash-r{display:flex;align-items:center;gap:10px}
+  .till-cash-r .l{flex:1;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .till-cash-r input{width:104px;text-align:right;padding:9px 10px;font-size:15px;font-weight:600;border:1px solid var(--line);border-radius:10px;font-family:'Inter';background:#fff}
+  .till-chips{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
+  .till-chips button{border:1px solid var(--line);background:#fff;border-radius:100px;padding:7px 12px;
+    font-family:'Inter';font-size:12px;font-weight:600;color:var(--ink);cursor:pointer}
+  .till-chips button:active{background:var(--stone)}
+  #tillPaySeg .till-pay{flex:1}
+  .till-disc{display:flex;align-items:center;gap:8px}
+  .till-disc>span:first-child{flex:1}
+  .till-dm{display:inline-flex;border:1px solid var(--line);border-radius:100px;overflow:hidden;background:#fff;flex:none}
+  .till-dm button{border:none;background:none;padding:6px 12px;font-family:'Inter';font-size:12px;font-weight:700;
+    color:var(--muted);cursor:pointer;line-height:1}
+  .till-dm button.sel{background:var(--ink);color:#fff}
+  .till-chips.sm button{padding:5px 11px;font-size:11.5px}
+  .till-chips.sm{margin-top:7px}
+  .till-change{display:flex;justify-content:space-between;align-items:baseline;margin-top:11px;padding-top:10px;border-top:1px dashed var(--line)}
+  .till-change .l{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .till-change .v{font-size:23px;font-weight:700}
+  .till-change.short .v{color:#b54b3a}
+  .till-change.short .l{color:#b54b3a}
+  /* ---- επικεφαλίδα bazaar ---- */
+  .bz-back{display:inline-flex;align-items:center;gap:6px;background:none;border:none;padding:0;margin-bottom:9px;
+    font-family:'Inter';font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--muted);cursor:pointer}
+  .bz-back:active{color:var(--ink)}
   /* ---- ταμείο bazaar ---- */
   .till-line{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
   .till-line:last-of-type{border-bottom:none}
@@ -1264,20 +1302,40 @@
     </div>
     <div id="tillWhere" style="font-size:12px;color:var(--muted);margin-bottom:12px"></div>
     <div id="tillLines"></div>
-    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-      <button class="btn ghost sm" onclick="tillAddPiece()">+ Τσάντα</button>
-      <button class="btn ghost sm" onclick="tillAddExtra()">+ Συσκευασία / άλλο</button>
+    <div class="till-add">
+      <button onclick="tillAddPiece()">+ Προϊόν</button>
+      <button onclick="tillAddExtra()">+ Συσκευασία / άλλο</button>
     </div>
-    <div style="display:flex;gap:10px;margin-top:12px">
-      <label class="fld" style="flex:1"><span>Έκπτωση €</span><input id="tillDisc" inputmode="decimal" placeholder="0" oninput="renderTill()"></label>
-      <label class="fld" style="flex:1;position:relative;z-index:60"><span>Όνομα (προαιρετικό)</span>
-        <input id="tillName" placeholder="—"><div id="tillSug" class="name-sug hidden"></div></label>
+    <div class="till-sums">
+      <div class="till-sum"><span>Υποσύνολο</span><span id="tillSub">€0,00</span></div>
+      <div class="till-sum till-disc">
+        <span>Έκπτωση</span>
+        <span class="till-dm" id="tillDiscMode">
+          <button type="button" data-m="eur" class="sel" onclick="setTillDiscMode('eur')">€</button>
+          <button type="button" data-m="pct" onclick="setTillDiscMode('pct')">%</button>
+        </span>
+        <input id="tillDisc" inputmode="decimal" placeholder="0" oninput="renderTillMoney()">
+      </div>
+      <div class="till-chips sm" id="tillDiscChips"></div>
+      <div class="till-sum hidden" id="tillDiscOff"><span>Μείον</span><span id="tillDiscOffV">€0,00</span></div>
     </div>
-    <div class="seg" id="tillPaySeg" style="display:flex;gap:8px">
+    <div class="till-grand"><span class="l">Σύνολο</span><span class="v" id="tillTotal">€0,00</span></div>
+    <div class="seg" id="tillPaySeg" style="display:flex;gap:8px;margin-top:14px">
       <button type="button" class="btn ghost sm till-pay sel" data-p="cash" onclick="tillPay('cash')">💶 Μετρητά</button>
       <button type="button" class="btn ghost sm till-pay" data-p="card" onclick="tillPay('card')">💳 Κάρτα / IRIS</button>
     </div>
-    <div class="till-tot"><span class="l">Σύνολο</span><span class="v" id="tillTotal">€0,00</span></div>
+    <div class="till-cash" id="tillCashBox">
+      <div class="till-cash-r">
+        <span class="l">Δίνει</span>
+        <input id="tillCash" inputmode="decimal" placeholder="0" oninput="renderTillMoney()">
+      </div>
+      <div class="till-chips" id="tillChips"></div>
+      <div class="till-change" id="tillChangeRow">
+        <span class="l" id="tillChangeL">Ρέστα</span><span class="v" id="tillChange">€0,00</span>
+      </div>
+    </div>
+    <label class="fld" style="margin-top:14px;position:relative;z-index:60"><span>Όνομα (προαιρετικό)</span>
+      <input id="tillName" placeholder="—"><div id="tillSug" class="name-sug hidden"></div></label>
     <p id="tillMsg" class="msg err hidden"></p>
     <div style="display:flex;gap:10px;margin-top:16px">
       <button class="btn solid" style="flex:1" id="tillBtn" onclick="tillCheckout()">Καταχώρηση πώλησης</button>
@@ -6594,6 +6652,8 @@ function tillOpen(bzId, stockId){
     ? (b.name + (b.date?" · "+fmtMonthDate(b.date+"T09:00:00"):""))
     : "Πώληση από την αποθήκη";
   document.getElementById("tillDisc").value="";
+  setTillDiscMode("eur");
+  document.getElementById("tillCash").value="";
   document.getElementById("tillName").value="";
   document.getElementById("tillMsg").classList.add("hidden");
   document.getElementById("tillBtn").disabled=false;
@@ -6614,6 +6674,63 @@ function closeTill(){ _ovClose("tillModal"); }
 function tillPay(p){
   tillPayWay=p;
   document.querySelectorAll("#tillPaySeg .till-pay").forEach(b=>b.classList.toggle("sel", b.dataset.p===p));
+  document.getElementById("tillCashBox").classList.toggle("hidden", p!=="cash");
+  if(p!=="cash") document.getElementById("tillCash").value="";
+  renderTillMoney();
+}
+function tillSub(){ return Math.round(tillItems.reduce((a,l)=>a+(Number(l.price)||0),0)*100)/100; }
+/* Η έκπτωση μπαίνει είτε σε ευρώ είτε σε ποσοστό — ένα πάτημα αλλάζει τρόπο. */
+let tillDiscM="eur";
+function setTillDiscMode(m){
+  tillDiscM=m;
+  document.querySelectorAll("#tillDiscMode button").forEach(b=>b.classList.toggle("sel", b.dataset.m===m));
+  renderTillMoney();
+}
+function tillDiscOffAmount(){
+  const v=parseMoney(document.getElementById("tillDisc")?.value)||0;
+  if(v<=0) return 0;
+  if(tillDiscM==="pct") return Math.round(tillSub()*Math.min(100,v)/100*100)/100;
+  return Math.round(Math.min(v, tillSub())*100)/100;
+}
+function tillSetDisc(v){ document.getElementById("tillDisc").value=v; renderTillMoney(); }
+function tillDiscChips(){ return tillDiscM==="pct" ? [10,20,30] : [5,10,20]; }
+function tillCashIn(){ return parseMoney(document.getElementById("tillCash")?.value); }
+function tillChange(){ const c=tillCashIn(); return c==null?null:Math.round((c-tillTotal())*100)/100; }
+/* Στρογγυλά ποσά που πιθανότατα θα δώσει ο πελάτης — ένα πάτημα, χωρίς πληκτρολόγιο. */
+function tillCashChips(){
+  const t=tillTotal(); if(t<=0) return [];
+  const out=[t];
+  [5,10,20,50].forEach(step=>{ const v=Math.ceil(t/step)*step; if(v>t) out.push(v); });
+  [20,50].forEach(v=>{ if(v>t) out.push(v); });
+  return [...new Set(out)].sort((a,b)=>a-b).slice(0,4);
+}
+function tillSetCash(v){ document.getElementById("tillCash").value=v; renderTillMoney(); }
+function renderTillMoney(){
+  const total=tillTotal(), off=tillDiscOffAmount();
+  document.getElementById("tillSub").textContent=fmtMoney(tillSub());
+  document.getElementById("tillTotal").textContent=fmtMoney(total);
+  document.getElementById("tillDiscChips").innerHTML =
+    tillDiscChips().map(v=>`<button onclick="tillSetDisc(${v})">${tillDiscM==="pct"?v+"%":fmtMoney(v)}</button>`).join("")
+    + (off>0?`<button onclick="tillSetDisc('')">✕</button>`:"");
+  const offRow=document.getElementById("tillDiscOff");
+  offRow.classList.toggle("hidden", !(off>0 && tillDiscM==="pct"));
+  document.getElementById("tillDiscOffV").textContent="−"+fmtMoney(off);
+  document.getElementById("tillChips").innerHTML =
+    tillCashChips().map(v=>`<button onclick="tillSetCash(${v})">${fmtMoney(v)}</button>`).join("");
+  const row=document.getElementById("tillChangeRow"), ch=tillChange();
+  if(ch==null){
+    row.classList.remove("short");
+    document.getElementById("tillChangeL").textContent="Ρέστα";
+    document.getElementById("tillChange").textContent="—";
+  }else if(ch<0){
+    row.classList.add("short");
+    document.getElementById("tillChangeL").textContent="Λείπουν";
+    document.getElementById("tillChange").textContent=fmtMoney(-ch);
+  }else{
+    row.classList.remove("short");
+    document.getElementById("tillChangeL").textContent="Ρέστα";
+    document.getElementById("tillChange").textContent=fmtMoney(ch);
+  }
 }
 function tillPush(stockId){
   const it=(stockCache||[]).find(x=>x.id===stockId); if(!it) return;
@@ -6622,9 +6739,7 @@ function tillPush(stockId){
   tillItems.push({ id:it.id, name:it.name, price:(it.sell_price!=null?Number(it.sell_price):0) });
 }
 function tillTotal(){
-  const sum=tillItems.reduce((a,l)=>a+(Number(l.price)||0),0);
-  const disc=parseMoney(document.getElementById("tillDisc")?.value)||0;
-  return Math.max(0, Math.round((sum-disc)*100)/100);
+  return Math.max(0, Math.round((tillSub()-tillDiscOffAmount())*100)/100);
 }
 function renderTill(){
   const box=document.getElementById("tillLines");
@@ -6651,9 +6766,9 @@ function renderTill(){
     }).join("");
   }
   box.innerHTML=html;
-  document.getElementById("tillTotal").textContent=fmtMoney(tillTotal());
+  renderTillMoney();
 }
-function tillPrice(i, v){ if(tillItems[i]){ tillItems[i].price=parseMoney(v); document.getElementById("tillTotal").textContent=fmtMoney(tillTotal()); } }
+function tillPrice(i, v){ if(tillItems[i]){ tillItems[i].price=parseMoney(v); renderTillMoney(); } }
 function tillDrop(i){ tillItems.splice(i,1); renderTill(); }
 function tillDropExtra(i){ tillExtras.splice(i,1); renderTill(); }
 
@@ -6765,7 +6880,15 @@ async function tillCheckout(){
       product_name: tillItems.map(l=>l.name).join(" · ").slice(0,200),
       delivery_method:"pickup", kind:"ready",
       price: total, cost: Math.round(matCost*100)/100, amount_paid: total,
-      note: (tillPayWay==="card" ? "Κάρτα / IRIS" : "Μετρητά"),
+      note: (function(){
+        const off=tillDiscOffAmount();
+        const d=off>0 ? `έκπτωση ${tillDiscM==="pct"?(parseMoney(document.getElementById("tillDisc").value)||0)+"%":""} ${fmtMoney(off)}`.replace(/\s+/g," ").trim() : "";
+        const pay = tillPayWay==="card" ? "Κάρτα / IRIS" : (function(){
+          const c=tillCashIn(), ch=tillChange();
+          return "Μετρητά" + (c!=null && ch!=null && ch>0 ? ` · έδωσε ${fmtMoney(c)}, ρέστα ${fmtMoney(ch)}` : "");
+        })();
+        return d ? pay+" · "+d : pay;
+      })(),
       materials, stock_applied:true, items
     }));
     // κομμάτια που τελείωσαν φεύγουν από το bazaar
@@ -6845,7 +6968,7 @@ function bzDetailHtml(b){
   const pieces=bzStock(b.id);
   const sales=bzSales(b.id).sort((a,b2)=>new Date(b2.created_at||0)-new Date(a.created_at||0));
   const when = b.date ? fmtMonthDate(b.date+"T09:00:00") : "χωρίς ημερομηνία";
-  let html=`<button class="btn ghost sm" style="margin-bottom:14px" onclick="setBzView(null)">← Όλα τα bazaar</button>
+  let html=`<button class="bz-back" onclick="setBzView(null)">← Όλα τα bazaar</button>
   ${bzError?`<div class="msg err" style="margin-bottom:14px;text-align:left;line-height:1.6">${esc(bzError)}
     <button class="btn ghost sm" style="margin-top:8px" onclick="bzSetError(null)">Εντάξει</button></div>`:""}
   <div class="bz-hero">
