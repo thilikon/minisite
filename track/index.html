@@ -5187,7 +5187,8 @@ function syncMinisite(){
     if(gone.includes(normText(a.name))) return;
     const ex=(modelCat||[]).find(m=>normText(m.name)===normText(a.name));
     if(ex){
-      if(a.img && ex.image_url!==a.img && (ex.imgAuto || !ex.image_url)){ ex.image_url=a.img; ex.imgAuto=true; n++; }
+      // το minisite είναι η πηγή αλήθειας για τις φωτογραφίες των τσαντών
+      if(a.img && ex.image_url!==a.img){ ex.image_url=a.img; ex.imgAuto=true; n++; }
       if(a.coll && !ex.collection){ ex.collection=a.coll; ex.anasa=(a.coll==="ANASA"); n++; }
     }else{
       const p=PRICE_LIST.find(x=>normText(x.name)===normText(a.name));
@@ -5329,36 +5330,75 @@ function directImg(u){
   if(/dropbox\.com\//i.test(u)) return u.replace(/[?&]dl=\d/,"").replace(/[?&]raw=\d/,"") + (u.indexOf("?")>-1?"&":"?") + "raw=1";
   return u;
 }
-let _imgFail=0, _imgTry=0, _imgHintT=null;
-/* Μετράμε πόσες φωτογραφίες δεν φόρτωσαν, ώστε να φαίνεται αν φταίει το δίκτυο
-   ή ο αποκλεισμός του imgur — και όχι να μένουν σιωπηλά γκρίζα πλαίσια. */
+let _imgFail=0, _imgTry=0, _imgHintT=null, _imgBad=[], _imgProbe=null;
+/* Μετράμε ποιες φωτογραφίες δεν φόρτωσαν και δοκιμάζουμε μόνοι μας τι φταίει,
+   αντί να μένουν σιωπηλά γκρίζα πλαίσια. */
 function thImgFail(el){
   _imgFail++;
-  try{ el.outerHTML = '<div class="si-img"></div>'; }catch(e){}
-  clearTimeout(_imgHintT); _imgHintT=setTimeout(renderImgHint, 400);
+  try{ if(_imgBad.length<3) _imgBad.push(el.getAttribute("src")); }catch(e){}
+  try{ const st=el.getAttribute("style"); el.outerHTML = `<div class="si-img"${st?` style="${esc(st)}"`:""}></div>`; }catch(e){}
+  clearTimeout(_imgHintT); _imgHintT=setTimeout(renderImgHint, 500);
 }
-function renderImgHint(){
+function probeImg(url, ms){
+  return new Promise(res=>{
+    const i=new Image(); let done=false;
+    const fin=v=>{ if(!done){ done=true; res(v); } };
+    i.onload=()=>fin(true); i.onerror=()=>fin(false);
+    setTimeout(()=>fin(false), ms||6000);
+    i.src=url;
+  });
+}
+/* Ξεχωρίζει «δεν περνάει καμία εξωτερική εικόνα» από «το imgur δεν απαντά». */
+async function imgDiagnose(){
+  if(_imgProbe) return _imgProbe;
+  const px="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+  const bust="?cb="+Date.now();
+  const [inline, imgur, own] = await Promise.all([
+    probeImg(px, 2000),
+    probeImg("https://i.imgur.com/4H32v0k.png"+bust, 8000),
+    probeImg(location.origin+"/favicon.ico"+bust, 5000)
+  ]);
+  _imgProbe={inline, imgur, own};
+  return _imgProbe;
+}
+async function renderImgHint(){
   const box=document.getElementById("imgHint"); if(!box) return;
   if(_imgFail<2){ box.classList.add("hidden"); return; }
-  box.innerHTML = `Δεν φόρτωσαν <b>${_imgFail}</b> από <b>${_imgTry}</b> φωτογραφίες.
-    Συνήθως φταίει ο αποκλεισμός του imgur από τον browser ή κάποιο content blocker —
-    δοκίμασε σε άλλο δίκτυο ή browser για να το επιβεβαιώσεις.`;
+  const first=_imgBad[0]||"";
+  // κρατάμε τα νούμερα τώρα: ο έλεγχος αργεί και στο μεταξύ μπορεί να ξαναγίνει render
+  const nFail=_imgFail, nTry=Math.max(_imgTry, _imgFail);
+  box.innerHTML = `Δεν φόρτωσαν <b>${nFail}</b> από <b>${nTry}</b> φωτογραφίες. Γίνεται έλεγχος…`;
   box.classList.remove("hidden");
+  const d=await imgDiagnose();
+  let verdict;
+  if(!d.inline)      verdict = "Ο browser δεν εμφανίζει καθόλου εικόνες σε αυτή τη σελίδα.";
+  else if(d.imgur)   verdict = "Το imgur απαντά κανονικά — τα συγκεκριμένα links μάλλον δεν υπάρχουν πια.";
+  else if(d.own)     verdict = "Το imgur δεν απαντά, ενώ το thilikon.github.io απαντά — μπλοκάρεται το imgur (content blocker, DNS ή δίκτυο).";
+  else               verdict = "Δεν περνάει καμία εξωτερική εικόνα — δες σύνδεση ή content blocker.";
+  box.innerHTML = `Δεν φόρτωσαν <b>${nFail}</b> από <b>${nTry}</b> φωτογραφίες. ${verdict}`
+    + (first?`<div style="margin-top:6px;font-size:11px;word-break:break-all">Πρώτο link που απέτυχε:
+        <a href="${esc(first)}" target="_blank" rel="noopener" style="color:inherit">${esc(first)}</a>
+        <span style="opacity:.75">— άνοιξέ το σε νέα καρτέλα για να δεις αν υπάρχει.</span></div>`:"");
+}
+/* Ένα και μόνο σημείο που φτιάχνει <img> για φωτογραφία προϊόντος,
+   ώστε παντού να ισχύει το ίδιο fallback και ο ίδιος μετρητής. */
+function imgTag(url, extraStyle){
+  const u=directImg(url);
+  if(!u) return `<div class="si-img"${extraStyle?` style="${extraStyle}"`:""}></div>`;
+  _imgTry++;
+  return `<img class="si-img"${extraStyle?` style="${extraStyle}"`:""} src="${esc(u)}" alt="" onerror="thImgFail(this)">`;
 }
 function stockThumb(it){
-  // αν το είδος δεν έχει δική του φωτογραφία, παίρνει αυτή του μοντέλου από το minisite
-  const raw = it.image_url || (it.type==="product" ? photoFor(it.name) : null);
+  // τσάντα → πάντα η φωτογραφία του minisite· υλικό → η δική του
+  const raw = (it.type==="product" ? (minisiteImg(it.name) || it.image_url || photoFor(it.name))
+                                   : it.image_url);
   if(!raw) return '<div class="si-img"></div>';
   const m = String(raw).match(/#f=([\d.]+),([\d.]+),([\d.]+)/);
   if(m){
     const base = directImg(String(raw).split("#")[0]);
     return `<div class="si-img" style="background-image:url('${esc(base)}');background-size:${m[3]}%;background-position:${m[1]}% ${m[2]}%;background-repeat:no-repeat"></div>`;
   }
-  const u = directImg(raw);
-  if(!u) return '<div class="si-img"></div>';
-  _imgTry++;
-  // αν δεν φορτώσει, μένει καθαρό γκρι πλαίσιο αντί για σπασμένο εικονίδιο
-  return `<img class="si-img" src="${esc(u)}" alt="" onerror="thImgFail(this)">`;
+  return imgTag(raw);
 }
 function archivedIds(){ return ((_flags&&_flags.stockArchived)||[]); }
 function isArchivedStock(it){ return it && archivedIds().includes(it.id); }
@@ -5408,7 +5448,7 @@ function stockState(it){
 function isPerOrder(it){ return it && it.low_threshold!=null && Number(it.low_threshold)===0; }
 function setStockView(v){ stockView=v; renderStock(); syncRoute(); }
 function renderStock(){
-  _imgFail=0; _imgTry=0; const _ih=document.getElementById("imgHint"); if(_ih) _ih.classList.add("hidden");
+  _imgFail=0; _imgTry=0; _imgBad=[]; const _ih=document.getElementById("imgHint"); if(_ih) _ih.classList.add("hidden");
   const box=document.getElementById("stockAdmin"); const all=stockCache||[];
   const raw=all.filter(it=>it.type!=="product" && !stEv(it));
   const mm=all.filter(it=>it.type!=="product" && stEv(it));
@@ -5784,11 +5824,12 @@ function imgFor(name){
   return hit ? hit.img : null;
 }
 function anasaOf(name){ const n=normText(canonName(name)); return n ? ANASA.find(a=>normText(a.name)===n || n.includes(normText(a.name))) : null; }
-/* Η φωτογραφία ενός ονόματος, όπου κι αν εμφανίζεται:
-   πρώτα το minisite, μετά ό,τι έχει καταχωρηθεί στις Προδιαγραφές. */
+/* Η φωτογραφία μιας τσάντας έρχεται ΠΑΝΤΑ από το minisite — εκεί είναι η επίσημη.
+   Μόνο αν δεν υπάρχει εκεί, πέφτουμε σε ό,τι έχει καταχωρηθεί στις Προδιαγραφές. */
+function minisiteImg(name){ const a=anasaOf(name); return (a && a.img) || null; }
 function photoFor(name){
-  const a=anasaOf(name);
-  if(a && a.img) return a.img;
+  const mi=minisiteImg(name);
+  if(mi) return mi;
   const m=(modelCat||[]).find(x=>normText(x.name)===normText(canonName(name)));
   return (m && m.image_url) || null;
 }
@@ -6013,7 +6054,7 @@ function renderModels(){
     html+=`<div class="cust-line" style="margin-bottom:10px">Η συλλογή <b>ANASA</b> από το mini-site${sug.some(x=>!x.anasa)?" και τα custom που έχεις φτιάξει":""}. Ξετίκαρε όσα δεν χρησιμοποιείς:</div>`;
     html+=sug.map((m,i)=>`<label class="ms-row">
       <input type="checkbox" class="ms-chk" data-i="${i}" ${m.anasa||m.count?"checked":""}>
-      ${m.image_url?`<img class="si-img" style="width:38px;height:38px" src="${esc(m.image_url)}" alt="">`:`<div class="si-img" style="width:38px;height:38px"></div>`}
+      ${imgTag(minisiteImg(m.name) || m.image_url, "width:38px;height:38px")}
       <div style="flex:1;min-width:0">
         <div class="ms-n">${esc(m.name)}</div>
         <div class="ms-s">${esc(m.cat||"")}${m.count?` · ${m.count} ${m.count===1?"παραγγελία":"παραγγελίες"}`:" · χωρίς παραγγελία ακόμη"}${m.price!=null?` · ${fmtMoney(m.price)}`:""}</div>
