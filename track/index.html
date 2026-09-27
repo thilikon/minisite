@@ -862,6 +862,7 @@
       <div id="ordersList"><div class="spinner"></div></div>
       <div id="fbAdmin" class="hidden"></div>
       <input id="stockSearch" class="hidden" placeholder="Αναζήτηση στην αποθήκη…" oninput="renderStock()" style="margin-bottom:14px">
+      <div id="imgHint" class="r-hint hidden" style="color:#8a5a1e;background:#fdf6ea;margin-bottom:14px"></div>
       <div id="stockAdmin" class="hidden"></div>
       <input id="custSearch" class="hidden" placeholder="Αναζήτηση πελάτη…" oninput="renderCustomers()" style="margin-bottom:14px">
       <div id="custAdmin" class="hidden"></div>
@@ -2190,6 +2191,7 @@ function showAdminTab(tab){
   document.getElementById("fbAdmin").classList.toggle("hidden", !isFb);
   document.getElementById("stockAdmin").classList.toggle("hidden", !isStock);
   document.getElementById("stockSearch").classList.toggle("hidden", !isStock);
+  if(!isStock) document.getElementById("imgHint").classList.add("hidden");
   document.getElementById("custAdmin").classList.toggle("hidden", !isCust);
   document.getElementById("custSearch").classList.toggle("hidden", !isCust);
   document.getElementById("wholeAdmin").classList.toggle("hidden", !isWhole);
@@ -5327,6 +5329,22 @@ function directImg(u){
   if(/dropbox\.com\//i.test(u)) return u.replace(/[?&]dl=\d/,"").replace(/[?&]raw=\d/,"") + (u.indexOf("?")>-1?"&":"?") + "raw=1";
   return u;
 }
+let _imgFail=0, _imgTry=0, _imgHintT=null;
+/* Μετράμε πόσες φωτογραφίες δεν φόρτωσαν, ώστε να φαίνεται αν φταίει το δίκτυο
+   ή ο αποκλεισμός του imgur — και όχι να μένουν σιωπηλά γκρίζα πλαίσια. */
+function thImgFail(el){
+  _imgFail++;
+  try{ el.outerHTML = '<div class="si-img"></div>'; }catch(e){}
+  clearTimeout(_imgHintT); _imgHintT=setTimeout(renderImgHint, 400);
+}
+function renderImgHint(){
+  const box=document.getElementById("imgHint"); if(!box) return;
+  if(_imgFail<2){ box.classList.add("hidden"); return; }
+  box.innerHTML = `Δεν φόρτωσαν <b>${_imgFail}</b> από <b>${_imgTry}</b> φωτογραφίες.
+    Συνήθως φταίει ο αποκλεισμός του imgur από τον browser ή κάποιο content blocker —
+    δοκίμασε σε άλλο δίκτυο ή browser για να το επιβεβαιώσεις.`;
+  box.classList.remove("hidden");
+}
 function stockThumb(it){
   // αν το είδος δεν έχει δική του φωτογραφία, παίρνει αυτή του μοντέλου από το minisite
   const raw = it.image_url || (it.type==="product" ? photoFor(it.name) : null);
@@ -5338,8 +5356,9 @@ function stockThumb(it){
   }
   const u = directImg(raw);
   if(!u) return '<div class="si-img"></div>';
-  // αν δεν φορτώσει, μένει το γκρι πλαίσιο αντί για σπασμένο εικονίδιο
-  return `<img class="si-img" src="${esc(u)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='&lt;div class=&quot;si-img&quot;&gt;&lt;/div&gt;'">`;
+  _imgTry++;
+  // αν δεν φορτώσει, μένει καθαρό γκρι πλαίσιο αντί για σπασμένο εικονίδιο
+  return `<img class="si-img" src="${esc(u)}" alt="" onerror="thImgFail(this)">`;
 }
 function archivedIds(){ return ((_flags&&_flags.stockArchived)||[]); }
 function isArchivedStock(it){ return it && archivedIds().includes(it.id); }
@@ -5389,6 +5408,7 @@ function stockState(it){
 function isPerOrder(it){ return it && it.low_threshold!=null && Number(it.low_threshold)===0; }
 function setStockView(v){ stockView=v; renderStock(); syncRoute(); }
 function renderStock(){
+  _imgFail=0; _imgTry=0; const _ih=document.getElementById("imgHint"); if(_ih) _ih.classList.add("hidden");
   const box=document.getElementById("stockAdmin"); const all=stockCache||[];
   const raw=all.filter(it=>it.type!=="product" && !stEv(it));
   const mm=all.filter(it=>it.type!=="product" && stEv(it));
