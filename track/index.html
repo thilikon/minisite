@@ -534,6 +534,32 @@
   .till-empty{text-align:center;color:var(--muted);font-size:12.5px;padding:18px 0}
   .bz-badge{position:absolute;top:6px;right:6px;min-width:22px;height:22px;border-radius:11px;background:var(--ink);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 6px}
   .bz-tile{position:relative}
+
+  /* ---- πλαίσιο σελίδας ---- */
+  .page-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin:2px 0 16px}
+  .page-head .pt{font-size:25px;font-weight:600;line-height:1.05}
+  .page-head .ps{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5}
+  .page-head .pa{flex:none}
+  /* ---- αρχική ---- */
+  .home-sec{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:22px 0 10px}
+  .qa-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .qa{display:flex;flex-direction:column;align-items:flex-start;gap:7px;background:#fff;border:1px solid var(--line);
+      border-radius:14px;padding:14px 13px;cursor:pointer;text-align:left;font-family:'Inter';width:100%}
+  .qa:active{background:var(--stone)}
+  .qa .i{font-size:21px;line-height:1}
+  .qa .t{font-size:13px;font-weight:600;color:var(--ink);line-height:1.25}
+  .qa .d{font-size:11px;color:var(--muted);line-height:1.4}
+  .qa.dark{background:var(--ink);border-color:var(--ink)}
+  .qa.dark .t{color:#fff}
+  .qa.dark .d{color:rgba(255,255,255,.62)}
+  .now-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .now{background:var(--cream);border:1px solid var(--line);border-radius:14px;padding:13px;cursor:pointer;
+       text-align:left;font-family:'Inter';width:100%}
+  .now:active{background:var(--stone)}
+  .now .n{font-size:21px;font-weight:700;line-height:1.1}
+  .now .l{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4}
+  .now.warn{background:#fdf6ea;border-color:#f0e0c4}
+  .now.warn .n{color:#8a5a1e}
   /* ---- bazaar ---- */
   .bz-card{cursor:pointer}
   .bz-card:active{background:var(--stone)}
@@ -542,13 +568,12 @@
   .bz-hero-t{font-size:22px;font-weight:600;line-height:1.2}
   .bz-hero-s{font-size:12px;color:var(--muted);margin-top:4px}
   .bz-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(146px,1fr));gap:10px}
-  .bz-tile{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:7px}
+  .bz-tile{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:7px;
+    text-align:left;font-family:'Inter';cursor:pointer;width:100%}
+  .bz-tile:active{background:var(--stone)}
   .bz-tile .si-img{width:100%;height:112px;border-radius:10px;background-color:var(--stone);background-size:cover;background-position:center;object-fit:cover;display:block;flex:none}
   .bz-tn{font-size:12.5px;font-weight:600;line-height:1.3}
   .bz-tp{font-size:14px;font-weight:700}
-  .bz-sell{width:100%;padding:11px 8px;font-size:11px}
-  .bz-tact{display:flex;gap:6px}
-  .bz-tact .btn{flex:1;font-size:10px;padding:7px 6px}
   .picker-row.bz-pick{cursor:pointer}
   .picker-row.bz-pick.on{background:var(--cream);border-color:var(--ink)}
   .bz-check{flex:none;width:26px;height:26px;border-radius:8px;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;background:#fff}
@@ -889,20 +914,22 @@
     <div id="adminPanel" class="hidden">
       <div class="admin-bar">
         <div class="tabsw main">
-          <button class="tb sel" id="tabOrders" onclick="showAdminTab('orders')">Παραγγελίες</button>
+          <button class="tb sel" id="tabHome" onclick="showAdminTab('home')">Αρχική</button>
+          <button class="tb" id="tabOrders" onclick="showAdminTab('orders')">Παραγγελίες</button>
           <button class="tb" id="tabStock" onclick="showAdminTab('stock')">Αποθήκη</button>
           <button class="tb" id="tabCust" onclick="showAdminTab('customers')">Πελάτες</button>
           <button class="tb" id="tabWhole" onclick="showAdminTab('wholesale')">Χονδρική</button>
           <button class="tb" id="tabBz" onclick="showAdminTab('bazaar')">Bazaar</button>
+          <button class="tb" id="tabStats" onclick="showAdminTab('stats')">Στατιστικά</button>
           <button class="tb" id="tabFb" onclick="showAdminTab('feedback')">Feedback</button>
         </div>
         <div style="display:flex;gap:8px">
-          <button class="btn solid sm" id="newOrderBtn" onclick="openOrderModal()">+ Νέα</button>
-          <button class="btn solid sm hidden" id="newStockBtn" onclick="stockView==='models'?openModelModal():openStockModal()">+ Είδος</button>
-          <button class="btn ghost sm" onclick="openSettings()" title="Ρυθμίσεις events" style="position:relative">⚙<span id="gearDot" class="gear-dot hidden"></span></button>
+          <button class="btn ghost sm" onclick="openSettings()" title="Ρυθμίσεις" style="position:relative">⚙<span id="gearDot" class="gear-dot hidden"></span></button>
           <button class="btn ghost sm" onclick="adminLogout()">Έξοδος</button>
         </div>
       </div>
+      <div class="page-head" id="pageHead"></div>
+      <div id="homeAdmin" class="hidden"></div>
       <div class="stats open" id="statsBox">
         <div class="stats-h" onclick="document.getElementById('statsBox').classList.toggle('open')">
           <span class="e">Στατιστικά</span>
@@ -2228,7 +2255,7 @@ function authHeaders(){
 async function enterPanel(){
   document.getElementById("adminLogin").classList.add("hidden");
   document.getElementById("adminPanel").classList.remove("hidden");
-  if(!applyRoute()) showAdminTab("orders");
+  if(!applyRoute()) showAdminTab("home");
   await loadOrders();
   loadFeedback();
   loadStock();
@@ -2244,6 +2271,7 @@ async function enterPanel(){
 function refreshAfterSettings(){
   try{
     if(ordersCache.length){ renderStats(); renderOrders(); }
+    if(!document.getElementById("homeAdmin").classList.contains("hidden")) renderHome();
     if(!document.getElementById("bzAdmin").classList.contains("hidden")) renderBazaar();
     if(!document.getElementById("stockAdmin").classList.contains("hidden")) renderStock();
     if(!document.getElementById("custAdmin").classList.contains("hidden")) renderCustomers();
@@ -2253,10 +2281,10 @@ function refreshAfterSettings(){
 
 let _routeLock=false;
 function currentRoute(){
-  const t=["orders","stock","customers","wholesale","bazaar","feedback"].find(x=>{
-    const el=document.getElementById("tab"+({orders:"Orders",stock:"Stock",customers:"Cust",wholesale:"Whole",bazaar:"Bz",feedback:"Fb"})[x]);
+  const t=["home","orders","stock","customers","wholesale","bazaar","stats","feedback"].find(x=>{
+    const el=document.getElementById("tab"+({home:"Home",orders:"Orders",stock:"Stock",customers:"Cust",wholesale:"Whole",bazaar:"Bz",stats:"Stats",feedback:"Fb"})[x]);
     return el && el.classList.contains("sel");
-  }) || "orders";
+  }) || "home";
   if(t==="stock")  return `#/stock/${stockView}`;
   if(t==="bazaar") return bzView ? `#/bazaar/${bzView}` : `#/bazaar`;
   return `#/${t}`;
@@ -2270,7 +2298,7 @@ function applyRoute(){
   const h=(location.hash||"").replace(/^#\/?/,"");
   if(!h) return false;
   const [tab,sub]=h.split("/");
-  const valid=["orders","stock","customers","wholesale","bazaar","feedback"];
+  const valid=["home","orders","stock","customers","wholesale","bazaar","stats","feedback"];
   if(!valid.includes(tab)) return false;
   _routeLock=true;
   if(tab==="stock" && sub) stockView=sub;
@@ -2280,20 +2308,25 @@ function applyRoute(){
   return true;
 }
 function showAdminTab(tab){
-  const isOrders = tab==="orders", isStock = tab==="stock", isFb = tab==="feedback", isCust = tab==="customers", isWhole = tab==="wholesale", isBz = tab==="bazaar";
+  if(!PAGES[tab]) tab="home";
+  const isHome = tab==="home", isOrders = tab==="orders", isStock = tab==="stock", isFb = tab==="feedback",
+        isCust = tab==="customers", isWhole = tab==="wholesale", isBz = tab==="bazaar", isStats = tab==="stats";
+  document.getElementById("tabHome").classList.toggle("sel", isHome);
   document.getElementById("tabOrders").classList.toggle("sel", isOrders);
   document.getElementById("tabStock").classList.toggle("sel", isStock);
   document.getElementById("tabFb").classList.toggle("sel", isFb);
   document.getElementById("tabCust").classList.toggle("sel", isCust);
   document.getElementById("tabWhole").classList.toggle("sel", isWhole);
   document.getElementById("tabBz").classList.toggle("sel", isBz);
-  ["statsBox","search","orderFilters","ordersList"].forEach(id=>{
+  document.getElementById("tabStats").classList.toggle("sel", isStats);
+  ["search","orderFilters","ordersList"].forEach(id=>{
     const el = document.getElementById(id);
     if(el) el.classList.toggle("hidden", !isOrders);
   });
+  document.getElementById("statsBox").classList.toggle("hidden", !isStats);
+  document.getElementById("homeAdmin").classList.toggle("hidden", !isHome);
+  renderPageHead(tab);
   document.getElementById("adminMsg").classList.add("hidden");
-  document.getElementById("newOrderBtn").classList.toggle("hidden", !isOrders);
-  document.getElementById("newStockBtn").classList.toggle("hidden", !isStock);
   document.getElementById("fbAdmin").classList.toggle("hidden", !isFb);
   document.getElementById("stockAdmin").classList.toggle("hidden", !isStock);
   document.getElementById("stockSearch").classList.toggle("hidden", !isStock);
@@ -2307,6 +2340,8 @@ function showAdminTab(tab){
   syncRoute();
   if(isFb) renderFbDashboard();
   if(isStock){ if(stockCache.length) renderStock(); else { document.getElementById("stockAdmin").innerHTML='<div class="spinner"></div>'; loadStock(); } }
+  if(isHome) renderHome();
+  if(isStats && ordersCache.length) renderStats();
 }
 
 async function loadFeedback(){
@@ -2388,6 +2423,7 @@ async function loadOrders(){
     ordersCache = await res.json();
     renderStats();
     renderOrders();
+    if(!document.getElementById("homeAdmin").classList.contains("hidden")) renderHome();
   }catch(e){
     list.innerHTML='<div class="msg err">Σφάλμα φόρτωσης. Δοκίμασε ξανά.</div>';
   }
@@ -2970,8 +3006,8 @@ function renderStats(){
     bzRevMonth, bzSoldMonth, bzOpenNow});
 
 
+  _briefHtml = briefHtml; paintBrief();
   document.getElementById("statsBody").innerHTML = `
-    ${briefHtml}
     <div class="stat-grid">${tiles}</div>
     <div class="stat-row">
       <span class="stat-pill"><b>${totalItems}</b> Προϊόντα</span>
@@ -6586,59 +6622,6 @@ function newBzPiece(id){
 }
 
 /* ---- Γρήγορη πώληση στο bazaar ---- */
-async function bzQuickSell(stockId, bzId){
-  const it=(stockCache||[]).find(x=>x.id===stockId); if(!it) return;
-  if(Number(it.qty)<=0){ adminFlash("Δεν υπάρχει διαθέσιμο κομμάτι"); return; }
-  if(it.sell_price==null){ adminFlash("Βάλε πρώτα τιμή πώλησης (✎)"); openStockModal(stockId); return; }
-  const btn=document.getElementById("bzs-"+stockId); if(btn){ btn.disabled=true; btn.textContent="…"; }
-  let ok=false;
-  try{ ok=await bzRecordSale(it, Number(it.sell_price), bzId, null, null, true); }
-  finally{
-    // ό,τι κι αν γίνει, το κουμπί ξαναζωντανεύει — δεν μένει ποτέ κολλημένο
-    const b2=document.getElementById("bzs-"+stockId);
-    if(!ok && b2){ b2.disabled=false; b2.textContent="💰 Πουλήθηκε"; }
-  }
-}
-/* κοινή καταχώρηση πώλησης bazaar (χρησιμοποιείται και από το modal) */
-async function bzRecordSale(it, price, bzId, name, phone, paid){
-  const prevQty=Number(it.qty)||0;
-  let stockDone=false;
-  try{
-    const newQty=Math.max(0, prevQty-1);
-    let r=await withTimeout(authFetch(REST + "/thilikon_stock?id=eq."+it.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({qty:newQty})}));
-    if(!r.ok){ let t=""; try{ t=(await r.json()).message||""; }catch(_){} throw new Error("Η αποθήκη δεν ενημερώθηκε"+(t?": "+t:" (HTTP "+r.status+")")); }
-    it.qty=newQty; stockDone=true;
-    const anon = !String(name||"").trim();
-    const who  = anon ? ((bzById(bzId)||{}).name || "Πώληση σε bazaar") : name.trim();
-    const item={ id:newItemId(), name:it.name, details:null, stage:1, flow:"ready", note:null, price:price,
-                 ev:(stEv(it)||{}).id || null, from_stock:it.id, bz:bzId, ...(anon?{anon:true}:{}) };
-    const payload={
-      customer_name:who, customer_phone:phone||null,
-      product_name:it.name, delivery_method:"pickup",
-      price:price, cost:it.unit_cost!=null?Number(it.unit_cost):null,
-      amount_paid:(paid!==false)?price:0, kind:"ready",
-      event_id:(stEv(it)||{}).id || null,
-      mix_match:((stEv(it)||{}).id==="mix"),
-      materials:[{id:it.id,name:it.name,unit:it.unit||"τεμ.",qty:1,unit_cost:it.unit_cost!=null?Number(it.unit_cost):0}],
-      stock_applied:true, items:[item]
-    };
-    await withTimeout(postOrder(payload));
-    if(Number(it.qty)<=0){ delete bzItems[it.id]; await saveBzItems(true); }
-    bzError=null;
-    await loadOrders(); renderBazaar(); renderStock();
-    adminFlash("Πώληση ✓ "+fmtMoney(price));
-    return true;
-  }catch(e){
-    if(stockDone){   // η παραγγελία απέτυχε — γύρνα το απόθεμα πίσω
-      try{ await authFetch(REST + "/thilikon_stock?id=eq."+it.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({qty:prevQty})}); it.qty=prevQty; }catch(_){}
-    }
-    console.error(e);
-    bzSetError("Η πώληση δεν καταχωρήθηκε. "+(e&&e.message?e.message:"Άγνωστο σφάλμα")+" — δοκίμασε ξανά.");
-    return false;
-  }
-}
-
-
 /* ---- ΤΑΜΕΙΟ: λιανική πώληση επί τόπου, χωρίς παραγγελία και χωρίς link ----
    Καταχωρεί ΜΙΑ γραμμή πώλησης: τα χρήματα μπαίνουν στα οικονομικά, οι τσάντες
    και ό,τι άλλο διαλέξει (συσκευασία, δώρο) αφαιρούνται από την αποθήκη. */
@@ -6915,6 +6898,87 @@ async function tillCheckout(){
   }
 }
 
+
+/* ============ ΑΡΧΙΚΗ & ΠΛΑΙΣΙΟ ΣΕΛΙΔΩΝ ============
+   Κάθε σελίδα λέει τι είναι και τι κάνεις εκεί· η αρχική μαζεύει
+   ό,τι χρειάζεται συχνά, ώστε να μη χρειάζεται να ψάχνεις σε καρτέλες. */
+const PAGES = {
+  home:      {t:"Αρχική",       s:"Ό,τι χρειάζεσαι πιο συχνά, με ένα πάτημα"},
+  orders:    {t:"Παραγγελίες",  s:"Τι τρέχει τώρα και τι περιμένει",
+              act:{l:"+ Νέα παραγγελία", f:"openOrderModal()"}},
+  stock:     {t:"Αποθήκη",      s:"Προδιαγραφές, υλικά και έτοιμα κομμάτια",
+              act:{l:"+ Είδος", f:"stockView==='models'?openModelModal():openStockModal()"}},
+  customers: {t:"Πελάτες",      s:"Ποιοι αγοράζουν, τι έχουν πάρει, τι οφείλεται"},
+  wholesale: {t:"Χονδρική",     s:"Παραδόσεις σε καταστήματα και παρακαταθήκη",
+              act:{l:"📦 Νέα παράδοση", f:"newWholesale()"}},
+  bazaar:    {t:"Bazaar",       s:"Πώληση επί τόπου — ταμείο, όχι παραγγελία"},
+  stats:     {t:"Στατιστικά",   s:"Πώς πάει ο μήνας και η χρονιά"},
+  feedback:  {t:"Feedback",     s:"Τι λένε οι πελάτες"}
+};
+function renderPageHead(tab){
+  const box=document.getElementById("pageHead"); if(!box) return;
+  const p=PAGES[tab]; if(!p){ box.innerHTML=""; return; }
+  box.innerHTML = `<div><div class="pt serif">${esc(p.t)}</div><div class="ps">${esc(p.s)}</div></div>`
+    + (p.act?`<div class="pa"><button class="btn solid sm" onclick="${p.act.f}">${esc(p.act.l)}</button></div>`:"");
+}
+
+/* το σημείωμα της ημέρας ζει στην αρχική */
+let _briefHtml="";
+function paintBrief(){
+  const el=document.getElementById("homeBrief");
+  if(el) el.innerHTML=_briefHtml||"";
+}
+function goTab(tab, sub){
+  if(tab==="stock" && sub) stockView=sub;
+  if(tab==="customers" && sub) custFilter=sub;
+  showAdminTab(tab);
+}
+function homeQuick(){
+  const bz=bzCurrent();
+  const running=!!(timer && timer.startedAt);
+  const qa=[];
+  qa.push({dark:true, i:"➕", t:"Νέα παραγγελία", d:"Custom ή έτοιμο κομμάτι", f:"openOrderModal()"});
+  qa.push({i:"🧾", t:"Πώληση", d:"Ταμείο — ρέστα και έκπτωση", f:"tillOpen(null)"});
+  if(bz) qa.push({i:"🛍️", t:bz.name, d:"Άνοιξε το bazaar", f:`goTab('bazaar');setBzView('${bz.id}')`});
+  else   qa.push({i:"🛍️", t:"Bazaar", d:"Πώληση επί τόπου", f:"goTab('bazaar')"});
+  qa.push({i:"📦", t:"Προσθήκη στην αποθήκη", d:"Υλικό ή έτοιμο προϊόν", f:"goTab('stock','product');openStockModal(null)"});
+  qa.push({i:running?"⏸":"⏱", t:running?"Σταμάτα τον χρόνο":"Χρόνος εργασίας", d:running?"Τρέχει τώρα":"Ξεκίνα από μια παραγγελία", f:running?"timerPause()":"goTab('orders')"});
+  qa.push({i:"🏬", t:"Παράδοση χονδρικής", d:"Σε κατάστημα", f:"newWholesale()"});
+  qa.push({i:"📊", t:"Στατιστικά", d:"Τζίρος, κέρδος, χρόνοι", f:"goTab('stats')"});
+  if(wrapAvailable()) qa.push({i:"✨", t:"Η ανασκόπηση του μήνα", d:"Έτοιμη για σένα", f:"openWrap()"});
+  return `<div class="qa-grid">${qa.map(a=>`<button class="qa ${a.dark?"dark":""}" onclick="${a.f}">
+    <span class="i">${a.i}</span><span class="t">${esc(a.t)}</span><span class="d">${esc(a.d)}</span></button>`).join("")}</div>`;
+}
+function homeNow(){
+  const now=Date.now(), DAY=86400000;
+  let active=0, overdue=0, owed=0;
+  (ordersCache||[]).forEach(o=>{
+    if(isWholesale(o)){ const t=wTotals(o); owed+=Math.max(0,t.due-(Number(o.amount_paid)||0)); }
+    else{
+      if(!allDelivered(o)) active++;
+      owed+=Math.max(0,(Number(o.price)||0)-(Number(o.amount_paid)||0));
+      getItems(o).forEach(it=>{ if(it.eta && !itemDone(it) && new Date(it.eta)<now) overdue++; });
+    }
+  });
+  const low=(stockCache||[]).filter(it=>stockState(it)!=="ok" && !isArchivedStock(it)).length;
+  const bz=bzCurrent(); const bzLeft=bz?bzStock(bz.id).length:0;
+  const cards=[];
+  if(overdue) cards.push({warn:true, n:overdue, l:overdue===1?"παράδοση έχει περάσει":"παραδόσεις έχουν περάσει", f:"goTab('orders')"});
+  if(active)  cards.push({n:active, l:active===1?"παραγγελία σε εξέλιξη":"παραγγελίες σε εξέλιξη", f:"goTab('orders')"});
+  if(owed>0.01) cards.push({warn:true, n:fmtMoney(owed), l:"εκκρεμείς εισπράξεις", f:"goTab('customers','unpaid')"});
+  if(low)     cards.push({warn:true, n:low, l:low===1?"υλικό τελειώνει":"υλικά τελειώνουν", f:"goTab('stock','raw')"});
+  if(bz && bzLeft) cards.push({n:bzLeft, l:"κομμάτια στο "+bz.name, f:`goTab('bazaar');setBzView('${bz.id}')`});
+  if(!cards.length) return "";
+  return `<div class="home-sec">Τι τρέχει</div><div class="now-grid">${cards.map(c=>
+    `<button class="now ${c.warn?"warn":""}" onclick="${c.f}"><div class="n">${c.n}</div><div class="l">${esc(c.l)}</div></button>`).join("")}</div>`;
+}
+function renderHome(){
+  const box=document.getElementById("homeAdmin"); if(!box) return;
+  box.innerHTML = `<div id="homeBrief"></div>${homeNow()}
+    <div class="home-sec">Γρήγορες ενέργειες</div>${homeQuick()}`;
+  paintBrief();
+}
+
 /* ---- Η σελίδα του bazaar ---- */
 let bzView=null;   // null = λίστα, αλλιώς το id ενός bazaar
 function setBzView(id){ bzView=id||null; renderBazaar(); syncRoute(); }
@@ -6991,7 +7055,7 @@ function bzDetailHtml(b){
   <div style="font-size:11.5px;color:var(--muted);margin:0 0 16px">Έσοδα ${fmtMoney(t.rev)} − υλικά ${fmtMoney(t.mat)}${t.fee?` − συμμετοχή ${fmtMoney(t.fee)}`:""} = <b style="color:var(--ink)">${fmtMoney(t.net)}</b>. Οι πωλήσεις μπαίνουν κανονικά στον τζίρο και στο κέρδος του μήνα.</div>`;
 
   if(!b.closed){
-    html+=`<div class="stats-sub" style="margin-top:0">Πούλα με ένα πάτημα${pieces.length?` · ${pieces.length}`:""}</div>`;
+    html+=`<div class="stats-sub" style="margin-top:0">Πάτα ό,τι πούλησες${pieces.length?` · ${pieces.length}`:""}</div>`;
     if(!pieces.length){
       html+=`<div class="fbd-empty" style="line-height:1.7">Δεν έχεις διαλέξει κομμάτια ακόμη.<br>
         <div style="display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap">
@@ -6999,15 +7063,11 @@ function bzDetailHtml(b){
         </div></div>`;
     }else{
       html+=`<div class="bz-grid">`+pieces.map(it=>`
-        <div class="bz-tile">
+        <button class="bz-tile" onclick="tillOpen('${b.id}','${it.id}')">
           ${stockThumb(it)}
           <div class="bz-tn">${esc(it.name)}</div>
           <div class="bz-tp">${it.sell_price!=null?fmtMoney(it.sell_price):"— τιμή"}${Number(it.qty)>1?` <span style="color:var(--muted);font-weight:400">×${fmtNum(it.qty)}</span>`:""}</div>
-          <button class="btn solid sm bz-sell" id="bzs-${it.id}" onclick="bzQuickSell('${it.id}','${b.id}')">💰 Πουλήθηκε</button>
-          <div class="bz-tact">
-            <button class="btn ghost sm" title="Άλλη τιμή, πολλά είδη ή συσκευασία" onclick="tillOpen('${b.id}','${it.id}')">🧾 Ταμείο</button>
-          </div>
-        </div>`).join("")+`</div>
+        </button>`).join("")+`</div>
       <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
         <button class="btn solid sm" onclick="tillOpen('${b.id}')">🧾 Πώληση με πολλά είδη</button>
         <button class="btn ghost sm" onclick="openBzPicker('${b.id}')">🧺 Άλλαξε τι παίρνω</button>
