@@ -482,6 +482,50 @@
 
 
 
+
+
+  /* ---- σε μεγάλη οθόνη οι λίστες δεν τεντώνονται ---- */
+  @media(min-width:1080px){
+    #search,#stockSearch,#custSearch{max-width:560px}
+    #orderFilters{max-width:900px}
+    #ordersList{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+    #ordersList>.order-row{margin-bottom:0}
+    #ordersList>button,#ordersList>.spinner,#ordersList>.fbd-empty{grid-column:1 / -1}
+    #stockAdmin,#wholeAdmin,#custAdmin,#fbAdmin{max-width:900px}
+    #bzAdmin .led,#bzAdmin .sum,#bzAdmin .cust-row,#bzAdmin .bz-hero{max-width:640px}
+    #bzAdmin .stat-grid,#bzAdmin .bz-add{max-width:640px}
+  }
+  /* ---- λογιστικά μπλοκ (έξοδα, σύνοψη) ---- */
+  .led{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+  .led-h,.led-r,.led-f{display:flex;align-items:center;gap:10px;padding:9px 13px}
+  .led-h{background:var(--cream);border-bottom:1px solid var(--line);font-size:10px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--muted);font-weight:600}
+  .led-r{border-bottom:1px solid var(--line);font-size:12.5px}
+  .led-r:last-of-type{border-bottom:none}
+  .led-f{background:var(--cream);border-top:1px solid var(--line);font-size:12.5px;font-weight:700}
+  .led .d{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .led .d small{display:block;font-weight:400;font-size:11px;color:var(--muted)}
+  .led .a{width:82px;text-align:right;font-weight:600;flex:none;font-variant-numeric:tabular-nums}
+  .led-f .a{font-weight:700}
+  .led .x{flex:none;width:26px;height:26px;border-radius:7px;border:1px solid var(--line);background:#fff;
+    color:var(--muted);font-size:12px;cursor:pointer;line-height:1}
+  .led .x:active{background:var(--stone)}
+  .led-empty{padding:14px 13px;font-size:12px;color:var(--muted);line-height:1.6}
+  /* σύνοψη */
+  .sum{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+  .sum-r{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 13px;
+    font-size:12.5px;border-bottom:1px solid var(--line);color:var(--ink-soft)}
+  .sum-r .a{font-variant-numeric:tabular-nums;font-weight:600;color:var(--ink)}
+  .sum-r.off .a{color:#8a5a1e}
+  .sum-t{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:12px 13px;
+    background:var(--ink);color:#fff}
+  .sum-t .l{font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.7}
+  .sum-t .a{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums}
+  .bz-add{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .bz-add button{border:1.5px dashed var(--line);background:none;border-radius:11px;padding:10px 14px;
+    font-family:'Inter';font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;
+    color:var(--ink-soft);cursor:pointer}
+  .bz-add button:active{background:var(--stone)}
   /* ---- ταμείο: απόδειξη ---- */
   .till-add{display:flex;gap:8px;margin-top:10px}
   .till-add button{flex:1;border:1.5px dashed var(--line);background:none;border-radius:11px;padding:11px 8px;
@@ -1706,7 +1750,9 @@ function parseMoney(v){
 }
 function fmtMoney(n){
   if(n===null||n===undefined||isNaN(n)) return "—";
-  return "€" + Number(n).toLocaleString("el-GR",{minimumFractionDigits:2,maximumFractionDigits:2});
+  const v=Number(n);
+  const t="€" + Math.abs(v).toLocaleString("el-GR",{minimumFractionDigits:2,maximumFractionDigits:2});
+  return v<0 ? "−"+t : t;          // −€50,00 αντί για €-50,00
 }
 function rowQty(row){ const q=row.querySelector(".ie-qty"); return Math.max(1, parseInt(q&&q.value,10)||1); }
 function itemsTotal(){
@@ -7381,22 +7427,40 @@ function renderBazaar(){
 /* Τα γενικά έξοδα του bazaar, με ό,τι ήρθε από την αποθήκη ξεχωριστά. */
 function bzExpHtml(b){
   const list=bzExpList(b.id), tot=bzExpTotal(b.id);
-  const rows = list.length ? list.map(e=>`<div class="p-row" style="cursor:default">
-      ${e.stock_id?stockThumb((stockCache||[]).find(x=>x.id===e.stock_id)||{}):'<div class="si-img"></div>'}
-      <span class="m"><span class="n">${esc(e.name)}</span>
-      <span class="s">${e.stock_id?`${fmtNum(e.qty)} ${esc(e.unit||"τεμ.")} × ${fmtMoney(e.unit_cost)} · από αποθήκη`:"έξοδο"}</span></span>
-      <span class="v">${fmtMoney(bzExpOne(e))}</span>
-      ${b.closed?"":`<button class="till-x" onclick="bzDropExp('${b.id}','${e.key}')">✕</button>`}
+  const rows = list.length ? list.map(e=>`<div class="led-r">
+      <span class="d">${esc(e.name)}<small>${e.stock_id
+        ? `${fmtNum(e.qty)} ${esc(e.unit||"τεμ.")} × ${fmtMoney(e.unit_cost)} · από αποθήκη`
+        : "έξοδο εκτός αποθήκης"}</small></span>
+      <span class="a">${fmtMoney(bzExpOne(e))}</span>
+      ${b.closed?"":`<button class="x" title="Αφαίρεση" onclick="bzDropExp('${b.id}','${e.key}')">✕</button>`}
     </div>`).join("")
-    : `<div class="p-empty">Καμία καταχώρηση. Βάλε εδώ ό,τι πήρες μαζί σου — κάρτες, τσαντάκια, ετικέτες, παρκινγκ.</div>`;
-  return `<div class="stats-sub">Έξοδα bazaar${tot?` · ${fmtMoney(tot)}`:""}</div>
-    ${rows}
-    ${b.closed?"":`<div class="till-add" style="margin-top:10px">
+    : `<div class="led-empty">Καμία καταχώρηση. Εδώ μπαίνει ό,τι πήρες μαζί σου: κάρτες, τσαντάκια, ετικέτες, παρκινγκ.</div>`;
+  return `<div class="stats-sub">Έξοδα bazaar</div>
+    <div class="led">
+      <div class="led-h"><span class="d">Περιγραφή</span><span class="a">Σύνολο</span>${b.closed?"":'<span class="x" style="border:none;background:none"></span>'}</div>
+      ${rows}
+      ${list.length?`<div class="led-f"><span class="d">Σύνολο εξόδων</span>
+        <span class="a">${fmtMoney(tot)}</span>${b.closed?"":'<span class="x" style="border:none;background:none"></span>'}</div>`:""}
+    </div>
+    ${b.closed?"":`<div class="bz-add">
       <button onclick="bzAddExpStock('${b.id}')">+ Από αποθήκη</button>
       <button onclick="bzAddExpOther('${b.id}')">+ Άλλο έξοδο</button>
     </div>`}`;
 }
-
+/* Η σύνοψη διαβάζεται σαν ταμείο: τι μπήκε, τι βγήκε, τι έμεινε. */
+function bzSummaryHtml(b){
+  const t=bzTotals(b);
+  const row=(l,v,off)=>`<div class="sum-r ${off?"off":""}"><span>${esc(l)}</span><span class="a">${off?"−":""}${fmtMoney(v)}</span></div>`;
+  return `<div class="stats-sub">Σύνοψη</div>
+  <div class="sum">
+    ${row("Έσοδα πωλήσεων", t.rev, false)}
+    ${row("Κόστος υλικών", t.mat, true)}
+    ${t.fee?row("Κόστος συμμετοχής", t.fee, true):""}
+    ${t.exp?row("Έξοδα bazaar", t.exp, true):""}
+    <div class="sum-t"><span class="l">Καθαρό</span><span class="a">${fmtMoney(t.net)}</span></div>
+  </div>
+  <div style="font-size:11.5px;color:var(--muted);margin-top:8px">Οι πωλήσεις μπαίνουν κανονικά στον τζίρο και στο κέρδος του μήνα· η συμμετοχή και τα έξοδα αφαιρούνται από αυτό.</div>`;
+}
 function bzDetailHtml(b){
   const t=bzTotals(b), d=bzDays(b);
   const pieces=bzStock(b.id);
@@ -7422,8 +7486,7 @@ function bzDetailHtml(b){
     <div class="stat"><div class="n" style="font-size:20px">${fmtMoney(t.net)}</div><div class="l">Καθαρό</div></div>
     ${t.left?`<div class="stat"><div class="n">${t.left}</div><div class="l">Μαζί σου</div></div>`:""}
   </div>
-  <div style="font-size:11.5px;color:var(--muted);margin:0 0 16px">Έσοδα ${fmtMoney(t.rev)} − υλικά ${fmtMoney(t.mat)}${t.fee?` − συμμετοχή ${fmtMoney(t.fee)}`:""}${t.exp?` − έξοδα ${fmtMoney(t.exp)}`:""} = <b style="color:var(--ink)">${fmtMoney(t.net)}</b>. Οι πωλήσεις μπαίνουν κανονικά στον τζίρο και στο κέρδος του μήνα.</div>
-  ${bzExpHtml(b)}`;
+  `;
 
   if(!b.closed){
     html+=`<div class="stats-sub" style="margin-top:0">Πάτα ό,τι πούλησες${pieces.length?` · ${pieces.length}`:""}</div>`;
@@ -7461,6 +7524,7 @@ function bzDetailHtml(b){
         <div class="cr-r"><div class="cr-p">${fmtMoney(val)}</div></div></button></div>`;
     }).join("");
   }
+  html += bzExpHtml(b) + bzSummaryHtml(b);
   return html;
 }
 
