@@ -2829,9 +2829,10 @@ function renderStats(){
   // το κόστος συμμετοχής ενός bazaar του μήνα είναι πραγματικό έξοδο του μήνα
   let bzFeeMonth=0;
   (bazaars||[]).forEach(b=>{
-    if(!b.date || !b.fee) return;
+    if(!b.date) return;
     const d=new Date(b.date+"T00:00:00");
-    if(d.getFullYear()+"-"+d.getMonth()===ymNow) bzFeeMonth+=Number(b.fee)||0;
+    if(d.getFullYear()+"-"+d.getMonth()!==ymNow) return;
+    bzFeeMonth += (Number(b.fee)||0) + bzExpTotal(b.id);
   });
   if(bzFeeMonth>0 && costMonthKnown) profitMonth=Math.round((profitMonth-bzFeeMonth)*100)/100;
   const margin = (revCosted>0 && costMonthKnown) ? Math.round(profitMonth/revCosted*100) : null;
@@ -2920,7 +2921,7 @@ function renderStats(){
   const bzAgg=(bazaars||[]).map(b=>({b, t:bzTotals(b)}))
     .filter(x=> !b_yearOff(x.b) )
     .sort((a,b2)=>String(b2.b.date||"").localeCompare(String(a.b.date||"")));
-  const bzSum=bzAgg.reduce((a,x)=>{ a.rev+=x.t.rev; a.sold+=x.t.sold; a.net+=x.t.net; a.fee+=x.t.fee; return a; },{rev:0,sold:0,net:0,fee:0});
+  const bzSum=bzAgg.reduce((a,x)=>{ a.rev+=x.t.rev; a.sold+=x.t.sold; a.net+=x.t.net; a.fee+=x.t.fee; a.exp+=x.t.exp; return a; },{rev:0,sold:0,net:0,fee:0,exp:0});
   let bzRevMonth=0, bzSoldMonth=0;
   ordersCache.forEach(o=>{
     if(!isBazaarSale(o) || !o.created_at) return;
@@ -3102,7 +3103,7 @@ function renderStats(){
 
     <div class="stats-sub">Οικονομικά — τρέχων μήνας</div>
     <div class="stat-grid">${money}</div>
-    ${bzFeeMonth>0?`<div style="font-size:11.5px;color:var(--muted);margin-top:8px">Στο κέρδος του μήνα έχει ήδη αφαιρεθεί ${fmtMoney(bzFeeMonth)} κόστος συμμετοχής σε bazaar.</div>`:""}
+    ${bzFeeMonth>0?`<div style="font-size:11.5px;color:var(--muted);margin-top:8px">Στο κέρδος του μήνα έχουν ήδη αφαιρεθεί ${fmtMoney(bzFeeMonth)} σε συμμετοχή και έξοδα bazaar.</div>`:""}
     ${workSecMonth>0?`<div style="font-size:11.5px;color:var(--muted);margin-top:8px">Ο χρόνος εργασίας του μήνα (${fmtDur(workSecMonth)} × ${fmtMoney(hourRate)}/ώρα = ${fmtMoney(labourCost(workSecMonth))}) αφαιρείται μόνο στο «Καθαρό μετά εργασία».</div>`:""}
     ${partial?`<div style="background:#fdf6ea;border:1px solid #f0e0c4;border-left:3px solid #c9922e;border-radius:12px;padding:10px 13px;margin-top:10px;font-size:12px;color:#8a5a1e;line-height:1.6">
       ${monthOrders>0?`Κόστος υλικών έχουν <b>${monthCosted}</b> από <b>${monthOrders}</b> παραγγελίες του μήνα. `:""}Το κέρδος αφορά μόνο όσες έχουν κόστος — η εκτίμηση προβάλλει το ίδιο περιθώριο σε όλο τον τζίρο.
@@ -3136,7 +3137,7 @@ function renderStats(){
       <div style="flex:1;min-width:0"><div class="cr-t">${esc(x.b.name)}</div>
       <div class="cr-s">${x.b.date?fmtMonthDate(x.b.date+"T09:00:00"):"χωρίς ημερομηνία"} · ${x.t.sold} ${x.t.sold===1?"κομμάτι":"κομμάτια"}${x.t.left?` · ${x.t.left} απούλητα`:""}${x.b.closed?"":" · ανοιχτό"}</div></div>
       <div class="cr-r"><div class="cr-p">${fmtMoney(x.t.rev)}</div></div></button></div>`).join("")}</div>
-    ${bzSum.fee?`<div style="font-size:11.5px;color:var(--muted);margin-top:6px">Κόστος συμμετοχής ${fmtMoney(bzSum.fee)} — αφαιρείται από το καθαρό του bazaar, όχι από τον τζίρο.</div>`:""}`:""}
+    ${(bzSum.fee||bzSum.exp)?`<div style="font-size:11.5px;color:var(--muted);margin-top:6px">Συμμετοχή ${fmtMoney(bzSum.fee)}${bzSum.exp?` και έξοδα ${fmtMoney(bzSum.exp)}`:""} — αφαιρούνται από το καθαρό, όχι από τον τζίρο.</div>`:""}`:""}
 
     ${!catPerf.length && totalItems>0?`<div class="stats-sub">Απόδοση ανά κατηγορία</div>
     <div class="empty-hint">Δεν έχει μετρηθεί χρόνος ακόμη. Πάτα <b>⏱ Χρόνος</b> σε μια παραγγελία και μόλις τελειώσεις θα δεις εδώ
@@ -5323,7 +5324,8 @@ async function loadSettings(){
     bazaars   = Array.isArray(map.bazaars) ? map.bazaars : [];
     bzItems   = map.bz_items || {};
     prodBom   = map.prod_bom || {};
-  }catch(e){ eventsOn={}; custLinks={}; custInfo={}; modelCat=[]; bazaars=[]; bzItems={}; prodBom={}; }
+    bzExp     = map.bz_exp || {};
+  }catch(e){ eventsOn={}; custLinks={}; custInfo={}; modelCat=[]; bazaars=[]; bzItems={}; prodBom={}; bzExp={}; }
   renderTimerBar();
   // αυτόματο κλείσιμο event στη λήξη — γίνεται ΜΙΑ φορά, μετά ελέγχεις εσύ
   const ao = eventsOn._autoOff || {};
@@ -6560,8 +6562,18 @@ function bzSalePieces(o, id){
   return getItems(o).filter(x=>x.bz===id).reduce((a,it)=>a+Math.max(1,Number(it.qty)||1),0);
 }
 /* οικονομικά ενός bazaar */
+/* Γενικά έξοδα του bazaar: κάρτες, τσαντάκια, ετικέτες, παρκινγκ…
+   Ό,τι έρχεται από την αποθήκη αφαιρείται κανονικά από εκεί. */
+let bzExp = {};       // bazaarId -> [{key,name,stock_id,unit,qty,unit_cost,amount}]
+function bzExpList(id){ const a=bzExp[id]; return Array.isArray(a)?a:[]; }
+function bzExpOne(e){
+  return Math.round(((e.stock_id ? (Number(e.qty)||0)*(Number(e.unit_cost)||0) : (Number(e.amount)||0)))*100)/100;
+}
+function bzExpTotal(id){ return Math.round(bzExpList(id).reduce((a,e)=>a+bzExpOne(e),0)*100)/100; }
+async function saveBzExp(silent){ await saveSetting("bz_exp", bzExp, silent!==false); }
+
 function bzTotals(b){
-  if(!b) return {sold:0, rev:0, mat:0, fee:0, net:0, left:0, taken:0};
+  if(!b) return {sold:0, rev:0, mat:0, fee:0, exp:0, net:0, left:0, taken:0};
   const sales=bzSales(b.id);
   let sold=0, rev=0, mat=0;
   sales.forEach(o=>{
@@ -6570,9 +6582,66 @@ function bzTotals(b){
     if(o.cost!=null) mat+=Number(o.cost);
   });
   const fee=Number(b.fee)||0;
+  const exp=bzExpTotal(b.id);
   const left=bzStock(b.id).reduce((a,it)=>a+(Number(it.qty)||0),0);
-  return { sold, rev:Math.round(rev*100)/100, mat:Math.round(mat*100)/100, fee,
-           net:Math.round((rev-mat-fee)*100)/100, left, taken:sold+left, orders:sales.length };
+  return { sold, rev:Math.round(rev*100)/100, mat:Math.round(mat*100)/100, fee, exp,
+           net:Math.round((rev-mat-fee-exp)*100)/100, left, taken:sold+left, orders:sales.length };
+}
+
+/* ---- προσθήκη / αφαίρεση εξόδου ---- */
+function bzExpKey(){ return "e"+Math.random().toString(36).slice(2,9); }
+function bzAddExpStock(id){
+  if(!(stockCache||[]).length){ loadStock().then(()=>bzAddExpStock(id)); return; }
+  const rows=(stockCache||[]).filter(it=>it.type!=="product" && !isArchivedStock(it));
+  if(!rows.length){ adminFlash("Η αποθήκη δεν έχει υλικά"); return; }
+  bzChoose("Τι πήρες για το bazaar;", rows.map(it=>({
+    id:it.id, name:it.name, cat:it.category||"Άλλο",
+    meta:`${fmtNum(it.qty)} ${esc(it.unit||"τεμ.")}${it.unit_cost!=null?" · "+fmtMoney(it.unit_cost):""}`, it
+  })), async sid=>{
+    const it=(stockCache||[]).find(x=>x.id===sid); if(!it) return;
+    const raw=prompt(`Πόσα ${it.unit||"τεμ."} από «${it.name}»;`, "1");
+    if(raw===null) return;
+    const q=parseMoney(raw); if(q==null || q<=0) return;
+    await bzExpApply(id, {key:bzExpKey(), name:it.name, stock_id:it.id, unit:it.unit||"τεμ.",
+                          qty:q, unit_cost:it.unit_cost!=null?Number(it.unit_cost):0}, -q, it);
+  });
+}
+async function bzAddExpOther(id){
+  const name=prompt("Τι έξοδο;  (π.χ. παρκινγκ, βενζίνη)");
+  if(!name || !name.trim()) return;
+  const amt=parseMoney(prompt("Πόσο κόστισε;  (€)", "0"));
+  if(amt==null || amt<=0) return;
+  await bzExpApply(id, {key:bzExpKey(), name:name.trim(), stock_id:null, amount:amt}, 0, null);
+}
+/* κρατά το έξοδο και, αν είναι από την αποθήκη, διορθώνει το απόθεμα */
+async function bzExpApply(id, entry, delta, it){
+  if(it && delta){
+    const nq=Math.max(0, Math.round(((Number(it.qty)||0)+delta)*100)/100);
+    try{
+      const r=await authFetch(REST + "/thilikon_stock?id=eq."+it.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({qty:nq})});
+      if(!r.ok) throw new Error();
+      it.qty=nq;
+    }catch(e){ adminFlash("Η αποθήκη δεν ενημερώθηκε"); return; }
+  }
+  bzExp[id]=[...bzExpList(id), entry];
+  await saveBzExp(true);
+  renderBazaar(); renderStock();
+  adminFlash("Καταχωρήθηκε ✓");
+}
+async function bzDropExp(id, key){
+  const e=bzExpList(id).find(x=>x.key===key); if(!e) return;
+  if(!confirm(`Να αφαιρεθεί το έξοδο «${e.name}»${e.stock_id?" και να γυρίσει στην αποθήκη":""};`)) return;
+  if(e.stock_id){
+    const it=(stockCache||[]).find(x=>x.id===e.stock_id);
+    if(it){
+      const nq=Math.max(0, Math.round(((Number(it.qty)||0)+(Number(e.qty)||0))*100)/100);
+      try{ await authFetch(REST + "/thilikon_stock?id=eq."+it.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({qty:nq})}); it.qty=nq; }catch(_){}
+    }
+  }
+  bzExp[id]=bzExpList(id).filter(x=>x.key!==key);
+  await saveBzExp(true);
+  renderBazaar(); renderStock();
+  adminFlash("Αφαιρέθηκε ✓");
 }
 async function saveBazaars(silent){ await saveSetting("bazaars", bazaars, silent!==false); }
 async function saveBzItems(silent){ await saveSetting("bz_items", bzItems, silent!==false); }
@@ -7277,12 +7346,13 @@ function renderBazaar(){
       Ό,τι δεν πουληθεί γυρίζει μόνο του στα έτοιμα προϊόντα.</span></div>`;
     return;
   }
-  const tot=list.reduce((a,b)=>{ const t=bzTotals(b); a.rev+=t.rev; a.sold+=t.sold; a.net+=t.net; return a; },{rev:0,sold:0,net:0});
+  const tot=list.reduce((a,b)=>{ const t=bzTotals(b); a.rev+=t.rev; a.sold+=t.sold; a.net+=t.net; a.exp+=t.exp+t.fee; return a; },{rev:0,sold:0,net:0,exp:0});
   html+=`<div class="stat-grid" style="margin-bottom:16px">
     <div class="stat dark"><div class="n">${list.length}</div><div class="l">Bazaar</div></div>
     <div class="stat"><div class="n">${tot.sold}</div><div class="l">Κομμάτια</div></div>
     <div class="stat"><div class="n" style="font-size:20px">${fmtMoney(tot.rev)}</div><div class="l">Έσοδα</div></div>
     <div class="stat"><div class="n" style="font-size:20px">${fmtMoney(tot.net)}</div><div class="l">Καθαρό</div></div>
+    ${tot.exp?`<div class="stat"><div class="n" style="font-size:20px">${fmtMoney(tot.exp)}</div><div class="l">Έξοδα</div></div>`:""}
   </div>`;
   html+=list.map(b=>{
     const t=bzTotals(b), d=bzDays(b);
@@ -7307,6 +7377,26 @@ function renderBazaar(){
   }).join("");
   box.innerHTML=html;
 }
+
+/* Τα γενικά έξοδα του bazaar, με ό,τι ήρθε από την αποθήκη ξεχωριστά. */
+function bzExpHtml(b){
+  const list=bzExpList(b.id), tot=bzExpTotal(b.id);
+  const rows = list.length ? list.map(e=>`<div class="p-row" style="cursor:default">
+      ${e.stock_id?stockThumb((stockCache||[]).find(x=>x.id===e.stock_id)||{}):'<div class="si-img"></div>'}
+      <span class="m"><span class="n">${esc(e.name)}</span>
+      <span class="s">${e.stock_id?`${fmtNum(e.qty)} ${esc(e.unit||"τεμ.")} × ${fmtMoney(e.unit_cost)} · από αποθήκη`:"έξοδο"}</span></span>
+      <span class="v">${fmtMoney(bzExpOne(e))}</span>
+      ${b.closed?"":`<button class="till-x" onclick="bzDropExp('${b.id}','${e.key}')">✕</button>`}
+    </div>`).join("")
+    : `<div class="p-empty">Καμία καταχώρηση. Βάλε εδώ ό,τι πήρες μαζί σου — κάρτες, τσαντάκια, ετικέτες, παρκινγκ.</div>`;
+  return `<div class="stats-sub">Έξοδα bazaar${tot?` · ${fmtMoney(tot)}`:""}</div>
+    ${rows}
+    ${b.closed?"":`<div class="till-add" style="margin-top:10px">
+      <button onclick="bzAddExpStock('${b.id}')">+ Από αποθήκη</button>
+      <button onclick="bzAddExpOther('${b.id}')">+ Άλλο έξοδο</button>
+    </div>`}`;
+}
+
 function bzDetailHtml(b){
   const t=bzTotals(b), d=bzDays(b);
   const pieces=bzStock(b.id);
@@ -7332,7 +7422,8 @@ function bzDetailHtml(b){
     <div class="stat"><div class="n" style="font-size:20px">${fmtMoney(t.net)}</div><div class="l">Καθαρό</div></div>
     ${t.left?`<div class="stat"><div class="n">${t.left}</div><div class="l">Μαζί σου</div></div>`:""}
   </div>
-  <div style="font-size:11.5px;color:var(--muted);margin:0 0 16px">Έσοδα ${fmtMoney(t.rev)} − υλικά ${fmtMoney(t.mat)}${t.fee?` − συμμετοχή ${fmtMoney(t.fee)}`:""} = <b style="color:var(--ink)">${fmtMoney(t.net)}</b>. Οι πωλήσεις μπαίνουν κανονικά στον τζίρο και στο κέρδος του μήνα.</div>`;
+  <div style="font-size:11.5px;color:var(--muted);margin:0 0 16px">Έσοδα ${fmtMoney(t.rev)} − υλικά ${fmtMoney(t.mat)}${t.fee?` − συμμετοχή ${fmtMoney(t.fee)}`:""}${t.exp?` − έξοδα ${fmtMoney(t.exp)}`:""} = <b style="color:var(--ink)">${fmtMoney(t.net)}</b>. Οι πωλήσεις μπαίνουν κανονικά στον τζίρο και στο κέρδος του μήνα.</div>
+  ${bzExpHtml(b)}`;
 
   if(!b.closed){
     html+=`<div class="stats-sub" style="margin-top:0">Πάτα ό,τι πούλησες${pieces.length?` · ${pieces.length}`:""}</div>`;
