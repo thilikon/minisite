@@ -5616,6 +5616,22 @@ async function toggleArchiveStock(id){
   renderStock(); renderStats();
   adminFlash(list.includes(id)?"Επαναφέρθηκε ✓":"Αρχειοθετήθηκε ✓");
 }
+/* Μοναδικά κομμάτια που πουλήθηκαν και δεν ξανακατασκευάζονται: βγαίνουν
+   από τον ενεργό κατάλογο αλλά παραμένουν στο ιστορικό και στα στατιστικά. */
+function soldOutPieces(){
+  return (stockCache||[]).filter(it=>it.type==="product" && Number(it.qty)<=0
+    && !isArchivedStock(it) && it.status!=="written_off");
+}
+async function archiveSoldOut(){
+  const list=soldOutPieces();
+  if(!list.length) return;
+  if(!confirm(`Αρχειοθέτηση ${list.length} ${list.length===1?"κομματιού":"κομματιών"} που πουλήθηκαν.\n\nΒγαίνουν από τον ενεργό κατάλογο. Παραμένουν στο ιστορικό, στις πωλήσεις και στα στατιστικά, και επαναφέρονται όποτε θέλεις.`)) return;
+  const next=[...archivedIds(), ...list.map(x=>x.id)];
+  _flags=Object.assign({}, _flags||{}, {stockArchived:[...new Set(next)]});
+  await saveSetting("flags", _flags, true);
+  renderStock(); renderStats();
+  adminFlash(`Αρχειοθετήθηκαν ${list.length} ✓`);
+}
 async function archiveAllStale(){
   const stale=(stockCache||[]).filter(staleStock).map(x=>x.id);
   if(!stale.length) return;
@@ -5699,6 +5715,10 @@ function renderStock(){
     html+=`<div class="r-hint" style="color:#8a5a1e;background:#fdf6ea;margin-bottom:14px">${stockView==="product"?"Λίγα κομμάτια":"Τελειώνουν"}: ${lowItems.map(it=>esc(it.name)+(stockState(it)==="out"?" (0)":` (${fmtNum(it.qty)})`)).join(" · ")}</div>`;
   }
   if(stockView==="product"){
+    const _sold=soldOutPieces();
+    if(_sold.length) html+=`<div class="r-hint" style="margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span style="flex:1;min-width:180px"><b>${_sold.length}</b> ${_sold.length===1?"κομμάτι πουλήθηκε":"κομμάτια πουλήθηκαν"} και δεν υπάρχει απόθεμα.</span>
+      <button class="btn ghost sm" onclick="archiveSoldOut()">🗄 Αρχειοθέτηση</button></div>`;
     const _bzOn=bzOpen().map(b=>({b, n:bzStock(b.id).length})).filter(x=>x.n>0);
     if(_bzOn.length) html+=`<div class="r-hint" style="margin-bottom:14px">${_bzOn.map(x=>`<b>${x.n}</b> ${x.n===1?"κομμάτι":"κομμάτια"} στο <button class="mm-pill cust-pill" style="background:#f3efe6;color:#8a6a2e;border-color:#e4d9c2" onclick="showAdminTab('bazaar');setBzView('${x.b.id}')">🛍️ ${esc(x.b.name)}</button>`).join(" · ")}</div>`;
   }
@@ -5727,13 +5747,15 @@ function renderStock(){
         ${stockThumb(it)}
         <div class="si-info">
           <div class="si-name">${esc(it.name)}${_sev&&isProd?` <span class="mm-pill" style="background:${_sev.color}26;color:${_sev.ink||_sev.color};border-color:${_sev.color}">${esc(_sev.name)}</span>`:""}${(function(){const b=bzOfStock(it);return b?` <button class="mm-pill cust-pill" style="background:#f3efe6;color:#8a6a2e;border-color:#e4d9c2" onclick="showAdminTab('bazaar');setBzView('${b.id}')">🛍️ ${esc(b.name)}</button>`:"";})()}</div>
-          <div class="si-meta">${meta}${it.status==="written_off"?` · <span style="color:#b54b3a">αποσύρθηκε${it.status_reason?" ("+esc(it.status_reason)+")":""}</span>`:""}${isPerOrder(it)?' · <span style="color:var(--muted)">ανά παραγγελία</span>':(st==="low"?' · <span class="si-low">'+(isProd?"λίγα":"τελειώνει")+'</span>':st==="out"?' · <span class="si-low">εξαντλήθηκε</span>':'')}</div>
+          <div class="si-meta">${meta}${it.status==="written_off"?` · <span style="color:#b54b3a">αποσύρθηκε${it.status_reason?" ("+esc(it.status_reason)+")":""}</span>`:""}${(isPerJob(it))?' · <span style="color:var(--muted)">ανά παραγγελία</span>':(st==="low"?' · <span class="si-low">'+(isProd?"λίγα":"τελειώνει")+'</span>':st==="out"?' · <span class="si-low">εξαντλήθηκε</span>':'')}</div>
         </div>
         ${isProd ? `<div class="si-actions">
           ${qtyBlock}
           <button class="btn solid sm" ${Number(it.qty)>0?"":"disabled"} onclick="tillOpen(null,'${it.id}')">Πούλησέ το</button>
           <button class="btn ghost sm" title="Κινήσεις" onclick="openStockHistory('${it.id}')">📋</button>
-          ${Number(it.qty)>0?`<button class="btn ghost sm" title="Απόσυρση κομματιού" onclick="writeOffPiece('${it.id}')">⊘</button>`:""}
+          ${Number(it.qty)>0
+             ? `<button class="btn ghost sm" title="Απόσυρση — το έχω αλλά το βγάζω από το απόθεμα" onclick="writeOffPiece('${it.id}')">⊘</button>`
+             : `<button class="btn ghost sm" title="${isArchivedStock(it)?'Επαναφορά στον ενεργό κατάλογο':'Αρχειοθέτηση — πουλήθηκε, δεν ξανακατασκευάζεται'}" onclick="toggleArchiveStock('${it.id}')">${isArchivedStock(it)?'↩':'🗄'}</button>`}
           <button class="btn ghost sm" onclick="openStockModal('${it.id}')">✎</button>
         </div>` : `${qtyBlock}<button class="btn ghost sm" title="Κινήσεις είδους" onclick="openStockHistory('${it.id}')">📋</button><button class="btn ghost sm" title="${isArchivedStock(it)?'Επαναφορά':'Αρχειοθέτηση'}" onclick="toggleArchiveStock('${it.id}')">${isArchivedStock(it)?'↩':'🗄'}</button><button class="btn ghost sm" onclick="openStockModal('${it.id}')">✎</button>`}
       </div>`;
@@ -7466,7 +7488,12 @@ async function loadStockMoves(itemId){
 }
 
 /* ---- είδη: τρόπος παρακολούθησης ---- */
-function isPerJob(it){ return !!it && (it.stock_mode==="per_job" || (it.stock_mode==null && Number(it.low_threshold)===0)); }
+/* «Ανά παραγγελία» αφορά υλικά που αγοράζονται για συγκεκριμένη δουλειά.
+   Ένα έτοιμο κομμάτι κατασκευάζεται — δεν ανήκει ποτέ εδώ. */
+function isPerJob(it){
+  if(!it || it.type==="product") return false;
+  return it.stock_mode==="per_job" || (it.stock_mode==null && Number(it.low_threshold)===0);
+}
 function isStocked(it){ return !!it && !isPerJob(it); }
 
 
