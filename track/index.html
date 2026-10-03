@@ -1388,6 +1388,7 @@
     <p style="font-size:11.5px;color:var(--muted);margin-top:-8px">Χρησιμοποιείται από το χρονόμετρο για να υπολογίζεται η αξία του χρόνου σου.</p>
     <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px">Δεδομένα</p>
     <button class="btn ghost" style="width:100%" onclick="closeSettings();rebuildStockHistory()">📋 Ανακατασκευή ιστορικού κινήσεων</button>
+    <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();openCleanNames()">✎ Καθαρισμός ονομάτων υλικών</button>
     <p id="setRebuiltNote" style="font-size:11.5px;color:var(--muted);margin-top:6px">Συμπληρώνει τις κινήσεις αποθήκης από τις παραγγελίες, τις πωλήσεις και τα bazaar που υπάρχουν ήδη. Το απόθεμα δεν αλλάζει.</p>
     <div style="margin-top:18px"><button class="btn ghost" style="width:100%" onclick="closeSettings()">Κλείσιμο</button></div>
   </div>
@@ -1594,9 +1595,61 @@
     <div id="matPickerList"><div class="spinner"></div></div>
     <div class="mat-total" id="matPickerTotal" style="margin-top:12px">Σύνολο: €0,00</div>
     <p id="matPickerMsg" class="msg err hidden" style="margin-top:10px"></p>
-    <div style="display:flex;gap:10px;margin-top:16px">
+    <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
+      <button class="btn ghost sm" style="flex:1 1 100%" onclick="newJobMaterial()">+ Νήμα που αγοράστηκε γι' αυτήν την παραγγελία</button>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:10px">
       <button class="btn solid" style="flex:1" id="matApplyBtn" onclick="applyMaterials()">Επιβεβαίωση & αφαίρεση από στοκ</button>
       <button class="btn ghost" onclick="closeMatPicker()">Άκυρο</button>
+    </div>
+  </div>
+</div>
+
+<div id="jobMatModal" class="overlay hidden">
+  <div class="modal" style="max-width:460px">
+    <div class="mh">
+      <h2 class="serif">Υλικό για την παραγγελία</h2>
+      <button class="x" onclick="_ovClose('jobMatModal')">✕</button>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:12px">Το όνομα του πελάτη δεν μπαίνει στο υλικό. Η παραγγελία καταγράφεται ως σύνδεση — αν το ίδιο χρώμα ξαναχρειαστεί, είναι το ίδιο είδος με ιστορικό, όχι καινούργιο.</p>
+    <div style="display:flex;gap:10px">
+      <label class="fld" style="flex:1 1 140px"><span>Είδος</span>
+        <select id="jmKind">
+          <option value="Νήμα">Νήμα</option>
+          <option value="Αξεσουάρ">Αξεσουάρ</option>
+          <option value="Ταμπελάκι">Ταμπελάκι</option>
+          <option value="Συσκευασία">Συσκευασία</option>
+          <option value="Άλλο">Άλλο</option>
+        </select></label>
+      <label class="fld" style="flex:1 1 160px"><span>Χρώμα / περιγραφή *</span>
+        <input id="jmVariant" list="variantList" placeholder="π.χ. Σκούρο Καφέ" oninput="jmPreview()"></label>
+    </div>
+    <div style="display:flex;gap:10px">
+      <label class="fld" style="flex:1"><span>Ποσότητα</span><input id="jmQty" inputmode="decimal" placeholder="1"></label>
+      <label class="fld" style="flex:1"><span>Μονάδα</span><input id="jmUnit" placeholder="κουβάρι"></label>
+      <label class="fld" style="flex:1"><span>Κόστος € / μον.</span><input id="jmCost" inputmode="decimal" placeholder="0"></label>
+    </div>
+    <p id="jmPrev" style="font-size:12px;color:var(--muted);margin:-4px 0 12px"></p>
+    <p id="jmMsg" class="msg err hidden" style="margin-bottom:10px"></p>
+    <div style="display:flex;gap:10px">
+      <button class="btn solid" style="flex:1" id="jmSaveBtn" onclick="saveJobMaterial()">Καταχώρηση</button>
+      <button class="btn ghost" onclick="_ovClose('jobMatModal')">Άκυρο</button>
+    </div>
+  </div>
+</div>
+
+<div id="cleanModal" class="overlay hidden">
+  <div class="modal">
+    <div class="mh">
+      <h2 class="serif">Καθαρισμός ονομάτων</h2>
+      <button class="x" onclick="_ovClose('cleanModal')">✕</button>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:12px">Υλικά που έχουν όνομα πελάτη μέσα στο όνομά τους. Το όνομα καθαρίζεται και η παραγγελία κρατιέται ως σύνδεση. Έλεγξε και βγάλε όσα δεν ισχύουν.</p>
+    <div id="cleanList"></div>
+    <p id="cleanMsg" class="msg err hidden" style="margin-top:10px"></p>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn solid" style="flex:1" id="cleanBtn" onclick="applyCleanNames()">Εφαρμογή</button>
+      <button class="btn ghost" onclick="_ovClose('cleanModal')">Άκυρο</button>
     </div>
   </div>
 </div>
@@ -3367,6 +3420,9 @@ function orderWhen(o){ return o && (o.created_at || o.updated_at) || null; }
 /* Σύνοψη τρέχοντος μήνα για ό,τι δείχνει το μητρώο. */
 function renderRegSum(scope){
   const box=document.getElementById("regSum"); if(!box) return;
+  // ανήκει στο μητρώο πωλήσεων — δεν ακολουθεί σε άλλες σελίδες
+  const list=document.getElementById("ordersList");
+  if(!list || list.classList.contains("hidden")){ box.classList.add("hidden"); return; }
   const now=new Date(), ym=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0");
   const mine=(scope||[]).filter(o=>String(orderWhen(o)||"").slice(0,7)===ym);
   if(!mine.length && !(scope||[]).length){ box.classList.add("hidden"); return; }
@@ -4307,6 +4363,8 @@ async function advanceItem(orderId, itemId){
     await patchItems(orderId, stamped);
     const _S=stagesFor(itemFlow(it), o.delivery_method);
     await loadOrders(); adminFlash("Στάδιο ενημερώθηκε ✓");
+    const _n=await archiveFinishedJobs(true);
+    if(_n){ renderStock(); adminFlash(`${_n} ${_n===1?"υλικό παραγγελίας αρχειοθετήθηκε":"υλικά παραγγελίας αρχειοθετήθηκαν"} ✓`); }
   }
   catch(e){ adminFlash("Σφάλμα ενημέρωσης."); }
 }
@@ -5796,13 +5854,24 @@ function renderStock(){
 
   if(stockView==="perjob"){
     let html = toggle + `<div class="r-hint" style="margin-bottom:14px">Είδη που αγοράζονται για συγκεκριμένη παραγγελία. Δεν τηρείται απόθεμα και δεν εκδίδεται ειδοποίηση αναπαραγγελίας· το κόστος βαρύνει την παραγγελία.</div>`;
+    const _dirty=cleanCandidates();
+    if(_dirty.length) html+=`<div class="r-hint" style="margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span style="flex:1;min-width:180px"><b>${_dirty.length}</b> ${_dirty.length===1?"είδος έχει":"είδη έχουν"} όνομα πελάτη μέσα στο όνομα.</span>
+      <button class="btn ghost sm" onclick="openCleanNames()">✎ Καθαρισμός</button></div>`;
+    const _spent=jobSpent();
+    if(_spent.length) html+=`<div class="r-hint" style="margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span style="flex:1;min-width:180px"><b>${_spent.length}</b> ${_spent.length===1?"υλικό ανήκει":"υλικά ανήκουν"} σε παραγγελία που παραδόθηκε και έχει εξαντληθεί.</span>
+      <button class="btn ghost sm" onclick="archiveFinishedJobs()">🗄 Αρχειοθέτηση</button></div>`;
     const cats0={}; rows.forEach(it=>{ const c=it.category||"Λοιπά"; (cats0[c]=cats0[c]||[]).push(it); });
     Object.keys(cats0).sort((a,b)=>a.localeCompare(b,"el")).forEach(cat=>{
       html+=`<div class="stock-cat">${esc(cat)}</div>`;
       cats0[cat].forEach(it=>{
         html+=`<div class="stock-item ok">${stockThumb(it)}
           <div class="si-info"><div class="si-name">${esc(it.name)}</div>
-          <div class="si-meta">${it.unit_cost!=null?fmtMoney(it.unit_cost)+" / "+esc(it.unit||"τεμ."):"χωρίς τιμή"} · ανά παραγγελία</div></div>
+          <div class="si-meta">${it.unit_cost!=null?fmtMoney(it.unit_cost)+" / "+esc(it.unit||"τεμ."):"χωρίς τιμή"}${(function(){
+            const o=jobOrderOf(it); if(!o) return " · ανά παραγγελία";
+            return ` · <button class="mm-pill cust-pill" style="background:#f1f0ec;color:#55524c;border-color:#e0ded8" onclick="editOrder('${o.id}')">${esc(o.customer_name||o.order_number||"παραγγελία")}${allDelivered(o)?" ✓":""}</button>`;
+          })()}</div></div>
           <button class="btn ghost sm" title="Κινήσεις" onclick="openStockHistory('${it.id}')">📋</button>
           <button class="btn ghost sm" onclick="openStockModal('${it.id}')">✎</button></div>`;
       });
@@ -7648,7 +7717,13 @@ async function loadStockMoves(itemId){
    Ένα έτοιμο κομμάτι κατασκευάζεται — δεν ανήκει ποτέ εδώ. */
 function isPerJob(it){
   if(!it || it.type==="product") return false;
+  if(it.job_ref) return true;
   return it.stock_mode==="per_job" || (it.stock_mode==null && Number(it.low_threshold)===0);
+}
+/* Η παραγγελία για την οποία αγοράστηκε ένα υλικό. */
+function jobOrderOf(it){
+  if(!it || !it.job_ref) return null;
+  return (ordersCache||[]).find(x=>x.id===it.job_ref) || null;
 }
 function isStocked(it){ return !!it && !isPerJob(it); }
 
@@ -7797,6 +7872,153 @@ async function writeOffPiece(itemId){
 }
 
 
+
+
+/* ============ ΥΛΙΚΟ ΓΙΑ ΣΥΓΚΕΚΡΙΜΕΝΗ ΠΑΡΑΓΓΕΛΙΑ ============
+   Μέχρι τώρα κάθε νήμα γινόταν «Σκούρο Καφέ - Ελευθερία»: ο πελάτης μέσα
+   στο όνομα, και το ίδιο χρώμα ξανακαταχωρημένο σε κάθε παραγγελία. Εδώ το
+   χρώμα είναι το είδος και η παραγγελία σύνδεση. Όταν η παραγγελία
+   παραδοθεί, το είδος φεύγει μόνο του από τον ενεργό κατάλογο· το κόστος
+   και το ιστορικό μένουν.                                               */
+function jobLabel(kind, variant){
+  const k=String(kind||"").trim(), v=String(variant||"").trim();
+  return v ? (k ? k+" · "+v : v) : k;
+}
+function jmPreview(){
+  const el=document.getElementById("jmPrev"); if(!el) return;
+  const n=jobLabel(document.getElementById("jmKind").value, document.getElementById("jmVariant").value);
+  el.textContent = n ? ("Θα καταχωρηθεί ως: " + n) : "";
+}
+function newJobMaterial(){
+  if(!editingId){ adminFlash("Αποθήκευσε πρώτα την παραγγελία"); return; }
+  document.getElementById("jmKind").value="Νήμα";
+  document.getElementById("jmVariant").value="";
+  document.getElementById("jmQty").value="1";
+  document.getElementById("jmUnit").value="κουβάρι";
+  document.getElementById("jmCost").value="";
+  document.getElementById("jmMsg").classList.add("hidden");
+  syncVariantLists(); jmPreview();
+  _ovOpen("jobMatModal");
+}
+async function saveJobMaterial(){
+  const msg=document.getElementById("jmMsg"); msg.classList.add("hidden");
+  const kind=document.getElementById("jmKind").value;
+  const variant=document.getElementById("jmVariant").value.trim();
+  if(!variant){ msg.textContent="Συμπλήρωσε χρώμα ή περιγραφή."; msg.classList.remove("hidden"); return; }
+  const name=jobLabel(kind, variant);
+  const qty=parseMoney(document.getElementById("jmQty").value)||1;
+  const cost=parseMoney(document.getElementById("jmCost").value);
+  // Ίδιο χρώμα που υπάρχει ήδη: δεν φτιάχνουμε δεύτερο είδος.
+  const dup=(stockCache||[]).find(it=>it.type!=="product" && normText(it.name)===normText(name));
+  const btn=document.getElementById("jmSaveBtn"); btn.disabled=true;
+  try{
+    let id;
+    if(dup){
+      id=dup.id;
+      await stockMove(id, qty, "purchase", {type:"order", id:editingId},
+        {note:"αγορά για παραγγελία", unit_cost:(cost!=null?cost:dup.unit_cost)});
+    }else{
+      const row=await writeStockRow(null, {
+        name, category:kind, type:"raw", unit:document.getElementById("jmUnit").value.trim()||"τεμ.",
+        qty, unit_cost:cost, low_threshold:0, stock_mode:"per_job", job_ref:editingId,
+        variant, mm:false, event_id:null, image_url:null });
+      id=row && row.id; if(!id) throw new Error("no id");
+      logStockMove(id, qty, "purchase", {type:"order", id:editingId}, {note:"αγορά για παραγγελία", unit_cost:cost});
+      await loadStock();
+    }
+    _ovClose("jobMatModal");
+    matDraft[id]=(matDraft[id]||0)+qty;        // μπαίνει κατευθείαν στα υλικά
+    openMatPicker();
+    Object.keys(matDraft).forEach(k=>{ if(k!==id && !matDraft[k]) delete matDraft[k]; });
+    matDraft[id]=qty; renderMatPicker();
+    adminFlash(dup?"Προστέθηκε στο υπάρχον είδος ✓":"Καταχωρήθηκε ✓");
+  }catch(e){ msg.textContent="Δεν αποθηκεύτηκε."; msg.classList.remove("hidden"); }
+  finally{ btn.disabled=false; }
+}
+/* Είδη δεμένα σε παραγγελία που παραδόθηκε: βγαίνουν από τον ενεργό
+   κατάλογο χωρίς να χρειάζεται να το θυμηθεί κανείς. */
+function jobDone(it){
+  if(!it || !it.job_ref) return false;
+  const o=(ordersCache||[]).find(x=>x.id===it.job_ref);
+  return !!o && allDelivered(o);
+}
+function jobSpent(){
+  return (stockCache||[]).filter(it=>jobDone(it) && !isArchivedStock(it) && Number(it.qty)<=0);
+}
+async function archiveFinishedJobs(silent){
+  const list=jobSpent(); if(!list.length) return 0;
+  const next=[...archivedIds(), ...list.map(x=>x.id)];
+  _flags=Object.assign({}, _flags||{}, {stockArchived:[...new Set(next)]});
+  try{ await saveSetting("flags", _flags, true); }catch(e){ return 0; }
+  if(!silent){ renderStock(); adminFlash(`Αρχειοθετήθηκαν ${list.length} ✓`); }
+  return list.length;
+}
+
+
+/* ---- Καθαρισμός ονομάτων «Χρώμα - Πελάτης» ----
+   Το όνομα του πελάτη μέσα στο υλικό ήταν ο μόνος τρόπος να θυμάται κανείς
+   για ποια δουλειά αγοράστηκε. Τώρα υπάρχει σύνδεση, οπότε το όνομα μπορεί
+   να γίνει αυτό που πραγματικά είναι: το χρώμα.                          */
+function customerNames(){
+  const out=new Map();
+  (ordersCache||[]).forEach(o=>{
+    const n=String(o.customer_name||"").trim(); if(!n) return;
+    n.split(/\s+/).forEach(w=>{ if(w.length>=3) out.set(normText(w), o); });
+    out.set(normText(n), o);
+  });
+  return out;
+}
+function cleanCandidates(){
+  const cust=customerNames(), out=[];
+  (stockCache||[]).forEach(it=>{
+    if(it.type==="product" || it.mm || isArchivedStock(it)) return;
+    const m=String(it.name||"").match(/^(.+?)\s*[-–—]\s*(.+)$/); if(!m) return;
+    const head=m[1].trim(), tail=m[2].trim();
+    const o=cust.get(normText(tail)); if(!o) return;      // το δεύτερο μέρος είναι πελάτης
+    out.push({ it, from:it.name, to:jobLabel(it.category||"Νήμα", head), variant:head, order:o });
+  });
+  return out;
+}
+let cleanDraft=[];
+function openCleanNames(){
+  cleanDraft=cleanCandidates();
+  if(!cleanDraft.length){ adminFlash("Δεν βρέθηκαν ονόματα με πελάτη"); return; }
+  document.getElementById("cleanMsg").classList.add("hidden");
+  renderCleanList();
+  _ovOpen("cleanModal");
+}
+function cleanToggle(i){ if(cleanDraft[i]) cleanDraft[i].skip=!cleanDraft[i].skip; renderCleanList(); }
+function renderCleanList(){
+  document.getElementById("cleanList").innerHTML = cleanDraft.map((c,i)=>`
+    <label class="chk-row" style="align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)">
+      <input type="checkbox" ${c.skip?"":"checked"} onchange="cleanToggle(${i})">
+      <span style="flex:1;min-width:0">
+        <span style="display:block;font-size:13px;color:var(--muted);text-decoration:line-through">${esc(c.from)}</span>
+        <span style="display:block;font-size:13.5px;font-weight:600">${esc(c.to)}</span>
+        <span style="display:block;font-size:11.5px;color:var(--muted);margin-top:2px">σύνδεση: ${esc(c.order.customer_name||"")}${c.order.order_number?" · "+esc(c.order.order_number):""}</span>
+      </span>
+    </label>`).join("");
+}
+async function applyCleanNames(){
+  const todo=cleanDraft.filter(c=>!c.skip);
+  const msg=document.getElementById("cleanMsg"); msg.classList.add("hidden");
+  if(!todo.length){ msg.textContent="Δεν επιλέχθηκε τίποτα."; msg.classList.remove("hidden"); return; }
+  const btn=document.getElementById("cleanBtn"); btn.disabled=true; btn.textContent="Εφαρμόζουμε…";
+  let done=0;
+  try{
+    for(const c of todo){
+      // Ίδιο χρώμα που υπάρχει ήδη καθαρό: δεν διπλογράφεται, μένει ως έχει.
+      const dup=(stockCache||[]).find(x=>x.id!==c.it.id && x.type!=="product" && normText(x.name)===normText(c.to));
+      if(dup) continue;
+      await writeStockRow(c.it.id, { name:c.to, variant:c.variant, job_ref:c.order.id, stock_mode:"per_job" });
+      done++;
+    }
+    await loadStock();
+    _ovClose("cleanModal"); renderStock();
+    adminFlash(done?`Καθαρίστηκαν ${done} ✓`:"Τίποτα δεν άλλαξε");
+  }catch(e){ msg.textContent="Δεν ολοκληρώθηκε."; msg.classList.remove("hidden"); }
+  finally{ btn.disabled=false; btn.textContent="Εφαρμογή"; }
+}
 
 /* ============ ΜΟΝΤΕΛΟ & ΧΡΩΜΑ ============
    Το «Grace - Σκούρο Μπλε» είναι ένα μοντέλο σε μια απόχρωση, όχι ένα
