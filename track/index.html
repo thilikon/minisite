@@ -590,7 +590,49 @@
   .sk .ds{display:block;font-size:12px;color:var(--muted);line-height:1.45}
   .sk[disabled]{opacity:.4;cursor:default}
   .sk[disabled]:hover{border-color:var(--line);background:#fff}
-  /* ---- μητρώο πωλήσεων ---- */
+  /* ---- αναφορά ---- */
+  .rep-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+  .rep-nav{display:flex;align-items:center;gap:8px}
+  .rep-lbl{font-family:var(--serif),Georgia,serif;font-size:16px;color:var(--ink)}
+  .rep-sec{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:26px 0 10px}
+  .rep-sec:first-of-type{margin-top:0}
+  .rep-sub{font-size:12px;color:var(--ink-soft);margin:14px 0 8px}
+  .rep-t{border-top:1px solid var(--line)}
+  .rep-r{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px solid var(--line)}
+  .rep-r .l{font-size:13.5px;color:var(--ink);display:flex;align-items:baseline;gap:8px}
+  .rep-r .l i{display:block;width:10px;height:1px;background:var(--line);flex:none;transform:translateY(-4px)}
+  .rep-r .a{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .rep-r .a small{font-size:11px;font-weight:500;color:var(--muted);margin-left:7px}
+  .rep-r.soft .l,.rep-r.soft .a{color:var(--muted);font-weight:500;font-size:12.5px}
+  .rep-r.soft .a{font-weight:600}
+  .rep-r.hd .l{font-weight:600}
+  .rep-r.sum{border-bottom-width:2px}
+  .rep-r.sum .l,.rep-r.sum .a{font-weight:600}
+  .rep-r.tot{border-bottom:none;background:var(--ink);color:#fff;padding:12px 14px;margin-top:2px;border-radius:12px}
+  .rep-r.tot .l{color:#fff;font-weight:600}
+  .rep-r.tot .a{color:#fff;font-size:19px}
+  .rep-note{font-size:11.5px;color:var(--muted);line-height:1.6;margin:10px 0 0}
+  .rep-tbl{border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+  .rep-hr,.rep-tr{display:grid;grid-template-columns:1.6fr .7fr 1fr 1fr;gap:8px;padding:9px 0;border-bottom:1px solid var(--line);align-items:baseline}
+  .rep-hr{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .rep-tr{font-size:13px}
+  .rep-hr span:not(:first-child),.rep-tr span:not(:first-child){text-align:right}
+  .rep-bar{margin-bottom:11px}
+  .rep-bar .t{display:flex;justify-content:space-between;gap:12px;font-size:12.5px;margin-bottom:5px}
+  .rep-bar .track{display:block;height:5px;background:var(--stone);border-radius:3px;overflow:hidden}
+  .rep-bar .fill{display:block;height:100%;background:var(--ink);border-radius:3px}
+  .rep-foot{margin-top:26px;padding-top:16px;border-top:1px solid var(--line)}
+  .rep-note .lnk{background:none;border:none;font-family:'Inter';font-size:11.5px;font-weight:600;color:var(--ink);cursor:pointer;padding:0;margin-left:4px}
+  @media print{
+    .navbar,.admin-bar,.subnav,.page-head .pa,.rep-head .tabsw,.rep-foot,footer,.brand{display:none!important}
+    .stats{border:none;box-shadow:none}
+    body{background:#fff}
+  }
+  @media(max-width:560px){
+    .rep-hr,.rep-tr{grid-template-columns:1.4fr .6fr 1fr;font-size:12px}
+    .rep-hr span:nth-child(4),.rep-tr span:nth-child(4){display:none}
+  }
+  /* ---- λίστα πωλήσεων ---- */
   .reg-sum{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted);
     margin:0 0 12px;padding-bottom:11px;border-bottom:1px solid var(--line)}
   .reg-sum b{color:var(--ink);font-size:13px;font-weight:600}
@@ -1074,7 +1116,7 @@
       <div id="homeAdmin" class="hidden"></div>
       <div class="stats open" id="statsBox">
         <div class="stats-h" onclick="document.getElementById('statsBox').classList.toggle('open')">
-          <span class="e">Στατιστικά</span>
+          <span class="e">Αναφορά</span>
           <span class="chev">▾</span>
         </div>
         <div class="stats-body" id="statsBody"></div>
@@ -1440,7 +1482,7 @@
       <h2 class="serif">Νέα πώληση</h2>
       <button class="x" onclick="_ovClose('saleKindModal')">✕</button>
     </div>
-    <div style="font-size:12px;color:var(--muted);margin:-6px 0 14px">Διάλεξε κανάλι. Κάθε κανάλι καταχωρείται διαφορετικά, αλλά όλα καταλήγουν στο ίδιο μητρώο.</div>
+    <div style="font-size:12px;color:var(--muted);margin:-6px 0 14px">Διάλεξε κανάλι. Κάθε κανάλι καταχωρείται διαφορετικά, αλλά όλα καταλήγουν στην ίδια λίστα.</div>
     <div id="saleKindList" class="sk-grid"></div>
   </div>
 </div>
@@ -3300,114 +3342,7 @@ function renderStats(){
 
 
   _briefHtml = briefHtml; paintBrief();
-  document.getElementById("statsBody").innerHTML = `
-    <div class="stat-grid">${tiles}</div>
-    <div class="stat-row">
-      <span class="stat-pill"><b>${totalItems}</b> Προϊόντα</span>
-      ${returnTotal?`<span class="stat-pill warn"><b>${returnTotal}</b> Επιστροφές${returnActive?` · ${returnActive} ενεργές`:""}</span>`:""}
-
-      <span class="stat-pill blue"><b>${readyCount}</b> Ραφιού</span>
-      ${bzSum.sold?`<span class="stat-pill" style="background:#f8f3e8;border-color:#e4d9c2;color:#8a6a2e"><b style="color:#8a6a2e">${bzSum.sold}</b> Bazaar</span>`:""}
-      ${Object.keys(evStats).map(id=>{const v=evStats[id];
-        return `<span class="stat-pill" style="background:${v.color}1f;border-color:${v.color};color:${v.ink||v.color}"><b style="color:${v.ink||v.color}">${v.total!=null?v.items+"/"+v.total:v.n}</b> ${esc(v.name)}</span>`;
-      }).join("")}
-      <span class="stat-pill"><b>${ship}</b> Αποστολή</span>
-      <span class="stat-pill"><b>${pickup}</b> Παραλαβή</span>
-      ${satAvg!=null?`<span class="stat-pill"><b>${satAvg.toFixed(1)}</b> Ικανοποίηση</span>`:""}
-    </div>
-
-    <div class="stats-sub">Οικονομικά — τρέχων μήνας</div>
-    <div class="stat-grid">${money}</div>
-    ${bzFeeMonth>0?`<div style="font-size:11.5px;color:var(--muted);margin-top:8px">Στο κέρδος του μήνα έχουν ήδη αφαιρεθεί ${fmtMoney(bzFeeMonth)} σε συμμετοχή και έξοδα bazaar.</div>`:""}
-    ${(function(){
-      const key=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0");
-      const out=allExpenses().filter(e=>expInMonth(e,key)).reduce((a,e)=>a+Number(e.amount),0);
-      if(out<=0 && revMonth<=0) return "";
-      const diff=Math.round((revMonth-out)*100)/100;
-      return `<div class="stats-sub">Ταμείο μήνα</div>
-      <div class="sum">
-        <div class="sum-r"><span>Εισπράξεις</span><span class="a">${fmtMoney(revMonth)}</span></div>
-        <div class="sum-r off"><span>Έξοδα (αγορές, bazaar, λοιπά)</span><span class="a">−${fmtMoney(out)}</span></div>
-        <div class="sum-t"><span class="l">Διαφορά</span><span class="a">${fmtMoney(diff)}</span></div>
-      </div>
-      <div style="font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.6">Το αποτέλεσμα πιο πάνω βαρύνεται με τα υλικά κατά την <b>ανάλωση</b>· η ταμειακή ροή με τις <b>πληρωμές</b> της περιόδου.
-        <button class="a" style="background:none;border:none;font-family:'Inter';font-size:11.5px;font-weight:600;color:var(--ink);cursor:pointer;padding:0" onclick="goTab('cash')">Αναλυτικά →</button></div>`;
-    })()}
-    ${workSecMonth>0?`<div style="font-size:11.5px;color:var(--muted);margin-top:8px">Ο χρόνος εργασίας του μήνα (${fmtDur(workSecMonth)} × ${fmtMoney(hourRate)}/ώρα = ${fmtMoney(labourCost(workSecMonth))}) αφαιρείται μόνο στο «Καθαρό μετά εργασία».</div>`:""}
-    ${partial?`<div style="background:#fdf6ea;border:1px solid #f0e0c4;border-left:3px solid #c9922e;border-radius:12px;padding:10px 13px;margin-top:10px;font-size:12px;color:#8a5a1e;line-height:1.6">
-      ${monthOrders>0?`Κόστος υλικών έχουν <b>${monthCosted}</b> από <b>${monthOrders}</b> παραγγελίες του μήνα. `:""}Το κέρδος αφορά μόνο όσες έχουν κόστος — η εκτίμηση προβάλλει το ίδιο περιθώριο σε όλο τον τζίρο.
-    </div>`:(costMonthKnown?"":`<div style="font-size:11.5px;color:var(--muted);margin-top:8px">Καμία παραγγελία του μήνα δεν έχει κόστος υλικών, οπότε το κέρδος δεν υπολογίζεται.</div>`)}
-    ${readyRevMonth>0?`<div class="split-bar"><div class="split-seg" style="width:${Math.round(customRevMonth/revMonth*100)}%;background:var(--ink)"></div><div class="split-seg" style="width:${Math.round(readyRevMonth/revMonth*100)}%;background:#2f5d8a"></div></div>
-    <div class="split-leg"><span>Custom <b>${fmtMoney(customRevMonth)}</b></span><span>Ραφιού <b style="color:#2f5d8a">${fmtMoney(readyRevMonth)}</b></span></div>`:""}
-
-    <div style="margin-top:16px">${revBlock}</div>
-
-
-    <details class="stats-more" ${statsMoreOpen?"open":""} ontoggle="statsMoreOpen=this.open">
-      <summary>Αναλυτικά στοιχεία</summary>
-      <div class="stat-grid" style="margin-bottom:4px">${money2}</div>
-    <div class="stats-sub">Ροή εργασίας</div>
-    <div class="stage-bars">${bars}</div>
-    ${timeBlock}
-
-    ${Object.keys(evStats).length?`<div class="stats-sub">Events ${yearNow}</div>
-    <div class="stat-grid">${Object.keys(evStats).map(id=>{const v=evStats[id];
-      const big = v.total!=null ? `${v.items}<span style="font-size:14px;opacity:.55"> / ${v.total}</span>` : v.items;
-      return `<div class="stat"><div class="n" style="font-size:20px;color:${v.ink||v.color}">${big}</div><div class="l">${esc(v.name)}<br><span style="opacity:.7">${fmtMoney(v.rev)}</span></div></div>`;
-    }).join("")}</div>`:""}
-
-    ${bzAgg.length?`<div class="stats-sub">Bazaar ${yearNow}</div>
-    <div class="stat-grid">
-      <div class="stat"><div class="n">${bzSum.sold}</div><div class="l">Κομμάτια</div></div>
-      <div class="stat"><div class="n" style="font-size:20px">${fmtMoney(bzSum.rev)}</div><div class="l">Έσοδα</div></div>
-      <div class="stat"><div class="n" style="font-size:20px">${fmtMoney(bzSum.net)}</div><div class="l">Καθαρό</div></div>
-    </div>
-    <div style="margin-top:10px">${bzAgg.map(x=>`<div class="cust-row"><button class="cr-main" onclick="showAdminTab('bazaar');setBzView('${x.b.id}')">
-      <div style="flex:1;min-width:0"><div class="cr-t">${esc(x.b.name)}</div>
-      <div class="cr-s">${x.b.date?fmtMonthDate(x.b.date+"T09:00:00"):"χωρίς ημερομηνία"} · ${x.t.sold} ${x.t.sold===1?"κομμάτι":"κομμάτια"}${x.t.left?` · ${x.t.left} απούλητα`:""}${x.b.closed?"":" · ανοιχτό"}</div></div>
-      <div class="cr-r"><div class="cr-p">${fmtMoney(x.t.rev)}</div></div></button></div>`).join("")}</div>
-    ${(bzSum.fee||bzSum.exp)?`<div style="font-size:11.5px;color:var(--muted);margin-top:6px">Συμμετοχή ${fmtMoney(bzSum.fee)}${bzSum.exp?` και έξοδα ${fmtMoney(bzSum.exp)}`:""} — αφαιρούνται από το καθαρό, όχι από τον τζίρο.</div>`:""}`:""}
-
-    ${!catPerf.length && totalItems>0?`<div class="stats-sub">Απόδοση ανά κατηγορία</div>
-    <div class="empty-hint">Δεν έχει μετρηθεί χρόνος ακόμη. Πάτα <b>⏱ Χρόνος</b> σε μια παραγγελία και μόλις τελειώσεις θα δεις εδώ
-      πόσο αποδίδει κάθε κατηγορία (€/ώρα), τι τιμή χρειάζεται για να πιάνει τον στόχο των ${fmtMoney(hourRate)}/ώρα, και το «Καθαρό μετά εργασία».</div>`:""}
-    ${catPerf.length?`<div class="stats-sub">Απόδοση ανά κατηγορία</div>
-    <div class="cust-line" style="margin-top:0">Στόχος: <b>${fmtMoney(hourRate)}/ώρα</b>. Υπολογισμένο από όσα προϊόντα έχουν μετρημένο χρόνο.</div>
-    ${catPerf.map(c=>`<div class="fbrow"><div class="fbrow-l"><span>${esc(c.cat)} <span style="color:var(--muted)">· ${c.n} ${c.n===1?"κομμάτι":"κομμάτια"} · ${fmtDur(c.sec)}</span></span>
-      <span class="fbrow-c" style="color:${c.rate>=hourRate?'#2c6e49':(c.rate>=hourRate*0.6?'#8a6a2e':'#b54b3a')}">${fmtMoney(c.rate)}/ώρα</span></div>
-      <div class="track"><span class="fill" style="width:${Math.min(100,Math.round(c.rate/Math.max(hourRate,0.01)*100))}%;background:${c.rate>=hourRate?'#2c6e49':(c.rate>=hourRate*0.6?'#c9922e':'#b54b3a')}"></span></div></div>`).join("")}`:""}
-
-    ${collList.length>1?`<div class="stats-sub">Collections (${now.getFullYear()})</div>
-    ${collList.map(c=>`<div class="fbrow"><div class="fbrow-l"><span>${esc(c.coll)} <span style="color:var(--muted)">· ${c.units} ${c.units===1?"κομμάτι":"κομμάτια"}</span></span>
-      <span class="fbrow-c">${fmtMoney(c.rev)}${c.sec>0?` · ${fmtMoney(c.net/(c.sec/3600))}/ώρα`:""}</span></div>
-      <div class="track"><span class="fill" style="width:${Math.round(c.rev/collList[0].rev*100)}%"></span></div></div>`).join("")}`:""}
-
-    ${chan.whole.rev>0?`<div class="stats-sub">Λιανική / Χονδρική (${now.getFullYear()})</div>
-    <div class="split-bar"><div class="split-seg" style="width:${Math.round(chan.retail.rev/chanTotal*100)}%;background:var(--ink)"></div>
-      <div class="split-seg" style="width:${Math.round(chan.whole.rev/chanTotal*100)}%;background:#2f5d8a"></div></div>
-    <div class="split-leg"><span>Λιανική <b>${fmtMoney(chan.retail.rev)}</b> · ${chan.retail.n}</span>
-      <span>Χονδρική <b style="color:#2f5d8a">${fmtMoney(chan.whole.rev)}</b> · ${chan.whole.n}</span></div>
-    ${(chan.retail.costed>0||chan.whole.costed>0)?`<div class="cust-line" style="margin-top:8px">Περιθώριο: λιανική <b>${chan.retail.costed>0?Math.round((chan.retail.costed-chan.retail.cost)/chan.retail.costed*100)+"%":"—"}</b> · χονδρική <b>${chan.whole.costed>0?Math.round((chan.whole.costed-chan.whole.cost)/chan.whole.costed*100)+"%":"—"}</b></div>`:""}`:""}
-
-    ${topProducts.length?`<div class="stats-sub">Τι πουλάει</div>
-    ${topProducts.map(p=>`<div class="fbrow"><div class="fbrow-l"><span>${esc(p.name)}</span>
-      <span class="fbrow-c">${p.n} × · ${fmtMoney(p.rev)}</span></div>
-      <div class="track"><span class="fill" style="width:${Math.round(p.rev/topProducts[0].rev*100)}%"></span></div></div>`).join("")}`:""}
-
-    ${custMix.total>0?`<div class="stats-sub">Πελάτες</div>
-    <div class="stat-grid">
-      <div class="stat"><div class="n">${custMix.total}</div><div class="l">Σύνολο</div></div>
-      <div class="stat"><div class="n">${custMix.repeat}</div><div class="l">Επαναλαμβανόμενοι</div></div>
-      <div class="stat"><div class="n" style="font-size:20px">${fmtMoney(custMix.avgValue)}</div><div class="l">Αξία ανά πελάτη</div></div>
-      ${custMix.newThisMonth?`<div class="stat"><div class="n">${custMix.newThisMonth}</div><div class="l">Νέοι τον μήνα</div></div>`:""}
-    </div>`:""}
-
-    <div class="stats-sub">Αποθήκη</div>
-    <div class="stat-grid">
-      <div class="stat"><div class="n" style="font-size:20px">${fmtMoney(stockVal)}</div><div class="l">Αξία αποθέματος</div></div>
-      <div class="stat"><div class="n">${lowCount}</div><div class="l">Τελειώνουν</div></div>
-      <div class="stat"><div class="n">${mmColors}</div><div class="l">Mix &amp; Match</div></div>
-    </div>`;
+  renderReport();
 }
 
 let orderFilter = "all";
@@ -3426,14 +3361,14 @@ function orderOwed(o){
   const due = isWholesale(o) ? wTotals(o).due : (Number(o.price)||0);
   return Math.max(0, Math.round((due-paid)*100)/100);
 }
-/* Αξία παραστατικού — για τη σύνοψη του μητρώου. */
+/* Αξία παραστατικού — για τη σύνοψη της λίστας. */
 function orderValue(o){ return isWholesale(o) ? wTotals(o).due : (Number(o.price)||0); }
 function orderWhen(o){ return o && (o.created_at || o.updated_at) || null; }
 
-/* Σύνοψη τρέχοντος μήνα για ό,τι δείχνει το μητρώο. */
+/* Σύνοψη τρέχοντος μήνα για ό,τι δείχνει η λίστα. */
 function renderRegSum(scope){
   const box=document.getElementById("regSum"); if(!box) return;
-  // ανήκει στο μητρώο πωλήσεων — δεν ακολουθεί σε άλλες σελίδες
+  // ανήκει στις πωλήσεις — δεν ακολουθεί σε άλλες σελίδες
   const list=document.getElementById("ordersList");
   if(!list || list.classList.contains("hidden")){ box.classList.add("hidden"); return; }
   const now=new Date(), ym=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0");
@@ -7494,7 +7429,7 @@ async function tillCheckout(){
    ό,τι χρειάζεται συχνά, ώστε να μη χρειάζεται να ψάχνεις σε καρτέλες. */
 const PAGES = {
   home:      {t:"Αρχική",       s:"Σύνοψη ημέρας και συντομεύσεις εργασιών"},
-  orders:    {t:"Πωλήσεις",      s:"Μητρώο πωλήσεων: παραγγελίες, λιανική, χονδρική, bazaar",
+  orders:    {t:"Πωλήσεις",      s:"Παραγγελίες, λιανική, χονδρική και bazaar σε μία λίστα",
               act:{l:"+ Πώληση", f:"openSaleKind()"}},
   stock:     {t:"Αποθήκη",      s:"Είδη, αποθέματα και προδιαγραφές προϊόντων",
               act:{l:"+ Είδος", f:"stockView==='models'?openModelModal():openStockModal()"}},
@@ -7504,7 +7439,7 @@ const PAGES = {
   bazaar:    {t:"Bazaar",       s:"Σημεία πώλησης: εμπορεύματα, πωλήσεις, έξοδα"},
   cash:      {t:"Ταμείο",       s:"Κινήσεις, έξοδα και υπόλοιπα λογαριασμών",
               act:{l:"+ Νέα κίνηση", f:"openCashMove()"}},
-  stats:     {t:"Στατιστικά",   s:"Αναφορά πωλήσεων, κόστους και αποδόσεων"},
+  stats:     {t:"Αναφορά",      s:"Πωλήσεις, κόστος και αποτέλεσμα ανά περίοδο"},
   feedback:  {t:"Feedback",     s:"Αξιολογήσεις και σχόλια πελατών"}
 };
 /* Έξι ενότητες στο μενού. Η χονδρική και το bazaar είναι κανάλια πώλησης,
@@ -7513,7 +7448,7 @@ const PAGES = {
 const MODULES = [
   {k:"home",      l:"Αρχική",     tabs:["home"]},
   {k:"sales",     l:"Πωλήσεις",   tabs:["orders","wholesale","bazaar"],
-                  sub:[["orders","Μητρώο"],["wholesale","Χονδρική"],["bazaar","Bazaar"]]},
+                  sub:[["orders","Όλες οι πωλήσεις"],["wholesale","Χονδρική"],["bazaar","Bazaar"]]},
   {k:"customers", l:"Πελάτες",    tabs:["customers","feedback"],
                   sub:[["customers","Καρτέλες"],["feedback","Feedback"]]},
   {k:"stock",     l:"Αποθήκη",    tabs:["stock"]},
@@ -7772,7 +7707,7 @@ function isStocked(it){ return !!it && !isPerJob(it); }
 
 
 /* ============ ΑΝΑΚΑΤΑΣΚΕΥΗ ΙΣΤΟΡΙΚΟΥ ΚΙΝΗΣΕΩΝ ============
-   Οι κινήσεις αποθήκης καταγράφονται από τη στιγμή που μπήκε το μητρώο.
+   Οι κινήσεις αποθήκης καταγράφονται από τη στιγμή που μπήκε η παρακολούθηση.
    Όμως τα παλαιότερα δεδομένα ξέρουν αρκετά για να ανασυνταχθεί το
    ιστορικό: κάθε παραγγελία κρατά τα υλικά που αναλώθηκε, κάθε πώληση
    bazaar το κομμάτι που έφυγε, κάθε bazaar τα αναλώσιμά του. Ό,τι απομένει
@@ -8060,6 +7995,292 @@ async function applyCleanNames(){
     adminFlash(done?`Καθαρίστηκαν ${done} ✓`:"Τίποτα δεν άλλαξε");
   }catch(e){ msg.textContent="Δεν ολοκληρώθηκε."; msg.classList.remove("hidden"); }
   finally{ btn.disabled=false; btn.textContent="Εφαρμογή"; }
+}
+
+
+/* ============ ΑΝΑΦΟΡΑ ============
+   Τα στατιστικά ήταν δεκάδες πλακίδια χωρίς σειρά ανάγνωσης. Μια αναφορά
+   διαβάζεται από πάνω προς τα κάτω και καταλήγει κάπου: τι πουλήθηκε, τι
+   κόστισε, τι έμεινε. Ένα νούμερο ανά γραμμή, στοιχισμένο.
+
+   Δύο αποτελέσματα, που δεν πρέπει να μπερδεύονται:
+   • λογιστικό — τα υλικά βαρύνουν τη στιγμή της ανάλωσης
+   • ταμειακό  — τα χρήματα μετρούν τη στιγμή της πληρωμής                */
+let repPeriod = "month";          // month | quarter | year | all
+let repAnchor = null;             // ISO αρχή περιόδου· null = τρέχουσα
+const REP_PERIODS = [["month","Μήνας"],["quarter","Τρίμηνο"],["year","Έτος"],["all","Από την αρχή"]];
+
+function repRange(){
+  const now = repAnchor ? new Date(repAnchor) : new Date();
+  const y=now.getFullYear(), m=now.getMonth();
+  if(repPeriod==="month")   return {from:new Date(y,m,1),            to:new Date(y,m+1,1),  l:GR_MONTHS_FULL[m]+" "+y};
+  if(repPeriod==="quarter"){ const q=Math.floor(m/3);
+                            return {from:new Date(y,q*3,1),          to:new Date(y,q*3+3,1), l:(q+1)+"ο τρίμηνο "+y}; }
+  if(repPeriod==="year")    return {from:new Date(y,0,1),            to:new Date(y+1,0,1),  l:"Έτος "+y};
+  let first=new Date();
+  (ordersCache||[]).forEach(o=>{ const c=new Date(o.created_at||0); if(c.getTime() && c<first) first=c; });
+  return {from:first, to:new Date(2100,0,1), l:"Από την αρχή"};
+}
+function repShift(step){
+  const r=repRange(); const d=new Date(r.from);
+  if(repPeriod==="month")   d.setMonth(d.getMonth()+step);
+  else if(repPeriod==="quarter") d.setMonth(d.getMonth()+3*step);
+  else if(repPeriod==="year")    d.setFullYear(d.getFullYear()+step);
+  else return;
+  repAnchor=d.toISOString(); renderReport();
+}
+function setRepPeriod(p){ repPeriod=p; repAnchor=null; renderReport(); }
+function repIsCurrent(){
+  if(repPeriod==="all") return true;
+  const r=repRange(), n=new Date();
+  return n>=r.from && n<r.to;
+}
+
+/* ---- τα νούμερα της περιόδου ---- */
+function reportData(){
+  const {from,to} = repRange();
+  const inRange = d => { const t=new Date(d||0).getTime(); return t && t>=from.getTime() && t<to.getTime(); };
+  const sales = (ordersCache||[]).filter(o=>inRange(o.created_at));
+
+  const ch = {order:{n:0,rev:0,cost:0,costed:0}, retail:{n:0,rev:0,cost:0,costed:0},
+              wholesale:{n:0,rev:0,cost:0,costed:0}, bazaar:{n:0,rev:0,cost:0,costed:0}};
+  let rev=0, cost=0, costedRev=0, nCosted=0, workSecs=0, owed=0;
+  const models={}, colors={}, products={};
+
+  sales.forEach(o=>{
+    const k=saleChannelOf(o);
+    const v=orderValue(o);
+    const c=(o.cost!=null)?Number(o.cost):null;
+    ch[k].n++; ch[k].rev+=v;
+    rev+=v; workSecs+=workSec(o);
+    if(c!=null){ cost+=c; costedRev+=v; nCosted++; ch[k].cost+=c; ch[k].costed+=v; }
+    owed+=orderOwed(o);
+    getItems(o).forEach(it=>{
+      const q=Math.max(1,Number(it.qty)||1);
+      const price=(Number(it.price)||0)*q;
+      const nm=String(it.name||"").trim(); if(!nm) return;
+      const sp=splitItemName(nm);
+      const mdl=sp.model||nm, col=(it.color||sp.variant||"").trim();
+      (products[nm]=products[nm]||{n:0,rev:0}); products[nm].n+=q; products[nm].rev+=price;
+      (models[mdl]=models[mdl]||{n:0,rev:0});  models[mdl].n+=q;   models[mdl].rev+=price;
+      if(col){ (colors[col]=colors[col]||{n:0,rev:0}); colors[col].n+=q; colors[col].rev+=price; }
+    });
+  });
+
+  // έξοδα bazaar της περιόδου: συμμετοχή και αναλώσιμα
+  let bzCost=0;
+  (bazaars||[]).forEach(b=>{
+    if(!b.date) return;
+    const d=new Date(b.date+"T12:00:00");
+    if(!(d>=from && d<to)) return;
+    bzCost += (Number(b.fee)||0) + bzExpTotal(b.id);
+  });
+  // λοιπά λειτουργικά έξοδα από το ταμείο (χωρίς τις αγορές υλικών, που
+  // βαρύνουν την παραγγελία κατά την ανάλωση, και χωρίς τα ήδη μετρημένα bazaar)
+  let opex=0;
+  try{
+    opex = (typeof allMoves==="function" ? allMoves() : []).filter(m=>{
+      if(m.src==="bazaar") return false;
+      const kk=(CASH_KINDS[m.kind]||{});
+      if(kk.pnl!=="out") return false;
+      return inRange(m.moved_at);
+    }).reduce((a,m)=>a+Math.abs(Number(m.amount)||0),0);
+  }catch(e){ opex=0; }
+
+  // ταμειακή ροή: τι μπήκε και τι βγήκε στην περίοδο, ανεξάρτητα από ανάλωση
+  let cashIn=0, cashOut=0;
+  try{
+    (typeof allMoves==="function" ? allMoves() : []).forEach(m=>{
+      if(!inRange(m.moved_at)) return;
+      if((CASH_KINDS[m.kind]||{}).pnl==null && m.kind!=="owner_draw" && m.kind!=="owner_in") return;
+      const a=Number(m.amount)||0;
+      if(a>0) cashIn+=a; else cashOut+=Math.abs(a);
+    });
+  }catch(e){}
+
+  const labour = labourCost(workSecs);
+  const gross  = Math.round((rev-cost)*100)/100;
+  const preWork= Math.round((gross-bzCost-opex)*100)/100;
+  const net    = Math.round((preWork-labour)*100)/100;
+  const margin = costedRev>0 ? Math.round((costedRev-cost)/costedRev*100) : null;
+
+  const top = obj => Object.keys(obj).map(k=>({k, ...obj[k]})).sort((a,b)=>b.rev-a.rev);
+
+  // πελάτες της περιόδου
+  const keys=new Set(), fresh=new Set();
+  sales.forEach(o=>{ const k=custKey(o); if(!k) return; keys.add(k);
+    const prior=(ordersCache||[]).some(x=>custKey(x)===k && new Date(x.created_at||0)<from);
+    if(!prior) fresh.add(k); });
+
+  const stock=(stockCache||[]).filter(it=>!isArchivedStock(it));
+  return {
+    from, to, label:repRange().l,
+    n:sales.length, rev, cost, costedRev, nCosted, gross, margin,
+    bzCost, opex, preWork, labour, workSecs, net, owed, ch,
+    cashIn:Math.round(cashIn*100)/100, cashOut:Math.round(cashOut*100)/100,
+    cashNet:Math.round((cashIn-cashOut)*100)/100,
+    models:top(models), colors:top(colors), products:top(products),
+    cust:{ total:keys.size, fresh:fresh.size,
+           avg: keys.size ? Math.round(rev/keys.size*100)/100 : 0 },
+    stock:{ val: stock.reduce((a,it)=>a+(Number(it.qty)||0)*(Number(it.unit_cost)||0),0),
+            pieces: stock.filter(it=>it.type==="product").reduce((a,it)=>a+(Number(it.qty)||0),0),
+            low: stock.filter(it=>stockState(it)!=="ok").length }
+  };
+}
+
+/* ---- γραμμές της κατάστασης αποτελέσματος ---- */
+function repRow(l, v, opt){
+  const o=opt||{};
+  return `<div class="rep-r ${o.cls||""}">
+    <span class="l">${o.sub?'<i></i>':""}${esc(l)}</span>
+    <span class="a">${o.raw!=null?o.raw:(o.neg?"−":"")+fmtMoney(Math.abs(v))}</span></div>`;
+}
+function repBars(rows, unitLabel){
+  if(!rows.length) return "";
+  const max=Math.max(...rows.map(r=>r.rev))||1;
+  return rows.map(r=>`<div class="rep-bar">
+    <div class="t"><span>${esc(r.k)}</span><span>${r.n} ${unitLabel} · <b>${fmtMoney(r.rev)}</b></span></div>
+    <span class="track"><span class="fill" style="width:${Math.max(2,Math.round(r.rev/max*100))}%"></span></span>
+  </div>`).join("");
+}
+
+function renderReport(){
+  const box=document.getElementById("statsBody"); if(!box) return;
+  const d=reportData();
+  const CH=["order","retail","wholesale","bazaar"];
+
+  const periodBar = `<div class="rep-head">
+    <div class="tabsw" style="flex-wrap:wrap">${REP_PERIODS.map(([k,l])=>
+      `<button class="tb ${repPeriod===k?'sel':''}" onclick="setRepPeriod('${k}')">${l}</button>`).join("")}</div>
+    ${repPeriod!=="all"?`<div class="rep-nav">
+      <button class="btn ghost sm" onclick="repShift(-1)" title="Προηγούμενη">←</button>
+      <span class="rep-lbl">${esc(d.label)}</span>
+      <button class="btn ghost sm" ${repIsCurrent()?"disabled":""} onclick="repShift(1)" title="Επόμενη">→</button>
+    </div>`:`<span class="rep-lbl">${esc(d.label)}</span>`}
+  </div>`;
+
+  if(!d.n && !d.opex && !d.bzCost){
+    box.innerHTML = periodBar + `<div class="led-empty">Καμία κίνηση σε αυτή την περίοδο.</div>`;
+    return;
+  }
+
+  /* 1. Αποτέλεσμα */
+  const chRows = CH.filter(k=>d.ch[k].n>0).map(k=>
+    repRow(SALE_CHANNELS[k].l, d.ch[k].rev, {sub:true, cls:"soft"})).join("");
+  const result = `
+    <div class="rep-sec">Αποτέλεσμα</div>
+    <div class="rep-t">
+      ${repRow("Πωλήσεις", d.rev, {cls:"hd"})}
+      ${chRows}
+      ${repRow(d.nCosted<d.n && d.nCosted>0 ? `Κόστος υλικών (από ${d.nCosted} από ${d.n})` : "Κόστος υλικών", d.cost, {neg:true, cls:"soft"})}
+      ${repRow("Μικτό κέρδος", d.gross, {cls:"sum", raw:`${fmtMoney(d.gross)}${d.margin!=null?`<small>${d.margin}%</small>`:""}`})}
+      ${d.bzCost?repRow("Έξοδα bazaar", d.bzCost, {neg:true, cls:"soft"}):""}
+      ${d.opex?repRow("Λειτουργικά έξοδα", d.opex, {neg:true, cls:"soft"}):""}
+      ${(d.bzCost||d.opex)?repRow("Αποτέλεσμα προ εργασίας", d.preWork, {cls:"sum"}):""}
+      ${d.workSecs?repRow(`Κόστος εργασίας (${fmtDur(d.workSecs)} × ${fmtMoney(hourRate)})`, d.labour, {neg:true, cls:"soft"}):""}
+      ${repRow("Καθαρό αποτέλεσμα", d.net, {cls:"tot"})}
+    </div>
+    ${d.nCosted<d.n?`<p class="rep-note">${d.n-d.nCosted} από ${d.n} ${d.n===1?"πώληση":"πωλήσεις"} δεν έχουν καταχωρημένο κόστος υλικών, οπότε το μικτό κέρδος είναι αισιόδοξο.</p>`:""}
+    ${!d.workSecs?`<p class="rep-note">Δεν μετρήθηκε χρόνος εργασίας σε αυτή την περίοδο, οπότε το καθαρό αποτέλεσμα δεν τον περιλαμβάνει.</p>`:""}`;
+
+  /* 1β. Ταμειακή ροή — άλλο πράγμα από το αποτέλεσμα */
+  const flow = (d.cashIn||d.cashOut) ? `
+    <div class="rep-sec">Ταμειακή ροή</div>
+    <div class="rep-t">
+      ${repRow("Εισπράξεις", d.cashIn)}
+      ${repRow("Πληρωμές", d.cashOut, {neg:true, cls:"soft"})}
+      ${repRow("Διαφορά", d.cashNet, {cls:"sum"})}
+    </div>
+    <p class="rep-note">Το αποτέλεσμα βαρύνεται με τα υλικά κατά την <b>ανάλωση</b>· η ταμειακή ροή με τις <b>πληρωμές</b> της περιόδου. Γι' αυτό τα δύο νούμερα διαφέρουν.
+      <button class="lnk" onclick="goTab('cash')">Κινήσεις →</button></p>` : "";
+
+  /* 2. Κανάλια */
+  const chTable = `
+    <div class="rep-sec">Κανάλια πώλησης</div>
+    <div class="rep-tbl">
+      <div class="rep-hr"><span>Κανάλι</span><span>Πωλήσεις</span><span>Τζίρος</span><span>Μέση αξία</span></div>
+      ${CH.filter(k=>d.ch[k].n>0).map(k=>`<div class="rep-tr">
+        <span>${SALE_CHANNELS[k].ic} ${SALE_CHANNELS[k].l}</span>
+        <span>${d.ch[k].n}</span>
+        <span>${fmtMoney(d.ch[k].rev)}</span>
+        <span>${fmtMoney(d.ch[k].rev/d.ch[k].n)}</span>
+      </div>`).join("")}
+    </div>`;
+
+  /* 3. Τι πουλάει */
+  const sellBlock = (d.models.length||d.colors.length) ? `
+    <div class="rep-sec">Τι πουλάει</div>
+    ${d.models.length?`<div class="rep-sub">Ανά μοντέλο</div>${repBars(d.models.slice(0,8),"τεμ.")}`:""}
+    ${d.colors.length?`<div class="rep-sub">Ανά απόχρωση</div>${repBars(d.colors.slice(0,8),"τεμ.")}`:""}` : "";
+
+  /* 4. Πελάτες & αποθήκη */
+  const rest = `
+    <div class="rep-sec">Πελάτες</div>
+    <div class="rep-t">
+      ${repRow("Πελάτες της περιόδου", 0, {raw:String(d.cust.total)})}
+      ${repRow("Νέοι", 0, {raw:String(d.cust.fresh), cls:"soft"})}
+      ${repRow("Μέση αξία ανά πελάτη", d.cust.avg, {cls:"soft"})}
+      ${d.owed>0.009?repRow("Ανεξόφλητα", d.owed, {cls:"soft"}):""}
+    </div>
+    <div class="rep-sec">Αποθήκη σήμερα</div>
+    <div class="rep-t">
+      ${repRow("Αξία αποθέματος (κόστος)", d.stock.val)}
+      ${repRow("Έτοιμα κομμάτια", 0, {raw:fmtNum(d.stock.pieces), cls:"soft"})}
+      ${d.stock.low?repRow("Είδη που τελειώνουν", 0, {raw:String(d.stock.low), cls:"soft"}):""}
+    </div>`;
+
+  /* 5. Τζίρος ανά μήνα — η πορεία, όχι μόνο η φωτογραφία */
+  const mNames=["Ιαν","Φεβ","Μαρ","Απρ","Μάι","Ιουν","Ιουλ","Αυγ","Σεπ","Οκτ","Νοε","Δεκ"];
+  const yr=(repAnchor?new Date(repAnchor):new Date()).getFullYear();
+  const mv=new Array(12).fill(0);
+  (ordersCache||[]).forEach(o=>{ const c=new Date(o.created_at||0);
+    if(c.getFullYear()!==yr) return; mv[c.getMonth()]+=orderValue(o); });
+  const maxM=Math.max(1,...mv);
+  let fromM=mv.findIndex(v=>v>0); if(fromM<0) fromM=0;
+  const toM = (yr===new Date().getFullYear()) ? new Date().getMonth() : 11;
+  const months=[]; for(let i=fromM;i<=Math.max(fromM,toM);i++) months.push(i);
+  const trend = `<div class="rep-sec">Τζίρος ${yr}</div>
+    <div class="stage-bars">${months.map(i=>`
+      <div class="sbar"><span class="lbl" style="width:42px">${mNames[i]}</span>
+        <span class="track"><span class="fill" style="width:${Math.round(mv[i]/maxM*100)}%"></span></span>
+        <span class="cnt" style="width:78px">${fmtMoney(mv[i])}</span></div>`).join("")}</div>
+    <div class="year-total">Σύνολο ${yr}: <b>${fmtMoney(mv.reduce((a,b)=>a+b,0))}</b></div>`;
+
+  box.innerHTML = periodBar + result + flow + chTable + sellBlock + repPerfBlock() + rest + trend +
+    `<div class="rep-foot"><button class="btn ghost sm" onclick="window.print()">🖨 Εκτύπωση</button></div>`;
+}
+
+/* ---- απόδοση ανά κατηγορία: πόσο πιάνει η ώρα ---- */
+function repPerfBlock(){
+  const {from,to}=repRange();
+  const agg={};
+  (ordersCache||[]).forEach(o=>{
+    const c=new Date(o.created_at||0).getTime();
+    if(!c || c<from.getTime() || c>=to.getTime()) return;
+    const sec=workSec(o); if(!sec) return;
+    const its=getItems(o); if(!its.length) return;
+    const price=orderValue(o), cost=(o.cost!=null)?Number(o.cost):0;
+    const per=(price-cost)/its.length, secPer=sec/its.length;
+    its.forEach(it=>{
+      const st=(stockCache||[]).find(x=>normText(x.name)===normText(it.name));
+      const cat=(st&&st.category)||"Λοιπά";
+      const a=agg[cat]=agg[cat]||{cat, n:0, sec:0, net:0};
+      a.n++; a.sec+=secPer; a.net+=per;
+    });
+  });
+  const rows=Object.values(agg).filter(a=>a.sec>60)
+    .map(a=>({...a, rate:Math.round(a.net/(a.sec/3600)*100)/100}))
+    .sort((a,b)=>b.rate-a.rate);
+  if(!rows.length) return `<div class="rep-sec">Απόδοση ανά κατηγορία</div>
+    <p class="rep-note">Δεν μετρήθηκε χρόνος σε αυτή την περίοδο. Με το ⏱ Χρόνος σε μια παραγγελία, εδώ φαίνεται πόσο πιάνει η ώρα σε κάθε κατηγορία.</p>`;
+  const col=r=> r.rate>=hourRate ? "#2c6e49" : (r.rate>=hourRate*0.6 ? "#c9922e" : "#b54b3a");
+  return `<div class="rep-sec">Απόδοση ανά κατηγορία</div>
+    <p class="rep-note" style="margin:0 0 12px">Στόχος ${fmtMoney(hourRate)}/ώρα. Υπολογίζεται μόνο από όσα έχουν μετρημένο χρόνο.</p>
+    ${rows.map(r=>`<div class="rep-bar">
+      <div class="t"><span>${esc(r.cat)} <span style="color:var(--muted)">· ${r.n} ${r.n===1?"κομμάτι":"κομμάτια"} · ${fmtDur(Math.round(r.sec))}</span></span>
+        <span style="color:${col(r)};font-weight:600">${fmtMoney(r.rate)}/ώρα</span></div>
+      <span class="track"><span class="fill" style="width:${Math.min(100,Math.round(r.rate/Math.max(hourRate,.01)*100))}%;background:${col(r)}"></span></span>
+    </div>`).join("")}`;
 }
 
 /* ============ ΜΟΝΤΕΛΟ & ΧΡΩΜΑ ============
