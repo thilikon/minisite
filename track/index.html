@@ -1444,6 +1444,26 @@
 
 
 
+<!-- ============ ΕΝΑΡΞΗ ΛΟΓΑΡΙΑΣΜΟΥ ============ -->
+<div id="accModal" class="overlay hidden">
+  <div class="modal">
+    <div class="mh">
+      <h2 class="serif" id="acTitle">Έναρξη λογαριασμού</h2>
+      <button class="x" onclick="closeAccount()">✕</button>
+    </div>
+    <p class="r-hint" style="margin-bottom:12px">Το υπόλοιπο στην <b>αρχή</b> της ημέρας έναρξης. Οι κινήσεις από την ημερομηνία αυτή και μετά προσμετρώνται· ό,τι προηγείται θεωρείται ήδη ενσωματωμένο στο ποσό.</p>
+    <div style="display:flex;gap:10px">
+      <label class="fld" style="flex:1"><span>Υπόλοιπο έναρξης €</span><input id="acOpening" inputmode="decimal" placeholder="0"></label>
+      <label class="fld" style="flex:1"><span>Ημερομηνία έναρξης</span><input id="acDate" type="date"></label>
+    </div>
+    <p id="acMsg" class="msg err hidden"></p>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn solid" style="flex:1" onclick="saveAccount()">Αποθήκευση</button>
+      <button class="btn ghost" onclick="closeAccount()">Κλείσιμο</button>
+    </div>
+  </div>
+</div>
+
 <!-- ============ ΤΑΜΕΙΑΚΗ ΚΙΝΗΣΗ ============ -->
 <div id="cashModal" class="overlay hidden">
   <div class="modal">
@@ -7607,14 +7627,23 @@ function allMoves(){
   return [...cashMoves.map(m=>({...m, src:"manual"})), ...saleReceipts(), ...bazaarCosts()]
     .sort((a,b)=> String(b.moved_at||"").localeCompare(String(a.moved_at||"")));
 }
-function movesIn(key){ return allMoves().filter(m=>m.moved_at && monthKey(m.moved_at+"T12:00:00")===key); }
+function movesIn(key){ return allMoves().filter(m=>m.moved_at && moveCounts(m) && monthKey(m.moved_at+"T12:00:00")===key); }
 
 /* ---------- υπόλοιπα ---------- */
+/* Η ημερομηνία έναρξης ορίζει από πού αρχίζει το βιβλίο του λογαριασμού.
+   Ό,τι προηγείται ανήκει στο ιστορικό και περιλαμβάνεται ήδη στο υπόλοιπο
+   έναρξης — δεν ξαναμετριέται. */
+function accStart(accId){ const a=accById(accId); return (a && a.opening_at) || null; }
+function moveCounts(m){
+  const st=accStart(m.account_id);
+  return !st || String(m.moved_at||"") >= String(st);
+}
 function balanceOf(accId, upto){
   const a=accById(accId); if(!a) return 0;
   let v=Number(a.opening)||0;
   allMoves().forEach(m=>{
     if(m.account_id!==accId) return;
+    if(!moveCounts(m)) return;
     if(upto && String(m.moved_at)>upto) return;
     v+=Number(m.amount)||0;
   });
@@ -7663,7 +7692,8 @@ function renderCash(){
   /* υπόλοιπα λογαριασμών */
   const accCards=accounts.filter(a=>!a.archived).map(a=>`
     <button class="mini ${a.kind==="cash"?"dark":""}" onclick="openAccount('${a.id}')">
-      <div class="n">${fmtMoney(balanceOf(a.id))}</div><div class="l">${esc(a.name)}</div></button>`).join("");
+      <div class="n">${fmtMoney(balanceOf(a.id))}</div>
+      <div class="l">${esc(a.name)}${a.opening_at?`<br>από ${fmtDateShort(a.opening_at)}`:""}</div></button>`).join("");
 
   const tabs=`<div class="tabsw" style="margin-bottom:14px;flex-wrap:wrap">${months.map(k=>{
     const [yy,mm]=k.split("-");
@@ -7699,7 +7729,11 @@ function renderCash(){
     <div class="stats-sub" style="margin-top:0">Υπόλοιπα λογαριασμών</div>
     <div class="mini-grid" style="margin-bottom:6px">${accCards}
       <button class="mini" onclick="openCashMove()"><div class="n">+</div><div class="l">νέα κίνηση</div></button></div>
-    <div style="font-size:11.5px;color:var(--muted);margin:0 0 16px">Σύνολο διαθεσίμων <b style="color:var(--ink)">${fmtMoney(totalBalance())}</b>.</div>
+    <div style="font-size:11.5px;color:var(--muted);margin:0 0 16px;line-height:1.6">Σύνολο διαθεσίμων <b style="color:var(--ink)">${fmtMoney(totalBalance())}</b>.
+      ${accounts.filter(a=>!a.archived && a.opening_at).map(a=>{
+        const mv=Math.round((balanceOf(a.id)-(Number(a.opening)||0))*100)/100;
+        return `<br>${esc(a.name)}: έναρξη ${fmtMoney(a.opening||0)} ${mv<0?"−":"+"} κινήσεις ${fmtMoney(Math.abs(mv))} από ${fmtDateShort(a.opening_at)} = <b style="color:var(--ink)">${fmtMoney(balanceOf(a.id))}</b>`;
+      }).join("")}</div>
     ${tabs}
     <div class="sum" style="margin-bottom:6px">
       ${row("Εισπράξεις πωλήσεων", inn)}
@@ -7723,16 +7757,30 @@ function renderCash(){
 }
 
 /* ---------- υπόλοιπο έναρξης λογαριασμού ---------- */
-async function openAccount(id){
+let editingAccId=null;
+function openAccount(id){
   const a=accById(id); if(!a) return;
-  const v=prompt(`Υπόλοιπο έναρξης — ${a.name}\n(το ποσό που υπήρχε πριν αρχίσει η καταγραφή)`, String(a.opening||0));
-  if(v===null) return;
-  const n=parseMoney(v); if(n==null) return;
+  editingAccId=id;
+  document.getElementById("acTitle").textContent="Έναρξη λογαριασμού · "+a.name;
+  document.getElementById("acOpening").value=(a.opening!=null)?a.opening:"";
+  document.getElementById("acDate").value=a.opening_at||todayISO();
+  document.getElementById("acMsg").classList.add("hidden");
+  _ovOpen("accModal");
+}
+function closeAccount(){ _ovClose("accModal"); }
+async function saveAccount(){
+  const a=accById(editingAccId); if(!a) return;
+  const msg=document.getElementById("acMsg"); msg.classList.add("hidden");
+  const n=parseMoney(document.getElementById("acOpening").value);
+  const d=document.getElementById("acDate").value || todayISO();
+  if(n==null){ msg.textContent="Συμπληρώστε ποσό."; msg.classList.remove("hidden"); return; }
   try{
-    const r=await authFetch(REST + "/thilikon_accounts?id=eq."+id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({opening:n})});
+    const r=await authFetch(REST + "/thilikon_accounts?id=eq."+editingAccId,{method:"PATCH",headers:{"Prefer":"return=minimal"},
+      body:JSON.stringify({opening:n, opening_at:d})});
     if(!r.ok) throw new Error();
-    a.opening=n; renderCash(); adminFlash("Ενημερώθηκε ✓");
-  }catch(e){ adminFlash("Δεν αποθηκεύτηκε"); }
+    a.opening=n; a.opening_at=d;
+    closeAccount(); renderCash(); adminFlash("Ενημερώθηκε ✓");
+  }catch(e){ msg.textContent="Δεν αποθηκεύτηκε."; msg.classList.remove("hidden"); }
 }
 
 /* ---------- καταχώρηση κίνησης ---------- */
