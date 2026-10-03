@@ -1572,7 +1572,7 @@
     </div>
     <label class="chk-row" style="margin:-4px 0 14px">
       <input type="checkbox" id="sPerOrder" onchange="onPerOrderToggle()">
-      <span>Το αγοράζω ανά παραγγελία — μη με ειδοποιείς όταν μηδενίζει</span>
+      <span><b>Αγορά ανά παραγγελία</b> — δεν τηρείται απόθεμα. Το κόστος βαρύνει την παραγγελία που το χρησιμοποιεί.</span>
     </label>
     <label class="fld hidden" id="sSellWrap"><span>Τιμή πώλησης € (για έτοιμα προϊόντα)</span><input id="sSell" inputmode="decimal" placeholder="0" oninput="renderBom()"></label>
     <label class="fld hidden" id="sEvWrap"><span>Event (προαιρετικό)</span>
@@ -4243,7 +4243,7 @@ async function delOrder(id,name){
     if(restore && mats){
       for(const m of mats){
         const it=stockCache.find(x=>x.id===m.id);
-        if(it){ const nq=Math.round(((Number(it.qty)||0)+(Number(m.qty)||0))*100)/100; await authFetch(REST + "/thilikon_stock?id=eq."+m.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({qty:nq})}); it.qty=nq; }
+        if(it) await stockMove(m.id, Number(m.qty)||0, "return", {type:"order", id:editingId}, {note:"διαγραφή παραγγελίας"});
       }
     }
     const res = await authFetch(REST + "/orders?id=eq."+id, { method:"DELETE" });
@@ -4608,12 +4608,7 @@ async function applyPendingStock(){
   const ids=[...pendingStock]; pendingStock=[];
   for(const id of ids){
     const it=(stockCache||[]).find(x=>x.id===id); if(!it) continue;
-    const q=Math.max(0,(Number(it.qty)||0)-1);
-    try{
-      const res=await authFetch(REST + "/thilikon_stock?id=eq."+id,{method:"PATCH",headers:{"Prefer":"return=minimal"},
-        body:JSON.stringify({qty:q})});
-      if(res.ok) it.qty=q;
-    }catch(e){}
+    try{ await stockMove(id, -1, "sale", {type:"order", id:editingId}, {note:"έτοιμο προϊόν σε παραγγελία"}); }catch(e){}
   }
   loadStock();
 }
@@ -5623,19 +5618,21 @@ function isPerOrder(it){ return it && it.low_threshold!=null && Number(it.low_th
 function setStockView(v){ stockView=v; renderStock(); syncRoute(); }
 function renderStock(){
   const box=document.getElementById("stockAdmin"); const all=stockCache||[];
-  const raw=all.filter(it=>it.type!=="product" && !stEv(it));
+  const raw=all.filter(it=>it.type!=="product" && !stEv(it) && isStocked(it));
+  const perJob=all.filter(it=>it.type!=="product" && !stEv(it) && isPerJob(it));
   const mm=all.filter(it=>it.type!=="product" && stEv(it));
   const prods=all.filter(it=>it.type==="product");
   const toggle=`<div class="tabsw" style="margin-bottom:16px;flex-wrap:wrap">
     <button class="tb ${stockView==='models'?'sel':''}" onclick="setStockView('models')">Προδιαγραφές${modelCat.length?` (${modelCat.length})`:''}</button>
-    <button class="tb ${stockView==='raw'?'sel':''}" onclick="setStockView('raw')">Πρώτες ύλες${raw.length?` (${raw.length})`:''}</button>
+    <button class="tb ${stockView==='raw'?'sel':''}" onclick="setStockView('raw')">Αποθέματα${raw.length?` (${raw.length})`:''}</button>
+    ${perJob.length?`<button class="tb ${stockView==='perjob'?'sel':''}" onclick="setStockView('perjob')">Ανά παραγγελία (${perJob.length})</button>`:''}
     <button class="tb ${stockView==='mm'?'sel':''}" onclick="setStockView('mm')" ${stockView==='mm'?'style="background:#c0266c;border-color:#c0266c"':''}>Mix &amp; Match${mm.length?` (${mm.length})`:''}</button>
     <button class="tb ${stockView==='product'?'sel':''}" onclick="setStockView('product')">Έτοιμα προϊόντα${prods.length?` (${prods.length})`:''}</button>
     ${archivedIds().length?`<button class="tb ${stockView==='archive'?'sel':''}" onclick="setStockView('archive')">🗄 Αρχείο (${archivedIds().length})</button>`:''}
   </div>`;
   if(stockView==="models"){ box.innerHTML = toggle + renderModels(); return; }
   let rows = stockView==="archive" ? (stockCache||[]).filter(isArchivedStock)
-           : (stockView==="product" ? prods : (stockView==="mm" ? mm : raw));
+           : (stockView==="product" ? prods : (stockView==="mm" ? mm : (stockView==="perjob" ? perJob : raw)));
   if(stockView!=="archive") rows = rows.filter(it=>!isArchivedStock(it));
   const staleN=(stockCache||[]).filter(staleStock).length;
   const archN=archivedIds().length;
@@ -5656,6 +5653,21 @@ function renderStock(){
     return;
   }
 
+  if(stockView==="perjob"){
+    let html = toggle + `<div class="r-hint" style="margin-bottom:14px">Είδη που αγοράζονται για συγκεκριμένη παραγγελία. Δεν τηρείται απόθεμα και δεν εκδίδεται ειδοποίηση αναπαραγγελίας· το κόστος βαρύνει την παραγγελία.</div>`;
+    const cats0={}; rows.forEach(it=>{ const c=it.category||"Λοιπά"; (cats0[c]=cats0[c]||[]).push(it); });
+    Object.keys(cats0).sort((a,b)=>a.localeCompare(b,"el")).forEach(cat=>{
+      html+=`<div class="stock-cat">${esc(cat)}</div>`;
+      cats0[cat].forEach(it=>{
+        html+=`<div class="stock-item ok">${stockThumb(it)}
+          <div class="si-info"><div class="si-name">${esc(it.name)}</div>
+          <div class="si-meta">${it.unit_cost!=null?fmtMoney(it.unit_cost)+" / "+esc(it.unit||"τεμ."):"χωρίς τιμή"} · ανά παραγγελία</div></div>
+          <button class="btn ghost sm" title="Κινήσεις" onclick="openStockHistory('${it.id}')">📋</button>
+          <button class="btn ghost sm" onclick="openStockModal('${it.id}')">✎</button></div>`;
+      });
+    });
+    box.innerHTML=html; return;
+  }
   const totalVal=allRows.reduce((s,it)=>s+(Number(it.qty)||0)*(Number(it.unit_cost)||0),0);
   const lowItems=allRows.filter(it=>stockState(it)!=="ok");
   const isMM = stockView==="mm";
@@ -5695,13 +5707,15 @@ function renderStock(){
         ${stockThumb(it)}
         <div class="si-info">
           <div class="si-name">${esc(it.name)}${_sev&&isProd?` <span class="mm-pill" style="background:${_sev.color}26;color:${_sev.ink||_sev.color};border-color:${_sev.color}">${esc(_sev.name)}</span>`:""}${(function(){const b=bzOfStock(it);return b?` <button class="mm-pill cust-pill" style="background:#f3efe6;color:#8a6a2e;border-color:#e4d9c2" onclick="showAdminTab('bazaar');setBzView('${b.id}')">🛍️ ${esc(b.name)}</button>`:"";})()}</div>
-          <div class="si-meta">${meta}${isPerOrder(it)?' · <span style="color:var(--muted)">ανά παραγγελία</span>':(st==="low"?' · <span class="si-low">'+(isProd?"λίγα":"τελειώνει")+'</span>':st==="out"?' · <span class="si-low">εξαντλήθηκε</span>':'')}</div>
+          <div class="si-meta">${meta}${it.status==="written_off"?` · <span style="color:#b54b3a">αποσύρθηκε${it.status_reason?" ("+esc(it.status_reason)+")":""}</span>`:""}${isPerOrder(it)?' · <span style="color:var(--muted)">ανά παραγγελία</span>':(st==="low"?' · <span class="si-low">'+(isProd?"λίγα":"τελειώνει")+'</span>':st==="out"?' · <span class="si-low">εξαντλήθηκε</span>':'')}</div>
         </div>
         ${isProd ? `<div class="si-actions">
           ${qtyBlock}
           <button class="btn solid sm" ${Number(it.qty)>0?"":"disabled"} onclick="tillOpen(null,'${it.id}')">Πούλησέ το</button>
+          <button class="btn ghost sm" title="Κινήσεις" onclick="openStockHistory('${it.id}')">📋</button>
+          ${Number(it.qty)>0?`<button class="btn ghost sm" title="Απόσυρση κομματιού" onclick="writeOffPiece('${it.id}')">⊘</button>`:""}
           <button class="btn ghost sm" onclick="openStockModal('${it.id}')">✎</button>
-        </div>` : `${qtyBlock}<button class="btn ghost sm" title="Πού χρησιμοποιήθηκε" onclick="openMaterialUse('${it.id}')">📦</button><button class="btn ghost sm" title="${isArchivedStock(it)?'Επαναφορά':'Αρχειοθέτηση'}" onclick="toggleArchiveStock('${it.id}')">${isArchivedStock(it)?'↩':'🗄'}</button><button class="btn ghost sm" onclick="openStockModal('${it.id}')">✎</button>`}
+        </div>` : `${qtyBlock}<button class="btn ghost sm" title="Κινήσεις είδους" onclick="openStockHistory('${it.id}')">📋</button><button class="btn ghost sm" title="${isArchivedStock(it)?'Επαναφορά':'Αρχειοθέτηση'}" onclick="toggleArchiveStock('${it.id}')">${isArchivedStock(it)?'↩':'🗄'}</button><button class="btn ghost sm" onclick="openStockModal('${it.id}')">✎</button>`}
       </div>`;
     });
   });
@@ -5753,12 +5767,13 @@ async function seedMixMatch(){
 }
 async function adjustStock(id, delta){
   const it=stockCache.find(x=>x.id===id); if(!it) return;
-  const q=Math.max(0, Math.round(((Number(it.qty)||0)+delta)*100)/100);
-  it.qty=q; renderStock();
+  const prev=Number(it.qty)||0;
+  it.qty=Math.max(0, Math.round((prev+delta)*100)/100); renderStock();
   try{
-    const res=await authFetch(REST + "/thilikon_stock?id=eq."+id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({qty:q})});
-    if(!res.ok) throw new Error();
-  }catch(e){ adminFlash("Σφάλμα ενημέρωσης στοκ"); loadStock(); }
+    it.qty=prev;                       // η stockMove υπολογίζει η ίδια
+    await stockMove(id, delta, "adjust", {type:"stock", id}, {note:"χειροκίνητη διόρθωση"});
+    renderStock();
+  }catch(e){ adminFlash("Σφάλμα ενημέρωσης αποθέματος"); loadStock(); }
 }
 const STOCK_CATS = {
   raw:["Νήμα","Ταμπελάκι","Συσκευασία","Free Gift","Άλλο"],
@@ -5794,7 +5809,7 @@ function openStockModal(id){
   document.getElementById("sUnit").value=it?(it.unit||""):(stockView==="product"?"τεμ.":"κουβάρι");
   document.getElementById("sQty").value=it&&it.qty!=null?it.qty:"";
   document.getElementById("sCost").value=it&&it.unit_cost!=null?it.unit_cost:"";
-  const per = !!(it && it.low_threshold!=null && Number(it.low_threshold)===0);
+  const per = isPerJob(it);
   document.getElementById("sPerOrder").checked = per;
   document.getElementById("sLow").value = per ? "" : (it&&it.low_threshold!=null?it.low_threshold:"2");
   document.getElementById("sLow").disabled = per;
@@ -5836,6 +5851,7 @@ async function saveStock(keepOpen){
     unit_cost:parseMoney(document.getElementById("sCost").value),
     sell_price:document.getElementById("sType").value==="product"?parseMoney(document.getElementById("sSell").value):null,
     low_threshold: document.getElementById("sPerOrder").checked ? 0 : parseMoney(document.getElementById("sLow").value),
+    stock_mode: document.getElementById("sPerOrder").checked ? "per_job" : "stocked",
     event_id:document.getElementById("sEvent").value||null,
     mm:document.getElementById("sEvent").value==="mix",
     image_url:document.getElementById("sImg").value.trim()||null
@@ -6619,12 +6635,8 @@ async function bzAddExpOther(id){
 /* κρατά το έξοδο και, αν είναι από την αποθήκη, διορθώνει το απόθεμα */
 async function bzExpApply(id, entry, delta, it){
   if(it && delta){
-    const nq=Math.max(0, Math.round(((Number(it.qty)||0)+delta)*100)/100);
-    try{
-      const r=await authFetch(REST + "/thilikon_stock?id=eq."+it.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({qty:nq})});
-      if(!r.ok) throw new Error();
-      it.qty=nq;
-    }catch(e){ adminFlash("Η αποθήκη δεν ενημερώθηκε"); return; }
+    try{ await stockMove(it.id, delta, "bazaar", {type:"bazaar", id}, {note:entry.name}); }
+    catch(e){ adminFlash("Το απόθεμα δεν ενημερώθηκε"); return; }
   }
   bzExp[id]=[...bzExpList(id), entry];
   await saveBzExp(true);
@@ -6636,10 +6648,7 @@ async function bzDropExp(id, key){
   if(!confirm(`Να αφαιρεθεί το έξοδο «${e.name}»${e.stock_id?" και να γυρίσει στην αποθήκη":""};`)) return;
   if(e.stock_id){
     const it=(stockCache||[]).find(x=>x.id===e.stock_id);
-    if(it){
-      const nq=Math.max(0, Math.round(((Number(it.qty)||0)+(Number(e.qty)||0))*100)/100);
-      try{ await authFetch(REST + "/thilikon_stock?id=eq."+it.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({qty:nq})}); it.qty=nq; }catch(_){}
-    }
+    if(it){ try{ await stockMove(it.id, Number(e.qty)||0, "return", {type:"bazaar", id}, {note:"ακύρωση εξόδου"}); }catch(_){} }
   }
   bzExp[id]=bzExpList(id).filter(x=>x.key!==key);
   await saveBzExp(true);
@@ -6743,12 +6752,7 @@ async function doCloseBazaar(){
       const back=Math.min(Number(e.qty)||0, parseMoney(el.value)||0);
       if(back<=0) continue;
       const it=(stockCache||[]).find(x=>x.id===e.stock_id);
-      if(it){
-        const nq=Math.round(((Number(it.qty)||0)+back)*100)/100;
-        const r=await authFetch(REST + "/thilikon_stock?id=eq."+it.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({qty:nq})});
-        if(!r.ok) throw new Error("Η αποθήκη δεν ενημερώθηκε");
-        it.qty=nq;
-      }
+      if(it) await stockMove(it.id, back, "return", {type:"bazaar", id}, {note:"επιστροφή αχρησιμοποίητων"});
       e.qty=Math.round(((Number(e.qty)||0)-back)*100)/100;
       returned+=back;
     }
@@ -6919,11 +6923,8 @@ async function applyBom(stockId){
     const d=(next[id]||0)-(prev[id]||0);
     if(!d) continue;
     const it=(stockCache||[]).find(x=>x.id===id); if(!it) continue;
-    const nq=Math.max(0, Math.round(((Number(it.qty)||0)-d)*100)/100);
-    try{
-      const r=await authFetch(REST + "/thilikon_stock?id=eq."+id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({qty:nq})});
-      if(r.ok) it.qty=nq;
-    }catch(e){ console.error(e); }
+    try{ await stockMove(id, -d, d>0?"production":"return", {type:"stock", id:stockId}, {note:"συνταγή προϊόντος"}); }
+    catch(e){ console.error(e); }
   }
   const sec=bomWorkSec();
   if(bomDraftMats.length || sec) prodBom[stockId]={mats:bomDraftMats.map(m=>({...m})), sec};
@@ -7146,11 +7147,7 @@ async function tillCheckout(){
     // 1) αφαίρεση από την αποθήκη
     for(const id of Object.keys(dec)){
       const it=(stockCache||[]).find(x=>x.id===id); if(!it) continue;
-      const q=Math.max(0, (Number(it.qty)||0) - dec[id]);
-      const r=await withTimeout(authFetch(REST + "/thilikon_stock?id=eq."+id,
-        {method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({qty:q})}));
-      if(!r.ok) throw new Error("Η αποθήκη δεν ενημερώθηκε (HTTP "+r.status+")");
-      it.qty=q;
+      await withTimeout(stockMove(id, -dec[id], tillBz?"bazaar":"sale", {type:tillBz?"bazaar":"sale", id:tillBz||null}, {note:"πώληση"}));
     }
     // 2) μία γραμμή πώλησης — μπαίνει στα οικονομικά, δεν είναι παραγγελία
     const name=(document.getElementById("tillName").value||"").trim();
@@ -7201,7 +7198,7 @@ async function tillCheckout(){
     for(const id of Object.keys(before)){
       const it=(stockCache||[]).find(x=>x.id===id);
       if(it && it.qty!==before[id]){
-        try{ await authFetch(REST + "/thilikon_stock?id=eq."+id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({qty:before[id]})}); it.qty=before[id]; }catch(_){}
+        try{ await stockSet(id, before[id], "adjust", {type:"sale"}, {note:"ακύρωση πώλησης"}); }catch(_){}
       }
     }
     console.error(e);
@@ -7390,6 +7387,113 @@ function renderHome(){
   paintBrief();
 }
 
+
+
+/* ============ ΚΙΝΗΣΕΙΣ ΑΠΟΘΗΚΗΣ ============
+   Μία πόρτα για κάθε μεταβολή αποθέματος. Ενημερώνει το είδος και
+   γράφει την κίνηση, ώστε κάθε ποσότητα να έχει αιτιολογία και ίχνος.
+   Αν αποτύχει η καταγραφή, η μεταβολή στέκει — η καταγραφή είναι
+   συνοδευτική, δεν μπλοκάρει τη δουλειά.
+   ========================================================= */
+let stockMoves = [];      // πρόσφατες κινήσεις (για τις οθόνες ιστορικού)
+const MOVE_LABELS = {
+  purchase:"Αγορά", production:"Ανάλωση", sale:"Πώληση", bazaar:"Σημείο πώλησης",
+  return:"Επιστροφή", adjust:"Διόρθωση", writeoff:"Απόσυρση", opening:"Αρχική καταχώρηση"
+};
+async function logStockMove(itemId, qty, reason, ref, opts){
+  if(!qty) return;
+  const row={ item_id:itemId, qty, reason:reason||"adjust",
+              ref_type:(ref&&ref.type)||null, ref_id:(ref&&ref.id)||null,
+              unit_cost:(opts&&opts.unit_cost!=null)?Number(opts.unit_cost):null,
+              note:(opts&&opts.note)||null, created_by:jwtUser(adminToken)||null };
+  try{
+    const r=await authFetch(REST + "/thilikon_stock_moves",{method:"POST",headers:{"Prefer":"return=representation"},body:JSON.stringify([row])});
+    if(!r.ok) return;
+    const made=await r.json();
+    stockMoves=[...(Array.isArray(made)?made:[]), ...stockMoves];
+  }catch(e){ console.warn("stock move not logged", e); }
+}
+/* Μεταβολή κατά delta. Επιστρέφει true αν πέρασε. */
+async function stockMove(itemId, delta, reason, ref, opts){
+  const it=(stockCache||[]).find(x=>x.id===itemId);
+  const d=Math.round((Number(delta)||0)*100)/100;
+  if(!it || !d) return false;
+  const prev=Number(it.qty)||0;
+  const next=Math.max(0, Math.round((prev+d)*100)/100);
+  const patch={qty:next};
+  if(opts && opts.unit_cost!=null) patch.unit_cost=Number(opts.unit_cost);
+  const r=await authFetch(REST + "/thilikon_stock?id=eq."+itemId,
+    {method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify(patch)});
+  if(!r.ok) throw new Error("Το απόθεμα δεν ενημερώθηκε");
+  it.qty=next;
+  if(patch.unit_cost!=null) it.unit_cost=patch.unit_cost;
+  logStockMove(itemId, next-prev, reason, ref, opts);
+  return true;
+}
+/* Ορισμός απόλυτης ποσότητας (διορθώσεις, ακυρώσεις). */
+async function stockSet(itemId, qty, reason, ref, opts){
+  const it=(stockCache||[]).find(x=>x.id===itemId); if(!it) return false;
+  return stockMove(itemId, (Number(qty)||0)-(Number(it.qty)||0), reason||"adjust", ref, opts);
+}
+async function loadStockMoves(itemId){
+  try{
+    const q = itemId ? "&item_id=eq."+itemId : "";
+    const r=await authFetch(REST + "/thilikon_stock_moves?select=*&order=moved_at.desc&limit=200"+q, {});
+    if(!r.ok) return [];
+    const rows=await r.json();
+    return Array.isArray(rows)?rows:[];
+  }catch(e){ return []; }
+}
+
+/* ---- είδη: τρόπος παρακολούθησης ---- */
+function isPerJob(it){ return !!it && (it.stock_mode==="per_job" || (it.stock_mode==null && Number(it.low_threshold)===0)); }
+function isStocked(it){ return !!it && !isPerJob(it); }
+
+
+/* ---- Ιστορικό κινήσεων ενός είδους ---- */
+async function openStockHistory(itemId){
+  const it=(stockCache||[]).find(x=>x.id===itemId); if(!it) return;
+  const box=document.getElementById("salesBody");
+  document.getElementById("salesTitle").textContent="Κινήσεις · "+it.name;
+  box.innerHTML='<div class="spinner"></div>';
+  _ovOpen("salesModal");
+  const rows=await loadStockMoves(itemId);
+  const inQ =rows.filter(r=>Number(r.qty)>0).reduce((a,r)=>a+Number(r.qty),0);
+  const outQ=rows.filter(r=>Number(r.qty)<0).reduce((a,r)=>a+Math.abs(Number(r.qty)),0);
+  box.innerHTML = `
+    <div class="stat-grid" style="margin-bottom:16px">
+      <div class="stat dark"><div class="n">${fmtNum(it.qty)}</div><div class="l">Απόθεμα</div></div>
+      <div class="stat"><div class="n">${fmtNum(inQ)}</div><div class="l">Εισαγωγές</div></div>
+      <div class="stat"><div class="n">${fmtNum(outQ)}</div><div class="l">Εξαγωγές</div></div>
+    </div>
+    ${rows.length?`<div class="led">
+      <div class="led-h"><span class="d">Αιτιολογία</span><span class="a">Ποσότητα</span></div>
+      ${rows.map(r=>`<div class="led-r">
+        <span class="d">${esc(MOVE_LABELS[r.reason]||r.reason)}<small>${r.moved_at?fmtDateShort(r.moved_at):""}${r.note?(r.moved_at?" · ":"")+esc(r.note):""}</small></span>
+        <span class="a" style="${Number(r.qty)<0?"":"color:#2c6e49"}">${Number(r.qty)>0?"+":""}${fmtNum(r.qty)}</span>
+      </div>`).join("")}
+    </div>`
+    :`<div class="led-empty">Καμία καταγεγραμμένη κίνηση. Οι κινήσεις καταγράφονται από τη στιγμή που ενεργοποιήθηκε η παρακολούθηση.</div>`}`;
+}
+
+/* ---- Απόσυρση έτοιμου κομματιού ---- */
+const WRITEOFF_REASONS = ["Ξηλώθηκε","Δόθηκε δώρο","Ελαττωματικό","Δείγμα / προβολή","Λοιπά"];
+async function writeOffPiece(itemId){
+  const it=(stockCache||[]).find(x=>x.id===itemId); if(!it) return;
+  const q=Number(it.qty)||0;
+  if(q<=0){ adminFlash("Δεν υπάρχει διαθέσιμο κομμάτι"); return; }
+  const r=prompt(`Απόσυρση — ${it.name}\n\nΛόγος:\n${WRITEOFF_REASONS.map((x,i)=>`${i+1}. ${x}`).join("\n")}\n\nΓράψε αριθμό ή δικό σου κείμενο:`, "1");
+  if(r===null) return;
+  const reason = WRITEOFF_REASONS[parseInt(r,10)-1] || String(r).trim() || "Λοιπά";
+  if(!confirm(`Θα αποσυρθεί 1 κομμάτι «${it.name}» (${reason}).\nΤο κόστος του διαγράφεται λογιστικά.`)) return;
+  try{
+    await stockMove(itemId, -1, "writeoff", {type:"stock", id:itemId}, {note:reason});
+    await authFetch(REST + "/thilikon_stock?id=eq."+itemId,{method:"PATCH",headers:{"Prefer":"return=minimal"},
+      body:JSON.stringify({status:"written_off", status_reason:reason, status_at:new Date().toISOString()})});
+    it.status="written_off"; it.status_reason=reason;
+    renderStock(); adminFlash("Αποσύρθηκε ✓");
+  }catch(e){ adminFlash("Δεν ολοκληρώθηκε"); }
+}
 
 /* ============ ΤΑΜΕΙΟ ============
    Δύο βιβλία που δεν πρέπει να μπερδεύονται:
@@ -7725,11 +7829,8 @@ async function saveCashMove(){
       if(moveKind==="purchase" && moveLines.length){
         for(const l of moveLines){
           const it=(stockCache||[]).find(x=>x.id===l.item_id); if(!it) continue;
-          const nq=Math.round(((Number(it.qty)||0)+(Number(l.qty)||0))*100)/100;
-          const r=await authFetch(REST + "/thilikon_stock?id=eq."+it.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},
-            body:JSON.stringify({qty:nq, unit_cost:Number(l.unit_cost)||it.unit_cost})});
-          if(!r.ok) throw new Error("Το απόθεμα δεν ενημερώθηκε.");
-          it.qty=nq; if(l.unit_cost!=null) it.unit_cost=Number(l.unit_cost);
+          await stockMove(it.id, Number(l.qty)||0, "purchase", {type:"cash"},
+            {unit_cost:(l.unit_cost!=null?Number(l.unit_cost):null), note:name});
         }
       }
       const sign=(CASH_KINDS[moveKind]||{sign:-1}).sign;
@@ -8043,11 +8144,9 @@ async function applyMaterials(){
   try{
     for(const {id,d} of deltas){
       const it=stockCache.find(x=>x.id===id); if(!it) continue;
-      const nq=Math.max(0, Math.round(((Number(it.qty)||0)-d)*100)/100);
-      const res=await authFetch(REST + "/thilikon_stock?id=eq."+id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({qty:nq})});
-      if(!res.ok) throw new Error();
-      donePatches.push({id, old:Number(it.qty)||0});
-      it.qty=nq;
+      const old=Number(it.qty)||0;
+      await stockMove(id, -d, d>0?"production":"return", {type:"order", id:editingId}, {note:"υλικά παραγγελίας"});
+      donePatches.push({id, old});
     }
     pickedMaterials=chosen; stockApplied=true;
     const total=chosen.reduce((s,m)=>s+m.qty*m.unit_cost,0);
@@ -8057,7 +8156,7 @@ async function applyMaterials(){
     adminFlash("Ενημερώθηκε το στοκ ✓");
   }catch(e){
     for(const p of donePatches){ // rollback ό,τι πρόλαβε να αλλάξει
-      try{ await authFetch(REST + "/thilikon_stock?id=eq."+p.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({qty:p.old})}); const it=stockCache.find(x=>x.id===p.id); if(it) it.qty=p.old; }catch(_){}
+      try{ await stockSet(p.id, p.old, "adjust", {type:"order", id:editingId}, {note:"ακύρωση"}); }catch(_){}
     }
     btn.disabled=false; btn.textContent="Επιβεβαίωση & αφαίρεση από στοκ"; msg.textContent="Σφάλμα. Δοκίμασε ξανά."; msg.classList.remove("hidden"); loadStock();
   }
@@ -8080,7 +8179,7 @@ async function restoreMaterials(){
     try{
       for(const m of pickedMaterials){
         const it=stockCache.find(x=>x.id===m.id);
-        if(it){ const nq=Math.round(((Number(it.qty)||0)+m.qty)*100)/100; await authFetch(REST + "/thilikon_stock?id=eq."+m.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({qty:nq})}); it.qty=nq; }
+        if(it) await stockMove(m.id, Number(m.qty)||0, "return", {type:"order", id:editingId}, {note:"επιστροφή υλικών"});
       }
       if(!document.getElementById("stockAdmin").classList.contains("hidden")) renderStock();
     }catch(e){ adminFlash("Σφάλμα επαναφοράς στοκ"); }
