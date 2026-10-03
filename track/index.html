@@ -1444,38 +1444,45 @@
 
 
 
-<!-- ============ ΕΞΟΔΟ ============ -->
-<div id="expModal" class="overlay hidden">
+<!-- ============ ΤΑΜΕΙΑΚΗ ΚΙΝΗΣΗ ============ -->
+<div id="cashModal" class="overlay hidden">
   <div class="modal">
     <div class="mh">
-      <h2 class="serif" id="expTitle">Νέο έξοδο</h2>
-      <button class="x" onclick="closeExp()">✕</button>
+      <h2 class="serif" id="cmTitle">Νέα κίνηση</h2>
+      <button class="x" onclick="closeCashMove()">✕</button>
     </div>
-    <div class="seg" id="expKindSeg" style="display:flex;gap:8px;margin-bottom:14px">
-      <button type="button" class="btn ghost sm exp-k sel" data-k="plain" onclick="setExpKind('plain')">Απλό έξοδο</button>
-      <button type="button" class="btn ghost sm exp-k" data-k="buy" onclick="setExpKind('buy')">Αγορά για αποθήκη</button>
+    <div class="seg" id="cmKindSeg" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+      <button type="button" class="btn ghost sm cm-k sel" data-k="expense"    onclick="setMoveKind('expense')">Έξοδο</button>
+      <button type="button" class="btn ghost sm cm-k"     data-k="purchase"   onclick="setMoveKind('purchase')">Αγορά</button>
+      <button type="button" class="btn ghost sm cm-k"     data-k="owner_draw" onclick="setMoveKind('owner_draw')">Ανάληψη</button>
+      <button type="button" class="btn ghost sm cm-k"     data-k="owner_in"   onclick="setMoveKind('owner_in')">Εισφορά</button>
+      <button type="button" class="btn ghost sm cm-k"     data-k="transfer"   onclick="setMoveKind('transfer')">Μεταφορά</button>
+      <button type="button" class="btn ghost sm cm-k"     data-k="sale"       onclick="setMoveKind('sale')">Είσπραξη</button>
     </div>
-    <div id="expBuyBox" class="hidden">
-      <div id="expBuyPick" class="r-hint" style="margin-bottom:10px">Δεν έχεις διαλέξει είδος.</div>
-      <button type="button" class="btn ghost sm" style="margin-bottom:12px" onclick="expPickStock()">🧵 Διάλεξε είδος</button>
-      <div style="display:flex;gap:10px">
-        <label class="fld" style="flex:1"><span>Ποσότητα</span><input id="expQty" inputmode="decimal" placeholder="0" oninput="expRecalc()"></label>
-        <label class="fld" style="flex:1"><span>Τιμή / μονάδα €</span><input id="expUnit" inputmode="decimal" placeholder="0" oninput="expRecalc()"></label>
-      </div>
+    <p id="cmHint" class="r-hint hidden" style="margin-bottom:12px"></p>
+
+    <div id="cmBuyBox" class="hidden" style="margin-bottom:12px">
+      <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0 0 8px">Είδη που αγοράστηκαν</p>
+      <div class="led"><div id="cmLines"></div></div>
+      <div class="bz-add" style="margin-top:8px"><button onclick="cmAddLine()">+ Είδος από την αποθήκη</button></div>
     </div>
-    <label class="fld"><span>Περιγραφή</span><input id="expName" placeholder="π.χ. Νήματα Οκτωβρίου"></label>
+
+    <label class="fld"><span>Αιτιολογία</span><input id="cmName" placeholder="π.χ. Νήματα Οκτωβρίου"></label>
     <div style="display:flex;gap:10px">
-      <label class="fld" style="flex:1"><span>Ημερομηνία</span><input id="expDate" type="date"></label>
-      <label class="fld" style="flex:1"><span>Ποσό €</span><input id="expAmount" inputmode="decimal" placeholder="0"></label>
+      <label class="fld" style="flex:1"><span>Ημερομηνία</span><input id="cmDate" type="date"></label>
+      <label class="fld" style="flex:1"><span>Ποσό €</span><input id="cmAmount" inputmode="decimal" placeholder="0"></label>
     </div>
-    <label class="fld"><span>Κατηγορία</span>
-      <select id="expCat"></select>
-    </label>
-    <p id="expMsg" class="msg err hidden"></p>
+    <div style="display:flex;gap:10px">
+      <label class="fld" style="flex:1"><span>Λογαριασμός</span><select id="cmAccount"></select></label>
+      <label class="fld hidden" style="flex:1" id="cmToWrap"><span>Προς λογαριασμό</span><select id="cmTo"></select></label>
+      <label class="fld" style="flex:1" id="cmCatWrap"><span>Κατηγορία</span><select id="cmCat"></select></label>
+    </div>
+    <label class="fld"><span>Σημείωση (προαιρετικό)</span><input id="cmNote" placeholder="—"></label>
+    <p id="cmMsg" class="msg err hidden"></p>
     <div style="display:flex;gap:10px;margin-top:16px">
-      <button class="btn solid" style="flex:1" id="expSaveBtn" onclick="saveExp()">Αποθήκευση</button>
-      <button class="btn danger sm hidden" id="expDelBtn" onclick="delExp()">🗑</button>
-      <button class="btn ghost" onclick="closeExp()">Κλείσιμο</button>
+      <button class="btn solid" style="flex:1" id="cmSaveBtn" onclick="saveCashMove()">Καταχώρηση</button>
+      <button class="btn danger sm hidden" id="cmDelBtn" onclick="delCashMove()">🗑</button>
+      <button class="btn ghost" onclick="closeCashMove()">Κλείσιμο</button>
     </div>
   </div>
 </div>
@@ -2489,7 +2496,7 @@ function showAdminTab(tab){
   if(isFb) renderFbDashboard();
   if(isStock){ if(stockCache.length) renderStock(); else { document.getElementById("stockAdmin").innerHTML='<div class="spinner"></div>'; loadStock(); } }
   if(isHome) renderHome();
-  if(isCash){ if((stockCache||[]).length) renderCash(); else { document.getElementById("cashAdmin").innerHTML='<div class="spinner"></div>'; loadStock().then(renderCash); } }
+  if(isCash){ if(accounts.length) renderCash(); else { document.getElementById("cashAdmin").innerHTML='<div class="spinner"></div>'; loadCash().then(renderCash); } }
   if(isStats && ordersCache.length) renderStats();
 }
 
@@ -5324,8 +5331,8 @@ async function loadSettings(){
     bzItems   = map.bz_items || {};
     prodBom   = map.prod_bom || {};
     bzExp     = map.bz_exp || {};
-    expenses  = Array.isArray(map.expenses) ? map.expenses : [];
-  }catch(e){ eventsOn={}; custLinks={}; custInfo={}; modelCat=[]; bazaars=[]; bzItems={}; prodBom={}; bzExp={}; expenses=[]; }
+    _oldExpenses = Array.isArray(map.expenses) ? map.expenses : [];   // πηγή μεταφοράς
+  }catch(e){ eventsOn={}; custLinks={}; custInfo={}; modelCat=[]; bazaars=[]; bzItems={}; prodBom={}; bzExp={}; _oldExpenses=[]; }
   renderTimerBar();
   // αυτόματο κλείσιμο event στη λήξη — γίνεται ΜΙΑ φορά, μετά ελέγχεις εσύ
   const ao = eventsOn._autoOff || {};
@@ -5336,6 +5343,7 @@ async function loadSettings(){
   if(changed){ eventsOn._autoOff=ao; saveSetting("events", eventsOn, true); }
   updateEventBadge();
   await loadCatalog();          // φωτογραφίες/ονόματα από το minisite, πριν συγχρονιστούν οι προδιαγραφές
+  loadCash();                   // λογαριασμοί και ταμειακές κινήσεις
   await ensureAnasa();
 }
 async function ensureAnasa(){
@@ -6500,6 +6508,7 @@ async function postOrder(payload){
    Δεν χρειάζεται καμία αλλαγή στη βάση: bazaars/bz_items ζουν στα settings και η
    σήμανση της πώλησης μπαίνει μέσα στο items (jsonb) της παραγγελίας.
 ============================================ */
+let _oldExpenses=[];        // παλιά έξοδα από τα settings — μεταφέρονται μία φορά
 let bzPendingTag=null;      // bazaar που θα σημαδευτεί το επόμενο νέο κομμάτι
 let bzError=null;           // τελευταίο σφάλμα πώλησης — μένει στην οθόνη μέχρι να πετύχει
 function bzSetError(txt){ bzError=txt||null; renderBazaar(); }
@@ -7217,7 +7226,7 @@ const PAGES = {
               act:{l:"📦 Νέα παράδοση", f:"newWholesale()"}},
   bazaar:    {t:"Bazaar",       s:"Σημεία πώλησης: εμπορεύματα, πωλήσεις, έξοδα"},
   cash:      {t:"Ταμείο",       s:"Κινήσεις, έξοδα και υπόλοιπα λογαριασμών",
-              act:{l:"+ Νέο έξοδο", f:"openExp()"}},
+              act:{l:"+ Νέα κίνηση", f:"openCashMove()"}},
   stats:     {t:"Στατιστικά",   s:"Αναφορά πωλήσεων, κόστους και αποδόσεων"},
   feedback:  {t:"Feedback",     s:"Αξιολογήσεις και σχόλια πελατών"}
 };
@@ -7277,7 +7286,7 @@ function panelActions(){
   a.push({i:"🧾", t:"Πώληση", f:"tillOpen(null)"});
   a.push({i:"📦", t:"Στην αποθήκη", f:"goTab('stock','product');openStockModal(null)"});
   a.push({i:"🏬", t:"Χονδρική", f:"newWholesale()"});
-  a.push({i:"🧮", t:"Νέο έξοδο", f:"openExp()"});
+  a.push({i:"🧮", t:"Κίνηση ταμείου", f:"openCashMove()"});
   a.push({i:running?"⏸":"⏱", t:running?"Σταμάτα χρόνο":"Χρόνος", f:running?"timerPause()":"goTab('orders')"});
   if(wrapAvailable()) a.push({i:"✨", t:"Ανασκόπηση", f:"openWrap()"});
   return `<div class="panel">
@@ -7383,183 +7392,355 @@ function renderHome(){
 
 
 /* ============ ΤΑΜΕΙΟ ============
-   Τα στατιστικά δείχνουν ΛΟΓΙΣΤΙΚΟ κέρδος: το κόστος των υλικών μετράει όταν
-   ΚΑΤΑΝΑΛΩΝΕΤΑΙ σε μια παραγγελία ή ένα έτοιμο κομμάτι. Όταν όμως αγοράζουμε
-   νήματα, η αποθήκη μεγαλώνει αλλά τα λεφτά φεύγουν τώρα — και αυτό δεν
-   φαινόταν πουθενά, όπως και η διαφήμιση ή τα μεταφορικά.
-   Εδώ κρατάμε την ΤΑΜΕΙΑΚΗ εικόνα: τι μπήκε, τι βγήκε, τι έμεινε. ============ */
-let expenses = [];    // [{id,date,cat,name,amount,stock_id,qty,unit_cost}]
-const EXP_CATS = ["Υλικά & αγορές","Συσκευασία","Bazaar","Διαφήμιση","Μεταφορικά","Εξοπλισμός","Άλλο"];
-async function saveExpenses(silent){ await saveSetting("expenses", expenses, silent!==false); }
+   Δύο βιβλία που δεν πρέπει να μπερδεύονται:
 
-/* Τα έξοδα των bazaar υπολογίζονται από το ίδιο το bazaar — δεν ξαναγράφονται εδώ. */
-function bazaarExpRows(){
+   • ΑΠΟΤΕΛΕΣΜΑ (Στατιστικά) — το κόστος υλικών βαρύνει την περίοδο ΑΝΑΛΩΣΗΣ.
+   • ΤΑΜΕΙΑΚΗ ΡΟΗ (εδώ)      — βαρύνει την περίοδο ΠΛΗΡΩΜΗΣ.
+
+   Κανόνες που κρατούν το αποτέλεσμα αληθινό:
+   1. Οι εισπράξεις από πωλήσεις ΠΑΡΑΓΟΝΤΑΙ από τις παραγγελίες και δεν
+      αποθηκεύονται ως ξεχωριστή κίνηση — έτσι είναι αδύνατο να διπλομετρηθούν
+      ή να ξεμείνουν ασύγχρονες όταν διορθωθεί μια παραγγελία.
+   2. Ανάληψη και εισφορά ιδιοκτήτη αλλάζουν ΜΟΝΟ το υπόλοιπο. Δεν είναι
+      έσοδο ούτε έξοδο· είναι διανομή και εισφορά κεφαλαίου.
+   3. Η μεταφορά μεταξύ λογαριασμών γράφεται ως δύο κινήσεις και αθροίζει μηδέν.
+   ================================================================= */
+let accounts = [];     // thilikon_accounts
+let cashMoves = [];    // thilikon_cash (χειροκίνητες κινήσεις μόνο)
+
+const CASH_KINDS = {
+  sale:       { l:"Είσπραξη",            sign:+1, pnl:"in"  },
+  purchase:   { l:"Αγορά υλικών",        sign:-1, pnl:"cost"},
+  expense:    { l:"Έξοδο",               sign:-1, pnl:"out" },
+  owner_draw: { l:"Ανάληψη ιδιοκτήτη",   sign:-1, pnl:null  },
+  owner_in:   { l:"Εισφορά ιδιοκτήτη",   sign:+1, pnl:null  },
+  transfer:   { l:"Μεταφορά",            sign:+1, pnl:null  },
+  other:      { l:"Λοιπά",               sign:-1, pnl:"out" }
+};
+const EXP_CATS = ["Υλικά & αγορές","Συσκευασία","Διαφήμιση","Μεταφορικά","Εξοπλισμός","Συνδρομές","Bazaar","Λοιπά"];
+
+async function loadCash(){
+  try{
+    const [ra, rc] = await Promise.all([
+      authFetch(REST + "/thilikon_accounts?select=*&order=sort.asc", {}),
+      authFetch(REST + "/thilikon_cash?select=*&order=moved_at.desc,created_at.desc", {})
+    ]);
+    if(ra.status===401) return;
+    accounts  = await ra.json();
+    cashMoves = await rc.json();
+    if(!Array.isArray(accounts))  accounts=[];
+    if(!Array.isArray(cashMoves)) cashMoves=[];
+    await migrateExpenses();
+  }catch(e){ console.error(e); }
+}
+function accById(id){ return accounts.find(a=>a.id===id) || null; }
+function cashAcc(){ return accounts.find(a=>a.kind==="cash") || accounts[0] || null; }
+function bankAcc(){ return accounts.find(a=>a.kind==="bank") || cashAcc(); }
+
+/* Τα παλιά έξοδα ζούσαν σε ένα JSON στα settings. Μεταφέρονται μία φορά. */
+async function migrateExpenses(){
+  const old = Array.isArray(_oldExpenses) ? _oldExpenses : [];
+  if(!old.length || settingsFlag("cashMigrated") || !accounts.length) return;
+  const acc = cashAcc(); if(!acc) return;
+  const rows = old.map(e=>({
+    account_id: acc.id,
+    moved_at: e.date || todayISO(),
+    amount: -(Math.abs(Number(e.amount)||0)),
+    kind: e.stock_id ? "purchase" : "expense",
+    category: e.cat || "Λοιπά",
+    name: e.name || "Έξοδο",
+    lines: e.stock_id ? [{item_id:e.stock_id, name:e.name, qty:Number(e.qty)||0, unit_cost:(Number(e.amount)||0)/(Number(e.qty)||1)}] : null,
+    note: "μεταφορά από παλιά καταχώρηση"
+  })).filter(r=>r.amount!==0);
+  if(!rows.length){ markSettingsFlag("cashMigrated"); return; }
+  try{
+    const r = await authFetch(REST + "/thilikon_cash",{method:"POST",headers:{"Prefer":"return=representation"},body:JSON.stringify(rows)});
+    if(!r.ok) throw new Error(await r.text());
+    const made = await r.json();
+    cashMoves = [...(Array.isArray(made)?made:[]), ...cashMoves];
+    markSettingsFlag("cashMigrated");
+    console.info("Μεταφέρθηκαν", rows.length, "έξοδα στο ταμείο.");
+  }catch(e){ console.error("migrateExpenses", e); }
+}
+
+/* ---------- παράγωγες γραμμές ---------- */
+function monthKey(d){ const t=new Date(d); return t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0"); }
+function dayKey(d){ const t=new Date(d); return new Date(t.getTime()-t.getTimezoneOffset()*60000).toISOString().slice(0,10); }
+
+/* Σε ποιον λογαριασμό μπήκαν τα χρήματα μιας πώλησης. */
+function saleAccountId(o){
+  const n=String(o.note||"");
+  return (/κάρτα|iris|κατάθεση|τράπεζ/i.test(n) ? bankAcc() : cashAcc() || {}).id || null;
+}
+/* Εισπράξεις: παράγονται από τις παραγγελίες, δεν αποθηκεύονται. */
+function saleReceipts(){
+  return (ordersCache||[]).map(o=>{
+    const paid = Number(o.amount_paid)||0;
+    if(paid<=0) return null;
+    const when = o.paid_at || o.created_at; if(!when) return null;
+    const bz=bzOf(o);
+    const who = (!isAnonSale(o) && o.customer_name) ? o.customer_name
+              : (bz ? bz.name : (o.kind==="ready" ? "Λιανική πώληση" : "Χωρίς στοιχεία"));
+    return { id:"sale-"+o.id, src:"sale", kind:"sale", account_id:saleAccountId(o),
+             moved_at:dayKey(when), amount:paid, category:"Πωλήσεις",
+             name:`${who}${o.order_number?" · "+o.order_number:""}`, ref_type:"order", ref_id:o.id };
+  }).filter(Boolean);
+}
+/* Έξοδα σημείων πώλησης: παράγονται από το ίδιο το bazaar. */
+function bazaarCosts(){
   const out=[];
   (bazaars||[]).forEach(b=>{
     if(!b.date) return;
-    if(Number(b.fee)>0) out.push({ id:"bzfee-"+b.id, date:b.date, cat:"Bazaar",
-      name:`Συμμετοχή · ${b.name}`, amount:Number(b.fee), src:"bazaar", bz:b.id });
-    bzExpList(b.id).forEach(e=> out.push({ id:"bzexp-"+b.id+"-"+e.key, date:b.date, cat:"Bazaar",
-      name:`${e.name} · ${b.name}`, amount:bzExpOne(e), src:"bazaar", bz:b.id }));
+    const acc=(cashAcc()||{}).id||null;
+    if(Number(b.fee)>0) out.push({ id:"bzfee-"+b.id, src:"bazaar", kind:"expense", account_id:acc,
+      moved_at:b.date, amount:-Number(b.fee), category:"Bazaar", name:`Συμμετοχή · ${b.name}`, ref_type:"bazaar", ref_id:b.id });
+    bzExpList(b.id).forEach(e=> out.push({ id:"bzexp-"+b.id+"-"+e.key, src:"bazaar", kind:"expense", account_id:acc,
+      moved_at:b.date, amount:-bzExpOne(e), category:"Bazaar", name:`${e.name} · ${b.name}`, ref_type:"bazaar", ref_id:b.id }));
   });
-  return out;
+  return out.filter(x=>x.amount!==0);
 }
-function allExpenses(){
-  return [...expenses.map(e=>({...e, src:"manual"})), ...bazaarExpRows()]
-    .filter(e=>Number(e.amount)>0)
-    .sort((a,b)=>String(b.date||"").localeCompare(String(a.date||"")));
+function allMoves(){
+  return [...cashMoves.map(m=>({...m, src:"manual"})), ...saleReceipts(), ...bazaarCosts()]
+    .sort((a,b)=> String(b.moved_at||"").localeCompare(String(a.moved_at||"")));
 }
-function monthKey(d){ const t=new Date(d); return t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0"); }
-function expInMonth(e, key){ return e.date && monthKey(e.date+"T12:00:00")===key; }
+function movesIn(key){ return allMoves().filter(m=>m.moved_at && monthKey(m.moved_at+"T12:00:00")===key); }
 
-/* έσοδα μήνα (ό,τι μετράει ήδη ο τζίρος) */
-function cashIn(key){
-  let v=0;
-  (ordersCache||[]).forEach(o=>{
-    if(!o.created_at) return;
-    if(monthKey(o.created_at)!==key) return;
-    v += isWholesale(o) ? wTotals(o).due : (Number(o.price)||0);
+/* ---------- υπόλοιπα ---------- */
+function balanceOf(accId, upto){
+  const a=accById(accId); if(!a) return 0;
+  let v=Number(a.opening)||0;
+  allMoves().forEach(m=>{
+    if(m.account_id!==accId) return;
+    if(upto && String(m.moved_at)>upto) return;
+    v+=Number(m.amount)||0;
   });
   return Math.round(v*100)/100;
 }
+function totalBalance(){ return Math.round(accounts.reduce((a,x)=>a+balanceOf(x.id),0)*100)/100; }
 
-/* ---- σελίδα ---- */
-let cashMonth=null;   // "YYYY-MM"
+/* Τα έξοδα που βαρύνουν το ΑΠΟΤΕΛΕΣΜΑ — χωρίς αναλήψεις/εισφορές/μεταφορές. */
+function pnlOutflow(key){
+  return Math.round(movesIn(key).filter(m=>{
+    const k=CASH_KINDS[m.kind]||{}; return k.pnl==="out" || k.pnl==="cost";
+  }).reduce((a,m)=>a+Math.abs(Number(m.amount)||0),0)*100)/100;
+}
+/* Συμβατότητα με τα Στατιστικά. */
+function allExpenses(){ return allMoves().filter(m=>(Number(m.amount)||0)<0 && (CASH_KINDS[m.kind]||{}).pnl)
+  .map(m=>({...m, date:m.moved_at, cat:m.category, amount:Math.abs(Number(m.amount)||0)})); }
+function expInMonth(e,key){ return e.date && monthKey(e.date+"T12:00:00")===key; }
+
+/* ---------- σελίδα ---------- */
+let cashMonth=null, cashFilter="all";
 function setCashMonth(k){ cashMonth=k; renderCash(); }
+function setCashFilter(f){ cashFilter=f; renderCash(); }
 function cashMonths(){
   const keys=new Set([monthKey(new Date())]);
-  allExpenses().forEach(e=>{ if(e.date) keys.add(monthKey(e.date+"T12:00:00")); });
-  (ordersCache||[]).forEach(o=>{ if(o.created_at) keys.add(monthKey(o.created_at)); });
-  return [...keys].sort().reverse().slice(0,12);
+  allMoves().forEach(m=>{ if(m.moved_at) keys.add(monthKey(m.moved_at+"T12:00:00")); });
+  return [...keys].sort().reverse().slice(0,18);
 }
+const CASH_FILTERS = [["all","Όλες"],["in","Εισπράξεις"],["out","Πληρωμές"],["owner","Ιδιοκτήτη"]];
 function renderCash(){
   const box=document.getElementById("cashAdmin"); if(!box) return;
+  if(!accounts.length){ box.innerHTML=`<div class="fbd-empty">Δεν βρέθηκαν λογαριασμοί. Έτρεξε το SQL της Φάσης 1;</div>`; return; }
   const months=cashMonths();
   if(!cashMonth || !months.includes(cashMonth)) cashMonth=months[0];
-  const rows=allExpenses().filter(e=>expInMonth(e, cashMonth));
-  const out=Math.round(rows.reduce((a,e)=>a+Number(e.amount),0)*100)/100;
-  const inn=cashIn(cashMonth);
   const [y,m]=cashMonth.split("-");
   const label=GR_MONTHS_FULL[Number(m)-1]+" "+y;
+  const rows=movesIn(cashMonth);
 
-  const tabs=`<div class="tabsw" style="margin-bottom:16px;flex-wrap:wrap">${months.map(k=>{
+  const sum=(f)=>Math.round(rows.filter(f).reduce((a,x)=>a+Number(x.amount||0),0)*100)/100;
+  const inn   = sum(x=>x.kind==="sale");
+  const buy   = sum(x=>x.kind==="purchase");
+  const exp   = sum(x=>x.kind==="expense"||x.kind==="other");
+  const draw  = sum(x=>x.kind==="owner_draw");
+  const ownIn = sum(x=>x.kind==="owner_in");
+  const net   = Math.round((inn+buy+exp+draw+ownIn)*100)/100;
+
+  /* υπόλοιπα λογαριασμών */
+  const accCards=accounts.filter(a=>!a.archived).map(a=>`
+    <button class="mini ${a.kind==="cash"?"dark":""}" onclick="openAccount('${a.id}')">
+      <div class="n">${fmtMoney(balanceOf(a.id))}</div><div class="l">${esc(a.name)}</div></button>`).join("");
+
+  const tabs=`<div class="tabsw" style="margin-bottom:14px;flex-wrap:wrap">${months.map(k=>{
     const [yy,mm]=k.split("-");
     return `<button class="tb ${k===cashMonth?"sel":""}" onclick="setCashMonth('${k}')">${GR_MONTHS_SHORT[Number(mm)-1]} ${yy.slice(2)}</button>`;
   }).join("")}</div>`;
 
-  const byCat={};
-  rows.forEach(e=>{ const c=e.cat||"Άλλο"; byCat[c]=(byCat[c]||0)+Number(e.amount); });
-  const catRows=Object.entries(byCat).sort((a,b)=>b[1]-a[1]).map(([c,v])=>
-    `<div class="sum-r"><span>${esc(c)}</span><span class="a">${fmtMoney(v)}</span></div>`).join("");
+  const filters=`<div class="tabsw" style="margin:0 0 10px;flex-wrap:wrap">${CASH_FILTERS.map(([k,l])=>
+    `<button class="tb ${cashFilter===k?"sel":""}" onclick="setCashFilter('${k}')">${l}</button>`).join("")}</div>`;
 
-  const list = rows.length ? rows.map(e=>`<div class="led-r">
-      <span class="d">${esc(e.name)}<small>${fmtDateShort(e.date)} · ${esc(e.cat||"Άλλο")}${e.src==="bazaar"?" · από το bazaar":""}</small></span>
-      <span class="a">${fmtMoney(e.amount)}</span>
-      ${e.src==="bazaar"
-        ? `<button class="x" title="Άνοιξε το bazaar" onclick="goTab('bazaar');setBzView('${e.bz}')">→</button>`
-        : `<button class="x" title="Επεξεργασία" onclick="openExp('${e.id}')">✎</button>`}
-    </div>`).join("")
-    : `<div class="led-empty">Κανένα έξοδο αυτόν τον μήνα.</div>`;
-
-  box.innerHTML = tabs + `
-    <div class="sum" style="margin-bottom:16px">
-      <div class="sum-r"><span>Εισπράξεις ${esc(label)}</span><span class="a">${fmtMoney(inn)}</span></div>
-      <div class="sum-r off"><span>Έξοδα</span><span class="a">−${fmtMoney(out)}</span></div>
-      <div class="sum-t"><span class="l">Διαφορά</span><span class="a">${fmtMoney(Math.round((inn-out)*100)/100)}</span></div>
-    </div>
-    <div style="font-size:11.5px;color:var(--muted);margin:-8px 0 16px;line-height:1.6">
-      Ταμειακή ροή περιόδου. Διαφέρει από το αποτέλεσμα στα Στατιστικά, όπου το κόστος υλικών
-      βαρύνει την περίοδο <b>ανάλωσης</b> και όχι την περίοδο αγοράς.
-    </div>
-    <div class="stats-sub" style="margin-top:0">Έξοδα ${esc(label)}</div>
-    <div class="led">
-      <div class="led-h"><span class="d">Περιγραφή</span><span class="a">Ποσό</span><span class="x" style="border:none;background:none"></span></div>
-      ${list}
-      ${rows.length?`<div class="led-f"><span class="d">Σύνολο</span><span class="a">${fmtMoney(out)}</span><span class="x" style="border:none;background:none"></span></div>`:""}
-    </div>
-    <div class="bz-add"><button onclick="openExp()">+ Νέο έξοδο</button></div>
-    ${catRows?`<div class="stats-sub">Ανά κατηγορία</div><div class="sum">${catRows}</div>`:""}`;
-}
-
-/* ---- καταχώρηση ---- */
-let editingExpId=null, expKind="plain", expStockId=null;
-function setExpKind(k){
-  expKind=k;
-  document.querySelectorAll("#expKindSeg .exp-k").forEach(b=>b.classList.toggle("sel", b.dataset.k===k));
-  document.getElementById("expBuyBox").classList.toggle("hidden", k!=="buy");
-  if(k==="buy"){ document.getElementById("expCat").value="Υλικά & αγορές"; expRecalc(); }
-}
-function expPickStock(){
-  if(!(stockCache||[]).length){ loadStock().then(expPickStock); return; }
-  const rows=(stockCache||[]).filter(it=>it.type!=="product" && !isArchivedStock(it));
-  if(!rows.length){ adminFlash("Η αποθήκη δεν έχει υλικά"); return; }
-  bzChoose("Τι αγόρασες;", rows.map(it=>({
-    id:it.id, name:it.name, cat:it.category||"Άλλο",
-    meta:`${fmtNum(it.qty)} ${esc(it.unit||"τεμ.")}${it.unit_cost!=null?" · "+fmtMoney(it.unit_cost):""}`, it
-  })), id=>{
-    const it=(stockCache||[]).find(x=>x.id===id); if(!it) return;
-    expStockId=id;
-    document.getElementById("expBuyPick").innerHTML=`<b>${esc(it.name)}</b> · απόθεμα ${fmtNum(it.qty)} ${esc(it.unit||"τεμ.")}`;
-    if(!document.getElementById("expUnit").value && it.unit_cost!=null) document.getElementById("expUnit").value=it.unit_cost;
-    if(!document.getElementById("expName").value) document.getElementById("expName").value="Αγορά "+it.name;
-    expRecalc();
+  const shown=rows.filter(m=>{
+    if(cashFilter==="in")    return Number(m.amount)>0 && m.kind!=="owner_in";
+    if(cashFilter==="out")   return Number(m.amount)<0 && m.kind!=="owner_draw";
+    if(cashFilter==="owner") return m.kind==="owner_draw"||m.kind==="owner_in";
+    return true;
   });
+
+  const list = shown.length ? shown.map(m=>{
+    const k=CASH_KINDS[m.kind]||{l:m.kind};
+    const a=accById(m.account_id);
+    const neg=Number(m.amount)<0;
+    return `<div class="led-r">
+      <span class="d">${esc(m.name||k.l)}<small>${fmtDateShort(m.moved_at)} · ${esc(k.l)}${m.category?" · "+esc(m.category):""}${a?" · "+esc(a.name):""}</small></span>
+      <span class="a" style="${neg?"":"color:#2c6e49"}">${fmtMoney(m.amount)}</span>
+      ${m.src==="manual"
+        ? `<button class="x" title="Επεξεργασία" onclick="openCashMove('${m.id}')">✎</button>`
+        : `<button class="x" title="${m.src==="sale"?"Άνοιγμα παραγγελίας":"Άνοιγμα bazaar"}" onclick="${m.src==="sale"?`editOrder('${m.ref_id}')`:`goTab('bazaar');setBzView('${m.ref_id}')`}">→</button>`}
+    </div>`;
+  }).join("") : `<div class="led-empty">Καμία κίνηση στην περίοδο.</div>`;
+
+  const row=(l,v,off)=>`<div class="sum-r ${off?"off":""}"><span>${esc(l)}</span><span class="a">${fmtMoney(v)}</span></div>`;
+
+  box.innerHTML = `
+    <div class="stats-sub" style="margin-top:0">Υπόλοιπα λογαριασμών</div>
+    <div class="mini-grid" style="margin-bottom:6px">${accCards}
+      <button class="mini" onclick="openCashMove()"><div class="n">+</div><div class="l">νέα κίνηση</div></button></div>
+    <div style="font-size:11.5px;color:var(--muted);margin:0 0 16px">Σύνολο διαθεσίμων <b style="color:var(--ink)">${fmtMoney(totalBalance())}</b>.</div>
+    ${tabs}
+    <div class="sum" style="margin-bottom:6px">
+      ${row("Εισπράξεις πωλήσεων", inn)}
+      ${buy?row("Αγορές υλικών", buy, true):""}
+      ${exp?row("Λειτουργικά έξοδα", exp, true):""}
+      ${ownIn?row("Εισφορά ιδιοκτήτη", ownIn):""}
+      ${draw?row("Ανάληψη ιδιοκτήτη", draw, true):""}
+      <div class="sum-t"><span class="l">Καθαρή ροή ${esc(label)}</span><span class="a">${fmtMoney(net)}</span></div>
+    </div>
+    <div style="font-size:11.5px;color:var(--muted);margin:0 0 16px;line-height:1.6">
+      Ταμειακή ροή περιόδου. Οι αναλήψεις και οι εισφορές ιδιοκτήτη μεταβάλλουν το υπόλοιπο
+      χωρίς να επηρεάζουν το αποτέλεσμα χρήσης.
+    </div>
+    <div class="stats-sub" style="margin-top:0">Κινήσεις ${esc(label)}</div>
+    ${filters}
+    <div class="led">
+      <div class="led-h"><span class="d">Αιτιολογία</span><span class="a">Ποσό</span><span class="x" style="border:none;background:none"></span></div>
+      ${list}
+    </div>
+    <div class="bz-add"><button onclick="openCashMove()">+ Νέα κίνηση</button></div>`;
 }
-function expRecalc(){
-  if(expKind!=="buy") return;
-  const q=parseMoney(document.getElementById("expQty").value)||0;
-  const u=parseMoney(document.getElementById("expUnit").value)||0;
-  if(q>0 && u>0) document.getElementById("expAmount").value=Math.round(q*u*100)/100;
-}
-function openExp(id){
-  editingExpId=id||null; expStockId=null;
-  const e=id?expenses.find(x=>x.id===id):null;
-  document.getElementById("expTitle").textContent=e?"Επεξεργασία εξόδου":"Νέο έξοδο";
-  document.getElementById("expCat").innerHTML=EXP_CATS.map(c=>`<option>${esc(c)}</option>`).join("");
-  document.getElementById("expName").value=e?(e.name||""):"";
-  document.getElementById("expDate").value=(e&&e.date)||todayISO();
-  document.getElementById("expAmount").value=(e&&e.amount!=null)?e.amount:"";
-  document.getElementById("expCat").value=(e&&e.cat)||"Υλικά & αγορές";
-  document.getElementById("expQty").value=""; document.getElementById("expUnit").value="";
-  document.getElementById("expBuyPick").textContent="Δεν έχεις διαλέξει είδος.";
-  document.getElementById("expDelBtn").classList.toggle("hidden", !id);
-  document.getElementById("expMsg").classList.add("hidden");
-  setExpKind("plain");
-  _ovOpen("expModal");
-}
-function closeExp(){ _ovClose("expModal"); }
-async function saveExp(){
-  const msg=document.getElementById("expMsg"); msg.classList.add("hidden");
-  const name=document.getElementById("expName").value.trim();
-  const amount=parseMoney(document.getElementById("expAmount").value);
-  if(!name){ msg.textContent="Συμπλήρωσε περιγραφή."; msg.classList.remove("hidden"); return; }
-  if(amount==null || amount<=0){ msg.textContent="Συμπλήρωσε ποσό."; msg.classList.remove("hidden"); return; }
-  const qty=parseMoney(document.getElementById("expQty").value);
-  if(expKind==="buy" && (!expStockId || !qty || qty<=0)){
-    msg.textContent="Διάλεξε είδος και ποσότητα."; msg.classList.remove("hidden"); return;
-  }
-  const btn=document.getElementById("expSaveBtn"); btn.disabled=true;
+
+/* ---------- υπόλοιπο έναρξης λογαριασμού ---------- */
+async function openAccount(id){
+  const a=accById(id); if(!a) return;
+  const v=prompt(`Υπόλοιπο έναρξης — ${a.name}\n(το ποσό που υπήρχε πριν αρχίσει η καταγραφή)`, String(a.opening||0));
+  if(v===null) return;
+  const n=parseMoney(v); if(n==null) return;
   try{
-    // αγορά: το απόθεμα μεγαλώνει και η τιμή μονάδας ενημερώνεται
-    if(expKind==="buy"){
-      const it=(stockCache||[]).find(x=>x.id===expStockId);
-      if(it){
-        const nq=Math.round(((Number(it.qty)||0)+qty)*100)/100;
-        const unit=Math.round((amount/qty)*100)/100;
-        const r=await authFetch(REST + "/thilikon_stock?id=eq."+it.id,
-          {method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({qty:nq, unit_cost:unit})});
-        if(!r.ok) throw new Error("Η αποθήκη δεν ενημερώθηκε");
-        it.qty=nq; it.unit_cost=unit;
+    const r=await authFetch(REST + "/thilikon_accounts?id=eq."+id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({opening:n})});
+    if(!r.ok) throw new Error();
+    a.opening=n; renderCash(); adminFlash("Ενημερώθηκε ✓");
+  }catch(e){ adminFlash("Δεν αποθηκεύτηκε"); }
+}
+
+/* ---------- καταχώρηση κίνησης ---------- */
+let editingMoveId=null, moveKind="expense", moveLines=[];
+function moveKindsForUi(){ return ["expense","purchase","owner_draw","owner_in","transfer","sale"]; }
+function setMoveKind(k){
+  moveKind=k;
+  document.querySelectorAll("#cmKindSeg .cm-k").forEach(b=>b.classList.toggle("sel", b.dataset.k===k));
+  document.getElementById("cmBuyBox").classList.toggle("hidden", k!=="purchase");
+  document.getElementById("cmCatWrap").classList.toggle("hidden", k==="owner_draw"||k==="owner_in"||k==="transfer");
+  document.getElementById("cmToWrap").classList.toggle("hidden", k!=="transfer");
+  const hint=document.getElementById("cmHint");
+  hint.textContent = (k==="owner_draw") ? "Δεν βαρύνει το αποτέλεσμα — μειώνει μόνο το υπόλοιπο."
+                   : (k==="owner_in")   ? "Δεν προσμετράται σε έσοδα — αυξάνει μόνο το υπόλοιπο."
+                   : (k==="purchase")   ? "Τα είδη που θα προστεθούν αυξάνουν το απόθεμα."
+                   : (k==="transfer")   ? "Γράφεται ως δύο κινήσεις και δεν επηρεάζει το σύνολο."
+                   : (k==="sale")       ? "Για εισπράξεις εκτός παραγγελίας. Οι πωλήσεις καταχωρούνται μόνες τους."
+                   : "";
+  hint.classList.toggle("hidden", !hint.textContent);
+  renderMoveLines();
+}
+function renderMoveLines(){
+  const box=document.getElementById("cmLines"); if(!box) return;
+  box.innerHTML = moveLines.length ? moveLines.map((l,i)=>`<div class="led-r">
+      <span class="d">${esc(l.name)}<small>${fmtNum(l.qty)} ${esc(l.unit||"τεμ.")} × ${fmtMoney(l.unit_cost)}</small></span>
+      <span class="a">${fmtMoney((Number(l.qty)||0)*(Number(l.unit_cost)||0))}</span>
+      <button class="x" onclick="cmDropLine(${i})">✕</button></div>`).join("")
+    : `<div class="led-empty">Καμία γραμμή.</div>`;
+  if(moveLines.length){
+    const t=moveLines.reduce((a,l)=>a+(Number(l.qty)||0)*(Number(l.unit_cost)||0),0);
+    document.getElementById("cmAmount").value=Math.round(t*100)/100;
+  }
+}
+function cmDropLine(i){ moveLines.splice(i,1); renderMoveLines(); }
+function cmAddLine(){
+  if(!(stockCache||[]).length){ loadStock().then(cmAddLine); return; }
+  const rows=(stockCache||[]).filter(it=>it.type!=="product" && !isArchivedStock(it));
+  if(!rows.length){ adminFlash("Δεν υπάρχουν είδη"); return; }
+  bzChoose("Ποιο είδος;", rows.map(it=>({ id:it.id, name:it.name, cat:it.category||"Λοιπά",
+    meta:`${fmtNum(it.qty)} ${esc(it.unit||"τεμ.")}${it.unit_cost!=null?" · "+fmtMoney(it.unit_cost):""}`, it })),
+    id=>{
+      const it=(stockCache||[]).find(x=>x.id===id); if(!it) return;
+      const q=parseMoney(prompt(`Ποσότητα — ${it.name} (${it.unit||"τεμ."})`, "1"));
+      if(q==null||q<=0) return;
+      const c=parseMoney(prompt(`Τιμή ανά ${it.unit||"τεμ."} (€)`, String(it.unit_cost!=null?it.unit_cost:"")));
+      if(c==null) return;
+      moveLines.push({ item_id:it.id, name:it.name, unit:it.unit||"τεμ.", qty:q, unit_cost:c });
+      if(!document.getElementById("cmName").value) document.getElementById("cmName").value="Αγορά υλικών";
+      renderMoveLines();
+    });
+}
+function openCashMove(id){
+  editingMoveId=id||null; moveLines=[];
+  const m=id?cashMoves.find(x=>x.id===id):null;
+  if(m && Array.isArray(m.lines)) moveLines=m.lines.map(l=>({...l}));
+  document.getElementById("cmTitle").textContent=m?"Επεξεργασία κίνησης":"Νέα κίνηση";
+  document.getElementById("cmAccount").innerHTML=accounts.filter(a=>!a.archived)
+    .map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join("");
+  document.getElementById("cmTo").innerHTML=document.getElementById("cmAccount").innerHTML;
+  document.getElementById("cmCat").innerHTML=EXP_CATS.map(c=>`<option>${esc(c)}</option>`).join("");
+  document.getElementById("cmAccount").value=(m&&m.account_id)||(cashAcc()||{}).id||"";
+  document.getElementById("cmTo").value=(bankAcc()||{}).id||"";
+  document.getElementById("cmName").value=m?(m.name||""):"";
+  document.getElementById("cmDate").value=(m&&m.moved_at)||todayISO();
+  document.getElementById("cmAmount").value=m?Math.abs(Number(m.amount)||0):"";
+  document.getElementById("cmCat").value=(m&&m.category)||"Υλικά & αγορές";
+  document.getElementById("cmNote").value=m?(m.note||""):"";
+  document.getElementById("cmDelBtn").classList.toggle("hidden", !id);
+  document.getElementById("cmMsg").classList.add("hidden");
+  setMoveKind((m&&m.kind)||"expense");
+  _ovOpen("cashModal");
+}
+function closeCashMove(){ _ovClose("cashModal"); }
+async function saveCashMove(){
+  const msg=document.getElementById("cmMsg"); msg.classList.add("hidden");
+  const name=document.getElementById("cmName").value.trim();
+  const amount=parseMoney(document.getElementById("cmAmount").value);
+  const accId=document.getElementById("cmAccount").value;
+  if(!name){ msg.textContent="Συμπληρώστε αιτιολογία."; msg.classList.remove("hidden"); return; }
+  if(amount==null || amount<=0){ msg.textContent="Συμπληρώστε ποσό."; msg.classList.remove("hidden"); return; }
+  if(!accId){ msg.textContent="Επιλέξτε λογαριασμό."; msg.classList.remove("hidden"); return; }
+  const btn=document.getElementById("cmSaveBtn"); btn.disabled=true;
+  const when=document.getElementById("cmDate").value || todayISO();
+  try{
+    if(moveKind==="transfer"){
+      const toId=document.getElementById("cmTo").value;
+      if(!toId || toId===accId) throw new Error("Επιλέξτε διαφορετικό λογαριασμό προορισμού.");
+      await postCash([
+        { account_id:accId, moved_at:when, amount:-amount, kind:"transfer", name, note:"μεταφορά" },
+        { account_id:toId,  moved_at:when, amount: amount, kind:"transfer", name, note:"μεταφορά" }
+      ]);
+    }else{
+      // αγορά: τα είδη μπαίνουν στο απόθεμα και ενημερώνεται η τιμή μονάδας
+      if(moveKind==="purchase" && moveLines.length){
+        for(const l of moveLines){
+          const it=(stockCache||[]).find(x=>x.id===l.item_id); if(!it) continue;
+          const nq=Math.round(((Number(it.qty)||0)+(Number(l.qty)||0))*100)/100;
+          const r=await authFetch(REST + "/thilikon_stock?id=eq."+it.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},
+            body:JSON.stringify({qty:nq, unit_cost:Number(l.unit_cost)||it.unit_cost})});
+          if(!r.ok) throw new Error("Το απόθεμα δεν ενημερώθηκε.");
+          it.qty=nq; if(l.unit_cost!=null) it.unit_cost=Number(l.unit_cost);
+        }
       }
+      const sign=(CASH_KINDS[moveKind]||{sign:-1}).sign;
+      const rec={ account_id:accId, moved_at:when, amount:sign*amount, kind:moveKind,
+        category:(moveKind==="owner_draw"||moveKind==="owner_in")?null:document.getElementById("cmCat").value,
+        name, note:document.getElementById("cmNote").value.trim()||null,
+        lines: moveLines.length?moveLines:null };
+      if(editingMoveId) await patchCash(editingMoveId, rec);
+      else await postCash([rec]);
     }
-    const rec={ id: editingExpId || ("x"+Math.random().toString(36).slice(2,9)),
-      date: document.getElementById("expDate").value || todayISO(),
-      cat: document.getElementById("expCat").value, name, amount,
-      ...(expKind==="buy"?{stock_id:expStockId, qty}:{}) };
-    if(editingExpId) expenses=expenses.map(x=>x.id===editingExpId?rec:x);
-    else expenses.push(rec);
-    await saveExpenses(true);
-    closeExp(); renderCash(); renderStock();
+    closeCashMove(); renderCash(); renderStock();
     if(ordersCache.length) renderStats();
     adminFlash("Καταχωρήθηκε ✓");
   }catch(e){
@@ -7567,15 +7748,30 @@ async function saveExp(){
     msg.textContent="Δεν αποθηκεύτηκε. "+((e&&e.message)||""); msg.classList.remove("hidden");
   }finally{ btn.disabled=false; }
 }
-async function delExp(){
-  if(!editingExpId) return;
-  const e=expenses.find(x=>x.id===editingExpId); if(!e) return;
-  if(!confirm(`Διαγραφή «${e.name}»;${e.stock_id?"\n(Το απόθεμα δεν αλλάζει.)":""}`)) return;
-  expenses=expenses.filter(x=>x.id!==editingExpId);
-  await saveExpenses(true);
-  closeExp(); renderCash();
-  if(ordersCache.length) renderStats();
-  adminFlash("Διαγράφηκε ✓");
+async function postCash(rows){
+  const r=await authFetch(REST + "/thilikon_cash",{method:"POST",headers:{"Prefer":"return=representation"},body:JSON.stringify(rows)});
+  if(!r.ok) throw new Error((await r.json().catch(()=>({}))).message || "HTTP "+r.status);
+  const made=await r.json();
+  cashMoves=[...(Array.isArray(made)?made:[made]), ...cashMoves];
+}
+async function patchCash(id, rec){
+  const r=await authFetch(REST + "/thilikon_cash?id=eq."+id,{method:"PATCH",headers:{"Prefer":"return=representation"},body:JSON.stringify(rec)});
+  if(!r.ok) throw new Error((await r.json().catch(()=>({}))).message || "HTTP "+r.status);
+  const row=(await r.json())[0];
+  cashMoves=cashMoves.map(x=>x.id===id?row:x);
+}
+async function delCashMove(){
+  if(!editingMoveId) return;
+  const m=cashMoves.find(x=>x.id===editingMoveId); if(!m) return;
+  if(!confirm(`Διαγραφή κίνησης «${m.name}»;${Array.isArray(m.lines)&&m.lines.length?"\n(Το απόθεμα δεν μεταβάλλεται.)":""}`)) return;
+  try{
+    const r=await authFetch(REST + "/thilikon_cash?id=eq."+editingMoveId,{method:"DELETE",headers:{"Prefer":"return=minimal"}});
+    if(!r.ok) throw new Error();
+    cashMoves=cashMoves.filter(x=>x.id!==editingMoveId);
+    closeCashMove(); renderCash();
+    if(ordersCache.length) renderStats();
+    adminFlash("Διαγράφηκε ✓");
+  }catch(e){ adminFlash("Δεν διαγράφηκε"); }
 }
 
 /* ---- Η σελίδα του bazaar ---- */
