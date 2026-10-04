@@ -576,7 +576,10 @@
   .flt>.tabsw{flex:1 1 220px;margin:0;flex-wrap:wrap}
   .flt .tb{flex:0 0 auto;white-space:nowrap}
   @media(max-width:560px){ .flt>.l{flex:1 0 100%;min-width:0} }
-  .stock-item.mstart{margin-top:16px}
+  .model-grp{border-left:2px solid var(--stone);padding-left:11px;margin:0 0 18px}
+  .model-grp .stock-item{margin-bottom:8px}
+  .model-grp .stock-item:last-child{margin-bottom:0}
+  .stock-item.mstart{margin-top:18px}
   .stock-model{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:11px 2px 6px;margin-top:4px}
   .stock-model .m{font-family:var(--serif),Georgia,serif;font-size:15px;color:var(--ink)}
   .stock-model .n{font-size:11px;color:var(--muted)}
@@ -1497,7 +1500,7 @@
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();openCleanNames()">✎ Καθαρισμός ονομάτων υλικών</button>
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();restorePalette()">↩ Επαναφορά αποχρώσεων Mix &amp; Match</button>
     <p style="font-size:11.5px;color:var(--muted);margin:14px 0 0;padding-top:12px;border-top:1px solid var(--line)">
-      Έκδοση <b style="color:var(--ink)">2026.10.04.1211</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
+      Έκδοση <b style="color:var(--ink)">2026.10.04.1258</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
       κλείσε και ξανάνοιξε την καρτέλα, ή τράβα την σελίδα προς τα κάτω για ανανέωση.</p>
     <p id="setRebuiltNote" style="font-size:11.5px;color:var(--muted);margin-top:6px">Συμπληρώνει τις κινήσεις αποθήκης από τις παραγγελίες, τις πωλήσεις και τα bazaar που υπάρχουν ήδη. Το απόθεμα δεν αλλάζει.</p>
     <div style="margin-top:18px"><button class="btn ghost" style="width:100%" onclick="closeSettings()">Κλείσιμο</button></div>
@@ -1860,7 +1863,7 @@
       <label class="fld" style="flex:1"><span>Τιμή αγοράς € / μον.</span><input id="sCost" inputmode="decimal" placeholder="0" oninput="refreshBuyTotal()"></label>
       <label class="fld" style="flex:1"><span>Ειδοπ. κάτω από</span><input id="sLow" inputmode="decimal" placeholder="2"></label>
     </div>
-    <label class="chk-row" style="margin:-4px 0 14px">
+    <label class="chk-row" id="sPerOrderRow" style="margin:-4px 0 14px">
       <input type="checkbox" id="sPerOrder" onchange="onPerOrderToggle()">
       <span><b>Αγορά ανά παραγγελία</b> — δεν τηρείται απόθεμα. Το κόστος βαρύνει την παραγγελία που το χρησιμοποιεί.</span>
     </label>
@@ -6096,7 +6099,7 @@ function renderStock(){
     return (ia<0?99:ia)-(ib<0?99:ib) || a.localeCompare(b,"el");
   }).forEach(cat=>{
     html+=`<div class="stock-cat">${esc(cat)}</div>`;
-    let _rows=cats[cat], _lastModel=null, _byModel=null;
+    let _rows=cats[cat], _lastModel=null, _byModel=null, _openGrp=false;
     if(stockView==="product"){
       _byModel={}; _rows.forEach(it=>{ const m=modelOf(it)||"—"; (_byModel[m]=_byModel[m]||[]).push(it); });
       _rows=Object.keys(_byModel).sort((a,b)=>a.localeCompare(b,"el")).flatMap(m=>
@@ -6107,12 +6110,16 @@ function renderStock(){
       if(_byModel){
         const m=modelOf(it)||"—", grp=_byModel[m]||[];
         if(m!==_lastModel){
+          // Μια ομάδα μοντέλου πρέπει να έχει και τέλος, όχι μόνο αρχή: αλλιώς
+          // το επόμενο μονό προϊόν διαβάζεται σαν απόχρωσή της.
+          if(_openGrp){ html+=`</div>`; _openGrp=false; }
           _lastModel=m; _mstart=true;
           if(grp.length>1){
             _mstart=false;
             const n=grp.reduce((a,x)=>a+(Number(x.qty)||0),0);
             const v=grp.reduce((a,x)=>a+(Number(x.qty)||0)*(Number(x.sell_price)||0),0);
             html+=`<div class="stock-model"><span class="m">${esc(m)}</span><span class="n">${grp.length} ${grp.length===1?"απόχρωση":"αποχρώσεις"} · ${fmtNum(n)} ${n===1?"κομμάτι":"κομμάτια"}${v>0?" · "+fmtMoney(v):""}</span></div>`;
+            html+=`<div class="model-grp">`; _openGrp=true;
           }
         }
       }
@@ -6147,6 +6154,7 @@ function renderStock(){
             : `<button class="btn ghost sm" title="${isArchivedStock(it)?'Επαναφορά':'Αρχειοθέτηση'}" onclick="toggleArchiveStock('${it.id}')">${isArchivedStock(it)?'↩':'🗄'}</button>`}<button class="btn ghost sm" onclick="openStockModal('${it.id}')">✎</button>`}
       </div>`;
     });
+    if(_openGrp){ html+=`</div>`; _openGrp=false; }
   });
   box.innerHTML=html;
 }
@@ -6218,7 +6226,10 @@ function rebuildStockCats(){
   const isMM = (document.getElementById("sEvent")||{}).value==="mix";
   const cat = document.getElementById("sCat"); const prev = cat.value;
   let opts = isMM ? MM_CATS.slice() : (isProd ? productCats() : STOCK_CATS.raw.slice());
-  if(prev && !opts.includes(prev)) opts.push(prev); // ποτέ μη χάσεις την τρέχουσα κατηγορία
+  // Κρατάμε κατηγορία εκτός λίστας μόνο όταν είναι η αποθηκευμένη κατηγορία του
+  // είδους. Αλλιώς, αλλάζοντας τύπο, το «Νήμα» ακολουθούσε σε ένα έτοιμο προϊόν.
+  const _cur = editingStockId ? ((stockCache||[]).find(x=>x.id===editingStockId)||{}).category : null;
+  if(_cur && prev===_cur && !opts.includes(prev)) opts.push(prev);
   cat.innerHTML = opts.map(o=>`<option>${o}</option>`).join("");
   cat.value = opts.includes(prev) ? prev : opts[0];
 }
@@ -6230,6 +6241,9 @@ function onStockTypeChange(){
   rebuildStockCats();
   toggleModelFields();
   refreshBuyTotal();
+  const _pr=document.getElementById("sPerOrderRow");
+  if(_pr){ _pr.classList.toggle("hidden", isProd);
+    if(isProd){ const c=document.getElementById("sPerOrder"); if(c.checked){ c.checked=false; onPerOrderToggle(); } } }
 }
 /* Το έτοιμο προϊόν δηλώνεται ως μοντέλο + χρώμα. Η πρώτη ύλη ως όνομα. */
 function toggleModelFields(){
@@ -6274,6 +6288,7 @@ function openStockModal(id){
   toggleModelFields();
   document.getElementById("sBuy").checked=false;
   document.getElementById("sBuyBox").classList.add("hidden");
+  onStockTypeChange();
   fillBuyAccounts(); refreshBuyTotal();
   _ovOpen("stockModal");
 }
