@@ -491,10 +491,19 @@
     #ordersList{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
     #ordersList>.order-row{margin-bottom:0}
     #ordersList>button,#ordersList>.spinner,#ordersList>.fbd-empty{grid-column:1 / -1}
-    #stockAdmin,#wholeAdmin,#custAdmin,#fbAdmin{max-width:980px}
-    #statsBody{max-width:820px}
-    #bzAdmin .led,#bzAdmin .sum,#bzAdmin .cust-row,#bzAdmin .bz-hero{max-width:640px}
-    #bzAdmin .stat-grid,#bzAdmin .bz-add{max-width:640px}
+    #adminPanel.narrow>.page-head,
+    #adminPanel.narrow>.subnav,
+    #adminPanel.narrow>input,
+    #adminPanel.narrow>#stockAdmin,
+    #adminPanel.narrow>#custAdmin,
+    #adminPanel.narrow>#wholeAdmin,
+    #adminPanel.narrow>#fbAdmin,
+    #adminPanel.narrow>#bzAdmin,
+    #adminPanel.narrow>#cashAdmin,
+    #adminPanel.narrow>.stats{max-width:1000px;margin-left:auto;margin-right:auto}
+    #statsBody{max-width:none}
+    #bzAdmin .led,#bzAdmin .sum,#bzAdmin .cust-row,#bzAdmin .bz-hero{max-width:760px}
+    #bzAdmin .stat-grid,#bzAdmin .bz-add{max-width:760px}
   }
   /* ---- λογιστικά μπλοκ (έξοδα, σύνοψη) ---- */
   .led{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
@@ -655,7 +664,10 @@
   .rep-r.soft .l,.rep-r.soft .a{color:var(--muted);font-weight:500;font-size:12.5px}
   .rep-r.soft .a{font-weight:600}
   .rep-r.hd .l{font-weight:600}
-  .rep-r.sum{border-bottom:2px solid var(--ink);padding-top:12px;padding-bottom:12px}
+  /* Η γραμμή πριν το μερικό σύνολο δεν χρειάζεται δική της γραμμή: μαζί με
+     αυτήν του συνόλου φτιάχνουν κουτί, που διαβάζεται σαν πλαίσιο. */
+  .rep-r:has(+ .rep-r.sum){border-bottom:none}
+  .rep-r.sum{border-bottom:2px solid var(--ink);padding-top:4px;padding-bottom:12px}
   .rep-r.sum .l,.rep-r.sum .a{font-weight:600}
   .rep-r.sum .a{font-size:15px}
   .rep-r.tot{border:none;background:var(--ink);color:#fff;padding:14px 16px;margin-top:10px;border-radius:12px}
@@ -718,7 +730,9 @@
   .navbar .tb.sel{background:var(--ink);color:#fff}
   .navbar .tb:not(.sel):active{background:var(--stone)}
   /* ---- πίνακες αρχικής ---- */
-  .home-grid{display:grid;gap:12px;grid-template-columns:1fr;align-items:start}
+  .wide-panel{margin-bottom:14px}
+  .home-grid{columns:1;column-gap:14px}
+  .home-grid>.panel{break-inside:avoid;-webkit-column-break-inside:avoid;page-break-inside:avoid;margin-bottom:14px;display:inline-block;width:100%}
   .panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 15px 15px;min-width:0}
   .panel.cream{background:var(--cream)}
   .panel-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:11px}
@@ -757,15 +771,14 @@
   .act.dark{background:var(--ink);border-color:var(--ink)}
   .act .i{font-size:17px;line-height:1}
   .act .t{font-size:11.5px;font-weight:600;color:var(--ink);line-height:1.25}
-  .act.dark .t{color:#fff}
+  .act.dark .t,.act.dark .i{color:#fff}
   .panel .brief{background:none;border:none;padding:0;margin:0}
   @media(min-width:720px){
-    .home-grid{grid-template-columns:1fr 1fr}
-    .home-grid .span-all{grid-column:1 / -1}
+    .home-grid{columns:2}
   }
   @media(min-width:1400px){ .wrap.wide #ordersList{grid-template-columns:1fr 1fr 1fr} }
   @media(min-width:1080px){
-    .home-grid{grid-template-columns:1.1fr 1fr 1fr}
+    .home-grid{columns:3}
     .page-head .pt{font-size:28px}
   }
   /* ---- πλαίσιο σελίδας ---- */
@@ -1500,7 +1513,7 @@
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();openCleanNames()">✎ Καθαρισμός ονομάτων υλικών</button>
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();restorePalette()">↩ Επαναφορά αποχρώσεων Mix &amp; Match</button>
     <p style="font-size:11.5px;color:var(--muted);margin:14px 0 0;padding-top:12px;border-top:1px solid var(--line)">
-      Έκδοση <b style="color:var(--ink)">2026.10.04.1258</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
+      Έκδοση <b style="color:var(--ink)">2026.10.04.1328</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
       κλείσε και ξανάνοιξε την καρτέλα, ή τράβα την σελίδα προς τα κάτω για ανανέωση.</p>
     <p id="setRebuiltNote" style="font-size:11.5px;color:var(--muted);margin-top:6px">Συμπληρώνει τις κινήσεις αποθήκης από τις παραγγελίες, τις πωλήσεις και τα bazaar που υπάρχουν ήδη. Το απόθεμα δεν αλλάζει.</p>
     <div style="margin-top:18px"><button class="btn ghost" style="width:100%" onclick="closeSettings()">Κλείσιμο</button></div>
@@ -2798,6 +2811,8 @@ function showAdminTab(tab){
   document.getElementById("statsBox").classList.toggle("hidden", !isStats);
   document.getElementById("homeAdmin").classList.toggle("hidden", !isHome);
   document.getElementById("cashAdmin").classList.toggle("hidden", !isCash);
+  { const ap=document.getElementById("adminPanel");
+    if(ap) ap.classList.toggle("narrow", !(isHome || isOrders)); }
   renderPageHead(tab);
   document.querySelector(".navbar .tb.sel")?.scrollIntoView({block:"nearest", inline:"center", behavior:"smooth"});
   document.getElementById("adminMsg").classList.add("hidden");
@@ -5201,10 +5216,8 @@ window.addEventListener("hashchange", ()=>{
   if(panel && !panel.classList.contains("hidden")) applyRoute();
 });
 
-/* close modal on overlay click */
-document.getElementById("orderModal").addEventListener("click",e=>{
-  if(e.target.id==="orderModal") closeOrderModal();
-});
+/* Το πάτημα έξω από το παράθυρο ΔΕΝ κλείνει: σε μισοσυμπληρωμένη φόρμα, ένα
+   αδέξιο άγγιγμα στο κινητό έσβηνε ό,τι είχε γραφτεί. Κλείνει μόνο το ✕. */
 
 /* live money hint */
 ["fCost","fPaid"].forEach(id=>{
@@ -7806,7 +7819,7 @@ function homeMoney(){
   return {rev, profit, costed, owed, n, known};
 }
 function panelBrief(){
-  return `<div class="panel span-all" id="homeBriefPanel"><div id="homeBrief"></div></div>`;
+  return `<div class="panel wide-panel" id="homeBriefPanel"><div id="homeBrief"></div></div>`;
 }
 function panelMoney(){
   const m=homeMoney(), M=GR_MONTHS_FULL[new Date().getMonth()];
@@ -7923,19 +7936,18 @@ function panelSales(){
    σπρώχνει κάτω αυτό που μετράει. Η σειρά ακολουθεί το επείγον. */
 function renderHome(){
   const box=document.getElementById("homeAdmin"); if(!box) return;
+  const wide=[panelSearch(), panelBrief()].filter(Boolean);
   const panels=[
-    panelSearch(),
-    panelBrief(),
     panelActions(),
-    panelDue(),        // τι παραδίδεται — πρώτο όταν υπάρχει
+    panelMoney(),      // τα λεφτά του μήνα, αμέσως μετά τις ενέργειες
+    panelDue(),        // τι παραδίδεται
     panelBazaar(),     // μόνο με ανοιχτό bazaar
     panelOrders(),
     panelOwed(),       // μόνο όταν χρωστάνε
-    panelMoney(),
     panelStock(),      // μόνο όταν τελειώνει κάτι
     panelSales()
   ].filter(Boolean);
-  box.innerHTML = `<div class="home-grid">${panels.join("")}</div>`;
+  box.innerHTML = wide.join("") + `<div class="home-grid">${panels.join("")}</div>`;
   paintBrief();
 }
 
@@ -7947,6 +7959,16 @@ function globalFind(q){
   const out=[];
   if(!String(q||"").trim()) return out;
 
+  // Πελάτες πρώτα: όταν γράφεις όνομα, συνήθως θες την καρτέλα, όχι μία πώληση.
+  customerGroups().forEach(c=>{
+    const info=custInfo[c.key]||{};
+    if(!smartMatch(c.name+" "+(info.phone||""), q)) return;
+    const owed=(ordersCache||[]).filter(o=>custKey(o)===c.key).reduce((a,o)=>a+orderOwed(o),0);
+    out.push({ kind:"Πελάτης", icon:"👤", title:c.name,
+      sub:`${c.n} ${c.n===1?"πώληση":"πωλήσεις"}${c.last?" · "+fmtDateShort(new Date(c.last).toISOString()):""}`,
+      right:owed>0.009?fmtMoney(owed):"", go:`openCustomer('${c.anyId}')`, rank:0 });
+  });
+
   (ordersCache||[]).forEach(o=>{
     const its=getItems(o);
     const hay=[o.customer_name,o.product_name,o.order_number,o.customer_phone,
@@ -7957,30 +7979,31 @@ function globalFind(q){
       title:(o.customer_name||o.order_number||"—"),
       sub:[its.map(i=>i.name).join(" · "), o.created_at?fmtDateShort(o.created_at):""].filter(Boolean).join(" · "),
       right:fmtMoney(orderValue(o)), go:`editOrder('${o.id}')`,
-      rank:(allDelivered(o)?2:0) });
+      rank:(allDelivered(o)?3:1) });
   });
 
   (stockCache||[]).forEach(it=>{
     if(!smartMatch(it.name+" "+(it.category||""),q)) return;
     const prod=it.type==="product";
-    out.push({ kind:prod?"Προϊόν":(it.mm?"Mix & Match":"Είδος"), icon:prod?"📦":(it.mm?"🎨":"📦"),
+    out.push({ kind:prod?"Έτοιμο κομμάτι":(it.mm?"Απόχρωση Mix & Match":"Είδος αποθήκης"),
+      icon:prod?"📦":(it.mm?"🎨":"🧵"),
       title:it.name, sub:[it.category, `${fmtNum(it.qty)} ${it.unit||""}`.trim()].filter(Boolean).join(" · "),
       right:prod&&it.sell_price!=null?fmtMoney(it.sell_price):(it.unit_cost!=null?fmtMoney(it.unit_cost):""),
-      go:`openStockModal('${it.id}')`, rank:1 });
+      go:`goTab('stock','${prod?"product":(it.mm?"mm":"raw")}');openStockModal('${it.id}')`, rank:2 });
   });
 
   (modelCat||[]).forEach(m=>{
     if(!smartMatch(m.name+" "+(m.cat||""),q)) return;
     out.push({ kind:"Προδιαγραφή", icon:"🧵", title:m.name,
       sub:[m.cat,m.collection].filter(Boolean).join(" · "),
-      right:m.price!=null?fmtMoney(m.price):"", go:`goTab('stock','models');openModelModal('${m.id}')`, rank:3 });
+      right:m.price!=null?fmtMoney(m.price):"", go:`goTab('stock','models');openModelModal('${m.id}')`, rank:4 });
   });
 
   (bazaars||[]).forEach(b=>{
     if(!smartMatch(b.name+" "+(b.place||""),q)) return;
     out.push({ kind:"Bazaar", icon:"🛍️", title:b.name,
       sub:[b.date?fmtMonthDate(b.date+"T09:00:00"):"", b.place, b.closed?"κλειστό":"ανοιχτό"].filter(Boolean).join(" · "),
-      right:fmtMoney(bzTotals(b).rev), go:`showAdminTab('bazaar');setBzView('${b.id}')`, rank:2 });
+      right:fmtMoney(bzTotals(b).rev), go:`showAdminTab('bazaar');setBzView('${b.id}')`, rank:3 });
   });
 
   return out.sort((a,b)=>a.rank-b.rank).slice(0,24);
@@ -8005,7 +8028,7 @@ function gsGo(el){
   try{ new Function(go)(); }catch(e){ console.error(e); }
 }
 function panelSearch(){
-  return `<div class="panel span-all gs-panel">
+  return `<div class="panel wide-panel gs-panel">
     <input id="gsInput" placeholder="Αναζήτηση σε όλα — πελάτη, τσάντα, νήμα, bazaar…"
       oninput="runGlobalFind()" autocomplete="off">
     <div id="gsResults" class="hidden"></div>
@@ -8459,19 +8482,23 @@ async function saveCmNewItem(){
   const dup=(stockCache||[]).find(it=>it.type!=="product" && normText(it.name)===normText(name));
   const btn=document.getElementById("jmSaveBtn"); btn.disabled=true;
   try{
-    let id, nm=name, un=unit;
-    if(dup){ id=dup.id; nm=dup.name; un=dup.unit||unit; }
+    const job=jmJob();
+    let id=null, nm=name, un=unit;
+    if(job){
+      // Αγορά για συγκεκριμένη δουλειά: είναι κόστος εκείνης της παραγγελίας,
+      // όχι απόθεμα. Ο ίδιος κανόνας που ισχύει και μέσα από την παραγγελία —
+      // αλλιώς η αποθήκη θα ξαναγέμιζε με χρώματα μιας χρήσης.
+    }else if(dup){ id=dup.id; nm=dup.name; un=dup.unit||unit; }
     else{
       // Το απόθεμα μπαίνει με την καταχώρηση της αγοράς, όχι τώρα.
-      const job=jmJob();
       const row=await writeStockRow(null, { name, category:kind, type:"raw", unit, qty:0,
-        unit_cost:cost, low_threshold:job?0:2, stock_mode:job?"per_job":"stocked",
-        job_ref:job||null, variant, mm:false, event_id:null, image_url:null });
+        unit_cost:cost, low_threshold:2, stock_mode:"stocked",
+        variant, mm:false, event_id:null, image_url:null });
       id=row && row.id; if(!id) throw new Error("no id");
       await loadStock();
     }
-    const job=jmJob();
-    moveLines.push({ item_id:id, name:nm, unit:un, qty, unit_cost:cost, job_ref:job||null });
+    moveLines.push({ item_id:id, name:nm, unit:un, qty, unit_cost:cost,
+                     job_ref:job||null, ...(job?{ad_hoc:true}:{}) });
     if(!document.getElementById("cmName").value){
       const o=(ordersCache||[]).find(x=>x.id===job);
       document.getElementById("cmName").value = o
@@ -8480,7 +8507,7 @@ async function saveCmNewItem(){
     }
     renderMoveLines();
     _ovClose("jobMatModal");
-    adminFlash(dup?"Προστέθηκε στο υπάρχον είδος ✓":"Δημιουργήθηκε ✓");
+    adminFlash(job?"Μπήκε στο κόστος της παραγγελίας ✓":(dup?"Προστέθηκε στο υπάρχον είδος ✓":"Δημιουργήθηκε ✓"));
   }catch(e){ msg.textContent="Δεν αποθηκεύτηκε."; msg.classList.remove("hidden"); }
   finally{ btn.disabled=false; }
 }
@@ -9572,8 +9599,10 @@ async function saveCashMove(){
       else{
         await postCash([rec]);
         if(moveKind==="purchase" && moveLines.length){
+          await attachJobLines(moveLines);
           const failed=[];
           for(const l of moveLines){
+            if(!l.item_id) continue;                  // υλικό μίας χρήσης: δεν τηρείται απόθεμα
             const it=(stockCache||[]).find(x=>x.id===l.item_id); if(!it) continue;
             try{
               await stockMove(it.id, Number(l.qty)||0, "purchase", {type:"cash"},
@@ -9592,6 +9621,29 @@ async function saveCashMove(){
     msg.textContent="Δεν αποθηκεύτηκε. "+((e&&e.message)||""); msg.classList.remove("hidden");
   }finally{ btn.disabled=false; }
 }
+
+/* Γραμμές αγοράς δεμένες σε παραγγελία: το κόστος τους ανήκει εκεί, αλλιώς το
+   αποτέλεσμα της παραγγελίας θα έδειχνε κέρδος που δεν υπάρχει. */
+async function attachJobLines(lines){
+  const byJob={};
+  (lines||[]).forEach(l=>{ if(l.job_ref && l.ad_hoc) (byJob[l.job_ref]=byJob[l.job_ref]||[]).push(l); });
+  const ids=Object.keys(byJob); if(!ids.length) return;
+  for(const oid of ids){
+    const o=(ordersCache||[]).find(x=>x.id===oid); if(!o) continue;
+    const add=byJob[oid].map(l=>({ id:"ah-"+Math.random().toString(36).slice(2,9),
+      name:l.name, unit:l.unit||"τεμ.", qty:Number(l.qty)||0, unit_cost:Number(l.unit_cost)||0, ad_hoc:true }));
+    const mats=[...(Array.isArray(o.materials)?o.materials:[]), ...add];
+    const cost=Math.round(mats.reduce((a,m)=>a+(Number(m.qty)||0)*(Number(m.unit_cost)||0),0)*100)/100;
+    try{
+      const r=await authFetch(REST + "/orders?id=eq."+oid,{method:"PATCH",headers:{"Prefer":"return=minimal"},
+        body:JSON.stringify({materials:mats, cost})});
+      if(r.ok){ o.materials=mats; o.cost=cost; }
+      else netBar(`Η αγορά καταχωρήθηκε, αλλά το κόστος δεν μπήκε στην παραγγελία «${o.customer_name||""}».`);
+    }catch(e){ netBar(`Η αγορά καταχωρήθηκε, αλλά το κόστος δεν μπήκε στην παραγγελία «${o.customer_name||""}».`); }
+  }
+  await loadOrders();
+}
+
 async function postCash(rows){
   const r=await authFetch(REST + "/thilikon_cash",{method:"POST",headers:{"Prefer":"return=representation"},body:JSON.stringify(rows)});
   if(!r.ok) throw new Error((await r.json().catch(()=>({}))).message || "HTTP "+r.status);
@@ -9775,7 +9827,7 @@ function bzDetailHtml(b){
 /* ---- Πώληση έτοιμου προϊόντος (ready-made) ---- */
 function openMatPicker(){
   if(!stockCache.length){ loadStock().then(()=>{ if(stockCache.length) openMatPicker(); else { matDraft={}; showMatPicker([]); } }); return; }
-  matDraft={}; pickedMaterials.forEach(m=> matDraft[m.id]=m.qty);
+  matDraft={}; pickedMaterials.forEach(m=>{ if(!m.ad_hoc) matDraft[m.id]=m.qty; });
   // Τα ήδη αφαιρεμένα μένουν επιλεγμένα: μπορεί να προσθέσει κι άλλα, αφαιρείται μόνο η διαφορά.
   const rows = stockCache.filter(it=>it.type!=="product" && (Number(it.qty)>0 || matDraft[it.id]));
   // υλικά που δηλώθηκαν παλιότερα αλλά δεν υπάρχουν πια στην αποθήκη
@@ -9880,7 +9932,8 @@ async function applyMaterials(){
   if(!chosen.length){ msg.textContent="Διάλεξε τουλάχιστον ένα υλικό."; msg.classList.remove("hidden"); return; }
   const btn=document.getElementById("matApplyBtn"); btn.disabled=true; btn.textContent="Αφαιρούμε…";
   // Διαφορά σε σχέση με ό,τι έχει ήδη αφαιρεθεί (ώστε να μπορεί να προσθέσει κι άλλα εκ των υστέρων)
-  const prev={}; if(stockApplied) pickedMaterials.forEach(m=> prev[m.id]=m.qty);
+  const prev={}; if(stockApplied) pickedMaterials.forEach(m=>{ if(!m.ad_hoc) prev[m.id]=m.qty; });
+  const keepAdHoc = pickedMaterials.filter(m=>m.ad_hoc);
   const ids=new Set([...Object.keys(prev), ...chosen.map(c=>c.id)]);
   const deltas=[...ids].map(id=>({ id, d:((chosen.find(c=>c.id===id)||{}).qty||0) - (prev[id]||0) })).filter(x=>x.d!==0);
   const donePatches=[];
@@ -9891,8 +9944,9 @@ async function applyMaterials(){
       await stockMove(id, -d, d>0?"production":"return", {type:"order", id:editingId}, {note:"υλικά παραγγελίας"});
       donePatches.push({id, old});
     }
-    pickedMaterials=chosen; stockApplied=true;
-    const total=chosen.reduce((s,m)=>s+m.qty*m.unit_cost,0);
+    // Τα υλικά μίας χρήσης δεν περνούν από εδώ· χωρίς αυτή τη γραμμή θα σβήνονταν.
+    pickedMaterials=[...chosen, ...keepAdHoc]; stockApplied=true;
+    const total=pickedMaterials.reduce((s,m)=>s+m.qty*(m.unit_cost||0),0);
     document.getElementById("fCost").value=Math.round(total*100)/100;
     updateMoneyHint(); renderMatList(); closeMatPicker();
     if(!document.getElementById("stockAdmin").classList.contains("hidden")) renderStock();
