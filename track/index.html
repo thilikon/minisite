@@ -1513,7 +1513,7 @@
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();openCleanNames()">✎ Καθαρισμός ονομάτων υλικών</button>
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();restorePalette()">↩ Επαναφορά αποχρώσεων Mix &amp; Match</button>
     <p style="font-size:11.5px;color:var(--muted);margin:14px 0 0;padding-top:12px;border-top:1px solid var(--line)">
-      Έκδοση <b style="color:var(--ink)">2026.10.04.1328</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
+      Έκδοση <b style="color:var(--ink)">2026.10.04.1344</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
       κλείσε και ξανάνοιξε την καρτέλα, ή τράβα την σελίδα προς τα κάτω για ανανέωση.</p>
     <p id="setRebuiltNote" style="font-size:11.5px;color:var(--muted);margin-top:6px">Συμπληρώνει τις κινήσεις αποθήκης από τις παραγγελίες, τις πωλήσεις και τα bazaar που υπάρχουν ήδη. Το απόθεμα δεν αλλάζει.</p>
     <div style="margin-top:18px"><button class="btn ghost" style="width:100%" onclick="closeSettings()">Κλείσιμο</button></div>
@@ -9327,7 +9327,10 @@ function allMoves(){
   return [...cashMoves.map(m=>({...m, src:"manual"})), ...saleReceipts(), ...bazaarCosts()]
     .sort((a,b)=> String(b.moved_at||"").localeCompare(String(a.moved_at||"")));
 }
-function movesIn(key){ return allMoves().filter(m=>m.moved_at && moveCounts(m) && monthKey(m.moved_at+"T12:00:00")===key); }
+function movesIn(key){
+  return allMoves().filter(m=>m.moved_at && moveCounts(m)
+    && (key==="all" || monthKey(m.moved_at+"T12:00:00")===key));
+}
 
 /* ---------- υπόλοιπα ---------- */
 /* Η ημερομηνία έναρξης ορίζει από πού αρχίζει το βιβλίο του λογαριασμού.
@@ -9374,6 +9377,10 @@ function expInMonth(e,key){ return e.date && monthKey(e.date+"T12:00:00")===key;
 let cashMonth=null, cashFilter="all";
 function setCashMonth(k){ cashMonth=k; renderCash(); }
 function setCashFilter(f){ cashFilter=f; renderCash(); }
+function openingTotal(){
+  return Math.round((accounts||[]).filter(a=>!a.archived)
+    .reduce((a,x)=>a+(Number(x.opening)||0),0)*100)/100;
+}
 function cashMonths(){
   const keys=new Set([monthKey(new Date())]);
   allMoves().forEach(m=>{ if(m.moved_at) keys.add(monthKey(m.moved_at+"T12:00:00")); });
@@ -9384,9 +9391,9 @@ function renderCash(){
   const box=document.getElementById("cashAdmin"); if(!box) return;
   if(!accounts.length){ box.innerHTML=`<div class="fbd-empty">Δεν βρέθηκαν λογαριασμοί. Έτρεξε το SQL της Φάσης 1;</div>`; return; }
   const months=cashMonths();
-  if(!cashMonth || !months.includes(cashMonth)) cashMonth=months[0];
-  const [y,m]=cashMonth.split("-");
-  const label=GR_MONTHS_FULL[Number(m)-1]+" "+y;
+  if(!cashMonth || (cashMonth!=="all" && !months.includes(cashMonth))) cashMonth=months[0];
+  const label = cashMonth==="all" ? "από την έναρξη"
+    : (GR_MONTHS_FULL[Number(cashMonth.split("-")[1])-1]+" "+cashMonth.split("-")[0]);
   const rows=movesIn(cashMonth);
 
   const sum=(f)=>Math.round(rows.filter(f).reduce((a,x)=>a+Number(x.amount||0),0)*100)/100;
@@ -9403,10 +9410,12 @@ function renderCash(){
       <div class="n">${fmtMoney(balanceOf(a.id))}</div>
       <div class="l">${esc(a.name)}${a.opening_at?`<br>από ${fmtDateShort(a.opening_at)}`:""}</div></button>`).join("");
 
-  const tabs=`<div class="tabsw" style="margin-bottom:14px;flex-wrap:wrap">${months.map(k=>{
-    const [yy,mm]=k.split("-");
-    return `<button class="tb ${k===cashMonth?"sel":""}" onclick="setCashMonth('${k}')">${GR_MONTHS_SHORT[Number(mm)-1]} ${yy.slice(2)}</button>`;
-  }).join("")}</div>`;
+  const tabs=`<div class="tabsw" style="margin-bottom:14px;flex-wrap:wrap">
+    <button class="tb ${cashMonth==="all"?"sel":""}" onclick="setCashMonth('all')">Όλες</button>
+    ${months.map(k=>{
+      const [yy,mm]=k.split("-");
+      return `<button class="tb ${k===cashMonth?"sel":""}" onclick="setCashMonth('${k}')">${GR_MONTHS_SHORT[Number(mm)-1]} ${yy.slice(2)}</button>`;
+    }).join("")}</div>`;
 
   const filters=`<div class="tabsw" style="margin:0 0 10px;flex-wrap:wrap">${CASH_FILTERS.map(([k,l])=>
     `<button class="tb ${cashFilter===k?"sel":""}" onclick="setCashFilter('${k}')">${l}</button>`).join("")}</div>`;
@@ -9439,12 +9448,13 @@ function renderCash(){
       ${accounts.filter(a=>!a.archived).length>1?`<div class="mini tot"><div class="n">${fmtMoney(totalBalance())}</div><div class="l">Σύνολο διαθεσίμων</div></div>`:""}</div>
     ${tabs}
     <div class="sum" style="margin-bottom:6px">
+      ${cashMonth==="all"?row("Υπόλοιπο έναρξης", openingTotal()):""}
       ${row("Εισπράξεις πωλήσεων", inn)}
       ${buy?row("Αγορές υλικών", buy, true):""}
       ${exp?row("Λειτουργικά έξοδα", exp, true):""}
       ${ownIn?row("Εισφορά ιδιοκτήτη", ownIn):""}
       ${draw?row("Ανάληψη ιδιοκτήτη", draw, true):""}
-      <div class="sum-t"><span class="l">Καθαρή ροή ${esc(label)}</span><span class="a">${fmtMoney(net)}</span></div>
+      <div class="sum-t"><span class="l">${cashMonth==="all"?"Υπόλοιπο σήμερα":"Καθαρή ροή "+esc(label)}</span><span class="a">${fmtMoney(cashMonth==="all"?totalBalance():net)}</span></div>
     </div>
     <div style="font-size:11.5px;color:var(--muted);margin:0 0 16px;line-height:1.6">
       Ταμειακή ροή περιόδου. Οι αναλήψεις και οι εισφορές ιδιοκτήτη μεταβάλλουν το υπόλοιπο
