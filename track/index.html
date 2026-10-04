@@ -590,6 +590,13 @@
   .sk .ds{display:block;font-size:12px;color:var(--muted);line-height:1.45}
   .sk[disabled]{opacity:.4;cursor:default}
   .sk[disabled]:hover{border-color:var(--line);background:#fff}
+  .p-flag{font-size:11.5px;color:#8a5a1e;background:#fdf6ea;border:1px solid #f0e0c4;border-radius:10px;
+    padding:7px 11px;margin-bottom:8px}
+  .led-r.tap{cursor:pointer}
+  .led-r.tap:active{background:var(--cream)}
+  .led-r .go{color:var(--muted);margin-left:6px;font-weight:400}
+  .ie-item.just-added{animation:justAdded 1.6s ease-out}
+  @keyframes justAdded{0%{background:#fdf1f6;box-shadow:0 0 0 2px #f0c4d8}70%{background:#fdf1f6;box-shadow:0 0 0 2px #f0c4d8}100%{background:transparent;box-shadow:none}}
   /* ---- αναφορά ---- */
   .rep-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
   .rep-nav{display:flex;align-items:center;gap:8px}
@@ -1579,7 +1586,10 @@
     <div id="cmBuyBox" class="hidden" style="margin-bottom:12px">
       <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0 0 8px">Είδη που αγοράστηκαν</p>
       <div class="led"><div id="cmLines"></div></div>
-      <div class="bz-add" style="margin-top:8px"><button onclick="cmAddLine()">+ Είδος από την αποθήκη</button></div>
+      <div class="bz-add" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="cmAddLine()">+ Είδος από την αποθήκη</button>
+        <button onclick="cmNewItem()">+ Νέο είδος</button>
+      </div>
     </div>
 
     <label class="fld"><span>Αιτιολογία</span><input id="cmName" placeholder="π.χ. Νήματα Οκτωβρίου"></label>
@@ -1663,10 +1673,10 @@
 <div id="jobMatModal" class="overlay hidden">
   <div class="modal" style="max-width:460px">
     <div class="mh">
-      <h2 class="serif">Υλικό για την παραγγελία</h2>
+      <h2 class="serif" id="jmTitle">Υλικό για την παραγγελία</h2>
       <button class="x" onclick="_ovClose('jobMatModal')">✕</button>
     </div>
-    <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:12px">Το όνομα του πελάτη δεν μπαίνει στο υλικό. Η παραγγελία καταγράφεται ως σύνδεση — αν το ίδιο χρώμα ξαναχρειαστεί, είναι το ίδιο είδος με ιστορικό, όχι καινούργιο.</p>
+    <p id="jmLead" style="font-size:12.5px;color:var(--ink-soft);margin-bottom:12px">Το όνομα του πελάτη δεν μπαίνει στο υλικό. Η παραγγελία καταγράφεται ως σύνδεση — αν το ίδιο χρώμα ξαναχρειαστεί, είναι το ίδιο είδος με ιστορικό, όχι καινούργιο.</p>
     <div style="display:flex;gap:10px">
       <label class="fld" style="flex:1 1 140px"><span>Είδος</span>
         <select id="jmKind">
@@ -1709,6 +1719,26 @@
   </div>
 </div>
 
+<div id="mmModal" class="overlay hidden">
+  <div class="modal">
+    <div class="mh">
+      <h2 class="serif">Μεταφορά στο Mix &amp; Match</h2>
+      <button class="x" onclick="_ovClose('mmModal')">✕</button>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:10px">Τα νήματα που διαλέγεις θα προσφέρονται ως επιλογή χρώματος. Μένουν στην αποθήκη με το ίδιο απόθεμα — δεν δημιουργείται δεύτερη εγγραφή.</p>
+    <label class="fld"><span>Οικογένεια χρώματος (προαιρετικά)</span>
+      <select id="mmFam"><option value="">— κράτα την κατηγορία τους</option></select></label>
+    <input id="mmSearch" placeholder="Αναζήτηση νήματος…" oninput="renderMmTransfer()" style="margin-bottom:8px">
+    <p id="mmCount" style="font-size:11.5px;color:var(--muted);margin-bottom:8px"></p>
+    <div id="mmList"></div>
+    <p id="mmMsg" class="msg err hidden" style="margin-top:10px"></p>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn solid" style="flex:1;background:#c0266c;border-color:#c0266c" id="mmSaveBtn" onclick="saveMmTransfer()">Μεταφορά</button>
+      <button class="btn ghost" onclick="_ovClose('mmModal')">Άκυρο</button>
+    </div>
+  </div>
+</div>
+
 <!-- ============ STOCK ITEM MODAL ============ -->
 <div id="stockModal" class="overlay hidden">
   <div class="modal">
@@ -1741,14 +1771,24 @@
       <label class="fld" style="flex:1"><span>Μονάδα</span><input id="sUnit" placeholder="κουβάρι / τεμάχιο"></label>
     </div>
     <div style="display:flex;gap:10px">
-      <label class="fld" style="flex:1"><span>Ποσότητα</span><input id="sQty" inputmode="decimal" placeholder="0"></label>
-      <label class="fld" style="flex:1"><span>Τιμή αγοράς € / μον.</span><input id="sCost" inputmode="decimal" placeholder="0"></label>
+      <label class="fld" style="flex:1"><span>Ποσότητα</span><input id="sQty" inputmode="decimal" placeholder="0" oninput="refreshBuyTotal()"></label>
+      <label class="fld" style="flex:1"><span>Τιμή αγοράς € / μον.</span><input id="sCost" inputmode="decimal" placeholder="0" oninput="refreshBuyTotal()"></label>
       <label class="fld" style="flex:1"><span>Ειδοπ. κάτω από</span><input id="sLow" inputmode="decimal" placeholder="2"></label>
     </div>
     <label class="chk-row" style="margin:-4px 0 14px">
       <input type="checkbox" id="sPerOrder" onchange="onPerOrderToggle()">
       <span><b>Αγορά ανά παραγγελία</b> — δεν τηρείται απόθεμα. Το κόστος βαρύνει την παραγγελία που το χρησιμοποιεί.</span>
     </label>
+    <div id="sBuyWrap" class="hidden">
+      <label class="chk-row" style="margin:-4px 0 10px">
+        <input type="checkbox" id="sBuy" onchange="onBuyToggle()">
+        <span><b>Το αγόρασα τώρα</b> — να καταχωρηθεί ως αγορά και να μειωθεί το ταμείο</span>
+      </label>
+      <div id="sBuyBox" class="hidden" style="display:flex;gap:10px;margin-bottom:12px">
+        <label class="fld" style="flex:1"><span>Από λογαριασμό</span><select id="sBuyAcc"></select></label>
+        <label class="fld" style="flex:1"><span>Σύνολο €</span><input id="sBuyTotal" inputmode="decimal" readonly></label>
+      </div>
+    </div>
     <label class="fld hidden" id="sSellWrap"><span>Τιμή πώλησης € (για έτοιμα προϊόντα)</span><input id="sSell" inputmode="decimal" placeholder="0" oninput="renderBom()"></label>
     <label class="fld hidden" id="sEvWrap"><span>Event (προαιρετικό)</span>
       <select id="sEvent" onchange="onStockEventChange()"><option value="">— κανένα</option></select>
@@ -4686,6 +4726,16 @@ async function propagatePhone(name, phone){
     }catch(e){}
   }
 }
+
+/* Στο κινητό η νέα γραμμή προστίθεται στο κάτω μέρος της φόρμας, εκτός οθόνης:
+   χωρίς να φανεί, μοιάζει σαν να μην έγινε τίποτα. */
+function flashNewItemRow(){
+  const rows=document.querySelectorAll("#itemsEditor .ie-item");
+  const el=rows[rows.length-1]; if(!el) return;
+  try{ el.scrollIntoView({behavior:"smooth", block:"center"}); }catch(e){ el.scrollIntoView(); }
+  el.classList.add("just-added");
+  setTimeout(()=>el.classList.remove("just-added"), 1600);
+}
 let pendingStock=[];   // έτοιμα προϊόντα που θα αφαιρεθούν από την αποθήκη με την αποθήκευση
 function openReadyPicker(){
   const rows=(stockCache||[]).filter(it=>it.type==="product" && (Number(it.qty)||0)>0 && !isArchivedStock(it));
@@ -4698,7 +4748,7 @@ function openReadyPicker(){
       const e=stEv(it);
       return `<button class="cust-row" style="width:100%" onclick="pickReady('${it.id}')">
         <span class="cr-main" style="pointer-events:none">
-          ${it.image_url?`<img class="si-img" style="width:40px;height:40px;margin-right:10px" src="${esc(it.image_url)}" alt="">`:""}
+          <span style="margin-right:10px;flex:none">${stockThumb(it)}</span>
           <span style="flex:1;min-width:0"><span class="cr-t">${esc(it.name)}${e?` <span class="mm-pill" style="background:${e.color}22;color:${e.ink||e.color};border-color:${e.color}55">${esc(e.name)}</span>`:""}</span>
           <span class="cr-s">${it.sell_price!=null?fmtMoney(it.sell_price):"χωρίς τιμή"} · απόθεμα ${fmtNum(it.qty)}</span></span>
         </span></button>`;
@@ -4720,7 +4770,7 @@ function pickReady(stockId){
     cf.value=Math.round((cur+Number(it.unit_cost))*100)/100;
   }
   closeReadyPicker();
-  setTimeout(()=>{ fillPickers(); updateMoneyHint(); refreshPriceHints(); },0);
+  setTimeout(()=>{ fillPickers(); updateMoneyHint(); refreshPriceHints(); flashNewItemRow(); },0);
   adminFlash(`${it.name} — θα αφαιρεθεί από την αποθήκη με την αποθήκευση`);
 }
 async function applyPendingStock(){
@@ -5765,9 +5815,9 @@ function isPerOrder(it){ return it && it.low_threshold!=null && Number(it.low_th
 function setStockView(v){ stockView=v; renderStock(); syncRoute(); }
 function renderStock(){
   const box=document.getElementById("stockAdmin"); const all=stockCache||[];
-  const raw=all.filter(it=>it.type!=="product" && !stEv(it) && isStocked(it));
+  const raw=all.filter(it=>it.type!=="product" && !(it.event_id && it.event_id!=="mix") && isStocked(it));
   const perJob=all.filter(it=>it.type!=="product" && !stEv(it) && isPerJob(it));
-  const mm=all.filter(it=>it.type!=="product" && stEv(it));
+  const mm=all.filter(it=>it.type!=="product" && it.mm);
   const prods=all.filter(it=>it.type==="product");
   const toggle=`<div class="tabsw" style="margin-bottom:16px;flex-wrap:wrap">
     <button class="tb ${stockView==='models'?'sel':''}" onclick="setStockView('models')">Προδιαγραφές${modelCat.length?` (${modelCat.length})`:''}</button>
@@ -5794,7 +5844,7 @@ function renderStock(){
   if(!rows.length){
     let empty;
     if(stockView==="product") empty=`<div class="fbd-empty">Δεν υπάρχουν έτοιμα προϊόντα. Πάτα «+ Είδος» και επίλεξε τύπο «Έτοιμο προϊόν».</div>`;
-    else if(stockView==="mm") empty=`<div class="fbd-empty" style="padding-bottom:14px">Κανένα χρώμα Mix &amp; Match ακόμη.</div><div style="text-align:center"><button class="btn solid sm" style="background:#c0266c;border-color:#c0266c" onclick="seedMixMatch()">Φόρτωσε τα χρώματα του event</button><div style="font-size:11px;color:var(--muted);margin-top:8px">Θα προστεθούν οι αποχρώσεις από τις φωτογραφίες σου (ποσότητα 1). Άλλαξε ποσότητες/ονόματα όπως θες.</div></div>`;
+    else if(stockView==="mm") empty=`<div class="fbd-empty" style="padding-bottom:14px">Καμία απόχρωση στο Mix &amp; Match.</div><div style="text-align:center"><button class="btn solid sm" style="background:#c0266c;border-color:#c0266c" onclick="openMmTransfer()">+ Μεταφορά νημάτων από την αποθήκη</button><div style="font-size:11px;color:var(--muted);margin-top:8px">Διάλεξε ποια νήματα θα βλέπει η πελάτισσα ως επιλογή χρώματος. Μένουν στην αποθήκη με το ίδιο απόθεμα.</div></div>`;
     else empty=`<div class="fbd-empty">Καμία πρώτη ύλη ακόμη. Πάτα «+ Είδος» για να προσθέσεις.</div>`;
     box.innerHTML = toggle + empty;
     return;
@@ -5835,6 +5885,12 @@ function renderStock(){
   </div>`;
   if(lowItems.length){
     html+=`<div class="r-hint" style="color:#8a5a1e;background:#fdf6ea;margin-bottom:14px">${stockView==="product"?"Λίγα κομμάτια":"Τελειώνουν"}: ${lowItems.map(it=>esc(it.name)+(stockState(it)==="out"?" (0)":` (${fmtNum(it.qty)})`)).join(" · ")}</div>`;
+  }
+  if(stockView==="mm"){
+    html+=`<div class="r-hint" style="margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span style="flex:1;min-width:170px">Οι αποχρώσεις που προσφέρονται στην πελάτισσα. Είναι τα ίδια νήματα της αποθήκης — ένα απόθεμα.</span>
+      <button class="btn ghost sm" onclick="openMmTransfer()">+ Από την αποθήκη</button>
+      ${allRows.length?`<button class="btn ghost sm" onclick="clearMixMatch()">Καθάρισμα</button>`:""}</div>`;
   }
   if(stockView==="product"){
     const _sold=soldOutPieces();
@@ -5887,7 +5943,7 @@ function renderStock(){
       html+=`<div class="stock-item ${st}${_mstart?" mstart":""}">
         ${stockThumb(it)}
         <div class="si-info">
-          <div class="si-name">${esc(siLabel(it, _byModel))}${_sev&&isProd?` <span class="mm-pill" style="background:${_sev.color}26;color:${_sev.ink||_sev.color};border-color:${_sev.color}">${esc(_sev.name)}</span>`:""}${(function(){const b=bzOfStock(it);return b?` <button class="mm-pill cust-pill" style="background:#f3efe6;color:#8a6a2e;border-color:#e4d9c2" onclick="showAdminTab('bazaar');setBzView('${b.id}')">🛍️ ${esc(b.name)}</button>`:"";})()}</div>
+          <div class="si-name">${esc(siLabel(it, _byModel))}${(it.mm&&stockView!=="mm")?' <span class="mm-pill">M&amp;M</span>':""}${_sev&&isProd?` <span class="mm-pill" style="background:${_sev.color}26;color:${_sev.ink||_sev.color};border-color:${_sev.color}">${esc(_sev.name)}</span>`:""}${(function(){const b=bzOfStock(it);return b?` <button class="mm-pill cust-pill" style="background:#f3efe6;color:#8a6a2e;border-color:#e4d9c2" onclick="showAdminTab('bazaar');setBzView('${b.id}')">🛍️ ${esc(b.name)}</button>`:"";})()}</div>
           <div class="si-meta">${meta}${it.status==="written_off"?` · <span style="color:#b54b3a">αποσύρθηκε${it.status_reason?" ("+esc(it.status_reason)+")":""}</span>`:""}${(isPerJob(it))?' · <span style="color:var(--muted)">ανά παραγγελία</span>':(st==="low"?' · <span class="si-low">'+(isProd?"λίγα":"τελειώνει")+'</span>':st==="out"?' · <span class="si-low">εξαντλήθηκε</span>':'')}</div>
         </div>
         ${isProd ? `<div class="si-actions">
@@ -5898,7 +5954,9 @@ function renderStock(){
              ? `<button class="btn ghost sm" title="Απόσυρση — το έχω αλλά το βγάζω από το απόθεμα" onclick="writeOffPiece('${it.id}')">⊘</button>`
              : `<button class="btn ghost sm" title="${isArchivedStock(it)?'Επαναφορά στον ενεργό κατάλογο':'Αρχειοθέτηση — πουλήθηκε, δεν ξανακατασκευάζεται'}" onclick="toggleArchiveStock('${it.id}')">${isArchivedStock(it)?'↩':'🗄'}</button>`}
           <button class="btn ghost sm" onclick="openStockModal('${it.id}')">✎</button>
-        </div>` : `${qtyBlock}<button class="btn ghost sm" title="Κινήσεις είδους" onclick="openStockHistory('${it.id}')">📋</button><button class="btn ghost sm" title="${isArchivedStock(it)?'Επαναφορά':'Αρχειοθέτηση'}" onclick="toggleArchiveStock('${it.id}')">${isArchivedStock(it)?'↩':'🗄'}</button><button class="btn ghost sm" onclick="openStockModal('${it.id}')">✎</button>`}
+        </div>` : `${qtyBlock}<button class="btn ghost sm" title="Κινήσεις είδους" onclick="openStockHistory('${it.id}')">📋</button>${stockView==="mm"
+            ? `<button class="btn ghost sm" title="Αφαίρεση από το Mix & Match — μένει στην αποθήκη" onclick="mmRemove('${it.id}')">✕</button>`
+            : `<button class="btn ghost sm" title="${isArchivedStock(it)?'Επαναφορά':'Αρχειοθέτηση'}" onclick="toggleArchiveStock('${it.id}')">${isArchivedStock(it)?'↩':'🗄'}</button>`}<button class="btn ghost sm" onclick="openStockModal('${it.id}')">✎</button>`}
       </div>`;
     });
   });
@@ -5983,6 +6041,7 @@ function onStockTypeChange(){
   toggleBomWrap();
   rebuildStockCats();
   toggleModelFields();
+  refreshBuyTotal();
 }
 /* Το έτοιμο προϊόν δηλώνεται ως μοντέλο + χρώμα. Η πρώτη ύλη ως όνομα. */
 function toggleModelFields(){
@@ -6025,6 +6084,9 @@ function openStockModal(id){
   loadBomInto(id);
   document.getElementById("sBomWrap").classList.toggle("hidden", document.getElementById("sType").value!=="product");
   toggleModelFields();
+  document.getElementById("sBuy").checked=false;
+  document.getElementById("sBuyBox").classList.add("hidden");
+  fillBuyAccounts(); refreshBuyTotal();
   _ovOpen("stockModal");
 }
 function toggleBomWrap(){
@@ -6072,8 +6134,19 @@ async function saveStock(keepOpen){
       bzItems[_newRow.id]=_tagBz; await saveBzItems(true);
     }
     const _rowId = editingStockId || (_newRow && _newRow.id);
+    // νέο υλικό που αγοράστηκε: κίνηση αποθήκης και κίνηση ταμείου μαζί
+    let _bought=false;
+    if(_wasNew && _rowId){
+      logStockMove(_rowId, payload.qty, document.getElementById("sBuy").checked?"purchase":"opening",
+        {type:"stock", id:_rowId}, {unit_cost:payload.unit_cost, note:document.getElementById("sBuy").checked?"αγορά":"αρχική καταχώρηση"});
+      if(document.getElementById("sBuy").checked && buyTotal()>0){
+        _bought = await recordPurchase(_rowId, payload.name, payload.qty, payload.unit_cost,
+          document.getElementById("sBuyAcc").value);
+      }
+    }
     if(_isProd && _rowId && (bomDraftMats.length || bomWorkSec())) await applyBom(_rowId);
-    await loadStock(); adminFlash("Αποθηκεύτηκε ✓");
+    await loadStock(); adminFlash(_bought?`Αποθηκεύτηκε ✓ · −${fmtMoney(buyTotal())} από το ταμείο`:"Αποθηκεύτηκε ✓");
+    if(_bought && !document.getElementById("cashAdmin").classList.contains("hidden")) renderCash();
     if(_tagBz){
       if(!document.getElementById("bzPickModal").classList.contains("hidden")){ bzPickDraft[_newRow&&_newRow.id]=true; renderBzPicker(); }
       renderBazaar();
@@ -7522,13 +7595,17 @@ function panelMoney(){
 }
 function panelActions(){
   const running=!!(timer && timer.startedAt);
+  const bz=bzCurrent();
   const a=[];
-  a.push({dark:true, i:"➕", t:"Νέα πώληση", f:"openSaleKind()"});
-  a.push({i:"🧾", t:"Λιανική", f:"tillOpen(null,null)"});
-  a.push({i:"📦", t:"Στην αποθήκη", f:"goTab('stock','product');openStockModal(null)"});
+  // με ανοιχτό bazaar, η πώληση εκεί είναι η πράξη της ημέρας
+  if(bz) a.push({dark:true, i:"🛍️", t:"Πώληση · "+bz.name, f:`tillOpen('${bz.id}',null)`});
+  else   a.push({dark:true, i:"➕", t:"Νέα πώληση", f:"openSaleKind()"});
   a.push({i:"🧵", t:"Παραγγελία", f:"openOrderModal()"});
+  a.push({i:"🧾", t:"Λιανική", f:"tillOpen(null,null)"});
+  a.push({i:"📦", t:"Νέο είδος", f:"goTab('stock','raw');openStockModal(null)"});
   a.push({i:"🧮", t:"Κίνηση ταμείου", f:"openCashMove()"});
-  a.push({i:running?"⏸":"⏱", t:running?"Σταμάτα χρόνο":"Χρόνος", f:running?"timerPause()":"goTab('orders')"});
+  if(running) a.push({i:"⏸", t:"Σταμάτα χρόνο", f:"timerPause()"});
+  if(!bz) a.push({i:"🛍️", t:"Νέο bazaar", f:"goTab('bazaar');openBzModal()"});
   if(wrapAvailable()) a.push({i:"✨", t:"Ανασκόπηση", f:"openWrap()"});
   return `<div class="panel">
     <div class="panel-h"><span class="t">Γρήγορες ενέργειες</span></div>
@@ -7565,10 +7642,7 @@ function panelOrders(){
 }
 function panelBazaar(){
   const b=bzCurrent();
-  if(!b) return `<div class="panel">
-    <div class="panel-h"><span class="t">Bazaar</span><button class="a" onclick="goTab('bazaar')">Όλα →</button></div>
-    <div class="p-empty">Κανένα ανοιχτό bazaar.<br><button class="a" style="margin-top:6px" onclick="goTab('bazaar');openBzModal()">+ Φτιάξε ένα →</button></div>
-  </div>`;
+  if(!b) return "";          // χωρίς ανοιχτό bazaar δεν υπάρχει τίποτα να πει
   const t=bzTotals(b), pieces=bzStock(b.id).slice(0,5), d=bzDays(b);
   const when = d===0?"σήμερα":(d>0?`σε ${d===1?"1 μέρα":d+" μέρες"}`:"ανοιχτό");
   const body = pieces.length ? pieces.map(it=>`<button class="p-row" onclick="tillOpen('${b.id}','${it.id}')">
@@ -7589,14 +7663,14 @@ function panelBazaar(){
 function panelStock(){
   const low=(stockCache||[]).filter(it=>stockState(it)!=="ok" && !isArchivedStock(it)).slice(0,5);
   const val=(stockCache||[]).reduce((a,it)=>a+(Number(it.qty)||0)*(Number(it.unit_cost)||0),0);
-  const body = low.length ? low.map(it=>`<button class="p-row" onclick="openStockModal('${it.id}')">
+  if(!low.length) return "";   // τίποτα δεν τελειώνει — καμία ανάγκη για πίνακα
+  return `<div class="panel">
+    <div class="panel-h"><span class="t">Τελειώνουν</span><button class="a" onclick="goTab('stock','raw')">Αποθήκη →</button></div>
+    ${low.map(it=>`<button class="p-row" onclick="openStockModal('${it.id}')">
       ${stockThumb(it)}
       <span class="m"><span class="n">${esc(it.name)}</span><span class="s">${esc(it.category||"")}</span></span>
       <span class="v warn">${fmtNum(it.qty)}</span>
-    </button>`).join("") : `<div class="p-empty">Τίποτα δεν τελειώνει. Αξία αποθήκης ${fmtMoney(val)}.</div>`;
-  return `<div class="panel">
-    <div class="panel-h"><span class="t">Τελειώνουν</span><button class="a" onclick="goTab('stock','raw')">Αποθήκη →</button></div>
-    ${body}
+    </button>`).join("")}
   </div>`;
 }
 function panelSales(){
@@ -7617,18 +7691,80 @@ function panelSales(){
     }).join("")}
   </div>`;
 }
+/* Η αρχική δεν είναι σταθερή διάταξη: είναι ό,τι χρειάζεται σήμερα.
+   Πίνακας χωρίς περιεχόμενο δεν είναι ουδέτερος — είναι θόρυβος που
+   σπρώχνει κάτω αυτό που μετράει. Η σειρά ακολουθεί το επείγον. */
 function renderHome(){
   const box=document.getElementById("homeAdmin"); if(!box) return;
-  box.innerHTML = `<div class="home-grid">
-    ${panelBrief()}
-    ${panelActions()}
-    ${panelMoney()}
-    ${panelOrders()}
-    ${panelBazaar()}
-    ${panelStock()}
-    ${panelSales()}
-  </div>`;
+  const panels=[
+    panelBrief(),
+    panelActions(),
+    panelDue(),        // τι παραδίδεται — πρώτο όταν υπάρχει
+    panelBazaar(),     // μόνο με ανοιχτό bazaar
+    panelOrders(),
+    panelOwed(),       // μόνο όταν χρωστάνε
+    panelMoney(),
+    panelStock(),      // μόνο όταν τελειώνει κάτι
+    panelSales()
+  ].filter(Boolean);
+  box.innerHTML = `<div class="home-grid">${panels.join("")}</div>`;
   paintBrief();
+}
+
+/* ---- τι παραδίδεται ---- */
+function dueItems(days){
+  const out=[], lim=Date.now()+ (days||7)*86400000;
+  (ordersCache||[]).forEach(o=>{
+    if(isWholesale(o) || isBazaarSale(o)) return;
+    getItems(o).forEach(it=>{
+      if(itemDone(it) || !it.eta) return;
+      const t=new Date(it.eta).getTime(); if(!t || t>lim) return;
+      out.push({o, it, t});
+    });
+  });
+  return out.sort((a,b)=>a.t-b.t);
+}
+function panelDue(){
+  const rows=dueItems(7); if(!rows.length) return "";
+  const now=Date.now(), today=new Date(); today.setHours(23,59,59,999);
+  const late=rows.filter(r=>r.t<now).length;
+  return `<div class="panel">
+    <div class="panel-h"><span class="t">Παραδόσεις ως την άλλη εβδομάδα</span>
+      <button class="a" onclick="goTab('orders')">Πωλήσεις →</button></div>
+    ${late?`<div class="p-flag">${late} ${late===1?"έχει περάσει την ημερομηνία":"έχουν περάσει την ημερομηνία"}</div>`:""}
+    ${rows.slice(0,6).map(r=>{
+      const over=r.t<now, soon=!over && r.t<=today.getTime();
+      return `<button class="p-row" onclick="editOrder('${r.o.id}')">
+        ${stockThumb({name:r.it.name, type:"product"})}
+        <span class="m"><span class="n">${esc(r.it.name||"—")}</span>
+        <span class="s">${esc(firstName(r.o.customer_name)||"—")}</span></span>
+        <span class="v ${over?"warn":""}">${over?"άργησε":(soon?"σήμερα":fmtDateShort(r.it.eta))}</span>
+      </button>`;}).join("")}
+  </div>`;
+}
+
+/* ---- ποιος χρωστάει, και από πότε ---- */
+function owedRows(){
+  return (ordersCache||[]).map(o=>({o, owed:orderOwed(o),
+      days: o.created_at ? Math.floor((Date.now()-new Date(o.created_at).getTime())/86400000) : 0}))
+    .filter(x=>x.owed>0.009)
+    .sort((a,b)=>b.days-a.days);
+}
+function panelOwed(){
+  const rows=owedRows(); if(!rows.length) return "";
+  const tot=rows.reduce((a,x)=>a+x.owed,0);
+  const old=rows.filter(x=>x.days>=30).length;
+  return `<div class="panel">
+    <div class="panel-h"><span class="t">Οφειλές · ${fmtMoney(tot)}</span>
+      <button class="a" onclick="goTab('orders');setOrderFilter('owed')">Όλες →</button></div>
+    ${old?`<div class="p-flag">${old} ${old===1?"εκκρεμεί":"εκκρεμούν"} πάνω από 30 μέρες</div>`:""}
+    ${rows.slice(0,5).map(x=>`<button class="p-row" onclick="editOrder('${x.o.id}')">
+      ${stockThumb({name:(getItems(x.o)[0]||{}).name, type:"product"})}
+      <span class="m"><span class="n">${esc(firstName(x.o.customer_name)||"—")}</span>
+      <span class="s">${x.days===0?"σήμερα":`${x.days} ${x.days===1?"μέρα":"μέρες"}`}${isWholesale(x.o)?" · χονδρική":""}</span></span>
+      <span class="v ${x.days>=30?"warn":""}">${fmtMoney(x.owed)}</span>
+    </button>`).join("")}
+  </div>`;
 }
 
 
@@ -7821,12 +7957,33 @@ async function openStockHistory(itemId){
     </div>
     ${rows.length?`<div class="led">
       <div class="led-h"><span class="d">Αιτιολογία</span><span class="a">Ποσότητα</span></div>
-      ${rows.map(r=>`<div class="led-r">
-        <span class="d">${esc(MOVE_LABELS[r.reason]||r.reason)}<small>${r.moved_at?fmtDateShort(r.moved_at):""}${r.note?(r.moved_at?" · ":"")+esc(r.note):""}</small></span>
-        <span class="a" style="${Number(r.qty)<0?"":"color:#2c6e49"}">${Number(r.qty)>0?"+":""}${fmtNum(r.qty)}</span>
-      </div>`).join("")}
+      ${rows.map(r=>{
+        const to=moveTarget(r);
+        const sub=[r.moved_at?fmtDateShort(r.moved_at):"", to?to.label:(r.note||"")].filter(Boolean).join(" · ");
+        return `<div class="led-r${to?" tap":""}"${to?` onclick="${to.go}"`:""}>
+        <span class="d">${esc(MOVE_LABELS[r.reason]||r.reason)}<small>${esc(sub)}</small></span>
+        <span class="a" style="${Number(r.qty)<0?"":"color:#2c6e49"}">${Number(r.qty)>0?"+":""}${fmtNum(r.qty)}${to?' <span class="go">→</span>':""}</span>
+      </div>`;}).join("")}
     </div>`
     :`<div class="led-empty">Καμία καταγεγραμμένη κίνηση για αυτό το είδος.${movesRebuilt()?"":`<br><br><button class="btn ghost sm" onclick="rebuildStockHistory()">Ανακατασκευή από παλαιότερα δεδομένα</button>`}</div>`}`;
+}
+
+
+/* Κάθε κίνηση ξέρει πού έγινε. Χωρίς σύνδεσμο, το «ανάλωση −2» δεν λέει
+   για ποια παραγγελία — που είναι ακριβώς αυτό που θέλεις να δεις. */
+function moveTarget(r){
+  if(!r || !r.ref_id) return null;
+  if(r.ref_type==="order"){
+    const o=(ordersCache||[]).find(x=>x.id===r.ref_id); if(!o) return null;
+    return { label:(o.customer_name||o.order_number||"παραγγελία"),
+             go:`_ovClose('salesModal');editOrder('${o.id}')` };
+  }
+  if(r.ref_type==="bazaar"){
+    const b=bzById(r.ref_id); if(!b) return null;
+    return { label:b.name, go:`_ovClose('salesModal');showAdminTab('bazaar');setBzView('${b.id}')` };
+  }
+  if(r.ref_type==="cash") return { label:"ταμείο", go:`_ovClose('salesModal');goTab('cash')` };
+  return null;
 }
 
 /* ---- Απόσυρση έτοιμου κομματιού ---- */
@@ -7868,6 +8025,9 @@ function jmPreview(){
 }
 function newJobMaterial(){
   if(!editingId){ adminFlash("Αποθήκευσε πρώτα την παραγγελία"); return; }
+  document.getElementById("jmTitle").textContent="Υλικό για την παραγγελία";
+  document.getElementById("jmLead").textContent="Το όνομα του πελάτη δεν μπαίνει στο υλικό. Η παραγγελία καταγράφεται ως σύνδεση — αν το ίδιο χρώμα ξαναχρειαστεί, είναι το ίδιο είδος με ιστορικό, όχι καινούργιο.";
+  document.getElementById("jmSaveBtn").setAttribute("onclick","saveJobMaterial()");
   document.getElementById("jmKind").value="Νήμα";
   document.getElementById("jmVariant").value="";
   document.getElementById("jmQty").value="1";
@@ -7931,6 +8091,53 @@ async function archiveFinishedJobs(silent){
   return list.length;
 }
 
+
+
+/* Αγορά υλικού που δεν υπάρχει ακόμη στην αποθήκη. Χωρίς αυτό, η Αναστασία
+   έπρεπε να βγει στην Αποθήκη, να το φτιάξει, και να γυρίσει πίσω. */
+function cmNewItem(){
+  document.getElementById("jmKind").value="Νήμα";
+  document.getElementById("jmVariant").value="";
+  document.getElementById("jmQty").value="1";
+  document.getElementById("jmUnit").value="κουβάρι";
+  document.getElementById("jmCost").value="";
+  document.getElementById("jmMsg").classList.add("hidden");
+  document.getElementById("jmTitle").textContent="Νέο είδος για την αγορά";
+  document.getElementById("jmLead").textContent="Δημιουργείται στην αποθήκη και μπαίνει ως γραμμή στην αγορά.";
+  document.getElementById("jmSaveBtn").setAttribute("onclick","saveCmNewItem()");
+  syncVariantLists(); jmPreview();
+  _ovOpen("jobMatModal");
+}
+async function saveCmNewItem(){
+  const msg=document.getElementById("jmMsg"); msg.classList.add("hidden");
+  const kind=document.getElementById("jmKind").value;
+  const variant=document.getElementById("jmVariant").value.trim();
+  if(!variant){ msg.textContent="Συμπλήρωσε χρώμα ή περιγραφή."; msg.classList.remove("hidden"); return; }
+  const name=jobLabel(kind, variant);
+  const qty=parseMoney(document.getElementById("jmQty").value)||1;
+  const cost=parseMoney(document.getElementById("jmCost").value);
+  if(cost==null){ msg.textContent="Συμπλήρωσε κόστος ανά μονάδα."; msg.classList.remove("hidden"); return; }
+  const unit=document.getElementById("jmUnit").value.trim()||"τεμ.";
+  const dup=(stockCache||[]).find(it=>it.type!=="product" && normText(it.name)===normText(name));
+  const btn=document.getElementById("jmSaveBtn"); btn.disabled=true;
+  try{
+    let id, nm=name, un=unit;
+    if(dup){ id=dup.id; nm=dup.name; un=dup.unit||unit; }
+    else{
+      // Το απόθεμα μπαίνει με την καταχώρηση της αγοράς, όχι τώρα.
+      const row=await writeStockRow(null, { name, category:kind, type:"raw", unit, qty:0,
+        unit_cost:cost, low_threshold:2, stock_mode:"stocked", variant, mm:false, event_id:null, image_url:null });
+      id=row && row.id; if(!id) throw new Error("no id");
+      await loadStock();
+    }
+    moveLines.push({ item_id:id, name:nm, unit:un, qty, unit_cost:cost });
+    if(!document.getElementById("cmName").value) document.getElementById("cmName").value="Αγορά υλικών";
+    renderMoveLines();
+    _ovClose("jobMatModal");
+    adminFlash(dup?"Προστέθηκε στο υπάρχον είδος ✓":"Δημιουργήθηκε ✓");
+  }catch(e){ msg.textContent="Δεν αποθηκεύτηκε."; msg.classList.remove("hidden"); }
+  finally{ btn.disabled=false; }
+}
 
 /* ---- Καθαρισμός ονομάτων «Χρώμα - Πελάτης» ----
    Το όνομα του πελάτη μέσα στο υλικό ήταν ο μόνος τρόπος να θυμάται κανείς
@@ -7997,6 +8204,146 @@ async function applyCleanNames(){
   finally{ btn.disabled=false; btn.textContent="Εφαρμογή"; }
 }
 
+
+
+
+/* ---- νέο είδος που μόλις αγοράστηκε ----
+   Η αγορά υλικών είναι δύο γεγονότα ταυτόχρονα: μπαίνει απόθεμα και φεύγουν
+   χρήματα. Όσο καταχωρούνταν χωριστά, το ένα ξεχνιόταν. */
+function buyTotal(){
+  const q=parseMoney(document.getElementById("sQty").value)||0;
+  const c=parseMoney(document.getElementById("sCost").value);
+  return (c==null) ? 0 : Math.round(q*c*100)/100;
+}
+function onBuyToggle(){
+  const on=document.getElementById("sBuy").checked;
+  document.getElementById("sBuyBox").classList.toggle("hidden", !on);
+  refreshBuyTotal();
+}
+function refreshBuyTotal(){
+  const el=document.getElementById("sBuyTotal"); if(!el) return;
+  el.value = fmtMoney(buyTotal());
+  const w=document.getElementById("sBuyWrap");
+  if(w) w.classList.toggle("hidden", !!editingStockId || document.getElementById("sType").value==="product");
+}
+function fillBuyAccounts(){
+  const sel=document.getElementById("sBuyAcc"); if(!sel) return;
+  const list=(accounts||[]).filter(a=>!a.archived);
+  sel.innerHTML = list.map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join("")
+    || `<option value="">— κανένας λογαριασμός</option>`;
+  const cash=list.find(a=>a.kind==="cash"); if(cash) sel.value=cash.id;
+}
+/* Η κίνηση ταμείου που συνοδεύει την αγορά. */
+async function recordPurchase(itemId, name, qty, unitCost, accId){
+  const total=Math.round((Number(qty)||0)*(Number(unitCost)||0)*100)/100;
+  if(!total || !accId) return false;
+  const row={ account_id:accId, moved_at:new Date().toISOString(), amount:-total,
+    kind:"purchase", category:"Υλικά & αγορές", name:"Αγορά · "+name,
+    ref_type:"stock", ref_id:itemId,
+    lines:[{item_id:itemId, name, unit:null, qty:Number(qty), unit_cost:Number(unitCost)}], note:null };
+  try{
+    const r=await authFetch(REST + "/thilikon_cash",{method:"POST",headers:{"Prefer":"return=representation"},body:JSON.stringify([row])});
+    if(!r.ok) return false;
+    const made=await r.json();
+    cashMoves=[...(Array.isArray(made)?made:[]), ...cashMoves];
+    return true;
+  }catch(e){ return false; }
+}
+
+/* ============ MIX & MATCH ============
+   Μια απόχρωση Mix & Match δεν είναι άλλο είδος από το νήμα: είναι το ίδιο
+   νήμα, προσφερόμενο στην πελάτισσα ως επιλογή. Όσο ήταν ξεχωριστή εγγραφή,
+   το ίδιο χρώμα ζούσε δύο φορές με δύο αποθέματα. Πλέον είναι σήμανση πάνω
+   στο νήμα της αποθήκης, και το απόθεμα είναι ένα.                      */
+function mmItems(){ return (stockCache||[]).filter(it=>it.mm && !isArchivedStock(it)); }
+function mmCandidates(){
+  // Το Mix & Match είναι επιλογή χρώματος: προσφέρονται νήματα, όχι ταμπελάκια
+  // και συσκευασίες. Όσα έχουν ήδη οικογένεια χρώματος μετρούν κι αυτά.
+  const ok=c=> c==="Νήμα" || MM_CATS.includes(c);
+  return (stockCache||[]).filter(it=>it.type!=="product" && !it.mm && !isArchivedStock(it)
+    && !(it.event_id && it.event_id!=="mix") && !isPerJob(it) && ok(it.category||""));
+}
+
+/* ---- μεταφορά νημάτων από την αποθήκη στην παλέτα ---- */
+let mmDraft={}, mmFam="";
+function openMmTransfer(){
+  const sel=document.getElementById("mmFam");
+  if(sel) sel.innerHTML = `<option value="">— κράτα την κατηγορία τους</option>` +
+    MM_CATS.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");
+  const rows=mmCandidates();
+  if(!rows.length){ adminFlash("Δεν υπάρχουν νήματα στην αποθήκη για μεταφορά"); return; }
+  mmDraft={}; mmFam="";
+  document.getElementById("mmFam").value="";
+  document.getElementById("mmSearch").value="";
+  document.getElementById("mmMsg").classList.add("hidden");
+  renderMmTransfer();
+  _ovOpen("mmModal");
+}
+function mmToggle(id){ mmDraft[id]=!mmDraft[id]; renderMmTransfer(); }
+function renderMmTransfer(){
+  const q=(document.getElementById("mmSearch")?.value||"").trim();
+  let rows=mmCandidates();
+  if(q) rows=rows.filter(it=>smartMatch(it.name+" "+(it.category||""), q));
+  const n=Object.keys(mmDraft).filter(k=>mmDraft[k]).length;
+  document.getElementById("mmCount").textContent = n ? `${n} ${n===1?"επιλεγμένο":"επιλεγμένα"}` : "Διάλεξε ποια νήματα θα προσφέρονται";
+  const btn=document.getElementById("mmSaveBtn"); if(btn) btn.disabled = !n;
+  const cats={}; rows.forEach(it=>{ const c=it.category||"Λοιπά"; (cats[c]=cats[c]||[]).push(it); });
+  document.getElementById("mmList").innerHTML = rows.length
+    ? Object.keys(cats).sort((a,b)=>a.localeCompare(b,"el")).map(cat=>
+      `<div class="stock-cat">${esc(cat)}</div>` + cats[cat].map(it=>
+        `<label class="picker-row" style="cursor:pointer">
+          <input type="checkbox" ${mmDraft[it.id]?"checked":""} onchange="mmToggle('${it.id}')" style="width:18px;height:18px;accent-color:#c0266c;flex:none">
+          ${stockThumb(it)}
+          <div class="pr-info"><div class="pr-name">${esc(it.name)}</div>
+            <div class="pr-meta">${fmtNum(it.qty)} ${esc(it.unit||"")}${it.unit_cost!=null?" · "+fmtMoney(it.unit_cost):""}</div></div>
+        </label>`).join("")).join("")
+    : `<div class="fbd-empty">Κανένα αποτέλεσμα${q?` για «${esc(q)}»`:""}.</div>`;
+}
+async function saveMmTransfer(){
+  const ids=Object.keys(mmDraft).filter(k=>mmDraft[k]);
+  const msg=document.getElementById("mmMsg"); msg.classList.add("hidden");
+  if(!ids.length) return;
+  const fam=document.getElementById("mmFam").value||"";
+  const btn=document.getElementById("mmSaveBtn"); btn.disabled=true; btn.textContent="Μεταφέρουμε…";
+  try{
+    for(const id of ids){
+      const body={mm:true}; if(fam) body.category=fam;
+      await writeStockRow(id, body);
+      const it=(stockCache||[]).find(x=>x.id===id);
+      if(it){ it.mm=true; if(fam) it.category=fam; }
+    }
+    _ovClose("mmModal"); setStockView("mm");
+    adminFlash(`Μεταφέρθηκαν ${ids.length} στο Mix & Match ✓`);
+  }catch(e){ msg.textContent="Δεν ολοκληρώθηκε."; msg.classList.remove("hidden"); }
+  finally{ btn.disabled=false; btn.textContent="Μεταφορά"; }
+}
+/* ---- αφαίρεση μίας απόχρωσης: μένει στην αποθήκη, φεύγει από την παλέτα ---- */
+async function mmRemove(id){
+  const it=(stockCache||[]).find(x=>x.id===id); if(!it) return;
+  if(!confirm(`Να βγει το «${it.name}» από το Mix & Match;\nΠαραμένει στην αποθήκη με το απόθεμά του.`)) return;
+  try{ await writeStockRow(id,{mm:false}); it.mm=false; renderStock(); adminFlash("Βγήκε από το Mix & Match ✓"); }
+  catch(e){ adminFlash("Δεν ολοκληρώθηκε"); }
+}
+/* ---- καθάρισμα ολόκληρης της παλέτας ---- */
+async function clearMixMatch(){
+  const list=mmItems();
+  if(!list.length){ adminFlash("Η παλέτα είναι ήδη άδεια"); return; }
+  if(!confirm(`Καθάρισμα Mix & Match — ${list.length} ${list.length===1?"απόχρωση":"αποχρώσεις"}.\n\nΌσες προστέθηκαν ως δείγματα αρχειοθετούνται· όσα νήματα είχες μεταφέρει από την αποθήκη μένουν εκεί.\nΟι παλιές παραγγελίες δεν αλλάζουν.`)) return;
+  const seedNames=new Set(MM_SEED.map(x=>normText(x.name)));
+  const arch=[];
+  try{
+    for(const it of list){
+      await writeStockRow(it.id,{mm:false}); it.mm=false;
+      if(seedNames.has(normText(it.name))) arch.push(it.id);     // δείγματα: φεύγουν τελείως
+    }
+    if(arch.length){
+      _flags=Object.assign({}, _flags||{}, {stockArchived:[...new Set([...archivedIds(), ...arch])]});
+      await saveSetting("flags", _flags, true);
+    }
+    renderStock();
+    adminFlash(`Καθαρίστηκαν ${list.length}${arch.length?` · ${arch.length} αρχειοθετήθηκαν`:""} ✓`);
+  }catch(e){ adminFlash("Δεν ολοκληρώθηκε"); }
+}
 
 /* ============ ΑΝΑΦΟΡΑ ============
    Τα στατιστικά ήταν δεκάδες πλακίδια χωρίς σειρά ανάγνωσης. Μια αναφορά
@@ -8980,7 +9327,7 @@ function openMatPicker(){
   if(!stockCache.length){ loadStock().then(()=>{ if(stockCache.length) openMatPicker(); else { matDraft={}; showMatPicker([]); } }); return; }
   matDraft={}; pickedMaterials.forEach(m=> matDraft[m.id]=m.qty);
   // Τα ήδη αφαιρεμένα μένουν επιλεγμένα: μπορεί να προσθέσει κι άλλα, αφαιρείται μόνο η διαφορά.
-  const rows = stockCache.filter(it=>it.type!=="product" && (isMix() || !it.mm) && (Number(it.qty)>0 || matDraft[it.id]));
+  const rows = stockCache.filter(it=>it.type!=="product" && (Number(it.qty)>0 || matDraft[it.id]));
   // υλικά που δηλώθηκαν παλιότερα αλλά δεν υπάρχουν πια στην αποθήκη
   pickedMaterials.forEach(m=>{
     if(!stockCache.some(x=>x.id===m.id)) rows.push({ id:m.id, name:(m.name||"(διαγραμμένο υλικό)")+" · εκτός αποθήκης", unit:m.unit||"", qty:0, unit_cost:m.unit_cost||0, category:"Εκτός αποθήκης", missing:true });
