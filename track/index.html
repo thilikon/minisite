@@ -590,6 +590,15 @@
   .sk .ds{display:block;font-size:12px;color:var(--muted);line-height:1.45}
   .sk[disabled]{opacity:.4;cursor:default}
   .sk[disabled]:hover{border-color:var(--line);background:#fff}
+  .net-bar{position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:130;
+    display:flex;align-items:center;gap:12px;max-width:min(620px,calc(100vw - 24px));
+    background:#fdf1ec;color:#8a3a22;border:1px solid #efc9b8;border-left:3px solid #b54b3a;
+    border-radius:12px;padding:11px 12px 11px 15px;font-size:12.5px;line-height:1.45;
+    box-shadow:0 8px 24px rgba(0,0,0,.12)}
+  .net-bar button{background:none;border:none;font-family:'Inter';cursor:pointer;color:#8a3a22;flex:none}
+  .net-bar #netBtn{font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+    border:1px solid #d9a692;border-radius:999px;padding:6px 12px}
+  .net-bar .x{opacity:.6;font-size:14px}
   .undo-bar{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:120;
     display:flex;align-items:center;gap:14px;max-width:min(560px,calc(100vw - 32px));
     background:var(--ink);color:#fff;border-radius:14px;padding:12px 14px 12px 18px;
@@ -1463,6 +1472,9 @@
     <button class="btn ghost" style="width:100%" onclick="closeSettings();rebuildStockHistory()">📋 Ανακατασκευή ιστορικού κινήσεων</button>
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();openCleanNames()">✎ Καθαρισμός ονομάτων υλικών</button>
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();restorePalette()">↩ Επαναφορά αποχρώσεων Mix &amp; Match</button>
+    <p style="font-size:11.5px;color:var(--muted);margin:14px 0 0;padding-top:12px;border-top:1px solid var(--line)">
+      Έκδοση <b style="color:var(--ink)">2026.10.04.1211</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
+      κλείσε και ξανάνοιξε την καρτέλα, ή τράβα την σελίδα προς τα κάτω για ανανέωση.</p>
     <p id="setRebuiltNote" style="font-size:11.5px;color:var(--muted);margin-top:6px">Συμπληρώνει τις κινήσεις αποθήκης από τις παραγγελίες, τις πωλήσεις και τα bazaar που υπάρχουν ήδη. Το απόθεμα δεν αλλάζει.</p>
     <div style="margin-top:18px"><button class="btn ghost" style="width:100%" onclick="closeSettings()">Κλείσιμο</button></div>
   </div>
@@ -1731,6 +1743,12 @@
       <button class="btn ghost" onclick="_ovClose('cleanModal')">Άκυρο</button>
     </div>
   </div>
+</div>
+
+<div id="netBar" class="net-bar hidden">
+  <span id="netText"></span>
+  <button id="netBtn" class="hidden"></button>
+  <button class="x" onclick="netClear()" aria-label="Κλείσιμο">✕</button>
 </div>
 
 <div id="undoBar" class="undo-bar hidden">
@@ -2598,37 +2616,50 @@ async function refreshSession(){
     const data = await res.json();
     if(!res.ok || !data.access_token) return false;
     saveSession(data); return true;
-  }catch(e){ return false; }
+  }catch(e){ return "offline"; }   // δίκτυο, όχι άκυρη συνεδρία
 }
 async function ensureToken(){
   if(!adminToken) adminToken = store.get("th_admin_at");
   const exp = parseInt(store.get("th_admin_exp")||"0",10);
   if(adminToken && exp && Date.now() > exp - 60000){
     const ok = await refreshSession();
-    if(!ok){ adminLogout(); return false; }
+    if(ok==="offline"){
+      netBar("Δεν υπάρχει σύνδεση. Η συνεδρία κρατήθηκε — ξαναδοκίμασε όταν επανέλθει το δίκτυο.");
+      return !!adminToken;              // δεν πετάμε το refresh token λόγω δικτύου
+    }
+    if(!ok){ adminLogout("Η σύνδεση έληξε. Μπες ξανά για να συνεχίσεις."); return false; }
   }
   return !!adminToken;
 }
 // Authenticated fetch με auto-refresh σε λήξη/401
 async function authFetch(url, opts){
   await ensureToken();
+  if(_abort && !(opts && opts.noAbort)) opts = Object.assign({}, opts, {signal:_abort.signal});
   opts = opts || {};
   opts.headers = Object.assign({}, opts.headers||{}, authHeaders());
   let res = await fetch(url, opts);
   if(res.status===401){
     const ok = await refreshSession();
-    if(ok){ opts.headers = Object.assign({}, opts.headers, authHeaders()); res = await fetch(url, opts); }
-    else { adminLogout(); }
+    if(ok===true){ opts.headers = Object.assign({}, opts.headers, authHeaders()); res = await fetch(url, opts); }
+    else if(ok!=="offline"){ adminLogout("Η σύνδεση έληξε. Μπες ξανά για να συνεχίσεις."); }
   }
   return res;
 }
 
-function adminLogout(){
+function adminLogout(reason){
   document.querySelector(".wrap")?.classList.remove("wide");
   adminToken=null;
   store.del("th_admin_at"); store.del("th_admin_rt"); store.del("th_admin_exp");
+  // Αν έληξε η συνεδρία με ανοιχτό παράθυρο, η φόρμα εισόδου θα κρυβόταν από πίσω
+  // και η οθόνη θα έμοιαζε κολλημένη.
+  try{ document.querySelectorAll(".overlay").forEach(o=>o.classList.add("hidden"));
+       _ovCount=0; document.body.style.position=""; document.body.style.top=""; document.body.style.width="";
+  }catch(e){}
   document.getElementById("adminPanel").classList.add("hidden");
   document.getElementById("adminLogin").classList.remove("hidden");
+  const m=document.getElementById("loginMsg");
+  if(reason && m){ m.textContent=reason; m.classList.remove("hidden"); }
+  else netClear();
 }
 
 function authHeaders(){
@@ -4248,6 +4279,19 @@ function adminFlash(text){
 }
 
 
+
+/* Μια προειδοποίηση που σβήνει σε 2,5 δευτερόλεπτα δεν είναι προειδοποίηση.
+   Ό,τι απέτυχε μένει στην οθόνη μέχρι να το δει κάποιος. */
+function netBar(text, btnLabel, btnFn){
+  const b=document.getElementById("netBar"); if(!b) return;
+  document.getElementById("netText").textContent=text;
+  const btn=document.getElementById("netBtn");
+  if(btnLabel){ btn.textContent=btnLabel; btn.setAttribute("onclick", btnFn||""); btn.classList.remove("hidden"); }
+  else btn.classList.add("hidden");
+  b.classList.remove("hidden");
+}
+function netClear(){ const b=document.getElementById("netBar"); if(b) b.classList.add("hidden"); }
+
 /* ---- Αναίρεση ----
    Μια ερώτηση «είσαι σίγουρη;» δεν προστατεύει από τίποτα: πατιέται
    αυτόματα. Η αναίρεση προστατεύει, γιατί ενεργεί αφού φανεί το λάθος. */
@@ -4824,11 +4868,15 @@ function pickReady(stockId){
 }
 async function applyPendingStock(){
   if(!pendingStock.length) return;
-  const ids=[...pendingStock]; pendingStock=[];
+  const ids=[...pendingStock];
+  const left=[], failed=[];
   for(const id of ids){
     const it=(stockCache||[]).find(x=>x.id===id); if(!it) continue;
-    try{ await stockMove(id, -1, "sale", {type:"order", id:editingId}, {note:"έτοιμο προϊόν σε παραγγελία"}); }catch(e){}
+    try{ await stockMove(id, -1, "sale", {type:"order", id:editingId}, {note:"έτοιμο προϊόν σε παραγγελία"}); }
+    catch(e){ left.push(id); failed.push(it.name); }
   }
+  pendingStock=left;        // ό,τι δεν πέρασε μένει για την επόμενη αποθήκευση
+  if(failed.length) netBar(`Η παραγγελία αποθηκεύτηκε, αλλά δεν αφαιρέθηκαν από την αποθήκη: ${failed.join(", ")}.`);
   loadStock();
 }
 function collectItems(){
@@ -5528,10 +5576,12 @@ let modelCat = [];    // κατάλογος μοντέλων
 let bazaars = [];     // [{id,name,date,place,fee,closed,closedAt}]
 let bzItems = {};     // stockId -> bazaarId (ποια έτοιμα κομμάτια πήραμε στο bazaar)
 
+let settingsOk=false;   // αν δεν φόρτωσαν οι ρυθμίσεις, ΔΕΝ γράφουμε τίποτα πάνω τους
 async function loadSettings(){
   try{
     const res=await authFetch(REST + "/thilikon_settings?select=key,value",{});
     if(res.status===401) return;
+    if(!res.ok) throw new Error("HTTP "+res.status);
     const rows=await res.json();
     const map={}; (rows||[]).forEach(r=> map[r.key]=r.value);
     eventsOn  = map.events || {};
@@ -5546,7 +5596,18 @@ async function loadSettings(){
     prodBom   = map.prod_bom || {};
     bzExp     = map.bz_exp || {};
     _oldExpenses = Array.isArray(map.expenses) ? map.expenses : [];   // πηγή μεταφοράς
-  }catch(e){ eventsOn={}; custLinks={}; custInfo={}; modelCat=[]; bazaars=[]; bzItems={}; prodBom={}; bzExp={}; _oldExpenses=[]; }
+    settingsOk = true;
+  }catch(e){
+    // Χωρίς τις ρυθμίσεις δεν ξέρουμε τι υπάρχει. Μηδενίζοντας τα πάντα και
+    // συνεχίζοντας, ο κατάλογος θα ξαναχτιζόταν από τις προεπιλογές και θα
+    // γραφόταν πάνω στον πραγματικό. Σταματάμε και το λέμε.
+    settingsOk = false;
+    netBar("Δεν φόρτωσαν οι ρυθμίσεις (προδιαγραφές, bazaar, αποθήκη). Τίποτα δεν αποθηκεύεται μέχρι να ξαναφορτώσουν.",
+      "Δοκίμασε ξανά", "retryLoadSettings()");
+    renderTimerBar();
+    return;
+  }
+  netClear();
   renderTimerBar();
   // αυτόματο κλείσιμο event στη λήξη — γίνεται ΜΙΑ φορά, μετά ελέγχεις εσύ
   const ao = eventsOn._autoOff || {};
@@ -5554,11 +5615,16 @@ async function loadSettings(){
   Object.keys(EVENTS).forEach(id=>{
     if(evExpired(id) && eventsOn[id] && !ao[id]){ eventsOn[id]=false; ao[id]=true; changed=true; }
   });
-  if(changed){ eventsOn._autoOff=ao; saveSetting("events", eventsOn, true); }
+  if(changed && settingsOk){ eventsOn._autoOff=ao; saveSetting("events", eventsOn, true); }
   updateEventBadge();
   await loadCatalog();          // φωτογραφίες/ονόματα από το minisite, πριν συγχρονιστούν οι προδιαγραφές
   loadCash();                   // λογαριασμοί και ταμειακές κινήσεις
-  await ensureAnasa();
+  if(settingsOk) await ensureAnasa();
+}
+async function retryLoadSettings(){
+  netClear();
+  await loadSettings();
+  if(settingsOk){ refreshAfterSettings(); adminFlash("Φόρτωσαν ✓"); }
 }
 async function ensureAnasa(){
   let n=0;
@@ -5691,7 +5757,12 @@ async function saveSetting(key, value, silent){
     });
     if(!res.ok) throw new Error(await res.text());
     if(!silent) adminFlash("Αποθηκεύτηκε ✓");
-  }catch(e){ adminFlash("Σφάλμα — έτρεξες το SQL για τα settings ;"); console.error(e); }
+    return true;
+  }catch(e){
+    console.error(e);
+    netBar("Κάτι δεν αποθηκεύτηκε (ρυθμίσεις, bazaar ή προδιαγραφές). Έλεγξε τη σύνδεση και ξαναδοκίμασε — αλλιώς η αλλαγή θα χαθεί στο επόμενο άνοιγμα.");
+    return false;
+  }
 }
 async function saveSettings(silent){ await saveSetting("events", eventsOn, silent); updateEventBadge(); }
 
@@ -5736,10 +5807,17 @@ async function loadStock(){
   try{
     const res = await authFetch(REST + "/thilikon_stock?select=*&archived=eq.false&order=category.asc,name.asc", {});
     if(res.status===401) return;
+    if(!res.ok) throw new Error("HTTP "+res.status);
     stockCache = await res.json();
     if(!document.getElementById("stockAdmin").classList.contains("hidden")) renderStock();
     if(ordersCache.length && document.getElementById("statsBody") && !document.getElementById("statsBox").classList.contains("hidden")) renderStats();
-  }catch(e){}
+  }catch(e){
+    console.error(e);
+    // Ένα spinner που δεν φεύγει μοιάζει με «φορτώνει ακόμη», όχι με σφάλμα.
+    const box=document.getElementById("stockAdmin");
+    if(box && box.innerHTML.indexOf("spinner")>=0)
+      box.innerHTML=`<div class="fbd-empty">Δεν φόρτωσε η αποθήκη.<br><button class="btn ghost sm" style="margin-top:10px" onclick="loadStock()">Δοκίμασε ξανά</button></div>`;
+  }
 }
 function stEv(it){ const id = it && (it.event_id || (it.mm?"mix":null)); return id&&EVENTS[id] ? Object.assign({id},EVENTS[id]) : null; }
 function fillStockEventSelect(currentId, isProd){
@@ -6200,6 +6278,7 @@ async function saveStock(keepOpen){
       if(document.getElementById("sBuy").checked && buyTotal()>0){
         _bought = await recordPurchase(_rowId, payload.name, payload.qty, payload.unit_cost,
           document.getElementById("sBuyAcc").value);
+        if(!_bought) netBar(`Το είδος αποθηκεύτηκε, αλλά η αγορά ${fmtMoney(buyTotal())} ΔΕΝ μπήκε στο ταμείο. Καταχώρησέ τη από τα Οικονομικά.`);
       }
     }
     if(_isProd && _rowId && (bomDraftMats.length || bomWorkSec())) await applyBom(_rowId);
@@ -6456,12 +6535,20 @@ async function timerStop(silent){
     const its=getItems(o).map(it=>({...it}));
     const target=its.find(it=>it.id===timer.itemId) || its[0];
     if(target) target.work_sec=itemSec(target)+sec;
+    let saved=false;
     try{
       const res=await authFetch(REST + "/orders?id=eq."+o.id,{method:"PATCH",headers:{"Prefer":"return=minimal"},
         body:JSON.stringify({items:its})});
-      if(res.ok) o.items=its;
-    }catch(e){}
-    if(!silent) adminFlash(`Καταγράφηκαν ${fmtDur(sec)} · ${fmtMoney(labourCost(sec))} εργασία`);
+      if(res.ok){ o.items=its; saved=true; }
+    }catch(e){ console.error(e); }
+    if(saved){ if(!silent) adminFlash(`Καταγράφηκαν ${fmtDur(sec)} · ${fmtMoney(labourCost(sec))} εργασία`); }
+    else {
+      // Ο χρόνος είναι λεφτά· δεν τον πετάμε επειδή έπεσε το δίκτυο.
+      netBar(`Ο χρόνος (${fmtDur(sec)}) ΔΕΝ καταγράφηκε. Το χρονόμετρο συνεχίζει από εκεί που ήταν.`,
+        "Δοκίμασε ξανά", "timerStop()");
+      renderTimerBar(); renderOrderTimer();
+      return;
+    }
   }
   timer=null;
   await saveSetting(meKey(), null, true);
@@ -6824,6 +6911,8 @@ async function delModel(){
 /* Στέλνει παραγγελία και, αν λείπει κάποια στήλη στη βάση, ξαναδοκιμάζει χωρίς αυτήν.
    Πετάει σφάλμα με το πραγματικό μήνυμα, για να μη «χάνεται» η αποτυχία. */
 /* Κόβει ένα αίτημα που δεν απαντάει, για να μη μένει το κουμπί «…» στο άπειρο. */
+let _abort=null;
+function abortPending(){ try{ if(_abort) _abort.abort(); }catch(e){} _abort=null; }
 function withTimeout(p, ms){
   return Promise.race([p, new Promise((_,rej)=>setTimeout(()=>rej(new Error("Δεν υπήρξε απάντηση από τον διακομιστή")), ms||20000))]);
 }
@@ -6935,7 +7024,7 @@ function bzExpOne(e){
   return Math.round(((e.stock_id ? (Number(e.qty)||0)*(Number(e.unit_cost)||0) : (Number(e.amount)||0)))*100)/100;
 }
 function bzExpTotal(id){ return Math.round(bzExpList(id).reduce((a,e)=>a+bzExpOne(e),0)*100)/100; }
-async function saveBzExp(silent){ await saveSetting("bz_exp", bzExp, silent!==false); }
+async function saveBzExp(silent){ return await saveSetting("bz_exp", bzExp, silent!==false); }
 
 function bzTotals(b){
   if(!b) return {sold:0, rev:0, mat:0, fee:0, exp:0, net:0, left:0, taken:0};
@@ -7001,8 +7090,8 @@ async function bzDropExp(id, key){
   renderBazaar(); renderStock();
   adminFlash("Αφαιρέθηκε ✓");
 }
-async function saveBazaars(silent){ await saveSetting("bazaars", bazaars, silent!==false); }
-async function saveBzItems(silent){ await saveSetting("bz_items", bzItems, silent!==false); }
+async function saveBazaars(silent){ return await saveSetting("bazaars", bazaars, silent!==false); }
+async function saveBzItems(silent){ return await saveSetting("bz_items", bzItems, silent!==false); }
 
 /* ---- Δημιουργία / επεξεργασία bazaar ---- */
 let editingBzId=null;
@@ -7090,24 +7179,31 @@ async function doCloseBazaar(){
   const msg=document.getElementById("bzCloseMsg"); msg.classList.add("hidden");
   const btn=document.getElementById("bzCloseBtn"); btn.disabled=true; btn.textContent="Κλείσιμο…";
   try{
-    // 1) αναλώσιμα που γύρισαν: πίσω στην αποθήκη, έξω από το κόστος
+    // Τι επιστρέφεται — υπολογίζεται πρώτα, εκτελείται τελευταίο: αν γραφτεί
+    // η επιστροφή και μετά αποτύχει το κλείσιμο, το bazaar ξανακλείνει αύριο
+    // και τα αναλώσιμα επιστρέφουν δεύτερη φορά.
     const mats=bzExpList(id).filter(e=>e.stock_id && Number(e.qty)>0);
-    let returned=0;
+    const plan=[]; let returned=0;
     for(const e of mats){
       const el=document.getElementById("bk-"+e.key); if(!el) continue;
       const back=Math.min(Number(e.qty)||0, parseMoney(el.value)||0);
       if(back<=0) continue;
-      const it=(stockCache||[]).find(x=>x.id===e.stock_id);
-      if(it) await stockMove(it.id, back, "return", {type:"bazaar", id}, {note:"επιστροφή αχρησιμοποίητων"});
-      e.qty=Math.round(((Number(e.qty)||0)-back)*100)/100;
-      returned+=back;
+      plan.push({e, back}); returned+=back;
     }
+    plan.forEach(({e,back})=>{ e.qty=Math.round(((Number(e.qty)||0)-back)*100)/100; });
     bzExp[id]=bzExpList(id).filter(e=>!e.stock_id || Number(e.qty)>0);
-    // 2) οι απούλητες τσάντες μένουν στα έτοιμα προϊόντα
     const backPieces=bzStock(id);
     backPieces.forEach(it=>{ delete bzItems[it.id]; });
     b.closed=true; b.closedAt=new Date().toISOString();
-    await saveBazaars(true); await saveBzItems(true); await saveBzExp(true);
+    if(!(await saveBazaars(true)) || !(await saveBzItems(true)) || !(await saveBzExp(true)))
+      throw new Error("Οι αλλαγές δεν αποθηκεύτηκαν.");
+    const failed=[];
+    for(const {e,back} of plan){
+      const it=(stockCache||[]).find(x=>x.id===e.stock_id); if(!it) continue;
+      try{ await stockMove(it.id, back, "return", {type:"bazaar", id}, {note:"επιστροφή αχρησιμοποίητων"}); }
+      catch(err){ failed.push(it.name); }
+    }
+    if(failed.length) netBar(`Το bazaar έκλεισε, αλλά δεν επέστρεψαν στην αποθήκη: ${failed.join(", ")}. Πρόσθεσέ τα χειροκίνητα.`);
     closeBzClose(); renderBazaar(); renderStock();
     adminFlash(backPieces.length
       ? `Έκλεισε ✓ — ${backPieces.length} στα έτοιμα προϊόντα${returned?` και ${fmtNum(returned)} αναλώσιμα πίσω`:""}`
@@ -7489,6 +7585,7 @@ async function tillCheckout(){
   tillExtras.forEach(e=> dec[e.id]=(dec[e.id]||0)+e.qty);
   const before={};
   Object.keys(dec).forEach(id=>{ const it=(stockCache||[]).find(x=>x.id===id); before[id]=it?(Number(it.qty)||0):0; });
+  _abort = (typeof AbortController!=="undefined") ? new AbortController() : null;
   try{
     // 1) αφαίρεση από την αποθήκη
     for(const id of Object.keys(dec)){
@@ -7540,18 +7637,23 @@ async function tillCheckout(){
     closeTill();
     adminFlash("Πώληση ✓ "+fmtMoney(total));
   }catch(e){
-    // γύρνα πίσω ό,τι πρόλαβε να αφαιρεθεί
+    // Ακυρώνουμε ό,τι ταξιδεύει ακόμη, ώστε να μη «φτάσει» μετά την επαναφορά
+    // και να αφαιρεθεί το κομμάτι δεύτερη φορά όταν ξαναπατήσει πώληση.
+    abortPending();
+    const failed=[];
     for(const id of Object.keys(before)){
       const it=(stockCache||[]).find(x=>x.id===id);
       if(it && it.qty!==before[id]){
-        try{ await stockSet(id, before[id], "adjust", {type:"sale"}, {note:"ακύρωση πώλησης"}); }catch(_){}
+        try{ await stockSet(id, before[id], "adjust", {type:"sale"}, {note:"ακύρωση πώλησης"}, true); }
+        catch(_){ failed.push(it.name); }
       }
     }
     console.error(e);
     btn.disabled=false; btn.textContent="Καταχώρηση πώλησης";
     msg.textContent="Δεν καταχωρήθηκε. "+((e&&e.message)||"")+" Δοκίμασε ξανά.";
     msg.classList.remove("hidden");
-  }
+    if(failed.length) netBar(`Το απόθεμα δεν επανήλθε για: ${failed.join(", ")}. Έλεγξέ το στην Αποθήκη πριν ξαναπουλήσεις.`);
+  }finally{ _abort=null; }
 }
 
 
@@ -7852,7 +7954,7 @@ async function logStockMove(itemId, qty, reason, ref, opts){
   }catch(e){ console.warn("stock move not logged", e); }
 }
 /* Μεταβολή κατά delta. Επιστρέφει true αν πέρασε. */
-async function stockMove(itemId, delta, reason, ref, opts){
+async function stockMove(itemId, delta, reason, ref, opts, noAbort){
   const it=(stockCache||[]).find(x=>x.id===itemId);
   const d=Math.round((Number(delta)||0)*100)/100;
   if(!it || !d) return false;
@@ -7861,7 +7963,7 @@ async function stockMove(itemId, delta, reason, ref, opts){
   const patch={qty:next};
   if(opts && opts.unit_cost!=null) patch.unit_cost=Number(opts.unit_cost);
   const r=await authFetch(REST + "/thilikon_stock?id=eq."+itemId,
-    {method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify(patch)});
+    {method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify(patch), noAbort:!!noAbort});
   if(!r.ok) throw new Error("Το απόθεμα δεν ενημερώθηκε");
   it.qty=next;
   if(patch.unit_cost!=null) it.unit_cost=patch.unit_cost;
@@ -7869,9 +7971,9 @@ async function stockMove(itemId, delta, reason, ref, opts){
   return true;
 }
 /* Ορισμός απόλυτης ποσότητας (διορθώσεις, ακυρώσεις). */
-async function stockSet(itemId, qty, reason, ref, opts){
+async function stockSet(itemId, qty, reason, ref, opts, noAbort){
   const it=(stockCache||[]).find(x=>x.id===itemId); if(!it) return false;
-  return stockMove(itemId, (Number(qty)||0)-(Number(it.qty)||0), reason||"adjust", ref, opts);
+  return stockMove(itemId, (Number(qty)||0)-(Number(it.qty)||0), reason||"adjust", ref, opts, noAbort);
 }
 async function loadStockMoves(itemId){
   try{
@@ -9277,21 +9379,29 @@ async function saveCashMove(){
         { account_id:toId,  moved_at:when, amount: amount, kind:"transfer", name, note:"μεταφορά" }
       ]);
     }else{
-      // αγορά: τα είδη μπαίνουν στο απόθεμα και ενημερώνεται η τιμή μονάδας
-      if(moveKind==="purchase" && moveLines.length){
-        for(const l of moveLines){
-          const it=(stockCache||[]).find(x=>x.id===l.item_id); if(!it) continue;
-          await stockMove(it.id, Number(l.qty)||0, "purchase", {type:"cash"},
-            {unit_cost:(l.unit_cost!=null?Number(l.unit_cost):null), note:name});
-        }
-      }
       const sign=(CASH_KINDS[moveKind]||{sign:-1}).sign;
       const rec={ account_id:accId, moved_at:when, amount:sign*amount, kind:moveKind,
         category:(moveKind==="owner_draw"||moveKind==="owner_in")?null:document.getElementById("cmCat").value,
         name, note:document.getElementById("cmNote").value.trim()||null,
         lines: moveLines.length?moveLines:null };
+      // Πρώτα το παραστατικό. Αν αποτύχει, το απόθεμα δεν έχει πειραχτεί και η
+      // επανάληψη δεν διπλασιάζει ποσότητες. Η διόρθωση υπάρχουσας κίνησης δεν
+      // ξαναπροσθέτει — το απόθεμα είχε μπει με την πρώτη καταχώρηση.
       if(editingMoveId) await patchCash(editingMoveId, rec);
-      else await postCash([rec]);
+      else{
+        await postCash([rec]);
+        if(moveKind==="purchase" && moveLines.length){
+          const failed=[];
+          for(const l of moveLines){
+            const it=(stockCache||[]).find(x=>x.id===l.item_id); if(!it) continue;
+            try{
+              await stockMove(it.id, Number(l.qty)||0, "purchase", {type:"cash"},
+                {unit_cost:(l.unit_cost!=null?Number(l.unit_cost):null), note:name});
+            }catch(err){ failed.push(l.name||it.name); }
+          }
+          if(failed.length) netBar(`Η αγορά καταχωρήθηκε, αλλά το απόθεμα δεν ενημερώθηκε για: ${failed.join(", ")}. Διόρθωσε τις ποσότητες από την Αποθήκη.`);
+        }
+      }
     }
     closeCashMove(); renderCash(); renderStock();
     if(ordersCache.length) renderStats();
@@ -9628,13 +9738,20 @@ function renderMatList(){
 }
 async function restoreMaterials(){
   if(stockApplied && pickedMaterials.length){
-    try{
-      for(const m of pickedMaterials){
-        const it=stockCache.find(x=>x.id===m.id);
-        if(it) await stockMove(m.id, Number(m.qty)||0, "return", {type:"order", id:editingId}, {note:"επιστροφή υλικών"});
-      }
-      if(!document.getElementById("stockAdmin").classList.contains("hidden")) renderStock();
-    }catch(e){ adminFlash("Σφάλμα επαναφοράς στοκ"); }
+    const left=[], failed=[];
+    for(const m of pickedMaterials){
+      const it=stockCache.find(x=>x.id===m.id);
+      if(!it) continue;
+      try{ await stockMove(m.id, Number(m.qty)||0, "return", {type:"order", id:editingId}, {note:"επιστροφή υλικών"}); }
+      catch(e){ left.push(m); failed.push(m.name); }
+    }
+    if(!document.getElementById("stockAdmin").classList.contains("hidden")) renderStock();
+    if(failed.length){
+      // Κρατάμε τη λίστα: χωρίς αυτήν δεν υπάρχει τρόπος να ολοκληρωθεί η επαναφορά.
+      pickedMaterials=left; renderMatList();
+      netBar(`Δεν επέστρεψαν στην αποθήκη: ${failed.join(", ")}. Ξαναδοκίμασε την επαναφορά.`);
+      return;
+    }
   }
   pickedMaterials=[]; stockApplied=false; renderMatList(); adminFlash("Έγινε επαναφορά");
 }
