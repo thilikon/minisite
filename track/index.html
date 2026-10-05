@@ -486,6 +486,12 @@
   .sup-cmp{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
   .sup-cmp-h{display:flex;gap:12px;align-items:center;margin-bottom:6px}
   .sup-cmp-h .si-img{width:40px;height:40px}
+  .si-sup{color:#6b5d48;font-weight:500}
+  .is-sup{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0 2px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;font-size:13px}
+  .is-sup b{font-weight:600}
+  .is-sup .lnk{font-size:13px;font-weight:600;color:var(--ink);padding:0;background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:3px;font-family:inherit}
+  .sup-cmp-r .mk{display:inline-block;margin-left:6px;font-size:10.5px;font-weight:600;letter-spacing:.04em;padding:1px 7px;border-radius:99px;background:var(--cream);color:var(--ink);vertical-align:1px}
+  .sup-cmp-r .set{font-size:11.5px;font-weight:500;background:none;border:none;color:var(--muted);padding:0;margin-left:6px;cursor:pointer;text-decoration:underline;font-family:inherit}
   .sup-cmp-r{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 0;border-top:1px solid var(--line)}
   .sup-cmp > .sup-cmp-r:first-child{border-top:none}
   .sup-cmp-r .s{flex:1;min-width:0;font-size:13.5px}
@@ -939,6 +945,12 @@
   .page-head .pt{font-size:25px;font-weight:600;line-height:1.05}
   .page-head .ps{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5}
   .page-head .pa{flex:none}
+  .page-head > div:first-child{flex:1 1 auto;min-width:0}
+  .page-head .pa .pa-s{display:none}
+  @media (max-width:420px){ .page-head .pa .pa-l{display:none} .page-head .pa .pa-s{display:inline} }
+  .sup-stats{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  .sup-stats .stat{min-width:0}
+  .sup-stats .stat .l{overflow-wrap:anywhere}
   /* ---- αρχική ---- */
   .home-sec{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:22px 0 10px}
   .qa-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
@@ -1879,7 +1891,7 @@
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();openCleanNames()">Καθαρισμός ονομάτων υλικών</button>
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();restorePalette()">Επαναφορά αποχρώσεων Mix &amp; Match</button>
     <p style="font-size:11.5px;color:var(--muted);margin:14px 0 0;padding-top:12px;border-top:1px solid var(--line)">
-      Έκδοση <b style="color:var(--ink)">2026.10.05.1814</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
+      Έκδοση <b style="color:var(--ink)">2026.10.05.2155</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
       κλείσε και ξανάνοιξε την καρτέλα, ή τράβα την σελίδα προς τα κάτω για ανανέωση.</p>
     <p id="setRebuiltNote" style="font-size:11.5px;color:var(--muted);margin-top:6px">Συμπληρώνει τις κινήσεις αποθήκης από τις παραγγελίες, τις πωλήσεις και τα bazaar που υπάρχουν ήδη. Το απόθεμα δεν αλλάζει.</p>
   </div>
@@ -2349,6 +2361,11 @@
       <label class="fld" style="flex:1"><span>Ποσότητα</span><input id="sQty" inputmode="decimal" placeholder="0" oninput="refreshBuyTotal()"></label>
       <label class="fld" style="flex:1"><span>Τιμή αγοράς € / μον.</span><input id="sCost" inputmode="decimal" placeholder="0" oninput="refreshBuyTotal()"></label>
       <label class="fld" style="flex:1"><span>Ειδοπ. κάτω από</span><input id="sLow" inputmode="decimal" placeholder="2"></label>
+    </div>
+    <div id="sSupWrap" style="position:relative">
+      <label class="fld"><span>Βασικός προμηθευτής</span><input id="sSup" list="sSupList" autocomplete="off" placeholder="π.χ. Νηματουργία Αθηνών — προαιρετικό"></label>
+      <datalist id="sSupList"></datalist>
+      <div class="fld-hint" id="sSupHint" style="margin:-8px 0 14px;font-size:11.5px;color:var(--muted)">Προτείνεται σε κάθε αγορά· μπορείς πάντα να αγοράσεις κι από αλλού.</div>
     </div>
     <label class="chk-row hidden" id="sPerOrderRow" style="margin:-4px 0 14px">
       <input type="checkbox" id="sPerOrder" onchange="onPerOrderToggle()">
@@ -6479,6 +6496,7 @@ async function loadSettings(){
     custInfo  = map.cust_info  || {};
     payLog    = map.pay_log    || {};
     suppliers = Array.isArray(map.suppliers) ? map.suppliers : [];
+    itemSup   = (map.item_sup && typeof map.item_sup==="object") ? map.item_sup : {};
     custExtra = Array.isArray(map.cust_extra) ? map.cust_extra : [];
     if(map.settings && map.settings.hourRate!=null) hourRate=Number(map.settings.hourRate)||12;
     timer = map[meKey()] || null;
@@ -6888,7 +6906,7 @@ function renderStock(){
   const archN=archivedIds().length;
   const sq=(document.getElementById("stockSearch")?.value||"").trim();
   const allRows=rows;
-  if(sq) rows = rows.filter(it=>smartMatch((it.name||"")+" "+(it.category||"")+" "+(it.unit||""), sq));
+  if(sq) rows = rows.filter(it=>smartMatch((it.name||"")+" "+(it.category||"")+" "+(it.unit||"")+" "+(it.type!=="product"?(itemSupName(it.id)||""):""), sq));
 
   if(!rows.length && sq){
     box.innerHTML = stockTop(isQty, qtyCount) + `<div class="fbd-empty">Κανένα αποτέλεσμα για «${esc(sq)}».</div>`;
@@ -7006,7 +7024,7 @@ function renderStock(){
       const _bs=stockView==="product"?bomSec(it.id):0;
       const meta = stockView==="product"
         ? `${it.sell_price!=null?"Πώληση "+fmtMoney(it.sell_price):"χωρίς τιμή πώλησης"}${it.unit_cost!=null?" · υλικά "+fmtMoney(it.unit_cost):""}${_bs?" · "+fmtDur(_bs)+" ("+fmtMoney(labourCost(_bs))+")":""}`
-        : `${it.unit_cost!=null?fmtMoney(it.unit_cost)+" / "+esc(unit):"χωρίς τιμή"}`;
+        : `${it.unit_cost!=null?fmtMoney(it.unit_cost)+" / "+esc(unit):"χωρίς τιμή"}${(function(){const s=itemSupName(it.id);return s?` · <span class="si-sup">${esc(s)}</span>`:"";})()}`;
       const isProd = stockView==="product";
       const qtyBlock = `<div class="si-qty">
           <button class="stepper-btn" onclick="adjustStock('${it.id}',-1)">−</button>
@@ -7136,6 +7154,7 @@ function onStockTypeChange(){
   refreshBuyTotal();
   const _pr=document.getElementById("sPerOrderRow");
   // «ανά παραγγελία» καταργήθηκε: κάθε αγορά είναι απόθεμα — μένει ορατό μόνο σε παλιό είδος που το έχει ακόμη
+  const _sw=document.getElementById("sSupWrap"); if(_sw) _sw.classList.toggle("hidden", isProd);
   if(_pr){ const _c=document.getElementById("sPerOrder"); _pr.classList.toggle("hidden", isProd || !_c.checked);
     if(isProd){ const c=document.getElementById("sPerOrder"); if(c.checked){ c.checked=false; onPerOrderToggle(); } } }
 }
@@ -7193,6 +7212,10 @@ function openStockModal(id){
   document.getElementById("sLow").disabled = per;
   document.getElementById("sSell").value=it&&it.sell_price!=null?it.sell_price:"";
   document.getElementById("sImg").value=it?(it.image_url||""):"";
+  document.getElementById("sSupList").innerHTML=supAllNames().map(n=>`<option value="${esc(n)}">`).join("");
+  { const _s=it?itemSupOf(it.id):null;
+    document.getElementById("sSup").value=_s&&!_s.auto?_s.name:"";
+    document.getElementById("sSup").placeholder=_s&&_s.auto?`${_s.name} (από την τελευταία αγορά)`:"π.χ. Νηματουργία Αθηνών — προαιρετικό"; }
   const curEv = it ? (it.event_id || (it.mm?"mix":"")) : (stockView==="mm" ? "mix" : (stockView==="product" ? (activeEvents().find(x=>EVENTS[x])||"") : ""));
   fillStockEventSelect(stockView==="product" && !it ? "" : curEv);
   document.getElementById("sCat").innerHTML="";
@@ -7258,6 +7281,11 @@ async function saveStock(keepOpen){
       bzItems[_newRow.id]=_tagBz; await saveBzItems(true);
     }
     const _rowId = editingStockId || (_newRow && _newRow.id);
+    // βασικός προμηθευτής: αποθηκεύεται μόνο αν άλλαξε
+    if(_rowId && !_isProd){
+      const _sv=document.getElementById("sSup").value.trim(), _cur=(itemSup||{})[_rowId]||"";
+      if(supNorm(_sv)!==supNorm(_cur)) await setItemSup(_rowId, _sv, true);
+    }
     // νέο υλικό που αγοράστηκε: κίνηση αποθήκης και κίνηση ταμείου μαζί
     let _bought=false;
     if(_wasNew && _rowId){
@@ -7265,7 +7293,7 @@ async function saveStock(keepOpen){
         {type:"stock", id:_rowId}, {unit_cost:payload.unit_cost, note:document.getElementById("sBuy").checked?"αγορά":"αρχική καταχώρηση"});
       if(document.getElementById("sBuy").checked && buyTotal()>0){
         _bought = await recordPurchase(_rowId, payload.name, payload.qty, payload.unit_cost,
-          document.getElementById("sBuyAcc").value);
+          document.getElementById("sBuyAcc").value, document.getElementById("sSup").value.trim()||null);
         if(!_bought) netBar(`Το είδος αποθηκεύτηκε, αλλά η αγορά ${fmtMoney(buyTotal())} ΔΕΝ μπήκε στο ταμείο. Καταχώρησέ τη από τα Οικονομικά.`);
       }
     }
@@ -8780,7 +8808,9 @@ function renderPageHead(tab){
   const box=document.getElementById("pageHead"); if(!box) return;
   const p=PAGES[tab]; if(!p){ box.innerHTML=""; return; }
   box.innerHTML = `<div><div class="pt serif">${esc(p.t)}</div>${p.s?`<div class="ps">${esc(p.s)}</div>`:""}</div>`
-    + (p.act?`<div class="pa"><button class="btn solid sm" onclick="${p.act.f}">${esc(tab==="customers"?(custFilter==="shops"?"+ Νέο κατάστημα":"+ Νέος πελάτης"):p.act.l)}</button></div>`:"");
+    + (p.act?(function(){ const L=tab==="customers"?(custFilter==="shops"?"+ Νέο κατάστημα":"+ Νέος πελάτης"):p.act.l;
+        const S=L.split(/\s+/).slice(0,2).join(" ");
+        return `<div class="pa"><button class="btn solid sm" onclick="${p.act.f}" aria-label="${esc(L.replace(/^\+\s*/,""))}"><span class="pa-l">${esc(L)}</span><span class="pa-s">${esc(S)}</span></button></div>`; })():"");
   const mod=moduleOf(tab);
   renderShellNav(mod.k, tab);
   const nav=document.getElementById("subNav"); if(!nav) return;
@@ -8826,7 +8856,7 @@ function openPurchase(orderId, stockId){
   const list=(accounts||[]).filter(a=>!a.archived);
   acc.innerHTML = list.map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join("");
   const cash=list.find(a=>a.kind==="cash"); if(cash) acc.value=cash.id;
-  document.getElementById("buyFrom").value="";
+  document.getElementById("buyFrom").value=_it?(itemSupName(_it.id)||""):"";
   document.getElementById("buyMsg").classList.add("hidden");
   document.getElementById("buySupList").innerHTML=supAllNames().map(n=>`<option value="${esc(n)}">`).join("");
   renderBuy();
@@ -8843,6 +8873,7 @@ function buySet(i, k, v){
   if(k==="name"){
     // γνωστό είδος: προτείνεται η τελευταία τιμή του
     const it=buyMatch(v);
+    if(it){ const f=document.getElementById("buyFrom"); if(f && !f.value.trim() && itemSupName(it.id)){ buyAutoFrom(it); buyHints(); } }
     if(it && !buyRows[i].cost && it.unit_cost!=null){
       buyRows[i].cost=String(it.unit_cost).replace(".",",");
       const el=document.getElementById("bl-cost-"+i); if(el) el.value=buyRows[i].cost;
@@ -8881,6 +8912,8 @@ function buyTag(i){
   const it=buyMatch(r.name);
   if(!it) return "νέο είδος";
   let t=`στην αποθήκη: ${fmtNum(it.qty)} ${esc(it.unit||"")}`;
+  { const ms=itemSupName(it.id), cur=(document.getElementById("buyFrom")||{}).value||"";
+    if(ms && cur.trim() && supNorm(supCanon(cur))!==supNorm(ms)) t+=` · βασικός: ${esc(ms)}`; }
   const e=priceTable().find(x=>x.key==="i:"+it.id || x.key==="n:"+normText(it.name));
   if(e){
     const sup=(document.getElementById("buyFrom")||{}).value||"";
@@ -8896,11 +8929,17 @@ function buyTag(i){
   }
   return t;
 }
-function buyHints(){ buyRows.forEach((r,i)=>{ const el=document.getElementById("bl-tag-"+i); if(el) el.innerHTML=buyTag(i); }); }
+function buyHints(){ buyRows.forEach((r,i)=>{ const el=document.getElementById("bl-tag-"+i); if(el) el.innerHTML=buyTag(i); }); renderBuyLow(); }
+/* άδειο «Προμηθευτής» + είδος με βασικό προμηθευτή → συμπληρώνεται μόνο του */
+function buyAutoFrom(it){
+  const f=document.getElementById("buyFrom"); if(!f || f.value.trim() || !it) return;
+  const s=itemSupName(it.id); if(s){ f.value=s; }
+}
 function buyPick(i, id){
   const it=(stockCache||[]).find(x=>x.id===id); if(!it || !buyRows[i]) return;
   buyRows[i].name=it.name;
   if(!buyRows[i].cost && it.unit_cost!=null) buyRows[i].cost=String(it.unit_cost).replace(".",",");
+  buyAutoFrom(it);
   renderBuy();
   const q=document.querySelector(`#buyLines .bl:nth-child(${i+1}) input[inputmode]`); if(q) q.focus();
 }
@@ -8926,21 +8965,33 @@ function buyTotals(){
 function buyLowItems(){
   return (stockCache||[]).filter(it=>it.type!=="product" && !it.mm && !isArchivedStock(it) && stockState(it)!=="ok");
 }
+/* με συμπληρωμένο προμηθευτή, προτείνονται όσα τελειώνουν και παίρνουμε από αυτόν (ή δεν έχουν βασικό) */
+function buyLowFor(){
+  const f=((document.getElementById("buyFrom")||{}).value||"").trim();
+  const all=buyLowItems();
+  if(!f) return {list:all, sup:null};
+  const k=supNorm(supCanon(f));
+  return {list:all.filter(it=>{ const s=itemSupName(it.id); return !s || supNorm(s)===k; }), sup:supCanon(f)};
+}
 function buyFillLow(){
   const have=new Set(buyRows.map(r=>normText(r.name)));
-  const add=buyLowItems().filter(it=>!have.has(normText(it.name))).map(it=>({name:it.name, qty:"",
+  const add=buyLowFor().list.filter(it=>!have.has(normText(it.name))).map(it=>({name:it.name, qty:"",
     cost:it.unit_cost!=null?String(it.unit_cost).replace(".",","):"", order:buyOrder||"", used:"", cat:it.category||"Νήμα"}));
   buyRows=[...buyRows.filter(r=>String(r.name||"").trim()), ...add];
   if(!buyRows.length) buyRows=[{name:"", qty:"", cost:"", order:buyOrder||"", used:"", cat:"Νήμα"}];
   renderBuy();
 }
-function renderBuy(){
-  const orders=buyOpenOrders();
-  const _low=buyLowItems().filter(it=>!buyRows.some(r=>normText(r.name)===normText(it.name)));
+function renderBuyLow(){
+  const L=buyLowFor();
+  const _low=L.list.filter(it=>!buyRows.some(r=>normText(r.name)===normText(it.name)));
   const lowBox=document.getElementById("buyLow");
   if(lowBox) lowBox.innerHTML = _low.length ? `<div class="r-hint" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
-      <span style="flex:1;min-width:180px"><b>${_low.length}</b> ${_low.length===1?"είδος έχει":"είδη έχουν"} πέσει στο όριο: ${_low.slice(0,4).map(it=>esc(it.name)).join(", ")}${_low.length>4?"…":""}</span>
+      <span style="flex:1;min-width:180px"><b>${_low.length}</b> ${_low.length===1?"είδος έχει":"είδη έχουν"} πέσει στο όριο${L.sup?` (από ${esc(L.sup)} ή χωρίς προμηθευτή)`:""}: ${_low.slice(0,4).map(it=>esc(it.name)).join(", ")}${_low.length>4?"…":""}</span>
       <button type="button" class="btn ghost sm" onclick="buyFillLow()">Προσθήκη στην αγορά</button></div>` : "";
+}
+function renderBuy(){
+  const orders=buyOpenOrders();
+  renderBuyLow();
   const optO = sel => `<option value="">— για την αποθήκη</option>` + orders.map(o=>
     `<option value="${o.id}" ${o.id===sel?"selected":""}>για ${esc(firstName(o.customer_name)||o.order_number||"παραγγελία")}${
       (function(){const n=getItems(o).map(x=>x.name).filter(Boolean).join(", ");return n?" · "+esc(n):"";})()}</option>`).join("");
@@ -9012,6 +9063,10 @@ async function saveBuy(){
       name, note:null, ref_type:first?"order":null, ref_id:first?first.order:null,
       lines:lines.map(r=>({item_id:r.id, name:r.nm, unit:r.unit, qty:r.q, unit_cost:r.c, job_ref:r.order||null, used:r.u||0, supplier:sup})) }]);
     if(sup) try{ await supEnsure(sup); }catch(e){}
+    // το είδος που δεν έχει βασικό προμηθευτή τον «μαθαίνει» από την αγορά
+    if(sup){ const fresh=lines.filter(r=>r.id && !(itemSup||{})[r.id]);
+      if(fresh.length){ const next={...(itemSup||{})}; fresh.forEach(r=>{ next[r.id]=sup; }); itemSup=next;
+        try{ await saveSetting("item_sup", itemSup, true); }catch(e){} } }
     // 3. η αποθήκη παίρνει ό,τι αγοράστηκε
     for(const r of lines){
       try{ await stockMove(r.id, r.q, "purchase", {type:r.order?"order":"cash", id:r.order||null}, {unit_cost:r.c, note:name}); }
@@ -9122,7 +9177,8 @@ function openItemSheet(id){
   const go=f=>`_ovClose('itemSheet');${f}`;
   const A=[];
   if(isProd && q>0 && !arch) A.push({p:true, i:"🧾", t:"Πώληση", d:"λιανική ή στο bazaar", f:go(`tillOpen(null,'${id}')`)});
-  if(!isProd && !arch) A.push({p:true, i:"🛒", t:"Αγορά", d:"προσθήκη αποθέματος με πληρωμή", f:go(`openPurchase(null,'${id}')`)});
+  const _ms=!isProd?itemSupOf(id):null;
+  if(!isProd && !arch) A.push({p:true, i:"🛒", t:"Αγορά", d:_ms?`από ${_ms.name} — ή από άλλον στη φόρμα`:"προσθήκη αποθέματος με πληρωμή", f:go(`openPurchase(null,'${id}')`)});
   if(isProd && !arch) A.push({i:"⏱", t:"Χρόνος εργασίας", d:"μέτρηση χρόνου για αυτό το κομμάτι", f:go(`timerStartStock('${id}')`)});
   A.push({i:"✎", t:"Επεξεργασία", d:isProd?"όνομα, τιμή, φωτογραφία, υλικά":"όνομα, κατηγορία, τιμή, όριο", f:go(`openStockModal('${id}')`)});
   A.push({i:"📋", t:"Ιστορικό κινήσεων", d:"αγορές, αναλώσεις, πωλήσεις", f:go(`openStockHistory('${id}')`)});
@@ -9134,7 +9190,7 @@ function openItemSheet(id){
   const row=x=>`<button class="${x.p?"primary":""} ${x.w?"warn":""}" onclick="${x.f}"><span class="i">${x.i}</span><span>${esc(x.t)}${x.d?`<span class="d">${esc(x.d)}</span>`:""}</span></button>`;
   const _pe=!isProd ? priceTable().find(e=>e.key==="i:"+id || e.key==="n:"+normText(it.name)) : null;
   const supHtml=_pe?`<div class="act-sep">Τιμές ανά προμηθευτή</div><div class="sup-cmp">${_pe.rows.map(r=>`<div class="sup-cmp-r ${r===_pe.best&&_pe.rows.length>1?"best":""}">
-      <span class="s">${r.sup==="Χωρίς προμηθευτή"?`<i style="color:var(--muted)">${r.sup}</i>`:`<button class="lnk" onclick="_ovClose('itemSheet');openSupplier(${esc(JSON.stringify(r.sup))})">${esc(r.sup)}</button>`}<small>τελ. ${fmtD(r.lastAt)} · ${fmtNum(r.qty)} ${esc(unit)}</small></span>
+      <span class="s">${r.sup==="Χωρίς προμηθευτή"?`<i style="color:var(--muted)">${r.sup}</i>`:`<button class="lnk" onclick="_ovClose('itemSheet');openSupplier(${esc(JSON.stringify(r.sup))})">${esc(r.sup)}</button>${_ms&&supNorm(_ms.name)===supNorm(r.sup)?`<span class="mk">βασικός</span>`:`<button class="set" onclick="setItemSupUI('${id}',${esc(JSON.stringify(r.sup))})">ορισμός ως βασικού</button>`}`}<small>τελ. ${fmtD(r.lastAt)} · ${fmtNum(r.qty)} ${esc(unit)}</small></span>
       <span class="p">${fmtMoney(r.last)}${r===_pe.best&&_pe.rows.length>1?"<small>φθηνότερος</small>":""}</span></div>`).join("")}</div>`:"";
   const val=(Number(it.unit_cost)||0)*q;
   document.getElementById("isTitle").textContent=it.name||"Είδος";
@@ -9145,6 +9201,9 @@ function openItemSheet(id){
         ? (it.sell_price!=null?"Τιμή πώλησης "+fmtMoney(it.sell_price):"Χωρίς τιμή πώλησης")+(it.unit_cost!=null?" · κόστος υλικών "+fmtMoney(it.unit_cost):"")
         : (it.unit_cost!=null?fmtMoney(it.unit_cost)+" / "+esc(unit)+(val?" · αξία "+fmtMoney(val):""):"Χωρίς τιμή κόστους")}
         ${esc(it.category||"")?"<br>"+esc(it.category):""}</div></div></div>
+    ${!isProd?`<div class="is-sup">🚚 ${_ms?`<span style="flex:1;min-width:0">Βασικός προμηθευτής: <button class="lnk" onclick="_ovClose('itemSheet');openSupplier(${esc(JSON.stringify(_ms.name))})">${esc(_ms.name)}</button>${_ms.auto?` <small style="color:var(--muted)">(από την τελευταία αγορά)</small>`:""}</span>`
+      :`<span style="flex:1;min-width:0;color:var(--muted)">Χωρίς βασικό προμηθευτή — ορίζεται μόνος του με την πρώτη αγορά.</span>`}
+      <button class="btn ghost sm" onclick="_ovClose('itemSheet');openStockModal('${id}');setTimeout(()=>{const e=document.getElementById('sSup');if(e)e.focus();},250)">${_ms?"Αλλαγή":"Ορισμός"}</button></div>`:""}
     <div class="act-list">${A.map(row).join("")}</div>
     ${supHtml}
     <div class="act-sep">Λοιπές ενέργειες</div>
@@ -9808,19 +9867,24 @@ function askSupplier(q, name, r){
   const cheaper=verdicts.filter(v=>supNorm(v.best.sup)===supNorm(name)).length, dearer=verdicts.length-cheaper;
   let t=`${ASKB(esc(name))}: ${r?cap(r.w)+" ":""}${moves.length} ${moves.length===1?"αγορά":"αγορές"} για ${ASKB(fmtMoney(spent))}${!r?` (φέτος ${fmtMoney(st.year)})`:""}.`;
   if(verdicts.length) t+=` Σε όσα συγκρίνονται με άλλους, είναι φθηνότερος σε ${cheaper} και ακριβότερος σε ${dearer}.`;
-  return { text:t, rows:verdicts.map(v=>({ thumb:v.e.it?stockThumb(v.e.it):"", title:esc(v.e.name), sub:supNorm(v.best.sup)===supNorm(name)?"φθηνότερος εδώ":`φθηνότερα: ${esc(v.best.sup)} ${fmtMoney(v.best.last)}`,
-      right:fmtMoney(v.here.last) })),
-    actions:[{l:"Καρτέλα προμηθευτή", f:`openSupplier('${name.replace(/[\\']/g,"")}')`},{l:"Νέα αγορά", f:`openPurchaseFrom('${name.replace(/[\\']/g,"")}')`}] };
+  const si=supStockItems(name), lo=si.filter(it=>stockState(it)!=="ok");
+  if(si.length) t+=` Είναι ο βασικός προμηθευτής για ${si.length} ${si.length===1?"είδος":"είδη"} της αποθήκης${lo.length?`· ${ASKB(lo.length+" "+(lo.length===1?"τελειώνει":"τελειώνουν"))}: ${lo.slice(0,5).map(it=>esc(it.name)).join(", ")}`:""}.`;
+  return { text:t, rows:(lo.length?lo.map(it=>({thumb:stockThumb(it), title:esc(it.name), sub:"τελειώνει · βασικός "+esc(name), right:fmtNum(it.qty)+" "+esc(it.unit||""), go:`openItemSheet('${it.id}')`})):[]).concat(verdicts.map(v=>({ thumb:v.e.it?stockThumb(v.e.it):"", title:esc(v.e.name), sub:supNorm(v.best.sup)===supNorm(name)?"φθηνότερος εδώ":`φθηνότερα: ${esc(v.best.sup)} ${fmtMoney(v.best.last)}`,
+      right:fmtMoney(v.here.last) }))),
+    actions:[{l:"Καρτέλα προμηθευτή", f:`openSupplier('${name.replace(/[\\']/g,"")}')`},{l:lo.length?"Αγορά όσων τελειώνουν":"Νέα αγορά", f:`openPurchaseFrom('${name.replace(/[\\']/g,"")}'${lo.length?",true":""})`}] };
 }
 function askWhereBuy(q, it, name){
   const key=it?("i:"+it.id):("n:"+normText(name));
   const e=priceTable().find(x=>x.key===key || (it && x.key==="n:"+normText(it.name)));
   const nm=it?it.name:name;
-  if(!e) return { text:`Δεν υπάρχουν ακόμη καταγεγραμμένες αγορές για ${ASKB(esc(nm))} με προμηθευτή.` };
+  if(!e){ const ms=it?itemSupOf(it.id):null;
+    return ms ? { text:`Βασικός προμηθευτής για ${ASKB(esc(nm))}: ${ASKB(esc(ms.name))}. Δεν υπάρχουν ακόμη τιμές για σύγκριση.`, actions:[{l:"Αγορά", f:`openPurchase(null,'${it.id}')`}] }
+      : { text:`Δεν υπάρχουν ακόμη καταγεγραμμένες αγορές για ${ASKB(esc(nm))} με προμηθευτή.` }; }
   const named=e.rows.filter(r=>r.sup!=="Χωρίς προμηθευτή");
-  let t = named.length>1 ? `Για ${ASKB(esc(nm))} φθηνότερος είναι ${ASKB(esc(e.best.sup))} με ${fmtMoney(e.best.last)} (τελευταία τιμή).${e.save>0.5?` Αν αγοράζατε πάντα εκεί, θα είχατε γλιτώσει περίπου ${fmtMoney(e.save)}.`:""}`
+  const _ms=it?itemSupOf(it.id):null;
+  let t = (_ms&&!_ms.auto?`Βασικός προμηθευτής για ${ASKB(esc(nm))}: ${ASKB(esc(_ms.name))}. `:"") + (named.length>1 ? `Για ${ASKB(esc(nm))} φθηνότερος είναι ${ASKB(esc(e.best.sup))} με ${fmtMoney(e.best.last)} (τελευταία τιμή).${e.save>0.5?` Αν αγοράζατε πάντα εκεί, θα είχατε γλιτώσει περίπου ${fmtMoney(e.save)}.`:""}`
     : named.length===1 ? `Το ${ASKB(esc(nm))} το έχουμε αγοράσει μόνο από ${ASKB(esc(named[0].sup))} (τελευταία τιμή ${fmtMoney(named[0].last)}).`
-    : `Οι αγορές για ${ASKB(esc(nm))} δεν έχουν προμηθευτή — αντιστοίχισέ τες από τους Προμηθευτές για σύγκριση.`;
+    : `Οι αγορές για ${ASKB(esc(nm))} δεν έχουν προμηθευτή — αντιστοίχισέ τες από τους Προμηθευτές για σύγκριση.`);
   return { text:t, rows:e.rows.map(r=>({icon:r===e.best&&e.rows.length>1?"★":"·", title:esc(r.sup), sub:`${r.n} ${r.n===1?"αγορά":"αγορές"} · τελ. ${fmtD(r.lastAt)} · μέση ${fmtMoney(r.avg)}`, right:fmtMoney(r.last),
       go:r.sup==="Χωρίς προμηθευτή"?"":`openSupplier('${r.sup.replace(/[\\']/g,"")}')`})),
     actions:it?[{l:"Αγορά", f:`openPurchase(null,'${it.id}')`}]:[] };
@@ -9848,6 +9912,14 @@ function askAnswer(q){
   // εντολές
   const QW=["πού","πόσα","πόσο","πόσες","πόσοι","τι","ποια","ποιο","ποιες","ποιοι","πότε","πώς","γιατί","ποιος"].map(normText);
   const isQuestion=/[;?]\s*$/.test(q.trim()) || QW.includes(toks[0]);
+  { // «νέος πελάτης …», «νέο κατάστημα …», «νέος προμηθευτής …»
+    const V=["καταχώρησε","πρόσθεσε","άνοιξε","φτιάξε","βάλε"].map(normText), NEW=["νέο","νέα","νέος","νέας","καινούργιο","καινούργιος","ένα","έναν","μία","μια"].map(normText);
+    const KIND=[["πελάτη","retail"],["πελάτης","retail"],["πελάτισσα","retail"],["κατάστημα","shop"],["μαγαζί","shop"],["προμηθευτή","sup"],["προμηθευτής","sup"]].map(([w,k])=>[normText(w),k]);
+    let i=0; const hasV=V.includes(toks[i]); if(hasV) i++;
+    let hasN=false; while(NEW.includes(toks[i])){ hasN=true; i++; }
+    const kk=KIND.find(([w])=>w===toks[i]);
+    if(!isQuestion && kk && (hasV||hasN) && !toks.slice(i+1).some(t=>t===normText("παραγγελία"))) return askNewContactStart(q, kk[1]);
+  }
   if(!isQuestion && (nq.startsWith(normText("νέα παραγγελία")) || nq.startsWith(normText("καταχώρησε παραγγελία")) || nq.startsWith(normText("παραγγελία για"))
      || tok("παράγγειλε","παραγγειλε") || nq.includes(normText("θέλει μια")) || nq.includes(normText("θελει ενα"))))
     return askOrderStart(q);
@@ -9860,6 +9932,18 @@ function askAnswer(q){
   if(!isQuestion && (H("price") || (PV && (nq.includes(normText("χονδρ"))||nq.includes(normText("λιανικ"))))) && (pctOrGroup(q) || tok("όλες","όλα","ολες","ολα"))){ const a=askBulkPrice(q); if(a) return a; }
   // προμηθευτές
   { const supN=askSupEntity(q);
+    // «βάλε βασικό προμηθευτή του Taupe τη Νηματουργία» / «το Taupe το παίρνουμε από Νηματουργία»
+    const SETV=tok("βάλε","βαλε","όρισε","ορισε","άλλαξε","αλλαξε","κάνε","κανε") || nq.includes(normText("το παιρνουμε απο")) || nq.includes(normText("τα παιρνουμε απο"));
+    if(!isQuestion && SETV && (nq.includes(normText("προμηθευτ")) || nq.includes(normText("παιρνουμε απο"))) && E.item && E.item.type!=="product"){
+      if(!supN) return { text:`Ποιον προμηθευτή να ορίσω για ${ASKB(esc(E.item.name))}; Γράψε το όνομά του όπως υπάρχει στους Προμηθευτές — ή άνοιξε πρώτα νέο («νέος προμηθευτής …»).`,
+        actions:[{l:"Επεξεργασία είδους", f:`openStockModal('${E.item.id}')`}] };
+      const it=E.item, cur=itemSupOf(it.id);
+      return askConfirmCard(`Βασικός προμηθευτής για ${ASKB(esc(it.name))} θα γίνει ${ASKB(esc(supN))}${cur&&supNorm(cur.name)!==supNorm(supN)?` (αντί για ${esc(cur.name)})`:""}. Θα προτείνεται σε κάθε αγορά του.`,
+        [{thumb:stockThumb(it), title:esc(it.name), sub:`στην αποθήκη ${fmtNum(it.qty)} ${esc(it.unit||"")}`, right:esc(supN)}],
+        async ()=>{ const ok=await setItemSup(it.id, supN, true); if(!ok) throw new Error("δεν αποθηκεύτηκε"); renderStock();
+          return {text:`✓ ${esc(it.name)} → ${esc(supN)}.`, actions:[{l:"Καρτέλα προμηθευτή", f:`openSupplier('${supN.replace(/[\\']/g,"")}')`},{l:"Το είδος", f:`openItemSheet('${it.id}')`}]}; },
+        {label:"Ορισμός"});
+    }
     const WHERE=["απο που","ποιος προμηθευτ","φθηνοτερ","συμφερει","ποιο μαγαζι","που αγοραζ","που να παρω","που να αγορασ","απο ποιον"].some(w=>nq.includes(normText(w)));
     if(WHERE && (E.item || !supN)){ const it=E.item; if(it) return askWhereBuy(q, it); }
     if(supN && !(E.customer && !H("expense"))) return askSupplier(q, supN, r);
@@ -10095,13 +10179,15 @@ function askPurchase(q){
   const missing=P.lines.filter(l=>l.price==null);
   const sum=Math.round(P.lines.reduce((a,l)=>a+(l.qty||0)*(l.price||0),0)*100)/100;
   const cash=(accounts||[]).find(a=>a.kind==="cash"&&!a.archived)||(accounts||[])[0];
+  if(!P.from){ const ss=[...new Set(P.lines.map(l=>l.it?itemSupName(l.it.id):null))];
+    if(ss.length===1 && ss[0]){ P.from=ss[0]; P.fromAuto=true; } }
   const rows=P.lines.map(l=>({ thumb:l.it?stockThumb(l.it):`<span class="si-img bl-ph">＋</span>`, title:esc(l.name),
     sub:`${l.it?`στην αποθήκη ${fmtNum(l.it.qty)} → ${fmtNum((Number(l.it.qty)||0)+l.qty)}`:"νέο είδος · "+esc(l.cat)}${l.priceGuess&&l.price!=null?" · τελευταία τιμή":""}`,
     right: l.price!=null ? `${fmtNum(l.qty)} × ${fmtMoney(l.price)}` : `${fmtNum(l.qty)} × <span class="ask-warn">;</span>` }));
   const toForm=()=>{ askFillPurchase(P); return {cancel:true, text:"Άνοιξα τη φόρμα αγοράς συμπληρωμένη — έλεγξε και πάτα «Καταχώρηση»."}; };
   if(missing.length) return { text:`Κατάλαβα ${P.lines.length===1?"το είδος":"τα είδη"}, αλλά λείπει η τιμή για: ${missing.map(l=>ASKB(esc(l.name))).join(", ")}. Γράψε την (π.χ. «… 3,20 το ένα») ή συμπλήρωσέ τη στη φόρμα.`,
     rows, actions:[{l:"Άνοιγμα φόρμας", f:"askFillPurchaseLast()"}], _purchase:P };
-  let t=`Θα καταχωρηθεί ${ASKB("αγορά "+fmtMoney(sum))} από ${esc(cash?cash.name:"ταμείο")}${P.from?" ("+esc(P.from)+")":""}${P.order?` για την παραγγελία της ${ASKB(esc(String(P.order.customer_name||"").replace(/\.$/,"")))}`:""}. Τα είδη μπαίνουν στην αποθήκη${P.lines.some(l=>!l.it)?" (τα νέα δημιουργούνται)":""}.`;
+  let t=`Θα καταχωρηθεί ${ASKB("αγορά "+fmtMoney(sum))} από ${esc(cash?cash.name:"ταμείο")}${P.from?" ("+esc(P.from)+(P.fromAuto?", ο βασικός προμηθευτής":"")+")":""}${P.order?` για την παραγγελία της ${ASKB(esc(String(P.order.customer_name||"").replace(/\.$/,"")))}`:""}. Τα είδη μπαίνουν στην αποθήκη${P.lines.some(l=>!l.it)?" (τα νέα δημιουργούνται)":""}.`;
   if(P.order){ const u=P.lines.filter(l=>l.used);
     t+= u.length ? ` Στη δουλειά μπαίνουν ${u.map(l=>fmtNum(l.used)+" "+esc(l.name)).join(", ")} (στο κόστος της)· τα υπόλοιπα μένουν στην αποθήκη.`
                  : ` Αν μέρος μπήκε ήδη στη δουλειά, γράψ' το (π.χ. «… τα 2 μπήκαν») ή δήλωσέ το στη φόρμα — αλλιώς όλα μένουν στην αποθήκη.`; }
@@ -10430,10 +10516,78 @@ function askFillOrder(d, eta){
   try{ updateMoneyHint(); }catch(e){}
 }
 
+
+/* ---------- νέος πελάτης / κατάστημα / προμηθευτής από τον βοηθό ---------- */
+function askContactParse(q){
+  const d={};
+  const ph=String(q).match(/(?:\+?30\s?)?((?:69|2\d)\d[\d\s]{6,9}\d)/); if(ph) d.phone=ph[1].replace(/\s/g,"");
+  const em=String(q).match(/[\w.+-]+@[\w-]+\.[\w.]+/); if(em) d.email=em[0];
+  const ig=String(q).match(/(?:instagram|insta|ig)\s*[:@]?\s*@?([\w.]{2,30})/i) || String(q).match(/(?:^|\s)@([\w.]{2,30})/); if(ig) d.ig=ig[1];
+  const web=String(q).match(/\b((?:https?:\/\/)?(?:www\.)?[a-z0-9-]+\.(?:gr|com|eu|net|shop|store)(?:\/\S*)?)/i); if(web && !(em && em[0].includes(web[1]))) d.web=web[1];
+  if(web && ig && ig[0].includes(web[1])) delete d.web;
+  // όνομα: ό,τι μένει μετά το «νέος πελάτης/προμηθευτής/κατάστημα», χωρίς τα στοιχεία επικοινωνίας
+  let rest=String(q);
+  [ph&&ph[0], em&&em[0], ig&&ig[0], d.web].filter(Boolean).forEach(x=>{ rest=rest.replace(x," "); });
+  const LEAD=new Set(["καταχώρησε","πρόσθεσε","άνοιξε","φτιάξε","βάλε","νέο","νέα","νέος","νέας","καινούργιο","καινούργιος","ένα","έναν","μία","μια",
+    "πελάτη","πελάτης","πελάτισσα","κατάστημα","μαγαζί","προμηθευτή","προμηθευτής"].map(normText));
+  const DROP=new Set(["τηλ","τηλ.","τηλέφωνο","κινητό","email","e-mail","mail","instagram","insta","ig","site","με","και","στο","στοιχεία"].map(normText));
+  const w=rest.replace(/[,:;]+/g," ").split(/\s+/).filter(Boolean);
+  let i=0; while(i<w.length && LEAD.has(normText(w[i]))) i++;
+  rest=w.slice(i).filter(x=>!DROP.has(normText(x))).join(" ").trim();
+  if(rest) d.name=rest;
+  return d;
+}
+function askNewContactStart(q, kind){
+  const d=Object.assign({kind}, askContactParse(q));
+  return askNewContactNext(d);
+}
+const ASK_CK={retail:"πελάτη", shop:"κατάστημα", sup:"προμηθευτή"};
+function askNewContactNext(d){
+  askDraft={kind:"newc", d};
+  if(!d.name){ askDraft.need="name"; return askQ(d.kind==="sup"?"Πώς λέγεται ο προμηθευτής;":(d.kind==="shop"?"Πώς λέγεται το κατάστημα;":"Πώς λέγεται ο πελάτης;")); }
+  // υπάρχει ήδη;
+  if(!d.checked){
+    d.checked=true;
+    if(d.kind==="sup"){ const ex=supFind(d.name) || supAllNames().find(n=>supNorm(n)===supNorm(d.name));
+      if(ex){ askDraft=null; const nm=typeof ex==="string"?ex:ex.name;
+        return { text:`Ο προμηθευτής ${ASKB(esc(nm))} υπάρχει ήδη.`, actions:[{l:"Άνοιγμα καρτέλας", f:`openSupplier('${nm.replace(/[\\']/g,"")}')`},{l:"Στοιχεία", f:`openSupEdit('${nm.replace(/[\\']/g,"")}')`}] }; } }
+    else { const n=normText(d.name);
+      const ex=customerStats().find(c=>normText(c.name)===n);
+      if(ex){ askDraft=null;
+        return { text:`${d.kind==="shop"?"Το κατάστημα":"Ο πελάτης"} ${ASKB(esc(ex.name))} υπάρχει ήδη.`, actions:[{l:"Άνοιγμα καρτέλας", f:ex.extraId?`openCustomerExtra('${ex.extraId}')`:`openCustomer('${ex.anyId}')`}] }; } }
+  }
+  if(d.kind!=="sup" && d.phone===undefined && d.ig===undefined){ askDraft.need="phone"; return askQ(`Τηλέφωνο ή Instagram για ${d.kind==="shop"?"το κατάστημα":"τον πελάτη"} ${esc(d.name)};`, [{l:"Χωρίς στοιχεία",q:"όχι"}]); }
+  if(d.kind==="sup" && d.phone===undefined && d.email===undefined && d.web===undefined){ askDraft.need="phone"; return askQ(`Τηλέφωνο, email ή e-shop για τον ${esc(d.name)};`, [{l:"Χωρίς στοιχεία",q:"όχι"}]); }
+  askDraft=null;
+  const bits=[d.phone&&("☎ "+esc(d.phone)), d.ig&&("@"+esc(d.ig)), d.email&&esc(d.email), d.web&&esc(d.web)].filter(Boolean).join(" · ");
+  return askConfirmCard(`Θα καταχωρηθεί ${ASKB({retail:"νέος πελάτης",shop:"νέο κατάστημα",sup:"νέος προμηθευτής"}[d.kind])} ${ASKB(esc(d.name))}${bits?` (${bits})`:""}.`, [], async ()=>{
+    if(d.kind==="sup"){
+      if(supFind(d.name)) throw new Error("υπάρχει ήδη");
+      suppliers=[...(suppliers||[]), {id:"s"+Math.random().toString(36).slice(2,9), created:new Date().toISOString(), aliases:[], name:d.name,
+        phone:d.phone||null, email:d.email||null, web:d.web||null, address:null, note:null}];
+      const ok=await saveSetting("suppliers", suppliers, true); if(!ok) throw new Error("δεν αποθηκεύτηκε");
+      try{ renderSuppliers(); }catch(e){}
+      return {text:`✓ Ο προμηθευτής ${esc(d.name)} καταχωρήθηκε.`, actions:[{l:"Καρτέλα", f:`openSupplier('${d.name.replace(/[\\']/g,"")}')`},{l:"Νέα αγορά", f:`openPurchaseFrom('${d.name.replace(/[\\']/g,"")}')`}]};
+    }
+    const id="c"+Math.random().toString(36).slice(2,9);
+    custExtra=[...(custExtra||[]), {id, created:new Date().toISOString(), name:d.name, phone:d.phone||null, ig:d.ig||null, note:null, type:d.kind==="shop"?"shop":"retail"}];
+    const ok=await saveSetting("cust_extra", custExtra, true); if(!ok) throw new Error("δεν αποθηκεύτηκε");
+    try{ renderCustomers(); }catch(e){}
+    return {text:`✓ ${d.kind==="shop"?"Το κατάστημα":"Ο πελάτης"} ${esc(d.name)} καταχωρήθηκε.`, actions:[{l:"Καρτέλα", f:`openCustomerExtra('${id}')`},{l:d.kind==="shop"?"Νέα παράδοση":"Νέα παραγγελία", f:`newOrderForExtra('${id}')`}]};
+  });
+}
+
 /* ---------- απάντηση σε ερώτηση του διαλόγου ---------- */
 function askDraftAnswer(q){
   const D=askDraft; const d=D.d;
   if(askIsCancel(q)){ askDraft=null; return {text:"Εντάξει, ακυρώθηκε. Δεν καταχωρήθηκε τίποτα."}; }
+  if(D.kind==="newc"){
+    if(D.need==="name"){ const p=askContactParse(q); d.name=p.name||cap(q.trim()); ["phone","ig","email","web"].forEach(k=>{ if(p[k]) d[k]=p[k]; }); }
+    else if(D.need==="phone"){ if(askIsNo(q)){ d.phone=null; d.ig=d.ig||null; d.email=d.email||null; d.web=d.web||null; }
+      else { const p=askContactParse("x "+q); d.phone=p.phone||null; if(p.ig) d.ig=p.ig; if(p.email) d.email=p.email; if(p.web) d.web=p.web;
+        if(!p.phone && !p.ig && !p.email && !p.web){ const w=q.trim().replace(/^@/,""); if(/^[\w.]{2,30}$/.test(w)) d.ig=w; else d.phone=null; } } }
+    return askNewContactNext(d);
+  }
   if(D.kind==="pay"){
     if(D.need==="cust"){ const E=askEntities(q); if(!E.customer) return askQ("Δεν βρήκα αυτόν τον πελάτη. Γράψε το όνομα όπως είναι στην καρτέλα."); d.cust=E.customer; }
     else if(D.need==="amount"){ const a=/^(όλο|ολο|όλα|ολα)/i.test(q.trim())?null:askAmount(q);
@@ -10472,7 +10626,7 @@ const ASK_SUGGEST=[
   {h:"Παραγγελίες & πελάτες", q:["Ποιοι χρωστάνε;","Τι παραδίδεται αυτή την εβδομάδα;","Ποιες παραγγελίες είναι σε εξέλιξη;","Ποιοι είναι οι καλύτεροι πελάτες φέτος;"]},
   {h:"Προϊόντα & αποθήκη", q:["Ποια τσάντα πουλάει περισσότερο;","Ποια χρώματα ζητιούνται περισσότερο;","Τι να αγοράσω;","Πόσο αποδίδει η ώρα δουλειάς;"]},
   {h:"Για την Αναστασία", q:["Προτάσεις για την Αναστασία","Πώς πήγε το bazaar;"]},
-  {h:"Προμηθευτές", q:["Από πού να πάρω μπεζ νήμα;","Πόσα δώσαμε σε προμηθευτές φέτος;"]},
+  {h:"Προμηθευτές", q:["Από πού να πάρω μπεζ νήμα;","Πόσα δώσαμε σε προμηθευτές φέτος;","Νέος προμηθευτής Νηματουργία 2101234567"]},
   {h:"Κάνε κάτι", q:["Νέα παραγγελία για Μαρία Grace μπλε","Πληρώθηκα από την Ελένη","Έξοδο 12€ courier","Αγόρασα 3 μπεζ νήματα 3,20 το ένα","Αύξησε 10% τις τιμές λιανικής σε όλα","Ανάληψη 100€ από το ταμείο"]}
 ];
 let askLog=[];
@@ -10547,7 +10701,7 @@ function askSend(q){
   let a;
   try{
     // σε ανοιχτό διάλογο, η απάντηση συμπληρώνει ό,τι ρωτήθηκε — εκτός αν είναι νέα ερώτηση
-    const CMD=["νεα παραγγελια","αγορασα","αγορασαμε","πληρωθηκα","εξοδο","αυξησε","μειωσε","αλλαξε","αναληψη","καταθεση","μεταφορα","ανοιξε","δειξε","βαλε τιμ","προτασεις"].map(normText);
+    const CMD=["νεος πελατης","νεο καταστημα","νεος προμηθευτης","νεα παραγγελια","αγορασα","αγορασαμε","πληρωθηκα","εξοδο","αυξησε","μειωσε","αλλαξε","αναληψη","καταθεση","μεταφορα","ανοιξε","δειξε","βαλε τιμ","προτασεις"].map(normText);
     const fresh=askDraft && askDraft.need!=="cust" && (/[;?]\s*$/.test(q.trim()) || CMD.some(c=>normText(q).startsWith(c)));
     a = (askDraft && !fresh) ? askDraftAnswer(q) : (askDraft=null, askAnswer(q));
   }catch(e){ console.error(e); askDraft=null; a={text:"Κάτι πήγε στραβά με αυτή την ερώτηση. Δοκίμασε να τη γράψεις αλλιώς."}; }
@@ -10733,6 +10887,46 @@ async function supEnsure(name){
   return rec;
 }
 
+/* ---------- γέφυρα αποθήκης ↔ προμηθευτή ----------
+   Κάθε υλικό έχει έναν βασικό προμηθευτή (item_sup). Αν δεν οριστεί ρητά,
+   βασικός θεωρείται αυτός από τον οποίο αγοράστηκε τελευταία φορά. Μια αγορά
+   μπορεί πάντα να γίνει από άλλον — ο βασικός απλώς προτείνεται.            */
+let itemSup = {};   // {itemId: "Όνομα προμηθευτή"}
+function itemSupLast(id){
+  const it=(stockCache||[]).find(x=>x.id===id);
+  const k1="i:"+id, k2=it?"n:"+normText(it.name):null;
+  const l=purchaseLines().find(x=>x.sup && (x.key===k1 || x.key===k2));
+  return l ? l.sup : null;
+}
+function itemSupOf(id){
+  if(!id) return null;
+  if(itemSup && itemSup[id]) return {name:supCanon(itemSup[id]), auto:false};
+  const n=itemSupLast(id);
+  return n ? {name:n, auto:true} : null;
+}
+function itemSupName(id){ const s=itemSupOf(id); return s?s.name:null; }
+async function setItemSup(id, name, silent){
+  name=String(name||"").trim();
+  const next={...(itemSup||{})};
+  if(name){ const c=supCanon(name); next[id]=c; try{ await supEnsure(c); }catch(e){} }
+  else delete next[id];
+  itemSup=next;
+  const ok=await saveSetting("item_sup", itemSup, true);
+  if(ok && !silent) adminFlash(name?`Βασικός προμηθευτής: ${supCanon(name)} ✓`:"Ο βασικός προμηθευτής αφαιρέθηκε ✓");
+  return ok;
+}
+async function setItemSupUI(id, name){
+  await setItemSup(id, name);
+  if(!document.getElementById("itemSheet").classList.contains("hidden")) openItemSheet(id);
+  renderStock();
+}
+/* τα υλικά της αποθήκης που παίρνουμε από έναν προμηθευτή */
+function supStockItems(name){
+  const k=supNorm(name);
+  return (stockCache||[]).filter(it=>it.type!=="product" && !it.mm && !isArchivedStock(it))
+    .filter(it=>{ const s=itemSupName(it.id); return s && supNorm(s)===k; });
+}
+
 /* ---------- σελίδα ---------- */
 function setSupView(v){ supView=v; renderSuppliers(); renderPageHead("suppliers"); }
 function renderSuppliers(){
@@ -10752,7 +10946,7 @@ function renderSuppliers(){
   const all=names.map(n=>({n, st:supStats(n), rec:supFind(n)})).sort((a,b)=>b.st.year-a.st.year || b.st.spent-a.st.spent);
   const yTot=all.reduce((a,x)=>a+x.st.year,0);
   const pt=priceTable(), saveAll=pt.reduce((a,e)=>a+e.save,0);
-  h+=`<div class="stat-grid" style="margin-bottom:16px">
+  h+=`<div class="stat-grid ${saveAll>0.5?"sup-stats":""}" style="margin-bottom:16px">
     <div class="stat dark"><div class="n">${all.length}</div><div class="l">Προμηθευτές</div></div>
     <div class="stat"><div class="n" style="font-size:20px">${fmtMoney(yTot)}</div><div class="l">Αγορές φέτος</div></div>
     ${saveAll>0.5?`<div class="stat"><div class="n" style="font-size:20px;color:#2c6e49">${fmtMoney(saveAll)}</div><div class="l">Πιθανή εξοικονόμηση</div></div>`:""}
@@ -10765,6 +10959,8 @@ function renderSuppliers(){
         <div class="cc-n">${esc(x.n)}</div>
         <div class="cc-s">${x.st.n} ${x.st.n===1?"αγορά":"αγορές"} · ${fmtMoney(x.st.spent)} συνολικά${x.st.last?` · τελευταία ${fmtD(new Date(x.st.last))}`:""}</div>
         ${items.length?`<div class="cc-s">${items.slice(0,4).map(esc).join(", ")}${items.length>4?` +${items.length-4}`:""}</div>`:""}
+        ${(function(){ const si=supStockItems(x.n), lo=si.filter(it=>stockState(it)!=="ok").length;
+          return si.length?`<div class="cc-s">Βασικός για ${si.length} ${si.length===1?"είδος":"είδη"} της αποθήκης${lo?` · <span style="color:#b54b3a">${lo} ${lo===1?"τελειώνει":"τελειώνουν"}</span>`:""}</div>`:""; })()}
         ${cheapest?`<div class="cc-s" style="color:#2c6e49">Φθηνότερος σε ${cheapest} ${cheapest===1?"είδος":"είδη"}</div>`:""}
       </div></button>
       <div class="cc-btns"><button class="btn ghost sm" onclick="openPurchaseFrom(${esc(JSON.stringify(x.n))})">Νέα αγορά</button></div>
@@ -10808,6 +11004,14 @@ function openSupplier(name){
       <span class="p">${e.last!=null?fmtMoney(e.last):"—"}${verdict}</span></div>`;
   }).join("");
   const nameJ=esc(JSON.stringify(name));
+  const _si=supStockItems(name), _siLow=_si.filter(it=>stockState(it)!=="ok");
+  const stockHtml=_si.length?`<div class="stats-sub">Στην αποθήκη από εδώ</div>
+    ${_siLow.length?`<div class="r-hint" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;color:#8a5a1e;background:#fdf6ea">
+      <span style="flex:1;min-width:170px"><b>${_siLow.length}</b> ${_siLow.length===1?"τελειώνει":"τελειώνουν"}: ${_siLow.slice(0,4).map(it=>esc(it.name)).join(", ")}${_siLow.length>4?"…":""}</span>
+      <button class="btn ghost sm" onclick="_ovClose('supModal');openPurchaseFrom(${nameJ},true)">Αγορά τους</button></div>`:""}
+    <div class="sup-cmp" style="padding:4px 14px">${_si.map(it=>{ const st=stockState(it);
+      return `<div class="sup-cmp-r" style="cursor:pointer" onclick="_ovClose('supModal');openItemSheet('${it.id}')"><span class="s" style="display:flex;align-items:center;gap:10px">${stockThumb(it)}<span style="min-width:0">${esc(it.name)}<small>${esc(it.category||"")}${itemSupOf(it.id).auto?" · από την τελευταία αγορά":""}</small></span></span>
+        <span class="p" style="${st!=="ok"?"color:#b54b3a":""}">${fmtNum(it.qty)} <small>${esc(it.unit||"")}${st==="out"?" · τέλος":st==="low"?" · λίγα":""}</small></span></div>`; }).join("")}</div>`:"";
   document.getElementById("supBody").innerHTML=`
         <div class="ch-actions">
       <button class="btn solid sm" onclick="_ovClose('supModal');openPurchaseFrom(${nameJ})">+ Νέα αγορά</button>
@@ -10828,16 +11032,17 @@ function openSupplier(name){
       <div class="stat"><div class="n">${st.n}</div><div class="l">Αγορές</div></div>
       <div class="stat"><div class="n" style="font-size:20px">${fmtMoney(st.n?st.spent/st.n:0)}</div><div class="l">Μέση αγορά</div></div>
     </div>
+    ${stockHtml}
     ${itemRows?`<div class="stats-sub">Τι αγοράζουμε από εδώ</div><div class="sup-cmp" style="padding:4px 14px">${itemRows}</div>`:""}
     ${st.moves.length?`<div class="stats-sub">Ιστορικό αγορών</div><div class="led">${st.moves.slice().sort((a,b)=>String(b.moved_at).localeCompare(String(a.moved_at))).map(m=>`
       <button class="led-r led-btn" onclick="_ovClose('supModal');openCashMove('${m.id}')"><span class="d">${esc((Array.isArray(m.lines)?m.lines:[]).map(l=>l.name).join(", ")||m.name)}<small>${fmtD(m.moved_at)}</small></span>
       <span class="a">${fmtMoney(Math.abs(Number(m.amount)||0))}</span></button>`).join("")}</div>`:""}`;
   _ovOpen("supModal");
 }
-function openPurchaseFrom(name){
+function openPurchaseFrom(name, low){
   openPurchase();
   document.getElementById("buyFrom").value=name;
-  renderBuy();
+  if(low) buyFillLow(); else renderBuy();
 }
 
 /* ---------- στοιχεία προμηθευτή ---------- */
@@ -11649,13 +11854,14 @@ function fillBuyAccounts(){
   const cash=list.find(a=>a.kind==="cash"); if(cash) sel.value=cash.id;
 }
 /* Η κίνηση ταμείου που συνοδεύει την αγορά. */
-async function recordPurchase(itemId, name, qty, unitCost, accId){
+async function recordPurchase(itemId, name, qty, unitCost, accId, supplier){
   const total=Math.round((Number(qty)||0)*(Number(unitCost)||0)*100)/100;
   if(!total || !accId) return false;
+  const sup=supplier?supCanon(supplier):null;
   const row={ account_id:accId, moved_at:new Date().toISOString(), amount:-total,
-    kind:"purchase", category:"Υλικά & αγορές", name:"Αγορά · "+name,
+    kind:"purchase", category:"Υλικά & αγορές", name:"Αγορά · "+(sup||name),
     ref_type:"stock", ref_id:itemId,
-    lines:[{item_id:itemId, name, unit:null, qty:Number(qty), unit_cost:Number(unitCost)}], note:null };
+    lines:[{item_id:itemId, name, unit:null, qty:Number(qty), unit_cost:Number(unitCost), supplier:sup}], note:null };
   try{
     const r=await authFetch(REST + "/thilikon_cash",{method:"POST",headers:{"Prefer":"return=representation"},body:JSON.stringify([row])});
     if(!r.ok) return false;
@@ -12584,6 +12790,8 @@ async function loadCash(){
     if(!Array.isArray(accounts))  accounts=[];
     if(!Array.isArray(cashMoves)) cashMoves=[];
     await migrateExpenses();
+    // ο προμηθευτής των υλικών προκύπτει από τις αγορές — η αποθήκη ξαναζωγραφίζεται αν φαίνεται
+    try{ const sa=document.getElementById("stockAdmin"); if(sa && !sa.classList.contains("hidden") && (stockCache||[]).length) renderStock(); }catch(e){}
   }catch(e){ console.error(e); }
 }
 function accById(id){ return accounts.find(a=>a.id===id) || null; }
