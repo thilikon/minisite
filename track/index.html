@@ -104,6 +104,12 @@
     border-radius:12px;padding:12px 14px;outline:none;transition:.15s;
   }
   textarea{resize:vertical;min-height:70px}
+  /* iOS: ημερομηνία που δεν ξεχειλώνει έξω από τη στήλη της */
+  input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;display:block;min-height:46px}
+  input::-webkit-date-and-time-value{text-align:left}
+  /* Αφή: κανένα πεδίο κάτω από 16px — αλλιώς το iOS μεγεθύνει την οθόνη στο πάτημα */
+  @media (pointer:coarse){ input,select,textarea{font-size:16px!important} }
+  body{overflow-x:clip}
   input:focus,textarea:focus,select:focus{border-color:var(--ink);background:#fff}
 
   .hidden{display:none!important}
@@ -310,6 +316,12 @@
   .admin-bar .e{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:600}
   .admin-bar .tabsw{flex-wrap:wrap}
   .admin-bar .tabsw.main{flex-wrap:nowrap}
+  .sale-row .sr-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+  .sr-amt{font-size:19px;font-weight:600;text-align:right;white-space:nowrap;line-height:1.2}
+  .sr-amt small{display:block;font-size:11px;font-weight:500;color:#2c6e49;margin-top:2px}
+  .sr-items{display:flex;flex-direction:column;gap:4px;margin:12px 0 2px;padding:10px 12px;background:var(--cream);border-radius:12px}
+  .sr-items span{display:flex;justify-content:space-between;gap:10px;font-size:13px}
+  .sr-items b{font-weight:600;white-space:nowrap}
   .order-row{
     border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px;background:#fff;
   }
@@ -329,7 +341,8 @@
   .order-row .r-stage.ready{background:#2f5d8a}
   .order-row .r-stage.ret{background:#8a5a1e}
   .order-row.is-return{border-color:#e0cdb0;background:#fffdf9}
-  .order-row .r-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+  .order-row .r-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+  .order-row .r-actions .si-more{width:40px;height:40px}
   /* items inside an order row */
   .order-items{margin-top:11px;display:flex;flex-direction:column;gap:7px}
   .oi{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--cream);border:1px solid var(--line);border-radius:11px;padding:9px 11px}
@@ -403,18 +416,45 @@
   .msg.ok{background:#e9f1ea;color:#26452f}
 
   /* modal */
+  /* Ένα πρότυπο για όλα τα παράθυρα:
+     κεφαλίδα (τίτλος + ✕) σταθερή επάνω · περιεχόμενο που κυλά · ενέργειες σταθερές κάτω.
+     Υπολογιστής: στο κέντρο. Κινητό: φύλλο από κάτω.                               */
   .overlay{
-    position:fixed;inset:0;background:rgba(20,20,20,.55);backdrop-filter:blur(3px);
-    display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;
-    overflow:auto;z-index:50;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+    position:fixed;inset:0;background:rgba(20,20,20,.5);backdrop-filter:blur(3px);
+    display:flex;align-items:center;justify-content:center;padding:24px;
+    z-index:50;overscroll-behavior:contain;
   }
-  .modal{background:#fff;border-radius:var(--radius);max-width:520px;width:100%;padding:26px 24px;margin:0 auto 40px;overflow-x:clip}
+  .modal{background:#fff;border-radius:20px;max-width:540px;width:100%;padding:0 26px;margin:0 auto;
+    max-height:calc(100vh - 48px);max-height:calc(100dvh - 48px);overflow-y:auto;overflow-x:clip;
+    overscroll-behavior:contain;-webkit-overflow-scrolling:touch;box-shadow:0 20px 60px rgba(0,0,0,.18)}
+  .modal > .mh{position:sticky;top:0;z-index:4;background:#fff;margin:0 -26px 18px;padding:20px 26px 14px;
+    border-bottom:1px solid var(--line)}
+  .modal > .mh h2{font-size:22px;margin:0;line-height:1.2}
+  .modal > .mh .x{flex:none;width:36px;height:36px;border-radius:50%;background:var(--cream);color:var(--ink-soft);
+    font-size:15px;display:flex;align-items:center;justify-content:center}
+  .modal > .mh .x:hover{background:var(--stone);color:var(--ink)}
+  .mf{position:sticky;bottom:0;z-index:4;background:#fff;display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+    margin:22px -26px 0;padding:14px 26px 20px;border-top:1px solid var(--line)}
+  .modal:not(:has(> .mf))::after{content:"";display:block;height:24px}
+  .mf .btn{min-height:48px}
+  .mf-tot{display:flex;flex-direction:column;line-height:1.15;min-width:90px}
+  .mf-tot span{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .mf-tot b{font-size:20px;font-weight:600}
+  .bl-in{position:relative;flex:1;min-width:0}
+  .bl-th{flex:none;display:flex}
+  .bl-th .si-img{width:46px;height:46px;border-radius:12px}
+  .bl-ph{display:flex!important;align-items:center;justify-content:center;color:var(--muted);font-size:18px;background:var(--cream)!important;border:1px dashed var(--line)}
+  .bl-sug{max-height:320px}
+  .bl-opt{display:flex!important;align-items:center;gap:12px}
+  .bl-opt .si-img{width:40px;height:40px;border-radius:10px}
+  .mf .btn.solid{flex:1 1 200px}
+  .mf .btn.danger,.mf .btn.ghost{flex:0 0 auto}
   /* iOS: πεδία <16px προκαλούν αυτόματο zoom στο focus και "χοροπηδάει" το UI */
   .modal input,.modal select,.modal textarea{font-size:16px}
   .ie-top input{min-width:0}
   .ie-row select{min-width:0}
   .modal h2{font-size:22px;font-weight:600;margin-bottom:4px;letter-spacing:-.01em}
-  .modal .mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+  .modal .mh{display:flex;justify-content:space-between;align-items:center;gap:12px}
   .x{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1}
 
   .stage-picker{display:flex;gap:8px;flex-wrap:wrap}
@@ -517,6 +557,11 @@
   .led .d small{display:block;font-weight:400;font-size:11px;color:var(--muted)}
   .led .a{width:82px;text-align:right;font-weight:600;flex:none;font-variant-numeric:tabular-nums}
   .led-f .a{font-weight:700}
+  .led-day{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;
+    padding:12px 14px 6px;background:var(--cream);border-top:1px solid var(--line)}
+  .led-day:first-child{border-top:none}
+  .led-btn{width:100%;text-align:left;background:#fff;border:none;border-top:1px solid var(--line);cursor:pointer;font-family:'Inter'}
+  .led-btn:active{background:var(--cream)}
   .led .x{flex:none;width:26px;height:26px;border-radius:7px;border:1px solid var(--line);background:#fff;
     color:var(--muted);font-size:12px;cursor:pointer;line-height:1}
   .led .x:active{background:var(--stone)}
@@ -538,6 +583,33 @@
   .bz-add button:active{background:var(--stone)}
   /* ---- ταμείο: απόδειξη ---- */
   .till-add{display:flex;gap:8px;margin-top:10px}
+  .till-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px;margin-top:10px}
+  .tg{position:relative;display:flex;flex-direction:column;align-items:stretch;gap:6px;text-align:left;background:#fff;
+    border:1px solid var(--line);border-radius:14px;padding:8px;cursor:pointer;font-family:'Inter';min-width:0}
+  .tg .si-img{width:100%;height:auto;aspect-ratio:1/1;border-radius:10px}
+  .tg.in{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+  .tg:disabled{opacity:.4;cursor:not-allowed}
+  .tg:active:not(:disabled){transform:scale(.98)}
+  .tg-b{position:absolute;top:4px;right:4px;background:var(--ink);color:#fff;font-size:12px;font-weight:700;
+    min-width:24px;height:24px;border-radius:12px;display:flex;align-items:center;justify-content:center;padding:0 6px}
+  .tg-n{font-size:12.5px;font-weight:600;line-height:1.25;color:var(--ink);overflow-wrap:anywhere}
+  .tg-p{font-size:13px;font-weight:600;color:var(--ink);display:flex;justify-content:space-between;gap:4px;align-items:baseline}
+  .tg-p small{font-size:10.5px;font-weight:500;color:var(--muted)}
+  .till-cat input{margin:0}
+  /* κινητό: ο κατάλογος είναι μια οριζόντια λωρίδα */
+  @media(max-width:819px){
+    .till-grid{display:flex;overflow-x:auto;gap:8px;padding-bottom:4px;scrollbar-width:none;margin:10px -18px 0;padding:0 18px 4px}
+    .till-grid::-webkit-scrollbar{display:none}
+    .tg{flex:0 0 116px}
+    .till-cat{margin-bottom:16px}
+  }
+  /* tablet & υπολογιστής: ταμείο δύο στηλών */
+  @media(min-width:820px){
+    .till-modal{max-width:1120px}
+    .till-wrap{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(330px,1fr);gap:24px;align-items:start}
+    .till-cat{position:sticky;top:84px;max-height:calc(100dvh - 250px);overflow-y:auto;padding-right:4px}
+    .till-grid{grid-template-columns:repeat(auto-fill,minmax(132px,1fr))}
+  }
   .till-add button{flex:1;border:1.5px dashed var(--line);background:none;border-radius:11px;padding:11px 8px;
     font-family:'Inter';font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--ink-soft);cursor:pointer}
   .till-add button:active{background:var(--stone)}
@@ -662,6 +734,20 @@
   .rep-r.tot .l{color:#fff;font-weight:600}
   .rep-r.tot .a{color:#fff;font-size:19px}
   .rep-note{font-size:11.5px;color:var(--muted);line-height:1.6;margin:10px 0 0}
+  .rep-intro{font-size:13.5px;color:var(--ink-soft);line-height:1.6;margin:4px 0 16px}
+  .rk-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+  .rk{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+  .rk-l{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .rk-v{font-size:24px;font-weight:600;font-family:'Cormorant',Georgia,serif;margin:4px 0 2px;line-height:1.1}
+  .rk-s{font-size:11.5px;color:var(--muted)}
+  .rep-dl{font-weight:600;white-space:nowrap}
+  .rep-dl.up{color:#2c6e49} .rep-dl.down{color:#b54b3a}
+  .rep-ins{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+  .rep-ins li{font-size:13.5px;line-height:1.55;padding:11px 0 11px 18px;border-bottom:1px solid var(--line);position:relative}
+  .rep-ins li::before{content:"";position:absolute;left:2px;top:19px;width:6px;height:6px;border-radius:50%;background:var(--ink)}
+  .rep-hr.rt5,.rep-tr.rt5{grid-template-columns:1.6fr .6fr 1fr .9fr .9fr}
+  .rep-trb{width:100%;background:none;border:none;border-bottom:1px solid var(--line);font-family:'Inter',system-ui,sans-serif;font-size:13px;text-align:left;cursor:pointer;color:var(--ink)}
+  .rep-trb:active{background:var(--cream)}
   .rep-tbl{border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
   .rep-hr,.rep-tr{display:grid;grid-template-columns:1.6fr .7fr 1fr 1fr;gap:8px;padding:9px 0;border-bottom:1px solid var(--line);align-items:baseline}
   .rep-hr{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
@@ -679,8 +765,10 @@
     body{background:#fff}
   }
   @media(max-width:560px){
-    .rep-hr,.rep-tr{grid-template-columns:1.4fr .6fr 1fr;font-size:12px}
-    .rep-hr span:nth-child(4),.rep-tr span:nth-child(4){display:none}
+    .rep-hr,.rep-tr{grid-template-columns:1.4fr .5fr .95fr .8fr;font-size:12px;gap:6px}
+    .rep-hr{font-size:9.5px;letter-spacing:.06em}
+    .rep-hr.rt5,.rep-tr.rt5{grid-template-columns:1.3fr .45fr .95fr .75fr .8fr}
+    #statsBox{padding:14px}
   }
   /* ---- λίστα πωλήσεων ---- */
   .reg-sum{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted);
@@ -888,6 +976,11 @@
   .cust-note{background:#fdf9ef;border:1px solid #eee0c4;border-left:3px solid #c9a24a;border-radius:12px;padding:10px 13px;font-size:12.5px;color:#7a5f22;line-height:1.6;margin-bottom:12px}
   .cust-line{font-size:12.5px;color:var(--ink-soft);line-height:1.7;margin-top:10px}
   .cust-line b{color:var(--ink);font-weight:600}
+  .ch-contact{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .ch-c{display:inline-flex;align-items:center;gap:6px;background:var(--cream);border:1px solid var(--line);border-radius:999px;
+    padding:8px 14px;font-size:13px;font-weight:500;color:var(--ink);text-decoration:none}
+  .ch-c.muted{color:var(--muted)}
+  .ch-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
   .cust-row{display:flex;align-items:center;gap:6px;background:var(--cream);border:1px solid var(--line);border-radius:12px;padding:4px 6px 4px 13px;margin-bottom:8px}
   .cr-main{flex:1;display:flex;justify-content:space-between;align-items:center;gap:12px;background:none;border:none;text-align:left;padding:8px 4px;cursor:pointer;font-family:'Inter';min-width:0}
   .cr-x{flex:none;width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:#fff;color:var(--muted);font-size:12px;cursor:pointer}
@@ -1005,11 +1098,33 @@
   /* stock tab */
   .stock-sum{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
   .stock-cat{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:18px 0 8px}
-  .stock-item{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;background:var(--card,#fff);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:9px}
+  .stock-item{display:flex;flex-wrap:nowrap;align-items:center;gap:10px 12px;background:var(--card,#fff);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:9px}
   .stock-item.low{border-color:#e6a23c;background:#fff9f0}
   .stock-item.out{border-color:#c98a2e;background:#fdf3e6}
   .si-img{width:42px;height:42px;border-radius:10px;object-fit:cover;background:var(--stone);flex:none}
-  .si-info{flex:1 1 120px;min-width:0}
+  .si-info{flex:1 1 auto;min-width:0;cursor:pointer}
+  .si-tap{flex:none;cursor:pointer;display:flex}
+  .si-more{flex:none;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:#fff;
+    font-size:18px;line-height:1;color:var(--ink-soft);cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .si-more:active{background:var(--stone)}
+  .stepper-btn{width:32px;height:32px}
+  @media(max-width:420px){ .stock-item{gap:8px;padding:11px 12px} .si-qty{gap:4px} .si-count{min-width:24px} }
+  /* φύλλο είδους */
+  .is-top{display:flex;gap:14px;align-items:center;margin-bottom:16px}
+  .is-top .si-img{width:72px;height:72px;border-radius:14px}
+  .is-top .n{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .is-top .q{font-size:28px;font-weight:600;font-family:'Cormorant',Georgia,serif;line-height:1}
+  .act-list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .act-list button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#fff;border:none;
+    border-top:1px solid var(--line);padding:14px 16px;font-family:'Inter';font-size:14.5px;color:var(--ink);cursor:pointer;min-height:52px}
+  .act-list button:first-child{border-top:none}
+  .act-list button:active{background:var(--cream)}
+  .act-list .i{width:22px;text-align:center;font-size:16px;flex:none}
+  .act-list .d{display:block;font-size:12px;color:var(--muted);margin-top:1px}
+  .act-list button.primary{background:var(--ink);color:#fff}
+  .act-list button.primary .d{color:#bbb}
+  .act-list button.warn{color:#9b3b29}
+  .act-sep{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:18px 2px 8px}
   .si-name{font-size:14px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}
   .si-meta{font-size:11.5px;color:var(--muted);margin-top:2px}
   .si-low{color:#9a6a1e;font-weight:600}
@@ -1067,7 +1182,8 @@
     border-top:1px solid var(--line)}
   .tbi{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;background:none;border:none;
     cursor:pointer;color:var(--muted);font-family:'Inter',system-ui,sans-serif;min-height:52px;justify-content:center}
-  .tbi .i{font-size:20px;line-height:1}
+  .tbi .i{font-size:20px;line-height:1;display:flex}
+  .tbi .i svg,.sn .i svg,.more-list .i svg{display:block}
   .tbi .t{font-size:10.5px;font-weight:600;letter-spacing:.02em}
   .tbi.sel{color:var(--ink)}
   .tbi.sel .t{font-weight:700}
@@ -1115,10 +1231,16 @@
   /* ---- φύλλα: στο κινητό τα παράθυρα ανοίγουν από κάτω ---- */
   @media(max-width:699px){
     .overlay{align-items:flex-end;padding:0}
-    .overlay .modal{max-width:none;margin:0;border-radius:22px 22px 0 0;
-      max-height:94vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
-      padding:12px 18px calc(22px + env(safe-area-inset-bottom));animation:sheetUp .22s ease-out}
-    .overlay .modal::before{content:"";display:block;width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 12px}
+    .overlay .modal{max-width:none;margin:0;border-radius:20px 20px 0 0;
+      max-height:92vh;max-height:92dvh;
+      padding:0 18px;animation:sheetUp .2s ease-out}
+    .modal:not(:has(> .mf))::after{height:calc(20px + env(safe-area-inset-bottom))}
+    .modal > .mh{margin:0 -18px 16px;padding:18px 18px 12px}
+    .modal > .mh::before{content:"";position:absolute;left:50%;top:7px;width:36px;height:4px;margin-left:-18px;border-radius:2px;background:var(--line)}
+    .modal > .mh h2{font-size:20px}
+    .mf{margin:20px -18px 0;
+      padding:12px 18px calc(14px + env(safe-area-inset-bottom))}
+    .mf .btn.solid{flex:1 1 auto}
     @keyframes sheetUp{from{transform:translateY(40px);opacity:.6}to{transform:none;opacity:1}}
   }
 
@@ -1136,7 +1258,8 @@
     .sn-list{display:flex;flex-direction:column;gap:2px;flex:1}
     .sn{display:flex;align-items:center;gap:11px;width:100%;padding:10px 12px;border-radius:10px;border:none;background:none;
       font-family:'Inter',system-ui,sans-serif;font-size:13.5px;font-weight:500;color:var(--ink-soft);cursor:pointer;text-align:left;position:relative}
-    .sn .i{width:20px;text-align:center;font-size:15px;opacity:.8}
+    .sn .i{width:20px;display:flex;justify-content:center;opacity:.85}
+    .sn .i svg{width:19px;height:19px}
     .sn:hover{background:var(--cream)}
     .sn.sel{background:var(--stone);color:var(--ink);font-weight:700}
     .sn .sub{display:block;font-size:12px;font-weight:500;color:var(--muted);padding:4px 0 2px 31px}
@@ -1302,8 +1425,8 @@
         <button class="sn-new" onclick="openQuick()"><span>+</span> Νέα καταχώρηση</button>
         <nav class="sn-list" id="snList"></nav>
         <div class="sn-foot">
-          <button class="sn" onclick="openSettings()"><span class="i">⚙</span><span class="t">Ρυθμίσεις</span><span id="gearDot" class="gear-dot hidden"></span></button>
-          <button class="sn" onclick="adminLogout()"><span class="i">↪</span><span class="t">Έξοδος</span></button>
+          <button class="sn" onclick="openSettings()"><span class="i"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span><span class="t">Ρυθμίσεις</span><span id="gearDot" class="gear-dot hidden"></span></button>
+          <button class="sn" onclick="adminLogout()"><span class="i"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h4v16h-4"/><path d="M10 8l-4 4 4 4"/><path d="M6 12h10"/></svg></span><span class="t">Έξοδος</span></button>
         </div>
       </aside>
 
@@ -1339,11 +1462,11 @@
 
       <!-- κάτω μπάρα: κινητό και tablet κάθετα -->
       <nav class="tabbar" id="tabbar">
-        <button class="tbi" data-mod="home" onclick="showAdminTab('home')"><span class="i">⌂</span><span class="t">Αρχική</span></button>
-        <button class="tbi" data-mod="sales" onclick="showAdminTab('orders')"><span class="i">◫</span><span class="t">Πωλήσεις</span></button>
+        <button class="tbi" data-mod="home" onclick="showAdminTab('home')"><span class="i"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-5h4v5"/></svg></span><span class="t">Αρχική</span></button>
+        <button class="tbi" data-mod="sales" onclick="showAdminTab('orders')"><span class="i"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12H7L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></span><span class="t">Πωλήσεις</span></button>
         <button class="tbi plus" onclick="openQuick()" aria-label="Νέα καταχώρηση"><span class="i">+</span></button>
-        <button class="tbi" data-mod="stock" onclick="showAdminTab('stock')"><span class="i">▦</span><span class="t">Αποθήκη</span></button>
-        <button class="tbi" data-mod="more" onclick="openMore()"><span class="i">≡</span><span class="t">Μενού</span></button>
+        <button class="tbi" data-mod="stock" onclick="showAdminTab('stock')"><span class="i"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5v-9z"/><path d="M3 7.5 12 12l9-4.5"/><path d="M12 12v9"/></svg></span><span class="t">Αποθήκη</span></button>
+        <button class="tbi" data-mod="more" onclick="openMore()"><span class="i"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/></svg></span><span class="t">Μενού</span></button>
       </nav>
     </div>
   </section>
@@ -1418,7 +1541,7 @@
     <div style="display:flex;justify-content:space-between;align-items:center;margin:4px 0 8px">
       <span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)">Προϊόντα</span>
       <button class="btn ghost sm" onclick="addItemRow()">+ Προσθήκη προϊόντος</button>
-      <button class="btn ghost sm" onclick="openReadyPicker()">📦 Από έτοιμα προϊόντα</button>
+      <button class="btn ghost sm" onclick="openReadyPicker()">Από έτοιμα προϊόντα</button>
     </div>
     <datalist id="modelList"></datalist>
     <div id="itemsEditor"></div>
@@ -1489,10 +1612,9 @@
       <div class="link-box"><code id="modalLink"></code><button class="btn solid sm" onclick="copyLink()">Copy</button></div>
     </div>
 
-    <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
-      <button class="btn solid" style="flex:1 1 100%" id="saveBtn" onclick="saveOrder()">Αποθήκευση</button>
-      <button class="btn ghost" style="flex:1 1 auto" onclick="closeOrderModal()">Κλείσιμο</button>
-      <button class="btn danger hidden" style="flex:0 1 auto" id="orderDelBtn" onclick="delOrderFromModal()">Διαγραφή</button>
+    <div class="mf">
+      <button class="btn danger hidden" id="orderDelBtn" onclick="delOrderFromModal()">Διαγραφή</button>
+      <button class="btn solid" id="saveBtn" onclick="saveOrder()">Αποθήκευση</button>
     </div>
   </div>
 </div>
@@ -1517,10 +1639,9 @@
     <div id="mStats" class="cust-note hidden" style="margin-bottom:12px"></div>
     <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:4px 0 8px">Τυπικά υλικά</p>
     <div class="mat-block" id="mMatList"></div>
-    <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
-      <button class="btn solid" style="flex:1 1 100%" onclick="saveModel()">Αποθήκευση</button>
-      <button class="btn ghost" style="flex:1 1 auto" onclick="closeModelModal()">Κλείσιμο</button>
+    <div class="mf">
       <button class="btn danger hidden" id="modelDelBtn" onclick="delModel()">Διαγραφή</button>
+      <button class="btn solid" onclick="saveModel()">Αποθήκευση</button>
     </div>
   </div>
 </div>
@@ -1530,7 +1651,6 @@
     <div class="mh"><h2 class="serif">Τι φτιάχνεις;</h2><button class="x" onclick="closePickWork()">✕</button></div>
     <div id="pickWorkTitle" style="font-size:13px;font-weight:600;margin-bottom:10px"></div>
     <div id="pickWorkBody"></div>
-    <div style="margin-top:14px"><button class="btn ghost" style="width:100%" onclick="closePickWork()">Άκυρο</button></div>
   </div>
 </div>
 
@@ -1539,7 +1659,6 @@
     <div class="mh"><h2 class="serif">Από τα έτοιμα προϊόντα</h2><button class="x" onclick="closeReadyPicker()">✕</button></div>
     <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:12px">Διάλεξε έτοιμο κομμάτι για να μπει σε αυτή την παραγγελία. Θα αφαιρεθεί από την αποθήκη και το κόστος του θα προστεθεί στην παραγγελία μόλις αποθηκεύσεις.</p>
     <div id="readyBody"></div>
-    <div style="margin-top:14px"><button class="btn ghost" style="width:100%" onclick="closeReadyPicker()">Άκυρο</button></div>
   </div>
 </div>
 
@@ -1561,7 +1680,6 @@
   <div class="modal">
     <div class="mh"><h2 class="serif" id="salesTitle">Πωλήσεις</h2><button class="x" onclick="closeSales()">✕</button></div>
     <div id="salesBody"></div>
-    <div style="margin-top:16px"><button class="btn ghost" style="width:100%" onclick="closeSales()">Κλείσιμο</button></div>
   </div>
 </div>
 
@@ -1573,12 +1691,14 @@
       <label class="fld" style="flex:1 1 130px"><span>Όνομα</span><input id="ceFirst" placeholder="π.χ. Μαρία"></label>
       <label class="fld" style="flex:1 1 130px"><span>Επίθετο</span><input id="ceLast" placeholder="π.χ. Παπαδοπούλου"></label>
     </div>
-    <label class="fld"><span>Τηλέφωνο</span><input id="cePhone" inputmode="tel" placeholder="π.χ. 6971234567"></label>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <label class="fld" style="flex:1 1 150px"><span>Τηλέφωνο</span><input id="cePhone" inputmode="tel" placeholder="π.χ. 6971234567"></label>
+      <label class="fld" style="flex:1 1 150px"><span>Instagram</span><input id="ceIg" autocapitalize="off" placeholder="π.χ. maria.pap"></label>
+    </div>
     <label class="fld"><span>Σημείωση (τη βλέπεις όταν του καταχωρείς παραγγελία)</span>
       <textarea id="ceNote" rows="3" placeholder="π.χ. προτιμά ασημί ταμπελάκι · παραλαβή από το μαγαζί · πληρώνει με μεταφορά"></textarea></label>
-    <div style="display:flex;gap:10px;margin-top:6px;flex-wrap:wrap">
-      <button class="btn solid" style="flex:1 1 100%" onclick="saveCustEdit()">Αποθήκευση</button>
-      <button class="btn ghost" style="flex:1" onclick="closeCustEdit()">Κλείσιμο</button>
+    <div class="mf">
+      <button class="btn solid" onclick="saveCustEdit()">Αποθήκευση</button>
     </div>
   </div>
 </div>
@@ -1590,9 +1710,8 @@
     <div id="settleShop" style="font-size:13px;font-weight:600;margin-bottom:2px"></div>
     <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:12px">Πόσα πούλησε το κατάστημα και πόσα γυρίζουν πίσω. Η οφειλή υπολογίζεται μόνο στα πουλημένα.</p>
     <div id="settleBody"></div>
-    <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
-      <button class="btn solid" style="flex:1 1 100%" onclick="applySettle()">Αποθήκευση</button>
-      <button class="btn ghost" style="flex:1" onclick="closeSettle()">Κλείσιμο</button>
+    <div class="mf">
+      <button class="btn solid" onclick="applySettle()">Αποθήκευση</button>
     </div>
   </div>
 </div>
@@ -1606,9 +1725,8 @@
     <div class="mat-block" id="payList"></div>
     <label class="fld"><span>Ποσό που έλαβες €</span><input id="payAmount" inputmode="decimal" placeholder="0"></label>
     <p id="payMsg" class="msg err hidden"></p>
-    <div style="display:flex;gap:10px;margin-top:6px;flex-wrap:wrap">
-      <button class="btn solid" style="flex:1 1 100%" id="payBtn" onclick="applyPay()">Καταχώρηση πληρωμής</button>
-      <button class="btn ghost" style="flex:1" onclick="closePay()">Κλείσιμο</button>
+    <div class="mf">
+      <button class="btn solid" id="payBtn" onclick="applyPay()">Καταχώρηση πληρωμής</button>
     </div>
   </div>
 </div>
@@ -1621,7 +1739,6 @@
       <button class="x" onclick="closeCustomer()">✕</button>
     </div>
     <div id="custBody"></div>
-    <div style="margin-top:18px"><button class="btn ghost" style="width:100%" onclick="closeCustomer()">Κλείσιμο</button></div>
   </div>
 </div>
 
@@ -1634,7 +1751,6 @@
     </div>
     <div id="fbOneWho" style="font-size:12.5px;color:var(--ink-soft);margin-bottom:6px"></div>
     <div id="fbOneBody"></div>
-    <div style="margin-top:18px"><button class="btn ghost" style="width:100%" onclick="closeOrderFeedback()">Κλείσιμο</button></div>
   </div>
 </div>
 
@@ -1649,19 +1765,18 @@
     <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:14px">Όταν ένα event είναι ανοιχτό, εμφανίζεται στη νέα παραγγελία και ο πελάτης βλέπει το banner του.</p>
     <div id="settingsBody"></div>
     <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px">Ανασκόπηση</p>
-    <button class="btn ghost" style="width:100%" onclick="closeSettings();openWrap()">✨ Δες την ανασκόπηση του μήνα</button>
+    <button class="btn ghost" style="width:100%" onclick="closeSettings();openWrap()">Δες την ανασκόπηση του μήνα</button>
     <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px">Εργασία</p>
     <label class="fld"><span>Αμοιβή ανά ώρα €</span><input id="setRate" inputmode="decimal" onchange="saveRate()"></label>
     <p style="font-size:11.5px;color:var(--muted);margin-top:-8px">Χρησιμοποιείται από το χρονόμετρο για να υπολογίζεται η αξία του χρόνου σου.</p>
     <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px">Δεδομένα</p>
-    <button class="btn ghost" style="width:100%" onclick="closeSettings();rebuildStockHistory()">📋 Ανακατασκευή ιστορικού κινήσεων</button>
-    <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();openCleanNames()">✎ Καθαρισμός ονομάτων υλικών</button>
-    <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();restorePalette()">↩ Επαναφορά αποχρώσεων Mix &amp; Match</button>
+    <button class="btn ghost" style="width:100%" onclick="closeSettings();rebuildStockHistory()">Ανακατασκευή ιστορικού κινήσεων</button>
+    <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();openCleanNames()">Καθαρισμός ονομάτων υλικών</button>
+    <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();restorePalette()">Επαναφορά αποχρώσεων Mix &amp; Match</button>
     <p style="font-size:11.5px;color:var(--muted);margin:14px 0 0;padding-top:12px;border-top:1px solid var(--line)">
-      Έκδοση <b style="color:var(--ink)">2026.10.05.1143</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
+      Έκδοση <b style="color:var(--ink)">2026.10.05.1256</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
       κλείσε και ξανάνοιξε την καρτέλα, ή τράβα την σελίδα προς τα κάτω για ανανέωση.</p>
     <p id="setRebuiltNote" style="font-size:11.5px;color:var(--muted);margin-top:6px">Συμπληρώνει τις κινήσεις αποθήκης από τις παραγγελίες, τις πωλήσεις και τα bazaar που υπάρχουν ήδη. Το απόθεμα δεν αλλάζει.</p>
-    <div style="margin-top:18px"><button class="btn ghost" style="width:100%" onclick="closeSettings()">Κλείσιμο</button></div>
   </div>
 </div>
 
@@ -1682,10 +1797,9 @@
     <label class="fld"><span>Τοποθεσία (προαιρετικό)</span><input id="bzPlace" placeholder="π.χ. Δημοτική Αγορά Χανίων"></label>
     <p style="font-size:11.5px;color:var(--muted);margin-top:-6px">Το κόστος συμμετοχής αφαιρείται από το καθαρό του bazaar. Η έκπτωση μπαίνει μόνη της σε κάθε πώληση εδώ — μπορείς να την αλλάξεις στο ταμείο.</p>
     <p id="bzModalMsg" class="msg err hidden"></p>
-    <div style="display:flex;gap:10px;margin-top:16px">
-      <button class="btn solid" style="flex:1" onclick="saveBz()">Αποθήκευση</button>
+    <div class="mf">
       <button class="btn ghost hidden" id="bzDelBtn" onclick="deleteBz()">🗑</button>
-      <button class="btn ghost" onclick="closeBzModal()">Κλείσιμο</button>
+      <button class="btn solid" onclick="saveBz()">Αποθήκευση</button>
     </div>
   </div>
 </div>
@@ -1704,16 +1818,21 @@
 </div>
 
 <div id="tillModal" class="overlay hidden">
-  <div class="modal">
+  <div class="modal till-modal">
     <div class="mh">
-      <h2 class="serif">Πώληση</h2>
+      <div style="min-width:0"><h2 class="serif">Πώληση</h2><div id="tillWhere" style="font-size:12px;color:var(--muted);margin-top:2px"></div></div>
       <button class="x" onclick="closeTill()">✕</button>
     </div>
-    <div id="tillWhere" style="font-size:12px;color:var(--muted);margin-bottom:12px"></div>
+    <div class="till-wrap">
+    <div class="till-cat">
+      <input id="tillQ" placeholder="Αναζήτηση κομματιού…" autocomplete="off" oninput="renderTillGrid()">
+      <div id="tillGrid" class="till-grid"></div>
+    </div>
+    <div class="till-cart">
+    <div class="act-sep" style="margin-top:0">Καλάθι</div>
     <div id="tillLines"></div>
     <div class="till-add">
-      <button onclick="tillAddPiece()">+ Προϊόν</button>
-      <button onclick="tillAddExtra()">+ Συσκευασία / άλλο</button>
+      <button onclick="tillAddExtra()">+ Συσκευασία / δώρο από την αποθήκη</button>
     </div>
     <div class="till-sums">
       <div class="till-sum"><span>Υποσύνολο</span><span id="tillSub">€0,00</span></div>
@@ -1730,8 +1849,8 @@
     </div>
     <div class="till-grand"><span class="l">Σύνολο</span><span class="v" id="tillTotal">€0,00</span></div>
     <div class="seg" id="tillPaySeg" style="display:flex;gap:8px;margin-top:14px">
-      <button type="button" class="btn ghost sm till-pay sel" data-p="cash" onclick="tillPay('cash')">💶 Μετρητά</button>
-      <button type="button" class="btn ghost sm till-pay" data-p="card" onclick="tillPay('card')">💳 Κάρτα / IRIS</button>
+      <button type="button" class="btn ghost sm till-pay sel" data-p="cash" onclick="tillPay('cash')">Μετρητά</button>
+      <button type="button" class="btn ghost sm till-pay" data-p="card" onclick="tillPay('card')">Κάρτα / IRIS</button>
     </div>
     <div class="till-cash" id="tillCashBox">
       <div class="till-cash-r">
@@ -1743,12 +1862,12 @@
         <span class="l" id="tillChangeL">Ρέστα</span><span class="v" id="tillChange">€0,00</span>
       </div>
     </div>
-    <label class="fld" style="margin-top:14px;position:relative;z-index:60"><span>Όνομα (προαιρετικό)</span>
+    <label class="fld" style="margin-top:14px;position:relative"><span>Όνομα πελάτη (προαιρετικό)</span>
       <input id="tillName" placeholder="—"><div id="tillSug" class="name-sug hidden"></div></label>
     <p id="tillMsg" class="msg err hidden"></p>
-    <div style="display:flex;gap:10px;margin-top:16px">
-      <button class="btn solid" style="flex:1" id="tillBtn" onclick="tillCheckout()">Καταχώρηση πώλησης</button>
-      <button class="btn ghost" onclick="closeTill()">Κλείσιμο</button>
+    </div></div>
+    <div class="mf">
+      <button class="btn solid" id="tillBtn" onclick="tillCheckout()">Καταχώρηση πώλησης</button>
     </div>
   </div>
 </div>
@@ -1768,9 +1887,8 @@
       <label class="fld" style="flex:1"><span>Ημερομηνία έναρξης</span><input id="acDate" type="date"></label>
     </div>
     <p id="acMsg" class="msg err hidden"></p>
-    <div style="display:flex;gap:10px;margin-top:16px">
-      <button class="btn solid" style="flex:1" onclick="saveAccount()">Αποθήκευση</button>
-      <button class="btn ghost" onclick="closeAccount()">Κλείσιμο</button>
+    <div class="mf">
+      <button class="btn solid" onclick="saveAccount()">Αποθήκευση</button>
     </div>
   </div>
 </div>
@@ -1782,14 +1900,14 @@
       <h2 class="serif" id="cmTitle">Νέα κίνηση</h2>
       <button class="x" onclick="closeCashMove()">✕</button>
     </div>
-    <div class="seg" id="cmKindSeg" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
-      <button type="button" class="btn ghost sm cm-k sel" data-k="expense"    onclick="setMoveKind('expense')">Έξοδο</button>
-      <button type="button" class="btn ghost sm cm-k"     data-k="purchase"   onclick="setMoveKind('purchase')">Αγορά</button>
-      <button type="button" class="btn ghost sm cm-k"     data-k="owner_draw" onclick="setMoveKind('owner_draw')">Ανάληψη</button>
-      <button type="button" class="btn ghost sm cm-k"     data-k="owner_in"   onclick="setMoveKind('owner_in')">Εισφορά</button>
-      <button type="button" class="btn ghost sm cm-k"     data-k="transfer"   onclick="setMoveKind('transfer')">Μεταφορά</button>
-      <button type="button" class="btn ghost sm cm-k"     data-k="sale"       onclick="setMoveKind('sale')">Είσπραξη</button>
-    </div>
+    <div class="chips" style="margin:0 -26px 14px;padding:0 26px"><div class="chiprow" id="cmKindSeg">
+      <button type="button" class="tb cm-k sel" data-k="expense"    onclick="setMoveKind('expense')">Έξοδο</button>
+      <button type="button" class="tb cm-k"     data-k="purchase"   onclick="setMoveKind('purchase')">Αγορά υλικών</button>
+      <button type="button" class="tb cm-k"     data-k="sale"       onclick="setMoveKind('sale')">Είσπραξη</button>
+      <button type="button" class="tb cm-k"     data-k="owner_draw" onclick="setMoveKind('owner_draw')">Ανάληψη ιδιοκτήτη</button>
+      <button type="button" class="tb cm-k"     data-k="owner_in"   onclick="setMoveKind('owner_in')">Κατάθεση ιδιοκτήτη</button>
+      <button type="button" class="tb cm-k"     data-k="transfer"   onclick="setMoveKind('transfer')">Μεταφορά</button>
+    </div></div>
     <p id="cmHint" class="r-hint hidden" style="margin-bottom:12px"></p>
 
     <div id="cmBuyBox" class="hidden" style="margin-bottom:12px">
@@ -1813,10 +1931,9 @@
     </div>
     <label class="fld"><span>Σημείωση (προαιρετικό)</span><input id="cmNote" placeholder="—"></label>
     <p id="cmMsg" class="msg err hidden"></p>
-    <div style="display:flex;gap:10px;margin-top:16px">
-      <button class="btn solid" style="flex:1" id="cmSaveBtn" onclick="saveCashMove()">Καταχώρηση</button>
+    <div class="mf">
       <button class="btn danger sm hidden" id="cmDelBtn" onclick="delCashMove()">🗑</button>
-      <button class="btn ghost" onclick="closeCashMove()">Κλείσιμο</button>
+      <button class="btn solid" id="cmSaveBtn" onclick="saveCashMove()">Καταχώρηση</button>
     </div>
   </div>
 </div>
@@ -1831,9 +1948,8 @@
     <div id="bzCloseSum" style="font-size:12.5px;color:var(--ink-soft);line-height:1.7;margin-bottom:14px"></div>
     <div id="bzCloseBack"></div>
     <p id="bzCloseMsg" class="msg err hidden"></p>
-    <div style="display:flex;gap:10px;margin-top:16px">
-      <button class="btn solid" style="flex:1" id="bzCloseBtn" onclick="doCloseBazaar()">Κλείσε το bazaar</button>
-      <button class="btn ghost" onclick="closeBzClose()">Άκυρο</button>
+    <div class="mf">
+      <button class="btn solid" id="bzCloseBtn" onclick="doCloseBazaar()">Κλείσε το bazaar</button>
     </div>
   </div>
 </div>
@@ -1848,10 +1964,9 @@
     <p id="bzPickCount" style="font-size:12px;color:var(--muted);margin-bottom:10px">Διάλεξε τι θα πάρεις μαζί σου</p>
     <input id="bzPickSearch" placeholder="Αναζήτηση…" oninput="_bzChooseCb?renderBzChoose():renderBzPicker()" style="margin-bottom:12px">
     <div id="bzPickList"></div>
-    <div style="display:flex;gap:10px;margin-top:16px">
-      <button class="btn solid" style="flex:1" id="bzPickSave" onclick="saveBzPick()">Αποθήκευση</button>
+    <div class="mf">
       <button class="btn ghost" id="bzPickNew" onclick="newBzPiece()">+ Νέο κομμάτι</button>
-      <button class="btn ghost" onclick="closeBzPicker()">Κλείσιμο</button>
+      <button class="btn solid" id="bzPickSave" onclick="saveBzPick()">Αποθήκευση</button>
     </div>
   </div>
 </div>
@@ -1872,9 +1987,8 @@
     <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
       <button class="btn ghost sm" style="flex:1 1 100%" onclick="closeMatPicker();openPurchase(editingId)">+ Αγόρασα νήμα / υλικό</button>
     </div>
-    <div style="display:flex;gap:10px;margin-top:10px">
-      <button class="btn solid" style="flex:1" id="matApplyBtn" onclick="applyMaterials()">Επιβεβαίωση & αφαίρεση από στοκ</button>
-      <button class="btn ghost" onclick="closeMatPicker()">Άκυρο</button>
+    <div class="mf">
+      <button class="btn solid" id="matApplyBtn" onclick="applyMaterials()">Επιβεβαίωση & αφαίρεση από στοκ</button>
     </div>
   </div>
 </div>
@@ -1895,9 +2009,8 @@
       <label class="fld" style="flex:1"><span>Κόστος € / μον.</span><input id="ahCost" inputmode="decimal" placeholder="0"></label>
     </div>
     <p id="ahMsg" class="msg err hidden" style="margin-bottom:10px"></p>
-    <div style="display:flex;gap:10px">
-      <button class="btn solid" style="flex:1" onclick="saveAdHoc()">Πρόσθεσε στο κόστος</button>
-      <button class="btn ghost" onclick="_ovClose('adhocModal')">Άκυρο</button>
+    <div class="mf">
+      <button class="btn solid" onclick="saveAdHoc()">Πρόσθεσε στο κόστος</button>
     </div>
   </div>
 </div>
@@ -1930,9 +2043,8 @@
       <select id="jmJob" onchange="jmPreview()"></select></label>
     <p id="jmPrev" style="font-size:12px;color:var(--muted);margin:-4px 0 12px"></p>
     <p id="jmMsg" class="msg err hidden" style="margin-bottom:10px"></p>
-    <div style="display:flex;gap:10px">
-      <button class="btn solid" style="flex:1" id="jmSaveBtn" onclick="saveJobMaterial()">Καταχώρηση</button>
-      <button class="btn ghost" onclick="_ovClose('jobMatModal')">Άκυρο</button>
+    <div class="mf">
+      <button class="btn solid" id="jmSaveBtn" onclick="saveJobMaterial()">Καταχώρηση</button>
     </div>
   </div>
 </div>
@@ -1946,9 +2058,8 @@
     <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:12px">Υλικά που έχουν όνομα πελάτη μέσα στο όνομά τους. Το όνομα καθαρίζεται και η παραγγελία κρατιέται ως σύνδεση. Έλεγξε και βγάλε όσα δεν ισχύουν.</p>
     <div id="cleanList"></div>
     <p id="cleanMsg" class="msg err hidden" style="margin-top:10px"></p>
-    <div style="display:flex;gap:10px;margin-top:16px">
-      <button class="btn solid" style="flex:1" id="cleanBtn" onclick="applyCleanNames()">Εφαρμογή</button>
-      <button class="btn ghost" onclick="_ovClose('cleanModal')">Άκυρο</button>
+    <div class="mf">
+      <button class="btn solid" id="cleanBtn" onclick="applyCleanNames()">Εφαρμογή</button>
     </div>
   </div>
 </div>
@@ -1959,20 +2070,19 @@
       <h2 class="serif">Αγορά</h2>
       <button class="x" onclick="_ovClose('buyModal')">✕</button>
     </div>
-    <p style="font-size:12.5px;color:var(--ink-soft);margin:-6px 0 14px">Ό,τι αγοράζεις μπαίνει στην αποθήκη. Αν ήταν για παραγγελία, γράψε πόσο χρησιμοποιήθηκε — αυτό πάει στο κόστος της, το υπόλοιπο μένει στην αποθήκη για την επόμενη φορά.</p>
+    <p style="font-size:12.5px;color:var(--ink-soft);margin:-6px 0 14px">Οι αγορές μπαίνουν στην αποθήκη και πληρώνονται από τον λογαριασμό που επιλέγεις. Αν μέρος μπήκε σε παραγγελία, δήλωσέ το στο «Στη δουλειά»: το κόστος του πάει στην παραγγελία και το υπόλοιπο μένει στην αποθήκη.</p>
+    <div id="buyLow"></div>
     <div id="buyLines"></div>
     <button type="button" class="btn ghost sm" style="width:100%;margin:4px 0 14px" onclick="buyAddLine()">+ Άλλο είδος</button>
-    <datalist id="buyItems"></datalist>
     <div style="display:flex;gap:10px">
       <label class="fld" style="flex:1"><span>Ημερομηνία</span><input id="buyDate" type="date"></label>
       <label class="fld" style="flex:1"><span>Από λογαριασμό</span><select id="buyAcc"></select></label>
     </div>
     <label class="fld"><span>Από πού (προαιρετικό)</span><input id="buyFrom" placeholder="π.χ. Νηματουργία Αθηνών"></label>
-    <div class="buy-tot"><span>Σύνολο</span><b id="buyTotal">€0,00</b></div>
     <p id="buyMsg" class="msg err hidden" style="margin-top:10px"></p>
-    <div style="display:flex;gap:10px;margin-top:14px">
-      <button class="btn solid" style="flex:1" id="buySaveBtn" onclick="saveBuy()">Καταχώρηση</button>
-      <button class="btn ghost" onclick="_ovClose('buyModal')">Άκυρο</button>
+    <div class="mf">
+      <div class="mf-tot"><span>Σύνολο</span><b id="buyTotal">€0,00</b></div>
+      <button class="btn solid" id="buySaveBtn" onclick="saveBuy()">Καταχώρηση</button>
     </div>
   </div>
 </div>
@@ -1981,6 +2091,12 @@
   <div class="modal" style="max-width:560px">
     <div class="mh"><h2 class="serif">Νέα καταχώρηση</h2><button class="x" onclick="_ovClose('quickSheet')">✕</button></div>
     <div id="quickBody"></div>
+  </div>
+</div>
+<div id="itemSheet" class="overlay hidden">
+  <div class="modal" style="max-width:460px">
+    <div class="mh"><h2 class="serif" id="isTitle">Είδος</h2><button class="x" onclick="_ovClose('itemSheet')">✕</button></div>
+    <div id="isBody"></div>
   </div>
 </div>
 <div id="moreSheet" class="overlay hidden">
@@ -2015,9 +2131,8 @@
     <p id="mmCount" style="font-size:11.5px;color:var(--muted);margin-bottom:8px"></p>
     <div id="mmList"></div>
     <p id="mmMsg" class="msg err hidden" style="margin-top:10px"></p>
-    <div style="display:flex;gap:10px;margin-top:16px">
-      <button class="btn solid" style="flex:1;background:#c0266c;border-color:#c0266c" id="mmSaveBtn" onclick="saveMmTransfer()">Μεταφορά</button>
-      <button class="btn ghost" onclick="_ovClose('mmModal')">Άκυρο</button>
+    <div class="mf">
+      <button class="btn solid" id="mmSaveBtn" onclick="saveMmTransfer()">Μεταφορά</button>
     </div>
   </div>
 </div>
@@ -2080,7 +2195,7 @@
       <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:6px 0 8px">Τι κόστισε να φτιαχτεί</p>
       <div id="sBomList"></div>
       <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-        <button type="button" class="btn ghost sm" onclick="openBomPicker()">🧵 Υλικά από αποθήκη</button>
+        <button type="button" class="btn ghost sm" onclick="openBomPicker()">Υλικά από αποθήκη</button>
       </div>
       <div style="display:flex;gap:10px;margin-top:10px">
         <label class="fld" style="flex:1"><span>Ώρες</span><input id="sWorkH" inputmode="numeric" placeholder="0" oninput="renderBom()"></label>
@@ -2090,11 +2205,10 @@
     </div>
     <label class="fld"><span>Φωτογραφία (URL, προαιρετικό)</span><input id="sImg" placeholder="https://…"></label>
     <p id="stockModalMsg" class="msg err hidden"></p>
-    <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
-      <button class="btn solid" style="flex:1 1 140px" id="stockSaveBtn" onclick="saveStock()">Αποθήκευση</button>
-      <button class="btn ghost" style="flex:1 1 140px" id="stockSaveNewBtn" onclick="saveStock(true)">Αποθήκευση &amp; νέο</button>
+    <div class="mf">
       <button class="btn danger sm hidden" id="stockDelBtn" onclick="delStock()">Διαγραφή</button>
-      <button class="btn ghost" onclick="closeStockModal()">Κλείσιμο</button>
+      <button class="btn ghost" id="stockSaveNewBtn" onclick="saveStock(true)">Αποθήκευση &amp; νέο</button>
+      <button class="btn solid" id="stockSaveBtn" onclick="saveStock()">Αποθήκευση</button>
     </div>
   </div>
 </div>
@@ -3852,7 +3966,7 @@ function renderWholesale(){
   html+=shopList.map(sh=>`<div class="w-shop-h">
       <div><div class="w-shop-n">${esc(sh.name)}</div>
         <div class="w-shop-s">${sh.rows.length} ${sh.rows.length===1?"παράδοση":"παραδόσεις"} · ${fmtMoney(sh.value)}${sh.left?` · <b>${sh.left}</b> στο ράφι`:""}${sh.owed>0?` · <b style="color:#8a5a1e">${fmtMoney(sh.owed)}</b> οφειλή`:""}</div></div>
-      <button class="btn ghost sm" onclick="newWholesaleFor('${sh.rows[0].id}')">🏬 Νέα</button>
+      <button class="btn ghost sm" onclick="newWholesaleFor('${sh.rows[0].id}')">Νέα</button>
     </div>` + sh.rows.map(o=>{
     const t=wTotals(o), paid=Number(o.amount_paid)||0, owed=Math.max(0,Math.round((t.due-paid)*100)/100);
     const cons=o.deal_type==="consignment";
@@ -3875,9 +3989,9 @@ function renderWholesale(){
       <div class="w-foot">
         <span class="w-val">${fmtMoney(t.value)}${cons?` <span style="color:var(--muted);font-weight:400">· πουλήθηκαν ${fmtMoney(t.soldValue)}</span>`:""}</span>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          ${cons && t.left>0?`<button class="btn ghost sm" onclick="openSettle('${o.id}')">🧾 Εκκαθάριση</button>`:""}
-          ${owed>0?`<button class="btn solid sm" onclick="openPayW('${o.id}')">💶 Πληρωμή</button>`:""}
-          <button class="btn ghost sm" onclick="editOrder('${o.id}')">✎ Επεξεργασία</button>
+          ${cons && t.left>0?`<button class="btn ghost sm" onclick="openSettle('${o.id}')">Εκκαθάριση</button>`:""}
+          ${owed>0?`<button class="btn solid sm" onclick="openPayW('${o.id}')">Πληρωμή</button>`:""}
+          <button class="btn ghost sm" onclick="editOrder('${o.id}')">Επεξεργασία</button>
         </div>
       </div>
     </div>`;
@@ -4243,7 +4357,7 @@ function renderCustomers(){
         </div>
       </button>
       <div class="cc-btns">
-        ${owed>0?`<button class="btn solid sm" onclick="openPay('${c.anyId}')">💶 Εξόφληση</button>`:""}
+        ${owed>0?`<button class="btn solid sm" onclick="openPay('${c.anyId}')">Εξόφληση</button>`:""}
         <button class="btn ghost sm" onclick="newOrderFor('${c.anyId}')">${c.shop?"🏬 Παράδοση":"🧵 Παραγγελία"}</button>
       </div>
     </div>`;
@@ -4425,6 +4539,7 @@ function renderOrders(){
   const totalFound=filtered.length;
   if(!q && filtered.length>ordersShown) filtered=filtered.slice(0,ordersShown);
   list.innerHTML = filtered.map(o=>{
+    if(isInstantSale(o)) return instantSaleCard(o);
     const items = getItems(o);
     const pickup = o.delivery_method === "pickup";
     const everyDone = items.every(itemDone);
@@ -4487,11 +4602,10 @@ function renderOrders(){
       ${everyReady && !everyDone && pickup ? `<div class="r-hint">Όλα έτοιμα — κανόνισε παραλαβή με τον πελάτη.</div>` : ""}
       ${moneyLine(o)}
       <div class="r-actions">
-        ${isBazaarSale(o)?"":`<button class="btn ghost sm" onclick="copyLinkFor('${o.track_token}')">🔗 Link</button>
-        <button class="btn ghost sm" onclick="notifyCustomer('${o.id}')">📣 Ειδοποίηση</button>`}
-        ${!isBazaarSale(o) && !orderIsDone(o)?`<button class="btn ghost sm" onclick="${(timer&&timer.orderId===o.id&&timer.startedAt)?'timerPause()':`timerStart('${o.id}')`}">${(timer&&timer.orderId===o.id&&timer.startedAt)?"⏸ Παύση":"⏱ Χρόνος"}</button>`:""}
-        ${(Number(o.price)||0)-(Number(o.amount_paid)||0)>0.01?`<button class="btn ghost sm" onclick="quickPaid('${o.id}')">💶 Πληρώθηκε</button>`:""}
-        <button class="btn ghost sm" onclick="editOrder('${o.id}')">✎ Επεξεργασία</button>
+        <button class="btn ghost sm" onclick="editOrder('${o.id}')">Επεξεργασία</button>
+        ${(timer&&timer.orderId===o.id&&timer.startedAt)?`<button class="btn solid sm" onclick="timerPause()">Παύση χρόνου</button>`
+          :((Number(o.price)||0)-(Number(o.amount_paid)||0)>0.01?`<button class="btn ghost sm" onclick="quickPaid('${o.id}')">Εξόφληση</button>`:"")}
+        <button class="si-more" style="margin-left:auto" aria-label="Περισσότερα" onclick="openOrderSheet('${o.id}')">⋯</button>
       </div>
     </div>`;
   }).join("");
@@ -4502,6 +4616,59 @@ function renderOrders(){
 
 function esc(s){ return (s||"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
+/* Πώληση επί τόπου (bazaar ή λιανική από το ταμείο): ολοκληρώνεται τη στιγμή
+   που γίνεται. Δεν έχει στάδια, link παρακολούθησης ή ειδοποίηση — μόνο τι
+   πουλήθηκε, πόσο και πώς πληρώθηκε.                                         */
+/* Όλες οι ενέργειες μιας παραγγελίας σε ένα φύλλο — η κάρτα κρατά μόνο τα συχνά. */
+function openOrderSheet(id){
+  const o=(ordersCache||[]).find(x=>x.id===id); if(!o) return;
+  const go=f=>`_ovClose('itemSheet');${f}`;
+  const due=(Number(o.price)||0)-(Number(o.amount_paid)||0);
+  const running=timer&&timer.orderId===o.id&&timer.startedAt;
+  const A=[{p:true, i:"✎", t:"Επεξεργασία", d:"προϊόντα, ποσά, αποστολή, υλικά", f:go(`editOrder('${id}')`)}];
+  if(due>0.01) A.push({i:"€", t:"Εξόφληση", d:"υπόλοιπο "+fmtMoney(due), f:go(`quickPaid('${id}')`)});
+  if(!orderIsDone(o)) A.push({i:"⏱", t:running?"Παύση χρόνου":"Χρόνος εργασίας", d:workSec(o)?"μέχρι τώρα "+fmtDur(workSec(o)):"μέτρηση χρόνου κατασκευής", f:go(running?"timerPause()":`timerStart('${id}')`)});
+  if(!isWholesale(o)){
+    A.push({i:"🔗", t:"Αντιγραφή link παρακολούθησης", d:"για να το στείλεις στην πελάτισσα", f:go(`copyLinkFor('${o.track_token}')`)});
+    A.push({i:"✉", t:"Ειδοποίηση πελάτη", d:"έτοιμο μήνυμα για Instagram ή SMS", f:go(`notifyCustomer('${id}')`)});
+    A.push({i:"◎", t:"Καρτέλα πελάτη", d:"ιστορικό, υπόλοιπα, στοιχεία", f:go(`openCustomer('${id}')`)});
+  }
+  document.getElementById("isTitle").textContent=o.customer_name||"Παραγγελία";
+  document.getElementById("isBody").innerHTML=`
+    <div style="font-size:13px;color:var(--ink-soft);margin-bottom:14px">${esc(o.order_number||"")}${o.price!=null?" · "+fmtMoney(o.price):""}${due>0.01?` · <span class="pay-due">υπόλοιπο ${fmtMoney(due)}</span>`:""}</div>
+    <div class="act-list">${A.map(x=>`<button class="${x.p?"primary":""}" onclick="${x.f}"><span class="i">${x.i}</span><span>${esc(x.t)}<span class="d">${esc(x.d)}</span></span></button>`).join("")}</div>`;
+  _ovOpen("itemSheet");
+}
+function isInstantSale(o){
+  if(!o || isWholesale(o)) return false;
+  const its=getItems(o);
+  if(isBazaarSale(o)) return true;
+  return o.kind==="ready" && o.delivery_method==="pickup" && its.length>0 && its.every(it=>it.flow==="ready" || it.from_stock);
+}
+function instantSaleCard(o){
+  const its=getItems(o), b=isBazaarSale(o)?bzById((its.find(x=>x.bz)||{}).bz):null;
+  const when=o.created_at?new Date(o.created_at):null;
+  const pay=String(o.note||"").split(" · ")[0];
+  const due=Math.round(((Number(o.price)||0)-(Number(o.amount_paid)||0))*100)/100;
+  return `<div class="order-row sale-row">
+    <div class="sr-top">
+      <div style="min-width:0">
+        <div class="r-name">${(isAnonSale(o)||!String(o.customer_name||"").trim()||(b&&o.customer_name===b.name))?`<span style="color:var(--ink-soft);font-weight:500">${b?"Πώληση στο "+esc(b.name):"Πώληση λιανικής"}</span>`:esc(o.customer_name)}</div>
+        <div class="r-meta">
+          ${when?`<span>${when.toLocaleDateString("el-GR",{day:"2-digit",month:"2-digit",year:"numeric"})} ${when.toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit"})}</span>`:""}
+          ${pay?`<span>${esc(pay)}</span>`:""}
+        </div>
+        <div class="r-pills">${channelPill(o)}</div>
+      </div>
+      <div class="sr-amt">${fmtMoney(o.price)}<small>${due>0.01?`<span class="pay-due">υπόλοιπο ${fmtMoney(due)}</span>`:"εισπράχθηκε"}</small></div>
+    </div>
+    <div class="sr-items">${its.map(it=>`<span>${esc(it.name)}${it.color?" · "+esc(it.color):""}<b>${it.price!=null?fmtMoney(it.price):""}</b></span>`).join("")}</div>
+    <div class="r-actions">
+      ${due>0.01?`<button class="btn ghost sm" onclick="quickPaid('${o.id}')">Εξόφληση</button>`:""}
+      <button class="btn ghost sm" onclick="editOrder('${o.id}')">Λεπτομέρειες</button>
+    </div>
+  </div>`;
+}
 function moneyLine(o){
   if(o.price==null && o.amount_paid==null) return "";
   const price = o.price!=null ? o.price : null;
@@ -4545,8 +4712,16 @@ function netClear(){ const b=document.getElementById("netBar"); if(b) b.classLis
    Μια ερώτηση «είσαι σίγουρη;» δεν προστατεύει από τίποτα: πατιέται
    αυτόματα. Η αναίρεση προστατεύει, γιατί ενεργεί αφού φανεί το λάθος. */
 let _undoFn=null, _undoTimer=null;
+let _undoMode="undo";
+/* Ίδια μπάρα, με δική της ενέργεια: προτάσεις που γλιτώνουν μια καταχώρηση. */
+function actionToast(text, label, fn, secs){
+  undoToast(text, fn, secs||25);
+  _undoMode="action";
+  const b=document.getElementById("undoBtn"); if(b) b.textContent=label;
+}
 function undoToast(text, fn, secs){
-  _undoFn=fn;
+  _undoFn=fn; _undoMode="undo";
+  const _b=document.getElementById("undoBtn"); if(_b) _b.textContent="Αναίρεση";
   const box=document.getElementById("undoBar");
   document.getElementById("undoText").textContent=text;
   box.classList.remove("hidden");
@@ -4558,7 +4733,8 @@ async function undoRun(){
   const fn=_undoFn; undoDismiss();
   if(!fn) return;
   const btn=document.getElementById("undoBtn"); if(btn) btn.disabled=true;
-  try{ await fn(); adminFlash("Αναιρέθηκε ✓"); }
+  const mode=_undoMode;
+  try{ await fn(); if(mode==="undo") adminFlash("Αναιρέθηκε ✓"); }
   catch(e){ adminFlash("Η αναίρεση δεν ολοκληρώθηκε"); }
   finally{ if(btn) btn.disabled=false; }
 }
@@ -4693,6 +4869,15 @@ async function advanceItem(orderId, itemId){
     await patchItems(orderId, stamped);
     const _S=stagesFor(itemFlow(it), o.delivery_method);
     await loadOrders(); adminFlash("Στάδιο ενημερώθηκε ✓");
+    // Αυτοματισμοί: ό,τι προκύπτει από το στάδιο δεν χρειάζεται δεύτερη καταχώρηση
+    if(timer && timer.orderId===orderId && timer.itemId===itemId && it.stage>=N-1){
+      await timerStop(true); adminFlash("Στάδιο ενημερώθηκε ✓ · ο χρόνος εργασίας καταγράφηκε");
+    }
+    const _o=ordersCache.find(x=>x.id===orderId);
+    if(_o && !isWholesale(_o) && getItems(_o).every(itemDone)){
+      const due=Math.round(((Number(_o.price)||0)-(Number(_o.amount_paid)||0))*100)/100;
+      if(due>0.01) actionToast(`Παραδόθηκε. Εισπράχθηκε το υπόλοιπο ${fmtMoney(due)};`, "Εξοφλήθηκε", ()=>quickPaid(orderId, true));
+    }
     const _n=await archiveFinishedJobs(true);
     if(_n){ renderStock(); adminFlash(`${_n} ${_n===1?"υλικό παραγγελίας αρχειοθετήθηκε":"υλικά παραγγελίας αρχειοθετήθηκαν"} ✓`); }
   }
@@ -4718,10 +4903,10 @@ function delOrderFromModal(){
   closeOrderModal();
   delOrder(o.id, o.customer_name||"");
 }
-async function quickPaid(id){
+async function quickPaid(id, sure){
   const o=ordersCache.find(x=>x.id===id); if(!o) return;
   const rem=Math.round(((Number(o.price)||0)-(Number(o.amount_paid)||0))*100)/100;
-  if(!confirm(`Να καταχωρηθεί πληρωμή ${fmtMoney(rem)} από ${o.customer_name||""};`)) return;
+  if(!sure && !confirm(`Να καταχωρηθεί πληρωμή ${fmtMoney(rem)} από ${o.customer_name||""};`)) return;
   const now=new Date().toISOString();
   try{
     const res=await authFetch(REST + "/orders?id=eq."+id,{method:"PATCH",headers:{"Prefer":"return=minimal"},
@@ -5267,7 +5452,7 @@ function editOrder(id){
       + '<div style="font-size:11px;color:var(--muted);margin-top:8px;text-decoration:underline">Δες όλες τις απαντήσεις</div>';
     fr.classList.remove("hidden");
   } else fr.classList.add("hidden");
-  const lw=document.getElementById("modalLinkWrap"); lw.classList.remove("hidden");
+  const lw=document.getElementById("modalLinkWrap"); lw.classList.toggle("hidden", isInstantSale(o));
   document.getElementById("modalLink").textContent=linkFor(o.track_token);
   document.getElementById("modalLink").dataset.token=o.track_token;
   document.getElementById("modalMsg").classList.add("hidden");
@@ -5380,7 +5565,7 @@ async function saveOrder(){
     document.getElementById("fOrderNoView").textContent = row.order_number || "—";
     if(row.created_at) document.getElementById("fCreatedView").textContent = new Date(row.created_at).toLocaleDateString("el-GR",{day:"2-digit",month:"2-digit",year:"numeric"});
     // show link
-    const lw=document.getElementById("modalLinkWrap"); lw.classList.remove("hidden");
+    const lw=document.getElementById("modalLinkWrap"); lw.classList.toggle("hidden", isInstantSale(row));
     document.getElementById("modalLink").textContent=linkFor(row.track_token);
     document.getElementById("modalLink").dataset.token=row.track_token;
     editingId=row.id;
@@ -5509,6 +5694,7 @@ function openCustEdit(){
   document.getElementById("ceLast").value=(info.last!=null?info.last:sp.last);
   document.getElementById("cePhone").value = info.phone || (customerOrders(ref).map(o=>o.customer_phone).filter(Boolean).pop()||"");
   document.getElementById("ceNote").value = info.note || "";
+  document.getElementById("ceIg").value = info.ig || "";
   _ovOpen("custEditModal");
 }
 function closeCustEdit(){ _ovClose("custEditModal"); }
@@ -5520,7 +5706,8 @@ async function saveCustEdit(){
   const newName=((document.getElementById("ceFirst").value||"").trim()+" "+(document.getElementById("ceLast").value||"").trim()).trim();
   const first=(document.getElementById("ceFirst").value||"").trim();
   const last=(document.getElementById("ceLast").value||"").trim();
-  custInfo[k]={ phone: phone||null, note: note||null, first: first||null, last: last||null };
+  const ig=(document.getElementById("ceIg").value||"").trim().replace(/^@/,"").replace(/^https?:\/\/(www\.)?instagram\.com\//,"").replace(/\/.*$/,"");
+  custInfo[k]={ phone: phone||null, note: note||null, first: first||null, last: last||null, ig: ig||null };
   await saveSetting("cust_info", custInfo, true);
   if(phone) await propagatePhone(ref.customer_name, phone);
   // μετονομασία σε όλες τις παραγγελίες του πελάτη
@@ -5651,7 +5838,39 @@ function openCustomer(orderId){
   const biggest=list.slice().sort((a,b)=>(Number(b.price)||0)-(Number(a.price)||0))[0];
   const evNames=Object.keys(evs);
 
-  let html=`<div class="stat-grid" style="margin-bottom:14px">
+  const _info=custInfo[custKey(ref)]||{};
+  const _ph=_info.phone||phone, _ig=_info.ig||"";
+  const _wa=_ph?String(_ph).replace(/\D/g,""):"";
+  const openOrders=list.filter(o=>!getItems(o).every(itemDone) && !isInstantSale(o));
+  const dueList=list.filter(o=>(Number(o.price)||0)-(Number(o.amount_paid)||0)>0.01);
+  // Επικοινωνία & ενέργειες — ό,τι κάνεις συνήθως με έναν πελάτη, σε μία γραμμή
+  let html=`<div class="ch-contact">
+      ${_ph?`<a class="ch-c" href="tel:${esc(_ph)}">☎ ${esc(_ph)}</a>`:""}
+      ${_wa?`<a class="ch-c" href="https://wa.me/${_wa.length===10?"30"+_wa:_wa}" target="_blank" rel="noopener">WhatsApp</a>`:""}
+      ${_ig?`<a class="ch-c" href="https://instagram.com/${esc(_ig)}" target="_blank" rel="noopener">@${esc(_ig)}</a>`:""}
+      ${!_ph&&!_ig?`<span class="ch-c muted">Χωρίς στοιχεία επικοινωνίας</span>`:""}
+    </div>
+    <div class="ch-actions">
+      <button class="btn solid sm" onclick="closeCustomer();newOrderFor('${ref.id}')">+ Νέα παραγγελία</button>
+      ${owed>0&&dueList.length?`<button class="btn ghost sm" onclick="closeCustomer();quickPaid('${dueList[0].id}')">Εξόφληση ${fmtMoney(owed)}</button>`:""}
+      <button class="btn ghost sm" onclick="openCustEdit()">Στοιχεία</button>
+    </div>`;
+  if(openOrders.length || dueList.length){
+    html+=`<div class="stats-sub" style="margin-top:4px">Εκκρεμότητες</div>`;
+    const seen=new Set();
+    [...openOrders, ...dueList].forEach(o=>{
+      if(seen.has(o.id)) return; seen.add(o.id);
+      const due=Math.round(((Number(o.price)||0)-(Number(o.amount_paid)||0))*100)/100;
+      const st=getItems(o).every(itemDone)?"παραδόθηκε":(getItems(o).every(it=>itemStage(it)>=itemN(it)-1)?"έτοιμη":"σε εξέλιξη");
+      html+=`<div class="cust-row"><button class="cr-main" onclick="closeCustomer();editOrder('${o.id}')">
+        <div><div class="cr-t">${getItems(o).map(i=>esc(i.name)).join(", ")||"—"}</div>
+        <div class="cr-s">${o.order_number?esc(o.order_number)+" · ":""}${st}</div></div>
+        <div class="cr-r"><div class="cr-p">${o.price!=null?fmtMoney(o.price):"—"}</div>
+        <div class="cr-s" ${due>0.01?'style="color:#9a6a1e;font-weight:600"':''}>${due>0.01?"υπόλοιπο "+fmtMoney(due):"εξοφλημένη"}</div></div>
+      </button></div>`;
+    });
+  }
+  html+=`<div class="stat-grid" style="margin:16px 0 14px">
     <div class="stat dark"><div class="n">${list.length}</div><div class="l">Παραγγελίες</div></div>
     <div class="stat"><div class="n" style="font-size:20px">${fmtMoney(spent)}</div><div class="l">Σύνολο αγορών</div></div>
     <div class="stat"><div class="n" style="font-size:20px">${fmtMoney(avg)}</div><div class="l">Μέση αξία</div></div>
@@ -5659,7 +5878,6 @@ function openCustomer(orderId){
   </div>
   <div class="stat-row">
     ${owed>0?`<span class="stat-pill warn"><b>${fmtMoney(owed)}</b> ανεξόφλητα${owedOrders>1?` (${owedOrders})`:""}</span>`:`<span class="stat-pill"><b>✓</b> Εξοφλημένος</span>`}
-    ${phone?`<a class="stat-pill" href="tel:${esc(phone)}" style="text-decoration:none"><b>☎</b> ${esc(phone)}</a>`:""}
     ${cadence!=null?`<span class="stat-pill">επιστρέφει κάθε <b>${fmtEvery(cadence)}</b></span>`:""}
     ${sinceLast!=null?`<span class="stat-pill">τελευταία παραγγελία <b>${fmtAgo(sinceLast)}</b></span>`:""}
     ${payAvg!=null?`<span class="stat-pill">πληρώνει <b>${payAvg<1?"με την παράδοση":(Math.round(payAvg)===1?"1 μέρα":Math.round(payAvg)+" μέρες")}</b>${payAvg>=1?" μετά την παράδοση":""}</span>`:""}
@@ -5724,6 +5942,15 @@ function openCustomer(orderId){
     });
   }
 
+  const pays=list.filter(o=>Number(o.amount_paid)>0)
+    .map(o=>({o, at:o.paid_at||o.created_at, amt:Number(o.amount_paid)||0}))
+    .sort((a,b)=>new Date(b.at||0)-new Date(a.at||0));
+  if(pays.length){
+    html+=`<div class="stats-sub">Πληρωμές</div><div class="led">${pays.map(p=>`
+      <div class="led-r"><span class="d">${esc(getItems(p.o).map(i=>i.name).join(", ")||p.o.order_number||"Πληρωμή")}<small>${p.at?fmtDateShort(new Date(p.at)):""}${p.o.order_number?" · "+esc(p.o.order_number):""}${p.o.note&&/Μετρητά|Κάρτα/.test(p.o.note)?" · "+esc(String(p.o.note).split(" · ")[0]):""}</small></span>
+      <span class="a" style="color:#2c6e49">+${fmtMoney(p.amt)}</span></div>`).join("")}
+      <div class="led-r" style="background:var(--cream)"><span class="d"><b>Σύνολο πληρωμών</b></span><span class="a"><b>${fmtMoney(paid)}</b></span></div></div>`;
+  }
   html+=`<div class="stats-sub">Ιστορικό</div>`;
   html+=list.slice().reverse().map(o=>{
     const its=getItems(o).map(i=>esc(i.name)).join(", ");
@@ -5752,11 +5979,14 @@ function openCustomer(orderId){
 
   const info=custInfo[custKey(ref)]||{};
   if(info.note) html = `<div class="cust-note">${esc(info.note)}</div>` + html;
-  html += `<div style="margin-top:14px"><button class="btn ghost" style="width:100%" onclick="openCustEdit()">✎ Επεξεργασία στοιχείων</button></div>`;
   box.innerHTML=html;
   _ovOpen("custModal");
 }
 function closeCustomer(){ _ovClose("custModal"); }
+function newOrderFor(orderId){
+  openOrderModal();
+  pickCustomer(orderId);
+}
 
 /* ---- Έξυπνη αναζήτηση: τόνοι, greeklish, μικρά λάθη ---- */
 const GR2LAT = {α:"a",ά:"a",β:"v",γ:"g",δ:"d",ε:"e",έ:"e",ζ:"z",η:"i",ή:"i",θ:"th",ι:"i",ί:"i",ϊ:"i",ΐ:"i",
@@ -6285,11 +6515,11 @@ function renderStock(){
     const _dirty=cleanCandidates();
     if(_dirty.length) html+=`<div class="r-hint" style="margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <span style="flex:1;min-width:180px"><b>${_dirty.length}</b> ${_dirty.length===1?"είδος έχει":"είδη έχουν"} όνομα πελάτη μέσα στο όνομα.</span>
-      <button class="btn ghost sm" onclick="openCleanNames()">✎ Καθαρισμός</button></div>`;
+      <button class="btn ghost sm" onclick="openCleanNames()">Καθαρισμός</button></div>`;
     const _spent=jobSpent();
     if(_spent.length) html+=`<div class="r-hint" style="margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <span style="flex:1;min-width:180px"><b>${_spent.length}</b> ${_spent.length===1?"υλικό ανήκει":"υλικά ανήκουν"} σε παραγγελία που παραδόθηκε και έχει εξαντληθεί.</span>
-      <button class="btn ghost sm" onclick="archiveFinishedJobs()">🗄 Αρχειοθέτηση</button></div>`;
+      <button class="btn ghost sm" onclick="archiveFinishedJobs()">Αρχειοθέτηση</button></div>`;
     const cats0={}; rows.forEach(it=>{ const c=it.category||"Λοιπά"; (cats0[c]=cats0[c]||[]).push(it); });
     Object.keys(cats0).sort((a,b)=>a.localeCompare(b,"el")).forEach(cat=>{
       html+=`<div class="stock-cat">${esc(cat)}</div>`;
@@ -6326,7 +6556,7 @@ function renderStock(){
     const _sold=soldOutPieces();
     if(_sold.length) html+=`<div class="r-hint" style="margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <span style="flex:1;min-width:180px"><b>${_sold.length}</b> ${_sold.length===1?"κομμάτι πουλήθηκε":"κομμάτια πουλήθηκαν"} και δεν υπάρχει απόθεμα.</span>
-      <button class="btn ghost sm" onclick="archiveSoldOut()">🗄 Αρχειοθέτηση</button></div>`;
+      <button class="btn ghost sm" onclick="archiveSoldOut()">Αρχειοθέτηση</button></div>`;
     const _bzOn=bzOpen().map(b=>({b, n:bzStock(b.id).length})).filter(x=>x.n>0);
     if(_bzOn.length) html+=`<div class="r-hint" style="margin-bottom:14px">${_bzOn.map(x=>`<b>${x.n}</b> ${x.n===1?"κομμάτι":"κομμάτια"} στο <button class="mm-pill cust-pill" style="background:#f3efe6;color:#8a6a2e;border-color:#e4d9c2" onclick="showAdminTab('bazaar');setBzView('${x.b.id}')">🛍️ ${esc(x.b.name)}</button>`).join(" · ")}</div>`;
   }
@@ -6375,22 +6605,13 @@ function renderStock(){
         </div>`;
       const _sev=stEv(it);
       html+=`<div class="stock-item ${st}${_mstart?" mstart":""}">
-        ${stockThumb(it)}
-        <div class="si-info">
+        <span class="si-tap" onclick="openItemSheet('${it.id}')">${stockThumb(it)}</span>
+        <div class="si-info" onclick="openItemSheet('${it.id}')">
           <div class="si-name">${esc(siLabel(it, _byModel))}${_sev&&isProd?` <span class="mm-pill" style="background:${_sev.color}26;color:${_sev.ink||_sev.color};border-color:${_sev.color}">${esc(_sev.name)}</span>`:""}${(function(){const b=bzOfStock(it);return b?` <button class="mm-pill cust-pill" style="background:#f3efe6;color:#8a6a2e;border-color:#e4d9c2" onclick="showAdminTab('bazaar');setBzView('${b.id}')">🛍️ ${esc(b.name)}</button>`:"";})()}</div>
           <div class="si-meta">${meta}${it.status==="written_off"?` · <span style="color:#b54b3a">αποσύρθηκε${it.status_reason?" ("+esc(it.status_reason)+")":""}</span>`:""}${(isPerJob(it))?' · <span style="color:var(--muted)">ανά παραγγελία</span>':(st==="low"?' · <span class="si-low">'+(isProd?"λίγα":"τελειώνει")+'</span>':st==="out"?' · <span class="si-low">εξαντλήθηκε</span>':'')}</div>
         </div>
-        ${isProd ? `<div class="si-actions">
-          ${qtyBlock}
-          <button class="btn solid sm" ${Number(it.qty)>0?"":"disabled"} onclick="tillOpen(null,'${it.id}')">Πούλησέ το</button>
-          <button class="btn ghost sm" title="Κινήσεις" onclick="openStockHistory('${it.id}')">📋</button>
-          ${Number(it.qty)>0
-             ? `<button class="btn ghost sm" title="Απόσυρση — το έχω αλλά το βγάζω από το απόθεμα" onclick="writeOffPiece('${it.id}')">⊘</button>`
-             : `<button class="btn ghost sm" title="${isArchivedStock(it)?'Επαναφορά στον ενεργό κατάλογο':'Αρχειοθέτηση — πουλήθηκε, δεν ξανακατασκευάζεται'}" onclick="toggleArchiveStock('${it.id}')">${isArchivedStock(it)?'↩':'🗄'}</button>`}
-          <button class="btn ghost sm" onclick="openStockModal('${it.id}')">✎</button>
-        </div>` : `${qtyBlock}<button class="btn ghost sm" title="Κινήσεις είδους" onclick="openStockHistory('${it.id}')">📋</button>${stockView==="mm"
-            ? `<button class="btn ghost sm" title="Αφαίρεση από την παλέτα — πάει στα αποθέματα" onclick="mmRemove('${it.id}')">✕</button><button class="btn ghost sm" title="Διαγραφή απόχρωσης" onclick="mmDelete('${it.id}')">🗑</button>`
-            : `<button class="btn ghost sm" title="${isArchivedStock(it)?'Επαναφορά':'Αρχειοθέτηση'}" onclick="toggleArchiveStock('${it.id}')">${isArchivedStock(it)?'↩':'🗄'}</button>`}<button class="btn ghost sm" onclick="openStockModal('${it.id}')">✎</button>`}
+        ${stockView==="archive"?"":qtyBlock}
+        <button class="si-more" aria-label="Ενέργειες" onclick="openItemSheet('${it.id}')">⋯</button>
       </div>`;
     });
     if(_openGrp){ html+=`</div>`; _openGrp=false; }
@@ -6521,6 +6742,8 @@ function openStockModal(id){
   const cat=document.getElementById("sCat"); const want=it?(it.category||""):(stockView==="product"?"Τσάντα":(stockView==="supplies"?"Συσκευασία":"Νήμα"));
   if([...cat.options].some(o=>o.value===want)) cat.value=want;
   document.getElementById("stockDelBtn").classList.toggle("hidden", !id);
+  // «Αποθήκευση & νέο» έχει νόημα μόνο όταν καταχωρείς πολλά καινούργια στη σειρά
+  document.getElementById("stockSaveNewBtn").classList.toggle("hidden", !!id);
   document.getElementById("stockModalMsg").classList.add("hidden");
   loadBomInto(id);
   document.getElementById("sBomWrap").classList.toggle("hidden", document.getElementById("sType").value!=="product");
@@ -6827,15 +7050,38 @@ async function timerStart(orderId, itemId){
   await saveSetting(meKey(), timer, true);
   renderTimerBar(); renderOrderTimer();
 }
+/* Χρόνος σε έτοιμο κομμάτι της αποθήκης (π.χ. για το bazaar): γράφεται στα
+   στοιχεία κατασκευής του κομματιού και ταξιδεύει με την πώλησή του.        */
+async function timerStartStock(stockId){
+  if(timer && timer.startedAt && timer.stockId!==stockId){
+    if(!confirm("Μετράει ήδη χρόνος σε άλλη εργασία. Να καταγραφεί εκείνος και να ξεκινήσει εδώ;")) return;
+    await timerStop(true);
+  }
+  const same = timer && timer.stockId===stockId;
+  timer={orderId:null, itemId:null, stockId, startedAt:new Date().toISOString(), base:(same?timer.base:0)||0};
+  await saveSetting(meKey(), timer, true);
+  renderTimerBar(); renderOrderTimer();
+}
 async function timerPause(){
   if(!timer || !timer.startedAt) return;
-  timer={orderId:timer.orderId, itemId:timer.itemId, startedAt:null, base: timerElapsed()};
+  timer={orderId:timer.orderId, itemId:timer.itemId, stockId:timer.stockId||null, startedAt:null, base: timerElapsed()};
   await saveSetting(meKey(), timer, true);
   renderTimerBar(); renderOrderTimer();
 }
 async function timerStop(silent){
   if(!timer) return;
   const sec=Math.round(timerElapsed());
+  if(timer.stockId){
+    if(sec>0){
+      const b=bomOf(timer.stockId);
+      prodBom[timer.stockId]={mats:b.mats, sec:b.sec+sec};
+      const ok=await saveProdBom(true);
+      if(!ok){ prodBom[timer.stockId]=b; netBar(`Ο χρόνος (${fmtDur(sec)}) ΔΕΝ καταγράφηκε. Το χρονόμετρο συνεχίζει.`, "Δοκίμασε ξανά", "timerStop()"); return; }
+      if(!silent) adminFlash(`Καταγράφηκαν ${fmtDur(sec)} στο κομμάτι`);
+    }
+    timer=null; await saveSetting(meKey(), null, true);
+    renderTimerBar(); renderOrderTimer(); renderStock(); return;
+  }
   const o=ordersCache.find(x=>x.id===timer.orderId);
   if(o && sec>0){
     const its=getItems(o).map(it=>({...it}));
@@ -6870,9 +7116,10 @@ function renderTimerBar(){
     const sec=timerElapsed();
     bar.innerHTML=`<span class="tb-dot ${timer.startedAt?'live':''}"></span>
       <span class="tb-t">${timer.startedAt?fmtClock(sec):fmtDur(sec)}</span>
-      <span class="tb-n">${esc(o?firstName(o.customer_name):"—")}${o&&getItems(o)[0]?" · "+esc(getItems(o)[0].name):""}</span>
+      <span class="tb-n">${timer.stockId?esc(((stockCache||[]).find(x=>x.id===timer.stockId)||{}).name||"κομμάτι αποθήκης")
+        :esc(o?firstName(o.customer_name):"—")+((o&&(getItems(o).find(x=>x.id===timer.itemId)||getItems(o)[0]))?" · "+esc((getItems(o).find(x=>x.id===timer.itemId)||getItems(o)[0]).name):"")}</span>
       <span class="tb-m">${fmtMoney(labourCost(sec))}</span>
-      <button class="tb-b" onclick="${timer.startedAt?'timerPause()':`timerStart('${timer.orderId}')`}">${timer.startedAt?"⏸":"▶"}</button>
+      <button class="tb-b" onclick="${timer.startedAt?'timerPause()':(timer.stockId?`timerStartStock('${timer.stockId}')`:`timerStart('${timer.orderId}','${timer.itemId||""}')`)}">${timer.startedAt?"⏸":"▶"}</button>
       <button class="tb-b" onclick="timerStop()">⏹</button>`;
   };
   paint();
@@ -6931,7 +7178,7 @@ function renderOrderTimer(){
       ${run
         ? `<button type="button" class="btn ghost sm" onclick="timerPause()">⏸</button>
            <button type="button" class="btn solid sm" onclick="timerStop()">⏹</button>`
-        : `<button type="button" class="btn ${isCur?'solid':'ghost'} sm" onclick="timerStart('${o.id}','${it.id}')">▶ ${isCur?"Συνέχεια":""}</button>
+        : `<button type="button" class="btn ${isCur?'solid':'ghost'} sm" onclick="timerStart('${o.id}','${it.id}')">${isCur?"Συνέχεια":""}</button>
            <button type="button" class="btn ghost sm" title="Καταχώρηση χρόνου με το χέρι" onclick="setItemTime('${o.id}','${it.id}')">✎</button>`}
     </div>`;
   }).join("");
@@ -7029,7 +7276,7 @@ function renderModels(){
         return `<br><span style="color:${col}">⏱ ${fmtDur(st.avgSec)}/τεμ · ${fmtMoney(st.rate)}/ώρα</span>${st.suggested!=null&&st.rate<hourRate?` <span style="color:var(--muted)">· για ${fmtMoney(hourRate)}/ώρα → ${fmtMoney(st.suggested)}</span>`:""}`;
       })()}${m.materials&&m.materials.length?` · ${m.materials.length} υλικά`:""}</div></div>
       <div style="display:flex;gap:6px;flex:none">
-        ${sl.n?`<button class="btn ghost sm" onclick="openSales('${esc(m.name)}')">📊 Ιστορικό</button>`:""}
+        ${sl.n?`<button class="btn ghost sm" onclick="openSales('${esc(m.name)}')">Ιστορικό</button>`:""}
         <button class="btn ghost sm" onclick="openModelModal('${m.id}')">✎</button>
       </div>
     </div>`;
@@ -7607,7 +7854,7 @@ let prodBom = {};     // stockId -> {mats:[{id,name,unit,qty,unit_cost}], sec:0}
 function bomOf(id){ const b=prodBom[id]; return { mats:(b&&Array.isArray(b.mats))?b.mats:[], sec:(b&&Number(b.sec))||0 }; }
 function bomMatCost(mats){ return Math.round((mats||[]).reduce((a,m)=>a+(Number(m.qty)||0)*(Number(m.unit_cost)||0),0)*100)/100; }
 function bomSec(id){ return bomOf(id).sec; }
-async function saveProdBom(silent){ await saveSetting("prod_bom", prodBom, silent!==false); }
+async function saveProdBom(silent){ return await saveSetting("prod_bom", prodBom, silent!==false); }
 
 /* --- επεξεργασία μέσα στο modal του είδους --- */
 let bomDraftMats=[], bomForId=null;
@@ -7698,6 +7945,7 @@ function tillOpen(bzId, stockId){
   else { document.getElementById("tillDisc").value=""; setTillDiscMode("eur"); }
   document.getElementById("tillCash").value="";
   document.getElementById("tillName").value="";
+  document.getElementById("tillQ").value="";
   document.getElementById("tillMsg").classList.add("hidden");
   document.getElementById("tillBtn").disabled=false;
   document.getElementById("tillBtn").textContent="Καταχώρηση πώλησης";
@@ -7781,6 +8029,28 @@ function tillPush(stockId){
   if(taken >= (Number(it.qty)||0)){ adminFlash("Δεν υπάρχει άλλο κομμάτι"); return; }
   tillItems.push({ id:it.id, name:it.name, price:(it.sell_price!=null?Number(it.sell_price):0) });
 }
+/* Κατάλογος με φωτογραφίες: στο tablet είναι η αριστερή στήλη του ταμείου,
+   στο κινητό μια λωρίδα πάνω από το καλάθι. Ένα πάτημα = ένα κομμάτι.     */
+function tillPool(){
+  return tillBz ? bzStock(tillBz)
+    : (stockCache||[]).filter(it=>it.type==="product" && Number(it.qty)>0 && !isArchivedStock(it));
+}
+function renderTillGrid(){
+  const box=document.getElementById("tillGrid"); if(!box) return;
+  const q=(document.getElementById("tillQ")?.value||"").trim();
+  let rows=tillPool();
+  if(q) rows=rows.filter(it=>smartMatch((it.name||"")+" "+(it.category||""), q));
+  rows=rows.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name),"el"));
+  if(!rows.length){ box.innerHTML=`<div class="till-empty" style="grid-column:1/-1">${q?"Κανένα κομμάτι με αυτό το όνομα.":(tillBz?"Δεν υπάρχουν κομμάτια σε αυτό το bazaar.":"Δεν υπάρχουν έτοιμα κομμάτια σε απόθεμα.")}</div>`; return; }
+  box.innerHTML=rows.map(it=>{
+    const inCart=tillItems.filter(l=>l.id===it.id).length, left=(Number(it.qty)||0)-inCart;
+    return `<button class="tg ${inCart?"in":""}" ${left<=0?"disabled":""} onclick="tillPush('${it.id}');renderTill()">
+      ${stockThumb(it)}${inCart?`<span class="tg-b">${inCart}</span>`:""}
+      <span class="tg-n">${esc(it.name)}</span>
+      <span class="tg-p">${it.sell_price!=null?fmtMoney(it.sell_price):"χωρίς τιμή"}<small>${left>0?left+" διαθ.":"εξαντλήθηκε"}</small></span>
+    </button>`;
+  }).join("");
+}
 function tillTotal(){
   return Math.max(0, Math.round((tillSub()-tillDiscOffAmount())*100)/100);
 }
@@ -7788,7 +8058,7 @@ function renderTill(){
   const box=document.getElementById("tillLines");
   let html="";
   if(!tillItems.length && !tillExtras.length){
-    html=`<div class="till-empty">Διάλεξε τι πούλησες.</div>`;
+    html=`<div class="till-empty">Πάτα ένα κομμάτι από τον κατάλογο.</div>`;
   }else{
     html += tillItems.map((l,i)=>{
       const st=(stockCache||[]).find(x=>x.id===l.id)||{name:l.name};
@@ -7810,6 +8080,7 @@ function renderTill(){
   }
   box.innerHTML=html;
   renderTillMoney();
+  renderTillGrid();
 }
 function tillPrice(i, v){ if(tillItems[i]){ tillItems[i].price=parseMoney(v); renderTillMoney(); } }
 function tillDrop(i){ tillItems.splice(i,1); renderTill(); }
@@ -7967,30 +8238,43 @@ async function tillCheckout(){
    Κάθε σελίδα λέει τι είναι και τι κάνεις εκεί· η αρχική μαζεύει
    ό,τι χρειάζεται συχνά, ώστε να μη χρειάζεται να ψάχνεις σε καρτέλες. */
 const PAGES = {
-  home:      {t:"Αρχική",       s:"Σύνοψη ημέρας και συντομεύσεις εργασιών"},
+  home:      {t:"Αρχική",       s:"Τι χρειάζεται προσοχή σήμερα"},
   orders:    {t:"Πωλήσεις",      s:"Παραγγελίες, λιανική, χονδρική και bazaar σε μία λίστα",
               act:{l:"+ Πώληση", f:"openSaleKind()"}},
   stock:     {t:"Αποθήκη",      s:"Νήματα, υλικά, έτοιμα κομμάτια και μοντέλα",
-              act:{l:"+ Νέο", f:"stockView==='models'?openModelModal():openStockModal()"}},
+              act:{l:"+ Νέο είδος", f:"stockView==='models'?openModelModal():openStockModal()"}},
   customers: {t:"Πελάτες",      s:"Καρτέλες, ιστορικό αγορών και υπόλοιπα"},
   wholesale: {t:"Χονδρική",     s:"Παραδόσεις καταστημάτων και παρακαταθήκη",
-              act:{l:"🏬 Νέα παράδοση", f:"newWholesale()"}},
-  bazaar:    {t:"Bazaar",       s:"Σημεία πώλησης: εμπορεύματα, πωλήσεις, έξοδα"},
+              act:{l:"+ Νέα παράδοση", f:"newWholesale()"}},
+  bazaar:    {t:"Bazaar",       s:"Σημεία πώλησης: κομμάτια, πωλήσεις και έξοδα",
+              act:{l:"+ Νέο bazaar", f:"openBzModal()"}},
   cash:      {t:"Ταμείο",       s:"Κινήσεις, έξοδα και υπόλοιπα λογαριασμών",
               act:{l:"+ Νέα κίνηση", f:"openCashMove()"}},
-  stats:     {t:"Αναφορά",      s:"Πωλήσεις, κόστος και αποτέλεσμα ανά περίοδο"},
+  stats:     {t:"Αναφορές",     s:"Αποτέλεσμα, προϊόντα, πελάτες, κανάλια και αποθήκη ανά περίοδο"},
   feedback:  {t:"Feedback",     s:"Αξιολογήσεις και σχόλια πελατών"}
 };
 /* Έξι ενότητες στο μενού. Η χονδρική και το bazaar είναι κανάλια πώλησης,
    όχι ξεχωριστές περιοχές· το feedback αφορά τους πελάτες. Ζουν ως
    υποσελίδες της ενότητάς τους αντί να γεμίζουν το μενού. */
+const ICON = {
+  home:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-5h4v5"/></svg>',
+  sales:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12H7L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>',
+  customers:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg>',
+  stock:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5v-9z"/><path d="M3 7.5 12 12l9-4.5"/><path d="M12 12v9"/></svg>',
+  money:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="16.5" cy="14.5" r="1.2"/></svg>',
+  reports:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M21 20H3"/></svg>',
+  more:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/></svg>',
+  settings:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+  logout:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h4v16h-4"/><path d="M10 8l-4 4 4 4"/><path d="M6 12h10"/></svg>',
+  feedback:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>'
+};
 const MODULES = [
-  {k:"home",      l:"Αρχική",     ic:"⌂", tabs:["home"]},
-  {k:"sales",     l:"Πωλήσεις",   ic:"◫", tabs:["orders","wholesale","bazaar"]},
-  {k:"customers", l:"Πελάτες",    ic:"◎", tabs:["customers","feedback"]},
-  {k:"stock",     l:"Αποθήκη",    ic:"▦", tabs:["stock"]},
-  {k:"money",     l:"Οικονομικά", ic:"€", tabs:["cash"]},
-  {k:"reports",   l:"Αναφορές",   ic:"▤", tabs:["stats"]}
+  {k:"home",      l:"Αρχική",     ic:ICON.home, tabs:["home"]},
+  {k:"sales",     l:"Πωλήσεις",   ic:ICON.sales, tabs:["orders","wholesale","bazaar"]},
+  {k:"customers", l:"Πελάτες",    ic:ICON.customers, tabs:["customers","feedback"]},
+  {k:"stock",     l:"Αποθήκη",    ic:ICON.stock, tabs:["stock"]},
+  {k:"money",     l:"Οικονομικά", ic:ICON.money, tabs:["cash"]},
+  {k:"reports",   l:"Αναφορές",   ic:ICON.reports, tabs:["stats"]}
 ];
 /* Καρτέλες κάθε ενότητας. Στις Πωλήσεις οι καρτέλες είναι τα κανάλια: οι
    τρεις πρώτες φιλτράρουν τη λίστα, η Χονδρική και το Bazaar έχουν δική τους
@@ -8068,9 +8352,10 @@ function buyOpenOrders(){
   return (ordersCache||[]).filter(o=>!isWholesale(o) && !isBazaarSale(o) && !allDelivered(o))
     .sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
 }
-function openPurchase(orderId){
+function openPurchase(orderId, stockId){
   buyOrder = orderId || null;
-  buyRows = [{name:"", qty:"", cost:"", order:buyOrder||"", used:"", cat:"Νήμα"}];
+  const _it = stockId ? (stockCache||[]).find(x=>x.id===stockId) : null;
+  buyRows = [{name:_it?_it.name:"", qty:"", cost:_it&&_it.unit_cost!=null?String(_it.unit_cost).replace(".",","):"", order:buyOrder||"", used:"", cat:_it?(_it.category||"Νήμα"):"Νήμα"}];
   document.getElementById("buyDate").value = todayISO();
   const acc=document.getElementById("buyAcc");
   const list=(accounts||[]).filter(a=>!a.archived);
@@ -8078,11 +8363,11 @@ function openPurchase(orderId){
   const cash=list.find(a=>a.kind==="cash"); if(cash) acc.value=cash.id;
   document.getElementById("buyFrom").value="";
   document.getElementById("buyMsg").classList.add("hidden");
-  const names=[...new Set(buyCandidates().map(it=>it.name))].sort((a,b)=>a.localeCompare(b,"el"));
-  document.getElementById("buyItems").innerHTML = names.map(n=>`<option value="${esc(n)}">`).join("");
   renderBuy();
   _ovOpen("buyModal");
-  setTimeout(()=>{ const f=document.querySelector("#buyLines .bl-name"); if(f) f.focus(); }, 250);
+  // στην αφή δεν ανοίγουμε μόνοι μας πληκτρολόγιο — η λίστα ανοίγει με το πάτημα
+  if(!_it && !matchMedia("(pointer:coarse)").matches)
+    setTimeout(()=>{ const f=document.querySelector("#buyLines .bl-name"); if(f) f.focus(); }, 250);
 }
 function buyAddLine(){ buyRows.push({name:"", qty:"", cost:"", order:buyOrder||"", used:"", cat:"Νήμα"}); renderBuy(); }
 function buyDrop(i){ buyRows.splice(i,1); if(!buyRows.length) buyAddLine(); else renderBuy(); }
@@ -8099,10 +8384,45 @@ function buySet(i, k, v){
     const tag=document.getElementById("bl-tag-"+i);
     if(tag) tag.textContent = v.trim() ? (it ? `στην αποθήκη: ${fmtNum(it.qty)} ${it.unit||""}` : "νέο είδος") : "";
     const cw=document.getElementById("bl-catw-"+i); if(cw) cw.classList.toggle("hidden", !!it || !v.trim());
+    const th=document.getElementById("bl-th-"+i); if(th) th.innerHTML = it ? stockThumb(it) : `<span class="si-img bl-ph">＋</span>`;
   }
   if(k==="order"){ renderBuy(); return; }
   buyTotals();
 }
+/* Λίστα ειδών με φωτογραφία, όπως οι πελάτες: η Αναστασία αναγνωρίζει το
+   νήμα από το χρώμα του, όχι από το όνομα.                                 */
+function buySug(i){
+  const box=document.getElementById("bl-sug-"+i); if(!box) return;
+  document.querySelectorAll(".bl-sug").forEach(b=>{ if(b!==box) b.classList.add("hidden"); });
+  const q=String((buyRows[i]||{}).name||"").trim();
+  let c=buyCandidates();
+  if(q) c=c.filter(it=>smartMatch((it.name||"")+" "+(it.category||""), q));
+  c=c.slice().sort((a,b)=>(isYarnItem(b)-isYarnItem(a)) || String(a.name).localeCompare(String(b.name),"el")).slice(0,40);
+  const exact=q && buyMatch(q);
+  if(exact && c.length===1){ box.classList.add("hidden"); return; }
+  box.innerHTML = c.map(it=>`<button type="button" class="ns-row bl-opt" onmousedown="event.preventDefault()" onclick="buyPick(${i},'${it.id}')">
+      ${stockThumb(it)}<span style="min-width:0"><span class="ns-n">${esc(it.name)}</span>
+      <span class="ns-s">${esc(it.category||"")} · στην αποθήκη ${fmtNum(it.qty)} ${esc(it.unit||"")}${it.unit_cost!=null?" · τελευταία τιμή "+fmtMoney(it.unit_cost):""}</span></span></button>`).join("")
+    + (q && !exact ? `<button type="button" class="ns-row bl-opt" onmousedown="event.preventDefault()" onclick="buyNewName(${i})">
+      <span class="si-img bl-ph">＋</span><span><span class="ns-n">Νέο είδος «${esc(q)}»</span><span class="ns-s">θα δημιουργηθεί στην αποθήκη</span></span></button>` : "")
+    + (!c.length && !q ? `<div class="ns-row" style="cursor:default"><span class="ns-s">Η αποθήκη είναι άδεια — γράψε το πρώτο είδος.</span></div>` : "");
+  box.classList.toggle("hidden", !box.innerHTML.trim());
+}
+function buyPick(i, id){
+  const it=(stockCache||[]).find(x=>x.id===id); if(!it || !buyRows[i]) return;
+  buyRows[i].name=it.name;
+  if(!buyRows[i].cost && it.unit_cost!=null) buyRows[i].cost=String(it.unit_cost).replace(".",",");
+  renderBuy();
+  const q=document.querySelector(`#buyLines .bl:nth-child(${i+1}) input[inputmode]`); if(q) q.focus();
+}
+function buyNewName(i){
+  const b=document.getElementById("bl-sug-"+i); if(b) b.classList.add("hidden");
+  renderBuy();
+  const sel=document.querySelector(`#bl-catw-${i} select`); if(sel) sel.focus();
+}
+document.addEventListener("click", e=>{
+  if(!e.target.closest || !e.target.closest(".bl-in")) document.querySelectorAll(".bl-sug").forEach(b=>b.classList.add("hidden"));
+});
 function buyMatch(name){
   const n=normText(String(name||"").trim()); if(!n) return null;
   return buyCandidates().find(it=>normText(it.name)===n) || null;
@@ -8113,8 +8433,25 @@ function buyTotals(){
   buyRows.forEach((r,i)=>{ const el=document.getElementById("bl-sum-"+i);
     if(el) el.textContent=fmtMoney(Math.round((parseMoney(r.qty)||0)*(parseMoney(r.cost)||0)*100)/100); });
 }
+/* Λίστα αγορών: όσα έπεσαν στο όριο μπαίνουν με ένα πάτημα */
+function buyLowItems(){
+  return (stockCache||[]).filter(it=>it.type!=="product" && !it.mm && !isArchivedStock(it) && stockState(it)!=="ok");
+}
+function buyFillLow(){
+  const have=new Set(buyRows.map(r=>normText(r.name)));
+  const add=buyLowItems().filter(it=>!have.has(normText(it.name))).map(it=>({name:it.name, qty:"",
+    cost:it.unit_cost!=null?String(it.unit_cost).replace(".",","):"", order:buyOrder||"", used:"", cat:it.category||"Νήμα"}));
+  buyRows=[...buyRows.filter(r=>String(r.name||"").trim()), ...add];
+  if(!buyRows.length) buyRows=[{name:"", qty:"", cost:"", order:buyOrder||"", used:"", cat:"Νήμα"}];
+  renderBuy();
+}
 function renderBuy(){
   const orders=buyOpenOrders();
+  const _low=buyLowItems().filter(it=>!buyRows.some(r=>normText(r.name)===normText(it.name)));
+  const lowBox=document.getElementById("buyLow");
+  if(lowBox) lowBox.innerHTML = _low.length ? `<div class="r-hint" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+      <span style="flex:1;min-width:180px"><b>${_low.length}</b> ${_low.length===1?"είδος έχει":"είδη έχουν"} πέσει στο όριο: ${_low.slice(0,4).map(it=>esc(it.name)).join(", ")}${_low.length>4?"…":""}</span>
+      <button type="button" class="btn ghost sm" onclick="buyFillLow()">Προσθήκη στην αγορά</button></div>` : "";
   const optO = sel => `<option value="">— για την αποθήκη</option>` + orders.map(o=>
     `<option value="${o.id}" ${o.id===sel?"selected":""}>για ${esc(firstName(o.customer_name)||o.order_number||"παραγγελία")}${
       (function(){const n=getItems(o).map(x=>x.name).filter(Boolean).join(", ");return n?" · "+esc(n):"";})()}</option>`).join("");
@@ -8122,9 +8459,13 @@ function renderBuy(){
     const it=buyMatch(r.name);
     return `<div class="bl">
       <div class="bl-top">
-        <input class="bl-name" list="buyItems" placeholder="Νήμα ή υλικό — π.χ. Σκούρο Καφέ" value="${esc(r.name)}"
-          oninput="buySet(${i},'name',this.value)">
-        <button type="button" class="x" onclick="buyDrop(${i})" aria-label="Αφαίρεση">✕</button>
+        <span class="bl-th" id="bl-th-${i}">${it?stockThumb(it):`<span class="si-img bl-ph">＋</span>`}</span>
+        <div class="bl-in">
+          <input class="bl-name" id="bl-name-${i}" autocomplete="off" placeholder="Διάλεξε ή γράψε είδος" value="${esc(r.name)}"
+            onfocus="buySug(${i})" oninput="buySet(${i},'name',this.value);buySug(${i})">
+          <div class="name-sug bl-sug hidden" id="bl-sug-${i}"></div>
+        </div>
+        ${buyRows.length>1?`<button type="button" class="x" onclick="buyDrop(${i})" aria-label="Αφαίρεση">✕</button>`:""}
       </div>
       <div class="bl-tag" id="bl-tag-${i}">${r.name.trim()?(it?`στην αποθήκη: ${fmtNum(it.qty)} ${esc(it.unit||"")}`:"νέο είδος"):""}</div>
       <div class="bl-row">
@@ -8224,29 +8565,98 @@ async function saveBuy(){
 /* ---- «+»: όλες οι καταχωρήσεις από ένα σημείο ---- */
 function openQuick(){
   const bz=bzCurrent(), running=!!(timer && timer.startedAt);
-  const a=[];
-  if(bz) a.push({dark:true, i:"🛍️", t:"Πώληση στο bazaar", d:bz.name, f:`tillOpen('${bz.id}',null)`});
-  a.push({dark:!bz, i:"🧾", t:"Λιανική πώληση", d:"έτοιμο κομμάτι", f:"tillOpen(null,null)"});
-  a.push({i:"🧵", t:"Παραγγελία", d:"κατά παραγγελία", f:"openOrderModal()"});
-  a.push({i:"🛒", t:"Αγορά", d:"νήματα & υλικά", f:"openPurchase()"});
-  a.push({i:"🧮", t:"Έξοδο / κίνηση", d:"ταμείο", f:"openCashMove()"});
-  a.push({i:"📦", t:"Έτοιμο κομμάτι", d:"στην αποθήκη", f:"goTab('stock','product');openStockModal(null)"});
-  a.push({i:"🏬", t:"Παράδοση", d:"σε κατάστημα", f:"newWholesale()"});
-  if(running) a.push({i:"⏸", t:"Σταμάτα χρόνο", d:"", f:"timerPause()"});
-  if(!bz) a.push({i:"🛍️", t:"Νέο bazaar", d:"", f:"goTab('bazaar');openBzModal()"});
-  document.getElementById("quickBody").innerHTML = `<div class="qa-grid">${a.map(x=>
+  const G=[
+    {h:"Πωλήσεις", a:[
+      bz?{dark:true, i:"🛍️", t:"Πώληση bazaar", d:bz.name, f:`tillOpen('${bz.id}',null)`}:null,
+      {dark:!bz, i:"🧾", t:"Λιανική πώληση", d:"έτοιμο κομμάτι", f:"tillOpen(null,null)"},
+      {i:"🧵", t:"Παραγγελία", d:"κατά παραγγελία", f:"openOrderModal()"},
+      {i:"🏬", t:"Παράδοση χονδρικής", d:"σε κατάστημα", f:"newWholesale()"}
+    ]},
+    {h:"Αποθήκη & ταμείο", a:[
+      {i:"🛒", t:"Αγορά", d:"νήματα & υλικά", f:"openPurchase()"},
+      {i:"📦", t:"Έτοιμο κομμάτι", d:"νέο στην αποθήκη", f:"goTab('stock','product');openStockModal(null)"},
+      {i:"🧮", t:"Έξοδο", d:"λοιπά έξοδα", f:"openCashMove()"}
+    ]},
+    {h:"Εργασία", a:[
+      running?{dark:true, i:"⏸", t:"Παύση χρόνου", d:fmtClock(timerElapsed()), f:"timerPause()"}
+             :{i:"⏱", t:"Χρόνος εργασίας", d:"παραγγελία ή κομμάτι", f:"openWorkPicker()"},
+      running?{i:"⏹", t:"Τέλος & καταγραφή", d:"", f:"timerStop()"}:null,
+      !bz?{i:"🛍️", t:"Νέο bazaar", d:"προγραμματισμός", f:"goTab('bazaar');openBzModal()"}:null
+    ]}
+  ];
+  document.getElementById("quickBody").innerHTML = G.map(g=>`<div class="act-sep" style="margin-top:4px">${g.h}</div>
+    <div class="qa-grid" style="margin-bottom:14px">${g.a.filter(Boolean).map(x=>
     `<button class="qa ${x.dark?"dark":""}" onclick="_ovClose('quickSheet');${x.f}"><span class="i">${x.i}</span>
-      <span><span class="t" style="display:block">${esc(x.t)}</span>${x.d?`<span class="d">${esc(x.d)}</span>`:""}</span></button>`).join("")}</div>`;
+      <span><span class="t" style="display:block">${esc(x.t)}</span>${x.d?`<span class="d">${esc(x.d)}</span>`:""}</span></button>`).join("")}</div>`).join("");
   _ovOpen("quickSheet");
+}
+/* Χρόνος εργασίας από το «+»: διαλέγεις σε τι δουλεύεις — προϊόν παραγγελίας
+   ή έτοιμο κομμάτι της αποθήκης (π.χ. για το bazaar).                        */
+function openWorkPicker(){
+  const orders=(ordersCache||[]).filter(o=>!isWholesale(o) && !isBazaarSale(o) && !orderIsDone(o));
+  const rows=[];
+  orders.forEach(o=>getItems(o).filter(it=>!itemDone(it)).forEach(it=>rows.push(`
+    <button class="cust-row" style="width:100%" onclick="closePickWork();timerStart('${o.id}','${it.id}')">
+      <span class="cr-main" style="pointer-events:none"><span style="flex:1;min-width:0">
+        <span class="cr-t">${esc(it.name)}${it.color?` · ${esc(it.color)}`:""}</span>
+        <span class="cr-s">${esc(o.customer_name||"")}${o.order_number?" · "+esc(o.order_number):""}${itemSec(it)?" · "+fmtDur(itemSec(it))+" μέχρι τώρα":""}</span>
+      </span></span></button>`)));
+  const prods=(stockCache||[]).filter(it=>it.type==="product" && !isArchivedStock(it))
+    .sort((a,b)=>String(a.name).localeCompare(String(b.name),"el"));
+  const prodRows=prods.map(it=>`
+    <button class="cust-row" style="width:100%" onclick="closePickWork();timerStartStock('${it.id}')">
+      <span class="cr-main" style="pointer-events:none"><span style="display:flex;gap:10px;align-items:center;flex:1;min-width:0">${stockThumb(it)}
+        <span style="min-width:0"><span class="cr-t" style="display:block">${esc(it.name)}</span>
+        <span class="cr-s">${fmtNum(it.qty)} σε απόθεμα${bomSec(it.id)?" · "+fmtDur(bomSec(it.id))+" μέχρι τώρα":""}</span></span>
+      </span></span></button>`);
+  document.getElementById("pickWorkTitle").textContent="";
+  document.getElementById("pickWorkBody").innerHTML=
+    `<div class="act-sep" style="margin-top:0">Παραγγελίες σε εξέλιξη</div>${rows.join("")||`<div class="fbd-empty" style="padding:10px">Καμία παραγγελία σε εξέλιξη.</div>`}
+     <div class="act-sep">Έτοιμα κομμάτια αποθήκης</div>${prodRows.join("")||`<div class="fbd-empty" style="padding:10px">Κανένα έτοιμο κομμάτι.</div>`}
+     <button class="btn ghost sm" style="width:100%;margin-top:6px" onclick="closePickWork();goTab('stock','product');openStockModal(null)">+ Νέο κομμάτι στην αποθήκη</button>`;
+  _ovOpen("pickWorkModal");
+}
+/* ---- Φύλλο είδους: όλες οι ενέργειες ενός είδους σε ένα σημείο ----
+   Η γραμμή της αποθήκης κρατά μόνο ό,τι χρειάζεται καθημερινά (ποσότητα).
+   Τα υπόλοιπα —πώληση, αγορά, ιστορικό, απόσυρση, αρχείο— ανοίγουν από εδώ.   */
+function openItemSheet(id){
+  const it=(stockCache||[]).find(x=>x.id===id); if(!it) return;
+  const isProd=it.type==="product", arch=isArchivedStock(it), q=Number(it.qty)||0, unit=it.unit||"τεμ.";
+  const go=f=>`_ovClose('itemSheet');${f}`;
+  const A=[];
+  if(isProd && q>0 && !arch) A.push({p:true, i:"🧾", t:"Πώληση", d:"λιανική ή στο bazaar", f:go(`tillOpen(null,'${id}')`)});
+  if(!isProd && !arch) A.push({p:true, i:"🛒", t:"Αγορά", d:"προσθήκη αποθέματος με πληρωμή", f:go(`openPurchase(null,'${id}')`)});
+  if(isProd && !arch) A.push({i:"⏱", t:"Χρόνος εργασίας", d:"μέτρηση χρόνου για αυτό το κομμάτι", f:go(`timerStartStock('${id}')`)});
+  A.push({i:"✎", t:"Επεξεργασία", d:isProd?"όνομα, τιμή, φωτογραφία, υλικά":"όνομα, κατηγορία, τιμή, όριο", f:go(`openStockModal('${id}')`)});
+  A.push({i:"📋", t:"Ιστορικό κινήσεων", d:"αγορές, αναλώσεις, πωλήσεις", f:go(`openStockHistory('${id}')`)});
+  const B=[];
+  if(it.mm){ B.push({i:"✕", t:"Αφαίρεση από το Mix & Match", d:"μένει στην αποθήκη", f:go(`mmRemove('${id}')`)});
+             B.push({w:true, i:"🗑", t:"Διαγραφή απόχρωσης", d:"οριστικά, μαζί με το απόθεμά της", f:go(`mmDelete('${id}')`)}); }
+  if(isProd && q>0 && !arch) B.push({w:true, i:"⊘", t:"Απόσυρση", d:"φθορά ή δώρο — βγαίνει από το απόθεμα χωρίς πώληση", f:go(`writeOffPiece('${id}')`)});
+  B.push({i:arch?"↩":"🗄", t:arch?"Επαναφορά από το αρχείο":"Αρχειοθέτηση", d:arch?"επιστρέφει στον ενεργό κατάλογο":"κρύβεται από τη λίστα, το ιστορικό μένει", f:go(`toggleArchiveStock('${id}')`)});
+  const row=x=>`<button class="${x.p?"primary":""} ${x.w?"warn":""}" onclick="${x.f}"><span class="i">${x.i}</span><span>${esc(x.t)}${x.d?`<span class="d">${esc(x.d)}</span>`:""}</span></button>`;
+  const val=(Number(it.unit_cost)||0)*q;
+  document.getElementById("isTitle").textContent=it.name||"Είδος";
+  document.getElementById("isBody").innerHTML=`
+    <div class="is-top">${stockThumb(it)}<div>
+      <div class="q">${fmtNum(q)} <span style="font-size:15px;font-family:Inter;color:var(--muted)">${esc(unit)}</span></div>
+      <div class="n">${isProd
+        ? (it.sell_price!=null?"Τιμή πώλησης "+fmtMoney(it.sell_price):"Χωρίς τιμή πώλησης")+(it.unit_cost!=null?" · κόστος υλικών "+fmtMoney(it.unit_cost):"")
+        : (it.unit_cost!=null?fmtMoney(it.unit_cost)+" / "+esc(unit)+(val?" · αξία "+fmtMoney(val):""):"Χωρίς τιμή κόστους")}
+        ${esc(it.category||"")?"<br>"+esc(it.category):""}</div></div></div>
+    <div class="act-list">${A.map(row).join("")}</div>
+    <div class="act-sep">Λοιπές ενέργειες</div>
+    <div class="act-list">${B.map(row).join("")}</div>`;
+  _ovOpen("itemSheet");
 }
 function openMore(){
   const items=[
-    ["◎","Πελάτες","showAdminTab('customers')"],
-    ["€","Οικονομικά","showAdminTab('cash')"],
-    ["▤","Αναφορές","showAdminTab('stats')"],
-    ["★","Feedback","showAdminTab('feedback')"],
-    ["⚙","Ρυθμίσεις","openSettings()"],
-    ["↪","Έξοδος","adminLogout()"]
+    [ICON.customers,"Πελάτες","showAdminTab('customers')"],
+    [ICON.money,"Οικονομικά","showAdminTab('cash')"],
+    [ICON.reports,"Αναφορές","showAdminTab('stats')"],
+    [ICON.feedback,"Feedback","showAdminTab('feedback')"],
+    [ICON.settings,"Ρυθμίσεις","openSettings()"],
+    [ICON.logout,"Έξοδος","adminLogout()"]
   ];
   document.getElementById("moreBody").innerHTML = `<div class="more-list">${items.map(([i,l,f])=>
     `<button onclick="_ovClose('moreSheet');${f}"><span class="i">${i}</span>${esc(l)}</button>`).join("")}</div>`;
@@ -8399,9 +8809,9 @@ function panelSales(){
 function renderHome(){
   const box=document.getElementById("homeAdmin"); if(!box) return;
   const wide=[panelSearch(), panelBrief()].filter(Boolean);
+  // οι ενέργειες ζουν στο «+» (κάτω μπάρα / πλαϊνό μενού) — όχι δεύτερη φορά εδώ
   const panels=[
-    panelActions(),
-    panelMoney(),      // τα λεφτά του μήνα, αμέσως μετά τις ενέργειες
+    panelMoney(),      // τα λεφτά του μήνα
     panelDue(),        // τι παραδίδεται
     panelBazaar(),     // μόνο με ανοιχτό bazaar
     panelOrders(),
@@ -9380,6 +9790,17 @@ function repShift(step){
   else return;
   repAnchor=d.toISOString(); renderReport();
 }
+function repPrevRange(){
+  if(repPeriod==="all") return null;
+  const r=repRange(), d=new Date(r.from);
+  if(repPeriod==="month") d.setMonth(d.getMonth()-1);
+  else if(repPeriod==="quarter") d.setMonth(d.getMonth()-3);
+  else d.setFullYear(d.getFullYear()-1);
+  const save=repAnchor; repAnchor=d.toISOString(); const p=repRange(); repAnchor=save; return p;
+}
+let repTab="summary";
+const REP_TABS=[["summary","Σύνοψη"],["pnl","Αποτέλεσμα"],["products","Προϊόντα"],["customers","Πελάτες"],["channels","Κανάλια & bazaar"],["stock","Αποθήκη"],["time","Χρόνος"]];
+function setRepTab(t){ repTab=t; renderReport(); }
 function setRepPeriod(p){ repPeriod=p; repAnchor=null; renderReport(); }
 function repIsCurrent(){
   if(repPeriod==="all") return true;
@@ -9388,8 +9809,9 @@ function repIsCurrent(){
 }
 
 /* ---- τα νούμερα της περιόδου ---- */
-function reportData(){
-  const {from,to} = repRange();
+function reportData(range){
+  const R = range || repRange();
+  const {from,to} = R;
   const inRange = d => { const t=new Date(d||0).getTime(); return t && t>=from.getTime() && t<to.getTime(); };
   const sales = (ordersCache||[]).filter(o=>inRange(o.created_at));
 
@@ -9465,7 +9887,7 @@ function reportData(){
 
   const stock=(stockCache||[]).filter(it=>!isArchivedStock(it));
   return {
-    from, to, label:repRange().l,
+    from, to, label:R.l, sales,
     n:sales.length, rev, cost, costedRev, nCosted, gross, margin,
     bzCost, opex, preWork, labour, workSecs, net, owed, ch,
     cashIn:Math.round(cashIn*100)/100, cashOut:Math.round(cashOut*100)/100,
@@ -9501,7 +9923,7 @@ function renderReport(){
   const CH=["order","retail","wholesale","bazaar"];
 
   const periodBar = `<div class="rep-head">
-    <div class="tabsw" style="flex-wrap:wrap">${REP_PERIODS.map(([k,l])=>
+    <div class="chiprow">${REP_PERIODS.map(([k,l])=>
       `<button class="tb ${repPeriod===k?'sel':''}" onclick="setRepPeriod('${k}')">${l}</button>`).join("")}</div>
     ${repPeriod!=="all"?`<div class="rep-nav">
       <button class="btn ghost sm" onclick="repShift(-1)" title="Προηγούμενη">←</button>
@@ -9510,8 +9932,16 @@ function renderReport(){
     </div>`:`<span class="rep-lbl">${esc(d.label)}</span>`}
   </div>`;
 
-  if(!d.n && !d.opex && !d.bzCost){
-    box.innerHTML = periodBar + `<div class="led-empty">Καμία κίνηση σε αυτή την περίοδο.</div>`;
+  const tabBar = `<div class="chips"><div class="chiprow">${REP_TABS.map(([k,l])=>
+    `<button class="tb ${repTab===k?'sel':''}" onclick="setRepTab('${k}')">${l}</button>`).join("")}</div></div>`;
+  if(repTab!=="stock" && !d.n && !d.opex && !d.bzCost){
+    box.innerHTML = periodBar + tabBar + `<div class="led-empty">Καμία κίνηση σε αυτή την περίοδο.</div>`;
+    return;
+  }
+  if(repTab!=="pnl"){
+    const f={summary:repSummary, products:repProducts, customers:repCustomers, channels:repChannels, stock:repStock, time:repTime}[repTab]||repSummary;
+    box.innerHTML = periodBar + tabBar + f(d) +
+      `<div class="rep-foot"><button class="btn ghost sm" onclick="window.print()">Εκτύπωση</button></div>`;
     return;
   }
 
@@ -9597,8 +10027,192 @@ function renderReport(){
         <span class="cnt" style="width:78px">${fmtMoney(mv[i])}</span></div>`).join("")}</div>
     <div class="year-total">Σύνολο ${yr}: <b>${fmtMoney(mv.reduce((a,b)=>a+b,0))}</b></div>`;
 
-  box.innerHTML = periodBar + result + flow + chTable + sellBlock + repPerfBlock() + rest + trend +
-    `<div class="rep-foot"><button class="btn ghost sm" onclick="window.print()">🖨 Εκτύπωση</button></div>`;
+  box.innerHTML = periodBar + tabBar + `<p class="rep-intro">Η κατάσταση αποτελέσματος: από τις πωλήσεις αφαιρούνται τα υλικά, τα έξοδα και η εργασία, για να φανεί τι πραγματικά έμεινε.</p>`
+    + result + flow + chTable + sellBlock + rest + trend +
+    `<div class="rep-foot"><button class="btn ghost sm" onclick="window.print()">Εκτύπωση</button></div>`;
+}
+
+/* ============ ΑΝΑΦΟΡΕΣ ΑΝΑ ΘΕΜΑ ============
+   Κάθε αναφορά ξεκινά με μία πρόταση για το τι δείχνει και κλείνει με ό,τι
+   αξίζει να προσέξεις. Τα νούμερα είναι τα ίδια με της κατάστασης αποτελέσματος. */
+const pct=(a,b)=> b ? Math.round((a-b)/Math.abs(b)*100) : null;
+function repDelta(cur, prev, money){
+  if(prev==null) return "";
+  const p=pct(cur,prev); if(p==null || !isFinite(p)) return "";
+  const up=p>=0;
+  return `<span class="rep-dl ${up?"up":"down"}">${up?"▲":"▼"} ${Math.abs(p)}%</span>`;
+}
+function repKpi(l, v, sub, delta){
+  return `<div class="rk"><div class="rk-l">${esc(l)}</div><div class="rk-v">${v}</div><div class="rk-s">${sub||""}${delta||""}</div></div>`;
+}
+/* μερίδιο κόστους υλικών και χρόνου κάθε προϊόντος μιας πώλησης */
+function repItemRows(d){
+  const out=[];
+  (d.sales||[]).forEach(o=>{
+    const its=getItems(o); if(!its.length) return;
+    const val=orderValue(o), cost=(o.cost!=null)?Number(o.cost):null;
+    const lineVals=its.map(it=>(Number(it.price)||0)*Math.max(1,Number(it.qty)||1));
+    const sumL=lineVals.reduce((a,b)=>a+b,0)||its.length;
+    its.forEach((it,i)=>{
+      const share=(sumL? (lineVals[i]||(sumL/its.length))/sumL : 1/its.length);
+      const sp=splitItemName(it.name||"");
+      out.push({ o, it, model:(sp.model||it.name||"—").trim(), color:(it.color||sp.variant||"").trim(),
+        qty:Math.max(1,Number(it.qty)||1), rev:val*share, cost:cost!=null?cost*share:null,
+        sec:itemSec(it) || (Number(o.work_sec)||0)*share, ch:saleChannelOf(o) });
+    });
+  });
+  return out;
+}
+function repSummary(d){
+  const pr=repPrevRange(), p=pr?reportData(pr):null;
+  const rows=repItemRows(d);
+  const byModel={}; rows.forEach(r=>{ const m=byModel[r.model]=byModel[r.model]||{k:r.model,n:0,rev:0,cost:0,costed:0}; m.n+=r.qty; m.rev+=r.rev; if(r.cost!=null){m.cost+=r.cost;m.costed+=r.rev;} });
+  const models=Object.values(byModel).sort((a,b)=>b.rev-a.rev);
+  const prof=models.filter(m=>m.costed>0).map(m=>({...m, mg:Math.round((m.costed-m.cost)/m.costed*100)})).sort((a,b)=>b.mg-a.mg);
+  const hours=d.workSecs/3600, perHour=hours>0.2?Math.round(d.gross/hours*100)/100:null;
+  const owedAll=(ordersCache||[]).reduce((a,o)=>a+orderOwed(o),0);
+  const owedN=new Set((ordersCache||[]).filter(o=>orderOwed(o)>0.01).map(custKey)).size;
+
+  let h=`<p class="rep-intro">Τα βασικά της περιόδου με μια ματιά, σε σύγκριση με την προηγούμενη${p?` (${esc(p.label)})`:""}.</p>
+  <div class="rk-grid">
+    ${repKpi("Πωλήσεις", fmtMoney(d.rev), d.n+" "+(d.n===1?"πώληση":"πωλήσεις")+" ", p?repDelta(d.rev,p.rev):"")}
+    ${repKpi("Μικτό κέρδος", fmtMoney(d.gross), d.margin!=null?"περιθώριο "+d.margin+"% ":"", p?repDelta(d.gross,p.gross):"")}
+    ${repKpi("Καθαρό αποτέλεσμα", fmtMoney(d.net), "μετά από έξοδα & εργασία ", p?repDelta(d.net,p.net):"")}
+    ${repKpi("Μέση πώληση", fmtMoney(d.n?d.rev/d.n:0), "ανά απόδειξη ", p&&p.n?repDelta(d.rev/Math.max(1,d.n),p.rev/p.n):"")}
+  </div>`;
+
+  // συμπεράσματα σε απλά λόγια
+  const ins=[];
+  if(p && p.rev>0){ const q=pct(d.rev,p.rev); ins.push(q>=0?`Οι πωλήσεις είναι <b>${q}% πάνω</b> από την προηγούμενη περίοδο.`:`Οι πωλήσεις είναι <b>${Math.abs(q)}% κάτω</b> από την προηγούμενη περίοδο.`); }
+  else if(p && p.rev===0 && d.rev>0) ins.push(`Η προηγούμενη περίοδος δεν είχε πωλήσεις — αυτή είναι η πρώτη με τζίρο.`);
+  if(models[0]) ins.push(`Το πιο δυνατό μοντέλο είναι το <b>${esc(models[0].k)}</b>: ${fmtNum(models[0].n)} τεμ., ${fmtMoney(models[0].rev)} (${Math.round(models[0].rev/Math.max(1,d.rev)*100)}% του τζίρου).`);
+  if(prof.length>1) ins.push(`Το καλύτερο περιθώριο το έχει το <b>${esc(prof[0].k)}</b> (${prof[0].mg}%) και το χαμηλότερο το <b>${esc(prof[prof.length-1].k)}</b> (${prof[prof.length-1].mg}%).`);
+  const chs=["order","retail","wholesale","bazaar"].filter(k=>d.ch[k].n>0).sort((a,b)=>d.ch[b].rev-d.ch[a].rev);
+  if(chs.length>1) ins.push(`Τα περισσότερα έσοδα ήρθαν από <b>${esc(SALE_CHANNELS[chs[0]].l)}</b> (${Math.round(d.ch[chs[0]].rev/Math.max(1,d.rev)*100)}%).`);
+  if(perHour!=null) ins.push(perHour>=hourRate?`Η ώρα εργασίας απέδωσε <b>${fmtMoney(perHour)}</b> μικτό κέρδος — πάνω από τον στόχο των ${fmtMoney(hourRate)}.`
+                                              :`Η ώρα εργασίας απέδωσε <b>${fmtMoney(perHour)}</b> μικτό κέρδος — κάτω από τον στόχο των ${fmtMoney(hourRate)}. Δες τις τιμές στα Προϊόντα.`);
+  if(d.cust.total) ins.push(`<b>${d.cust.fresh}</b> από τους ${d.cust.total} πελάτες ήταν νέοι.`);
+  if(owedAll>0.01) ins.push(`Εκκρεμούν <b>${fmtMoney(owedAll)}</b> από ${owedN} ${owedN===1?"πελάτη":"πελάτες"} (συνολικά, όχι μόνο της περιόδου).`);
+  if(d.nCosted<d.n) ins.push(`${d.n-d.nCosted} ${d.n-d.nCosted===1?"πώληση δεν έχει":"πωλήσεις δεν έχουν"} κόστος υλικών, άρα το κέρδος φαίνεται μεγαλύτερο απ' ό,τι είναι.`);
+  if(d.stock.low) ins.push(`${d.stock.low} ${d.stock.low===1?"είδος τελειώνει":"είδη τελειώνουν"} στην αποθήκη.`);
+  h+=`<div class="rep-sec">Τι βλέπουμε</div><ul class="rep-ins">${ins.map(x=>`<li>${x}</li>`).join("")}</ul>`;
+
+  // μικρή κατάσταση
+  h+=`<div class="rep-sec">Σε αριθμούς</div><div class="rep-t">
+    ${repRow("Πωλήσεις", d.rev, {cls:"hd"})}
+    ${repRow("Κόστος υλικών", d.cost, {neg:true, cls:"soft"})}
+    ${(d.bzCost+d.opex)?repRow("Έξοδα (bazaar & λειτουργικά)", d.bzCost+d.opex, {neg:true, cls:"soft"}):""}
+    ${d.workSecs?repRow("Εργασία", d.labour, {neg:true, cls:"soft"}):""}
+    ${repRow("Καθαρό αποτέλεσμα", d.net, {cls:"tot"})}
+  </div><p class="rep-note">Αναλυτικά στην καρτέλα <button class="lnk" onclick="setRepTab('pnl')">Αποτέλεσμα →</button></p>`;
+  return h;
+}
+function repProducts(d){
+  const rows=repItemRows(d);
+  const agg=(key)=>{ const m={}; rows.forEach(r=>{ const k=key(r); if(!k) return;
+    const a=m[k]=m[k]||{k,n:0,rev:0,cost:0,costed:0,sec:0}; a.n+=r.qty; a.rev+=r.rev; a.sec+=r.sec;
+    if(r.cost!=null){a.cost+=r.cost;a.costed+=r.rev;} }); return Object.values(m).sort((a,b)=>b.rev-a.rev); };
+  const models=agg(r=>r.model), colors=agg(r=>r.color);
+  const tbl=models.map(m=>{
+    const mg=m.costed>0?Math.round((m.costed-m.cost)/m.costed*100):null;
+    const ph=m.sec>300?Math.round((m.rev-m.cost)/(m.sec/3600)*100)/100:null;
+    const col=ph==null?"var(--muted)":(ph>=hourRate?"#2c6e49":(ph>=hourRate*0.6?"#9a6a1e":"#b54b3a"));
+    return `<div class="rep-tr rt5"><span>${esc(m.k)}</span><span>${fmtNum(m.n)}</span><span>${fmtMoney(m.rev)}</span>
+      <span>${mg!=null?mg+"%":"—"}</span><span style="color:${col}">${ph!=null?fmtMoney(ph):"—"}</span></div>`;}).join("");
+  const under=models.filter(m=>m.sec>300 && (m.rev-m.cost)/(m.sec/3600)<hourRate);
+  return `<p class="rep-intro">Ποια μοντέλα και ποια χρώματα φέρνουν τα έσοδα, με τι περιθώριο, και πόσο πιάνει η ώρα σε καθένα.</p>
+    <div class="rep-sec">Ανά μοντέλο</div>
+    <div class="rep-tbl"><div class="rep-hr rt5"><span>Μοντέλο</span><span>Τεμ.</span><span>Τζίρος</span><span>Περιθ.</span><span>€/ώρα</span></div>${tbl||""}</div>
+    <p class="rep-note"><b>Περιθώριο</b>: τι μένει από κάθε €100 πώλησης μετά τα υλικά. <b>€/ώρα</b>: μικτό κέρδος ανά ώρα εργασίας, μόνο όπου έχει μετρηθεί χρόνος — πράσινο όταν πιάνει τον στόχο των ${fmtMoney(hourRate)}.</p>
+    ${under.length?`<div class="r-hint" style="margin-top:12px;background:#fdf6ea;color:#8a5a1e">Κάτω από τον στόχο ανά ώρα: ${under.map(m=>`<b>${esc(m.k)}</b>`).join(", ")}. Αξίζει να δεις την τιμή τους ή τον χρόνο που παίρνουν.</div>`:""}
+    ${colors.length?`<div class="rep-sec">Ανά απόχρωση</div>${repBars(colors.slice(0,10),"τεμ.")}
+      <p class="rep-note">Τα χρώματα που ζητιούνται περισσότερο — χρήσιμο για το τι νήμα να υπάρχει πάντα στην αποθήκη.</p>`:""}`;
+}
+function repCustomers(d){
+  const by={};
+  (d.sales||[]).forEach(o=>{ const k=custKey(o); if(!k || isAnonSale(o)) return;
+    const c=by[k]=by[k]||{k, id:o.id, name:o.customer_name, n:0, rev:0}; c.n++; c.rev+=orderValue(o);
+    c.name=bestName(c.name,o.customer_name); });
+  const top=Object.values(by).sort((a,b)=>b.rev-a.rev).slice(0,10);
+  const allK={}; (ordersCache||[]).forEach(o=>{ const k=custKey(o); if(!k||isAnonSale(o)) return; allK[k]=(allK[k]||0)+1; });
+  const tot=Object.keys(allK).length, rep=Object.values(allK).filter(n=>n>1).length;
+  const owed=(ordersCache||[]).filter(o=>orderOwed(o)>0.01).map(o=>({o, due:orderOwed(o),
+    days:Math.floor((Date.now()-new Date(o.created_at||Date.now()))/86400000)})).sort((a,b)=>b.days-a.days);
+  return `<p class="rep-intro">Ποιοι αγοράζουν, πόσοι επιστρέφουν και ποιοι χρωστούν.</p>
+    <div class="rk-grid">
+      ${repKpi("Πελάτες περιόδου", String(d.cust.total), d.cust.fresh+" νέοι")}
+      ${repKpi("Ανά πελάτη", fmtMoney(d.cust.avg), "μέση αξία")}
+      ${repKpi("Επιστρέφουν", tot?Math.round(rep/tot*100)+"%":"—", rep+" από "+tot+" συνολικά")}
+    </div>
+    <p class="rep-note"><b>Επιστρέφουν</b>: πόσοι από όλους τους πελάτες έχουν αγοράσει πάνω από μία φορά. Όσο ανεβαίνει, τόσο λιγότερο εξαρτάσαι από νέους πελάτες.</p>
+    ${top.length?`<div class="rep-sec">Κορυφαίοι πελάτες περιόδου</div>
+      <div class="rep-tbl"><div class="rep-hr"><span>Πελάτης</span><span>Αγορές</span><span>Τζίρος</span><span>Μερίδιο</span></div>
+      ${top.map(c=>`<button class="rep-tr rep-trb" onclick="openCustomer('${c.id}')"><span>${esc(c.name)}</span><span>${c.n}</span><span>${fmtMoney(c.rev)}</span><span>${Math.round(c.rev/Math.max(1,d.rev)*100)}%</span></button>`).join("")}</div>`:""}
+    <div class="rep-sec">Ανεξόφλητα σήμερα</div>
+    ${owed.length?`<div class="rep-tbl"><div class="rep-hr"><span>Πελάτης</span><span>Ημέρες</span><span>Οφειλή</span><span></span></div>
+      ${owed.map(x=>`<button class="rep-tr rep-trb" onclick="editOrder('${x.o.id}')"><span>${esc(x.o.customer_name)}</span><span style="${x.days>30?"color:#b54b3a;font-weight:600":""}">${x.days}</span><span>${fmtMoney(x.due)}</span><span>${esc(x.o.order_number||"")}</span></button>`).join("")}</div>
+      <p class="rep-note">Ημέρες από την καταχώρηση. Πάνω από 30 ημέρες σημαίνεται με κόκκινο.</p>`
+      :`<p class="rep-note">Δεν υπάρχουν ανεξόφλητα.</p>`}`;
+}
+function repChannels(d){
+  const CH=["order","retail","wholesale","bazaar"].filter(k=>d.ch[k].n>0);
+  const {from,to}=d;
+  const bzs=(bazaars||[]).filter(b=>{ if(!b.date) return false; const t=new Date(b.date+"T12:00:00"); return t>=from && t<to; })
+    .map(b=>{ const sales=bzSales(b.id); const rev=sales.reduce((a,o)=>a+orderValue(o),0);
+      const cost=sales.reduce((a,o)=>a+(Number(o.cost)||0),0); const ex=(Number(b.fee)||0)+bzExpTotal(b.id);
+      return {b, n:sales.length, rev, cost, ex, net:rev-cost-ex}; });
+  return `<p class="rep-intro">Από πού έρχονται τα έσοδα και πόσο κερδίζεις σε κάθε κανάλι, αφού αφαιρεθούν τα υλικά.</p>
+    <div class="rep-tbl"><div class="rep-hr rt5"><span>Κανάλι</span><span>Πωλ.</span><span>Τζίρος</span><span>Μικτό</span><span>Περιθ.</span></div>
+    ${CH.map(k=>{ const c=d.ch[k]; const g=c.costed>0?c.costed-c.cost:null;
+      return `<div class="rep-tr rt5"><span>${esc(SALE_CHANNELS[k].l)}</span><span>${c.n}</span><span>${fmtMoney(c.rev)}</span>
+        <span>${g!=null?fmtMoney(g):"—"}</span><span>${c.costed>0?Math.round(g/c.costed*100)+"%":"—"}</span></div>`;}).join("")}</div>
+    <p class="rep-note">Η χονδρική έχει συνήθως μικρότερο περιθώριο αλλά μεγαλύτερες ποσότητες· το bazaar έχει και έξοδα συμμετοχής, που φαίνονται παρακάτω.</p>
+    ${bzs.length?`<div class="rep-sec">Bazaar της περιόδου</div>
+      <div class="rep-tbl"><div class="rep-hr rt5"><span>Bazaar</span><span>Πωλ.</span><span>Τζίρος</span><span>Έξοδα</span><span>Καθαρό</span></div>
+      ${bzs.map(x=>`<button class="rep-tr rt5 rep-trb" onclick="goTab('bazaar');setBzView('${x.b.id}')"><span>${esc(x.b.name)}</span><span>${x.n}</span><span>${fmtMoney(x.rev)}</span><span>${fmtMoney(x.ex)}</span>
+        <span style="color:${x.net>=0?"#2c6e49":"#b54b3a"};font-weight:600">${fmtMoney(x.net)}</span></button>`).join("")}</div>
+      <p class="rep-note"><b>Καθαρό</b> = τζίρος − υλικά των κομματιών − συμμετοχή και έξοδα. Δείχνει αν ένα bazaar αξίζει να το ξανακάνεις.</p>`:""}`;
+}
+function repStock(d){
+  const G=stockGroups(), val=a=>a.reduce((s,it)=>s+(Number(it.qty)||0)*(Number(it.unit_cost)||0),0);
+  const prodSell=G.product.reduce((s,it)=>s+(Number(it.qty)||0)*(Number(it.sell_price)||0),0);
+  const lastSold={}; (ordersCache||[]).forEach(o=>getItems(o).forEach(it=>{ const k=normText(it.name); const t=new Date(o.created_at||0).getTime(); if(t>(lastSold[k]||0)) lastSold[k]=t; }));
+  const slow=G.product.filter(it=>Number(it.qty)>0).map(it=>({it, last:lastSold[normText(it.name)]||0}))
+    .filter(x=>!x.last || Date.now()-x.last>60*86400000).slice(0,12);
+  const low=(stockCache||[]).filter(it=>!isArchivedStock(it) && it.type!=="product" && stockState(it)!=="ok");
+  // αγορές της περιόδου ανά είδος
+  const bought={};
+  (cashMoves||[]).filter(m=>m.kind==="purchase").forEach(m=>{
+    const t=new Date(m.moved_at||0); if(!(t>=d.from && t<d.to)) return;
+    (Array.isArray(m.lines)?m.lines:[]).forEach(l=>{ const b=bought[l.name]=bought[l.name]||{k:l.name,n:0,rev:0}; b.n+=Number(l.qty)||0; b.rev+=(Number(l.qty)||0)*(Number(l.unit_cost)||0); });
+  });
+  const bList=Object.values(bought).sort((a,b)=>b.rev-a.rev);
+  return `<p class="rep-intro">Πόσα χρήματα είναι «δεμένα» στην αποθήκη σήμερα, τι κάθεται χωρίς να πουλιέται και τι πρέπει να αγοραστεί.</p>
+    <div class="rk-grid">
+      ${repKpi("Νήματα", fmtMoney(val(G.yarn)), G.yarn.filter(x=>Number(x.qty)>0).length+" χρώματα")}
+      ${repKpi("Υλικά", fmtMoney(val(G.supplies)), G.supplies.filter(x=>Number(x.qty)>0).length+" είδη")}
+      ${repKpi("Έτοιμα κομμάτια", fmtMoney(val(G.product)), fmtNum(G.product.reduce((a,x)=>a+(Number(x.qty)||0),0))+" τεμ. · αξία πώλησης "+fmtMoney(prodSell))}
+    </div>
+    <p class="rep-note">Οι αξίες είναι σε τιμή κόστους. Η αξία πώλησης των έτοιμων είναι όσα θα εισπράξεις αν πουληθούν όλα στην τιμή τους.</p>
+    ${low.length?`<div class="rep-sec">Για αγορά</div><div class="rep-t">${low.map(it=>repRow(it.name,0,{raw:`${fmtNum(it.qty)} ${esc(it.unit||"")}`,cls:"soft"})).join("")}</div>
+      <p class="rep-note">Είδη στο ή κάτω από το όριο που έχεις ορίσει. <button class="lnk" onclick="openPurchase()">Νέα αγορά →</button></p>`:""}
+    ${slow.length?`<div class="rep-sec">Έτοιμα που δεν κινούνται</div><div class="rep-t">${slow.map(x=>repRow(x.it.name,0,{raw:x.last?`τελευταία πώληση ${fmtDateShort(new Date(x.last))}`:"καμία πώληση",cls:"soft"})).join("")}</div>
+      <p class="rep-note">Κομμάτια σε απόθεμα χωρίς πώληση τις τελευταίες 60 ημέρες — υποψήφια για bazaar, έκπτωση ή χονδρική.</p>`:""}
+    ${bList.length?`<div class="rep-sec">Αγορές περιόδου</div>${repBars(bList.slice(0,10),"μον.")}`:""}`;
+}
+function repTime(d){
+  const rows=repItemRows(d).filter(r=>r.sec>0);
+  const hrs=d.workSecs/3600;
+  const items=rows.length, avg=items?d.workSecs/items:0;
+  const perHour=hrs>0.2?Math.round(d.gross/hrs*100)/100:null;
+  return `<p class="rep-intro">Πόσος χρόνος δουλειάς μπήκε στην περίοδο και πόσο αποδίδει. Ο χρόνος μετράει από το ⏱ στο «+» ή μέσα στην παραγγελία.</p>
+    <div class="rk-grid">
+      ${repKpi("Ώρες εργασίας", fmtDur(d.workSecs), items+" κομμάτια με χρόνο")}
+      ${repKpi("Μέσος χρόνος", items?fmtDur(avg):"—", "ανά κομμάτι")}
+      ${repKpi("Απόδοση ώρας", perHour!=null?fmtMoney(perHour):"—", "στόχος "+fmtMoney(hourRate))}
+    </div>
+    <p class="rep-note"><b>Απόδοση ώρας</b> = μικτό κέρδος της περιόδου ÷ ώρες εργασίας. Αν είναι κάτω από τον στόχο, η τιμή δεν πληρώνει τον χρόνο σου.</p>
+    ${repPerfBlock()}`;
 }
 
 /* ---- απόδοση ανά κατηγορία: πόσο πιάνει η ώρα ---- */
@@ -9944,7 +10558,7 @@ function renderCash(){
   const box=document.getElementById("cashAdmin"); if(!box) return;
   if(!accounts.length){ box.innerHTML=`<div class="fbd-empty">Δεν βρέθηκαν λογαριασμοί. Έτρεξε το SQL της Φάσης 1;</div>`; return; }
   const months=cashMonths();
-  if(!cashMonth || (cashMonth!=="all" && !months.includes(cashMonth))) cashMonth=months[0];
+  if(!cashMonth || !months.includes(cashMonth)) cashMonth=months[0];
   const label = cashMonth==="all" ? "από την έναρξη"
     : (GR_MONTHS_FULL[Number(cashMonth.split("-")[1])-1]+" "+cashMonth.split("-")[0]);
   const rows=movesIn(cashMonth);
@@ -9963,35 +10577,30 @@ function renderCash(){
       <div class="n">${fmtMoney(balanceOf(a.id))}</div>
       <div class="l">${esc(a.name)}${a.opening_at?`<br>από ${fmtDateShort(a.opening_at)}`:""}</div></button>`).join("");
 
-  const tabs=`<div class="tabsw" style="margin-bottom:14px;flex-wrap:wrap">
-    <button class="tb ${cashMonth==="all"?"sel":""}" onclick="setCashMonth('all')">Όλες</button>
-    ${months.map(k=>{
+  const tabs=`<div class="chips"><div class="chiprow">${months.map(k=>{
       const [yy,mm]=k.split("-");
-      return `<button class="tb ${k===cashMonth?"sel":""}" onclick="setCashMonth('${k}')">${GR_MONTHS_SHORT[Number(mm)-1]} ${yy.slice(2)}</button>`;
-    }).join("")}</div>`;
+      return `<button class="tb ${k===cashMonth?"sel":""}" onclick="setCashMonth('${k}')">${GR_MONTHS_FULL[Number(mm)-1]} ${yy}</button>`;
+    }).join("")}</div></div>`;
 
-  const filters=`<div class="tabsw" style="margin:0 0 10px;flex-wrap:wrap">${CASH_FILTERS.map(([k,l])=>
-    `<button class="tb ${cashFilter===k?"sel":""}" onclick="setCashFilter('${k}')">${l}</button>`).join("")}</div>`;
-
-  const shown=rows.filter(m=>{
-    if(cashFilter==="in")    return Number(m.amount)>0 && m.kind!=="owner_in";
-    if(cashFilter==="out")   return Number(m.amount)<0 && m.kind!=="owner_draw";
-    if(cashFilter==="owner") return m.kind==="owner_draw"||m.kind==="owner_in";
-    return true;
-  });
-
-  const list = shown.length ? shown.map(m=>{
-    const k=CASH_KINDS[m.kind]||{l:m.kind};
-    const a=accById(m.account_id);
-    const neg=Number(m.amount)<0;
-    return `<div class="led-r">
-      <span class="d">${esc(m.name||k.l)}<small>${fmtDateShort(m.moved_at)} · ${esc(k.l)}${m.category?" · "+esc(m.category):""}${a?" · "+esc(a.name):""}</small></span>
-      <span class="a" style="${neg?"":"color:#2c6e49"}">${fmtMoney(m.amount)}</span>
-      ${m.src==="manual"
-        ? `<button class="x" title="Επεξεργασία" onclick="openCashMove('${m.id}')">✎</button>`
-        : `<button class="x" title="${m.src==="sale"?"Άνοιγμα παραγγελίας":"Άνοιγμα bazaar"}" onclick="${m.src==="sale"?`editOrder('${m.ref_id}')`:`goTab('bazaar');setBzView('${m.ref_id}')`}">→</button>`}
-    </div>`;
-  }).join("") : `<div class="led-empty">Καμία κίνηση στην περίοδο.</div>`;
+  // μία λίστα, ανά ημέρα — χωρίς φίλτρα: σε μια μικρή επιχείρηση οι κινήσεις του μήνα χωρούν σε μια ματιά
+  const byDay={};
+  rows.forEach(m=>{ const d=String(m.moved_at||"").slice(0,10); (byDay[d]=byDay[d]||[]).push(m); });
+  const list = rows.length ? Object.keys(byDay).sort().reverse().map(d=>{
+    const dayRows=byDay[d];
+    const dt=new Date(d+"T12:00:00");
+    const head=isNaN(dt)?d:dt.toLocaleDateString("el-GR",{weekday:"long",day:"numeric",month:"long"});
+    return `<div class="led-day">${esc(head)}</div>`+dayRows.map(m=>{
+      const k=CASH_KINDS[m.kind]||{l:m.kind};
+      const a=accById(m.account_id);
+      const neg=Number(m.amount)<0;
+      const open = m.src==="manual" ? `openCashMove('${m.id}')`
+                 : (m.src==="sale" ? `editOrder('${m.ref_id}')` : `goTab('bazaar');setBzView('${m.ref_id}')`);
+      return `<button class="led-r led-btn" onclick="${open}">
+        <span class="d">${esc(m.name||k.l)}<small>${esc(k.l)}${m.category&&m.category!==k.l?" · "+esc(m.category):""}${a&&accounts.filter(x=>!x.archived).length>1?" · "+esc(a.name):""}</small></span>
+        <span class="a" style="color:${neg?"var(--ink)":"#2c6e49"}">${neg?"":"+"}${fmtMoney(m.amount)}</span>
+      </button>`;
+    }).join("");
+  }).join("") : `<div class="led-empty">Καμία κίνηση αυτόν τον μήνα.</div>`;
 
   const row=(l,v,off)=>`<div class="sum-r ${off?"off":""}"><span>${esc(l)}</span><span class="a">${fmtMoney(v)}</span></div>`;
 
@@ -10001,24 +10610,18 @@ function renderCash(){
       ${accounts.filter(a=>!a.archived).length>1?`<div class="mini tot"><div class="n">${fmtMoney(totalBalance())}</div><div class="l">Σύνολο διαθεσίμων</div></div>`:""}</div>
     ${tabs}
     <div class="sum" style="margin-bottom:6px">
-      ${cashMonth==="all"?row("Υπόλοιπο έναρξης", openingTotal()):""}
       ${row("Εισπράξεις πωλήσεων", inn)}
       ${buy?row("Αγορές υλικών", buy, true):""}
       ${exp?row("Λειτουργικά έξοδα", exp, true):""}
       ${ownIn?row("Εισφορά ιδιοκτήτη", ownIn):""}
       ${draw?row("Ανάληψη ιδιοκτήτη", draw, true):""}
-      <div class="sum-t"><span class="l">${cashMonth==="all"?"Υπόλοιπο σήμερα":"Καθαρή ροή "+esc(label)}</span><span class="a">${fmtMoney(cashMonth==="all"?totalBalance():net)}</span></div>
+      <div class="sum-t"><span class="l">Καθαρή ροή μήνα</span><span class="a">${fmtMoney(net)}</span></div>
     </div>
-    <div style="font-size:11.5px;color:var(--muted);margin:0 0 16px;line-height:1.6">
-      Ταμειακή ροή περιόδου. Οι αναλήψεις και οι εισφορές ιδιοκτήτη μεταβάλλουν το υπόλοιπο
-      χωρίς να επηρεάζουν το αποτέλεσμα χρήσης.
+    <div style="font-size:11.5px;color:var(--muted);margin:0 0 18px;line-height:1.6">
+      Πόσα μπήκαν και πόσα βγήκαν τον μήνα. Οι αναλήψεις και οι καταθέσεις ιδιοκτήτη αλλάζουν το υπόλοιπο, όχι το αποτέλεσμα χρήσης· το κέρδος είναι στις Αναφορές.
     </div>
-    <div class="stats-sub" style="margin-top:0">Κινήσεις ${esc(label)}</div>
-    ${filters}
-    <div class="led">
-      <div class="led-h"><span class="d">Αιτιολογία</span><span class="a">Ποσό</span><span class="x" style="border:none;background:none"></span></div>
-      ${list}
-    </div>
+    <div class="stats-sub" style="margin-top:0">Κινήσεις · ${esc(label)}</div>
+    <div class="led">${list}</div>
 `;
 }
 
@@ -10073,11 +10676,11 @@ function setMoveKind(k){
   document.getElementById("cmCatWrap").classList.toggle("hidden", k==="owner_draw"||k==="owner_in"||k==="transfer");
   document.getElementById("cmToWrap").classList.toggle("hidden", k!=="transfer");
   const hint=document.getElementById("cmHint");
-  hint.textContent = (k==="owner_draw") ? "Δεν βαρύνει το αποτέλεσμα — μειώνει μόνο το υπόλοιπο."
-                   : (k==="owner_in")   ? "Δεν προσμετράται σε έσοδα — αυξάνει μόνο το υπόλοιπο."
-                   : (k==="purchase")   ? "Τα είδη που θα προστεθούν αυξάνουν το απόθεμα."
-                   : (k==="transfer")   ? "Γράφεται ως δύο κινήσεις και δεν επηρεάζει το σύνολο."
-                   : (k==="sale")       ? "Για εισπράξεις εκτός παραγγελίας. Οι πωλήσεις καταχωρούνται μόνες τους."
+  hint.textContent = (k==="owner_draw") ? "Χρήματα που πήρε ο ιδιοκτήτης. Μειώνουν το υπόλοιπο, όχι το κέρδος."
+                   : (k==="owner_in")   ? "Χρήματα που έβαλε ο ιδιοκτήτης. Αυξάνουν το υπόλοιπο, δεν είναι έσοδο."
+                   : (k==="purchase")   ? "Τα είδη αυξάνουν το απόθεμα."
+                   : (k==="transfer")   ? "Από ταμείο σε τράπεζα ή αντίστροφα. Το σύνολο δεν αλλάζει."
+                   : (k==="sale")       ? "Μόνο για εισπράξεις εκτός πωλήσεων — οι πωλήσεις καταγράφονται αυτόματα."
                    : "";
   hint.classList.toggle("hidden", !hint.textContent);
   renderMoveLines();
@@ -10118,7 +10721,7 @@ function openCashMove(id){
   editingMoveId=id||null; moveLines=[];
   const m=id?cashMoves.find(x=>x.id===id):null;
   if(m && Array.isArray(m.lines)) moveLines=m.lines.map(l=>({...l}));
-  document.getElementById("cmTitle").textContent=m?"Επεξεργασία κίνησης":"Νέα κίνηση";
+  document.getElementById("cmTitle").textContent=m?"Επεξεργασία κίνησης":"Νέα κίνηση ταμείου";
   document.getElementById("cmAccount").innerHTML=accounts.filter(a=>!a.archived)
     .map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join("");
   document.getElementById("cmTo").innerHTML=document.getElementById("cmAccount").innerHTML;
@@ -10128,7 +10731,7 @@ function openCashMove(id){
   document.getElementById("cmName").value=m?(m.name||""):"";
   document.getElementById("cmDate").value=(m&&m.moved_at)||todayISO();
   document.getElementById("cmAmount").value=m?Math.abs(Number(m.amount)||0):"";
-  document.getElementById("cmCat").value=(m&&m.category)||"Υλικά & αγορές";
+  document.getElementById("cmCat").value=(m&&m.category)||"Λοιπά";
   document.getElementById("cmNote").value=m?(m.note||""):"";
   document.getElementById("cmDelBtn").classList.toggle("hidden", !id);
   document.getElementById("cmMsg").classList.add("hidden");
@@ -10249,7 +10852,7 @@ function renderBazaar(){
     if(!!a.closed!==!!b.closed) return a.closed?1:-1;
     return String(b.date||"").localeCompare(String(a.date||""));
   });
-  let html=`<div style="display:flex;gap:10px;margin-bottom:16px"><button class="btn solid" style="flex:1" onclick="openBzModal()">🛍️ Νέο bazaar</button></div>`;
+  let html="";      // το «+ Νέο bazaar» ζει στην κεφαλίδα της σελίδας
   if(!list.length){
     box.innerHTML=html+`<div class="fbd-empty" style="line-height:1.7">Κανένα bazaar ακόμη.<br>
       <span style="color:var(--muted);font-size:12px">Φτιάξε ένα, διάλεξε ποια έτοιμα κομμάτια θα πάρεις μαζί σου και πούλα με ένα πάτημα.
@@ -10337,11 +10940,11 @@ function bzDetailHtml(b){
     <div class="bz-hero-t serif">${esc(b.name)}</div>
     <div class="bz-hero-s">${esc(when)}${b.place?" · "+esc(b.place):""}${b.closed?" · έκλεισε":(d===0?" · σήμερα":(d!=null&&d>0?` · σε ${d===1?"1 μέρα":d+" μέρες"}`:""))}${b.disc?` · έκπτωση ${fmtNum(b.disc)}%`:""}</div>
     <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-      <button class="btn ghost sm" onclick="openBzModal('${b.id}')">✎ Στοιχεία</button>
+      <button class="btn ghost sm" onclick="openBzModal('${b.id}')">Στοιχεία</button>
       ${b.closed
-        ? `<button class="btn ghost sm" onclick="reopenBazaar('${b.id}')">↩ Άνοιξέ το ξανά</button>`
-        : `<button class="btn ghost sm" onclick="openBzPicker('${b.id}')">🛍️ Τι παίρνω μαζί</button>
-           <button class="btn ghost sm" onclick="closeBazaar('${b.id}')">🏁 Κλείσιμο</button>`}
+        ? `<button class="btn ghost sm" onclick="reopenBazaar('${b.id}')">Άνοιξέ το ξανά</button>`
+        : `<button class="btn ghost sm" onclick="openBzPicker('${b.id}')">Τι παίρνω μαζί</button>
+           <button class="btn ghost sm" onclick="closeBazaar('${b.id}')">Κλείσιμο</button>`}
     </div>
   </div>
   <div class="stat-grid" style="margin-bottom:6px">
@@ -10357,7 +10960,7 @@ function bzDetailHtml(b){
     if(!pieces.length){
       html+=`<div class="fbd-empty" style="line-height:1.7">Δεν έχεις διαλέξει κομμάτια ακόμη.<br>
         <div style="display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap">
-          <button class="btn solid sm" onclick="openBzPicker('${b.id}')">🛍️ Διάλεξε από τα έτοιμα</button>
+          <button class="btn solid sm" onclick="openBzPicker('${b.id}')">Διάλεξε από τα έτοιμα</button>
         </div></div>`;
     }else{
       html+=`<div class="bz-grid">`+pieces.map(it=>`
@@ -10367,8 +10970,8 @@ function bzDetailHtml(b){
           <div class="bz-tp">${it.sell_price!=null?fmtMoney(it.sell_price):"— τιμή"}${Number(it.qty)>1?` <span style="color:var(--muted);font-weight:400">×${fmtNum(it.qty)}</span>`:""}</div>
         </button>`).join("")+`</div>
       <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-        <button class="btn solid sm" onclick="tillOpen('${b.id}')">🧾 Πώληση με πολλά είδη</button>
-        <button class="btn ghost sm" onclick="openBzPicker('${b.id}')">🛍️ Άλλαξε τι παίρνω</button>
+        <button class="btn solid sm" onclick="tillOpen('${b.id}')">Πώληση με πολλά είδη</button>
+        <button class="btn ghost sm" onclick="openBzPicker('${b.id}')">Άλλαξε τι παίρνω</button>
       </div>`;
     }
   }
