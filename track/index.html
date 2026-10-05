@@ -517,6 +517,7 @@
   .mf-tot span{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
   .mf-tot b{font-size:20px;font-weight:600}
   .bl-in{position:relative;flex:1;min-width:0}
+  .bl-tip{margin-top:6px;background:#eaf2ec;color:#26452f;border-radius:10px;padding:7px 10px;font-size:12px;line-height:1.45}
   .bl-th{flex:none;display:flex}
   .bl-th .si-img{width:46px;height:46px;border-radius:12px}
   .bl-ph{display:flex!important;align-items:center;justify-content:center;color:var(--muted);font-size:18px;background:var(--cream)!important;border:1px dashed var(--line)}
@@ -1056,7 +1057,7 @@
   .ch-c{display:inline-flex;align-items:center;gap:6px;background:var(--cream);border:1px solid var(--line);border-radius:999px;
     padding:8px 14px;font-size:13px;font-weight:500;color:var(--ink);text-decoration:none}
   .ch-c.muted{color:var(--muted)}
-  .ch-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+  .ch-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
   .cust-row{display:flex;align-items:center;gap:6px;background:var(--cream);border:1px solid var(--line);border-radius:12px;padding:4px 6px 4px 13px;margin-bottom:8px}
   .cr-main{flex:1;display:flex;justify-content:space-between;align-items:center;gap:12px;background:none;border:none;text-align:left;padding:8px 4px;cursor:pointer;font-family:'Inter';min-width:0}
   .cr-x{flex:none;width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:#fff;color:var(--muted);font-size:12px;cursor:pointer}
@@ -1878,7 +1879,7 @@
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();openCleanNames()">Καθαρισμός ονομάτων υλικών</button>
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();restorePalette()">Επαναφορά αποχρώσεων Mix &amp; Match</button>
     <p style="font-size:11.5px;color:var(--muted);margin:14px 0 0;padding-top:12px;border-top:1px solid var(--line)">
-      Έκδοση <b style="color:var(--ink)">2026.10.05.1801</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
+      Έκδοση <b style="color:var(--ink)">2026.10.05.1814</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
       κλείσε και ξανάνοιξε την καρτέλα, ή τράβα την σελίδα προς τα κάτω για ανανέωση.</p>
     <p id="setRebuiltNote" style="font-size:11.5px;color:var(--muted);margin-top:6px">Συμπληρώνει τις κινήσεις αποθήκης από τις παραγγελίες, τις πωλήσεις και τα bazaar που υπάρχουν ήδη. Το απόθεμα δεν αλλάζει.</p>
   </div>
@@ -6085,16 +6086,17 @@ function openCustomerExtra(id){
   const x=(custExtra||[]).find(e=>e.id===id); if(!x) return;
   document.getElementById("custName").textContent=x.name;
   const ph=x.phone||"";
-  document.getElementById("custBody").innerHTML=`<div class="ch-contact">
-      ${ph?`<a class="ch-c" href="tel:${esc(ph)}">☎ ${esc(ph)}</a>`:""}
-      ${x.ig?`<a class="ch-c" href="https://instagram.com/${esc(x.ig)}" target="_blank" rel="noopener">@${esc(x.ig)}</a>`:""}
-      ${!ph&&!x.ig?`<span class="ch-c muted">Χωρίς στοιχεία επικοινωνίας</span>`:""}
-    </div>
-    <div class="ch-actions">
+  document.getElementById("custBody").innerHTML=`    <div class="ch-actions">
       <button class="btn solid sm" onclick="closeCustomer();newOrderForExtra('${x.id}')">${x.type==="shop"?"+ Νέα παράδοση":"+ Νέα παραγγελία"}</button>
       <button class="btn ghost sm" onclick="closeCustomer();openCustEditExtra('${x.id}')">Στοιχεία</button>
       <button class="btn ghost sm" onclick="delCustExtra('${x.id}')">Διαγραφή</button>
     </div>
+    <div class="ch-contact">
+      ${ph?`<a class="ch-c" href="tel:${esc(ph)}">☎ ${esc(ph)}</a>`:""}
+      ${x.ig?`<a class="ch-c" href="https://instagram.com/${esc(x.ig)}" target="_blank" rel="noopener">@${esc(x.ig)}</a>`:""}
+      ${!ph&&!x.ig?`<span class="ch-c muted">Χωρίς στοιχεία επικοινωνίας</span>`:""}
+    </div>
+
     ${x.note?`<div class="cust-note" style="margin-top:10px">${esc(x.note)}</div>`:""}
     <div class="cust-line" style="margin-top:12px">${x.type==="shop"?"Κατάστημα":"Πελάτης"} χωρίς αγορά ακόμη${x.created?` · καταχωρήθηκε ${fmtD(x.created)}`:""}. Με την πρώτη ${x.type==="shop"?"παράδοση":"παραγγελία"} η καρτέλα συνδέεται μόνη της.</div>`;
   _ovOpen("custModal");
@@ -6252,16 +6254,17 @@ function openCustomer(orderId){
   const openOrders=list.filter(o=>!getItems(o).every(itemDone) && !isInstantSale(o));
   const dueList=list.filter(o=>(Number(o.price)||0)-(Number(o.amount_paid)||0)>0.01);
   // Επικοινωνία & ενέργειες — ό,τι κάνεις συνήθως με έναν πελάτη, σε μία γραμμή
-  let html=`<div class="ch-contact">
+  let html=`    <div class="ch-actions">
+      <button class="btn solid sm" onclick="closeCustomer();newOrderFor('${ref.id}')">+ Νέα παραγγελία</button>
+      ${owed>0&&dueList.length?`<button class="btn ghost sm" onclick="closeCustomer();quickPaid('${dueList[0].id}')">Εξόφληση ${fmtMoney(owed)}</button>`:""}
+      <button class="btn ghost sm" onclick="openCustEdit()">Στοιχεία</button>
+    </div>
+    <div class="ch-contact">
       ${_ph?`<a class="ch-c" href="tel:${esc(_ph)}">☎ ${esc(_ph)}</a>`:""}
       ${_ig?`<a class="ch-c" href="https://instagram.com/${esc(_ig)}" target="_blank" rel="noopener">@${esc(_ig)}</a>`:""}
       ${!_ph&&!_ig?`<span class="ch-c muted">Χωρίς στοιχεία επικοινωνίας</span>`:""}
     </div>
-    <div class="ch-actions">
-      <button class="btn solid sm" onclick="closeCustomer();newOrderFor('${ref.id}')">+ Νέα παραγγελία</button>
-      ${owed>0&&dueList.length?`<button class="btn ghost sm" onclick="closeCustomer();quickPaid('${dueList[0].id}')">Εξόφληση ${fmtMoney(owed)}</button>`:""}
-      <button class="btn ghost sm" onclick="openCustEdit()">Στοιχεία</button>
-    </div>`;
+`;
   if(openOrders.length || dueList.length){
     html+=`<div class="stats-sub" style="margin-top:4px">Εκκρεμότητες</div>`;
     const seen=new Set();
@@ -8732,9 +8735,9 @@ const MODULES = [
   {k:"home",      l:"Αρχική",     ic:ICON.home, tabs:["home"]},
   {k:"sales",     l:"Πωλήσεις",   ic:ICON.sales, tabs:["orders","wholesale","bazaar"]},
   {k:"customers", l:"Πελάτες",    ic:ICON.customers, tabs:["customers","feedback"]},
+  {k:"suppliers", l:"Προμηθευτές", ic:ICON.suppliers, tabs:["suppliers"]},
   {k:"stock",     l:"Αποθήκη",    ic:ICON.stock, tabs:["stock"]},
   {k:"money",     l:"Οικονομικά", ic:ICON.money, tabs:["cash"]},
-  {k:"suppliers", l:"Προμηθευτές", ic:ICON.suppliers, tabs:["suppliers"]},
   {k:"reports",   l:"Αναφορές",   ic:ICON.reports, tabs:["stats"]}
 ];
 /* Καρτέλες κάθε ενότητας. Στις Πωλήσεις οι καρτέλες είναι τα κανάλια: οι
@@ -8764,10 +8767,6 @@ function moduleTabs(mod, tab){
     if(archivedIds().length) t.push({l:"Αρχείο", n:archivedIds().length, on:stockView==="archive", go:go("archive")});
     return t;
   }
-  if(mod.k==="suppliers") return [
-    {l:"Προμηθευτές", n:supAllNames().length, on:supView!=="compare", go:"setSupView('list')"},
-    {l:"Σύγκριση τιμών", n:priceTable().filter(e=>e.rows.length>1).length, on:supView==="compare", go:"setSupView('compare')"}
-  ];
   if(mod.k==="customers") return [
     {l:"Πελάτες", n:customerStats().filter(c=>!c.shop).length, on:tab==="customers" && custFilter!=="shops", go:"showAdminTab('customers');setCustFilter('all')"},
     {l:"Καταστήματα", n:customerStats().filter(c=>c.shop).length, on:tab==="customers" && custFilter==="shops", go:"showAdminTab('customers');setCustFilter('shops')"},
@@ -8854,6 +8853,7 @@ function buySet(i, k, v){
     const th=document.getElementById("bl-th-"+i); if(th) th.innerHTML = it ? stockThumb(it) : `<span class="si-img bl-ph">＋</span>`;
   }
   if(k==="order"){ renderBuy(); return; }
+  if(k==="cost"){ const tg=document.getElementById("bl-tag-"+i); if(tg) tg.innerHTML=buyTag(i); }
   buyTotals();
 }
 /* Λίστα ειδών με φωτογραφία, όπως οι πελάτες: η Αναστασία αναγνωρίζει το
@@ -8887,8 +8887,12 @@ function buyTag(i){
     const here=sup?e.rows.find(x=>supNorm(x.sup)===supNorm(supCanon(sup))):null;
     const best=e.best;
     if(here) t+=` · εδώ την τελευταία φορά ${fmtMoney(here.last)}`;
-    if(best && best.sup!=="Χωρίς προμηθευτή" && (!here || best.last<here.last-0.004))
-      t+=` · <span style="color:#2c6e49">φθηνότερα: ${esc(best.sup)} ${fmtMoney(best.last)}</span>`;
+    const now=parseMoney(r.cost);
+    const ref = now!=null ? now : (here ? here.last : null);
+    if(best && best.sup!=="Χωρίς προμηθευτή" && supNorm(best.sup)!==supNorm(supCanon(sup)) && ref!=null && best.last<ref-0.004)
+      t+=`<div class="bl-tip">💡 Στο <b>${esc(best.sup)}</b> το πήρατε ${fmtMoney(best.last)} (${fmtD(best.lastAt)}) — ${fmtMoney(ref-best.last)} φθηνότερα${now!=null?" από την τιμή που γράφεις":""}.</div>`;
+    else if(best && best.sup!=="Χωρίς προμηθευτή" && ref==null && !here)
+      t+=` · καλύτερη τιμή μέχρι τώρα: ${esc(best.sup)} ${fmtMoney(best.last)}`;
   }
   return t;
 }
@@ -9150,8 +9154,8 @@ function openItemSheet(id){
 function openMore(){
   const items=[
     [ICON.customers,"Πελάτες","showAdminTab('customers')"],
-    [ICON.money,"Οικονομικά","showAdminTab('cash')"],
     [ICON.suppliers,"Προμηθευτές","showAdminTab('suppliers')"],
+    [ICON.money,"Οικονομικά","showAdminTab('cash')"],
     [ICON.reports,"Αναφορές","showAdminTab('stats')"],
     [ICON.feedback,"Feedback","showAdminTab('feedback')"],
     [ICON.settings,"Ρυθμίσεις","openSettings()"],
@@ -9864,7 +9868,7 @@ function askAnswer(q){
       if(!all.length) return { text:"Δεν υπάρχουν ακόμη προμηθευτές. Γράψε «Προμηθευτή» σε μια αγορά και εμφανίζεται μόνος του.", actions:[{l:"Προμηθευτές", f:"showAdminTab('suppliers')"}] };
       return { text:`Αγοράζουμε από ${ASKB(all.length+" "+(all.length===1?"προμηθευτή":"προμηθευτές"))}. Φέτος οι περισσότερες αγορές έγιναν από ${ASKB(esc(all[0].n))} (${fmtMoney(all[0].st.year)}).`,
         rows:all.slice(0,10).map(x=>({icon:"🚚", title:esc(x.n), sub:`${x.st.n} ${x.st.n===1?"αγορά":"αγορές"}`, right:fmtMoney(x.st.year), go:`openSupplier('${x.n.replace(/[\\']/g,"")}')`})),
-        actions:[{l:"Σύγκριση τιμών", f:"showAdminTab('suppliers');setSupView('compare')"}] };
+        actions:[{l:"Προμηθευτές", f:"showAdminTab('suppliers')"}] };
     }
   }
   // πόσα κομμάτια ενός μοντέλου / χρώματος πουλήθηκαν (σε περίοδο)
@@ -10733,6 +10737,7 @@ async function supEnsure(name){
 function setSupView(v){ supView=v; renderSuppliers(); renderPageHead("suppliers"); }
 function renderSuppliers(){
   const box=document.getElementById("supAdmin"); if(!box) return;
+  supView="list";
   if(!box.classList.contains("hidden")) renderPageHead("suppliers");
   const q=(document.getElementById("supSearch")?.value||"").trim();
   const unassigned=(cashMoves||[]).filter(m=>m.kind==="purchase" && !moveSupplier(m));
@@ -10750,7 +10755,7 @@ function renderSuppliers(){
   h+=`<div class="stat-grid" style="margin-bottom:16px">
     <div class="stat dark"><div class="n">${all.length}</div><div class="l">Προμηθευτές</div></div>
     <div class="stat"><div class="n" style="font-size:20px">${fmtMoney(yTot)}</div><div class="l">Αγορές φέτος</div></div>
-    ${saveAll>0.5?`<div class="stat" style="cursor:pointer" onclick="setSupView('compare')"><div class="n" style="font-size:20px;color:#2c6e49">${fmtMoney(saveAll)}</div><div class="l">Πιθανή εξοικονόμηση</div></div>`:""}
+    ${saveAll>0.5?`<div class="stat"><div class="n" style="font-size:20px;color:#2c6e49">${fmtMoney(saveAll)}</div><div class="l">Πιθανή εξοικονόμηση</div></div>`:""}
   </div>`;
   h+=all.map(x=>{
     const items=[...new Set(x.st.lines.map(l=>l.name))];
@@ -10804,6 +10809,10 @@ function openSupplier(name){
   }).join("");
   const nameJ=esc(JSON.stringify(name));
   document.getElementById("supBody").innerHTML=`
+        <div class="ch-actions">
+      <button class="btn solid sm" onclick="_ovClose('supModal');openPurchaseFrom(${nameJ})">+ Νέα αγορά</button>
+      <button class="btn ghost sm" onclick="openSupEdit(${nameJ})">Στοιχεία</button>
+    </div>
     <div class="ch-contact">
       ${rec&&rec.phone?`<a class="ch-c" href="tel:${esc(rec.phone)}">☎ ${esc(rec.phone)}</a>`:""}
       ${rec&&rec.email?`<a class="ch-c" href="mailto:${esc(rec.email)}">✉ ${esc(rec.email)}</a>`:""}
@@ -10811,10 +10820,7 @@ function openSupplier(name){
       ${!(rec&&(rec.phone||rec.email||rec.web))?`<span class="ch-c muted">Χωρίς στοιχεία επικοινωνίας</span>`:""}
     </div>
     ${rec&&rec.address?`<div class="cust-line" style="margin:0 0 8px">${esc(rec.address)}</div>`:""}
-    <div class="ch-actions">
-      <button class="btn solid sm" onclick="_ovClose('supModal');openPurchaseFrom(${nameJ})">+ Νέα αγορά</button>
-      <button class="btn ghost sm" onclick="openSupEdit(${nameJ})">Στοιχεία</button>
-    </div>
+
     ${rec&&rec.note?`<div class="cust-note" style="margin-top:10px">${esc(rec.note)}</div>`:""}
     <div class="stat-grid" style="margin:16px 0 14px">
       <div class="stat dark"><div class="n" style="font-size:20px">${fmtMoney(st.year)}</div><div class="l">Φέτος</div></div>
