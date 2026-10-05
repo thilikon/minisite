@@ -437,6 +437,67 @@
     margin:22px -26px 0;padding:14px 26px 20px;border-top:1px solid var(--line)}
   .modal:not(:has(> .mf))::after{content:"";display:block;height:24px}
   .mf .btn{min-height:48px}
+  /* ---- βοηθός ---- */
+  .ask-modal{max-width:760px;height:calc(100dvh - 48px);display:flex;flex-direction:column}
+  .ask-hsub{font-size:12px;color:var(--muted);margin-top:2px}
+  .ask-new{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 13px;font-family:'Inter',system-ui,sans-serif;font-size:12px;font-weight:600;color:var(--ink-soft);cursor:pointer}
+  .ask-thread{flex:1 0 auto;padding-bottom:8px}
+  .ask-bar{flex-direction:column;align-items:stretch;gap:8px;flex-wrap:nowrap}
+  .ask-in{display:flex;gap:8px;align-items:center}
+  .ask-in input{margin:0;border-radius:999px;padding:13px 18px;background:var(--cream)}
+  .ask-send{flex:none;width:48px;height:48px;border-radius:50%;border:none;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .ask-livebox:empty{display:none}
+  .ask-livebox{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:14px;overflow:hidden;max-height:200px;overflow-y:auto}
+  .ask-live{display:flex;align-items:center;gap:10px;padding:10px 14px;border:none;border-top:1px solid var(--line);background:#fff;text-align:left;font-family:'Inter',system-ui,sans-serif;font-size:13px;cursor:pointer}
+  .ask-live:first-child{border-top:none}
+  .ask-live .m{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ask-live .m span{color:var(--muted);font-size:11.5px}
+  .ask-live .v{font-weight:600;font-size:12.5px}
+  .ask-hello{display:flex;gap:14px;align-items:flex-start;margin:6px 0 8px}
+  .ask-hi{font-size:26px;line-height:1.1}
+  .ask-sub{font-size:13.5px;color:var(--ink-soft);margin-top:4px;line-height:1.55}
+  .ask-av{flex:none;width:34px;height:34px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;
+    font-family:'Cormorant',Georgia,serif;font-weight:700;font-size:17px}
+  .ask-chips{display:flex;flex-wrap:wrap;gap:8px}
+  .ask-chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 14px;font-family:'Inter',system-ui,sans-serif;font-size:13px;color:var(--ink);cursor:pointer;text-align:left;line-height:1.3}
+  .ask-chip:active{background:var(--stone)}
+  .ask-me{display:flex;justify-content:flex-end;margin:18px 0 10px}
+  .ask-me span{background:var(--ink);color:#fff;border-radius:18px 18px 4px 18px;padding:10px 15px;font-size:14px;max-width:85%;line-height:1.45}
+  .ask-bot{display:flex;gap:12px;align-items:flex-start;margin:6px 0 14px}
+  .ask-body{flex:1;min-width:0}
+  .ask-text{font-size:14.5px;line-height:1.6;color:var(--ink)}
+  .ask-text p{margin:0 0 8px} .ask-text ul{margin:4px 0 8px 18px} .ask-text li{margin:3px 0}
+  .ask-up{color:#2c6e49;font-weight:600} .ask-down{color:#b54b3a;font-weight:600} .ask-warn{color:#9a6a1e;font-weight:600}
+  .ask-rows{margin-top:12px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
+  .ask-row{display:flex;align-items:center;gap:8px;border-top:1px solid var(--line);padding-right:10px}
+  .ask-row:first-child{border-top:none}
+  .ask-row-m{flex:1;min-width:0;display:flex;align-items:center;gap:12px;padding:11px 14px;border:none;background:none;text-align:left;font-family:'Inter',system-ui,sans-serif;cursor:pointer;color:var(--ink)}
+  .ask-row-m:disabled{cursor:default}
+  .ask-row-m:not(:disabled):active{background:var(--cream)}
+  .ask-th .si-img{width:38px;height:38px;border-radius:10px}
+  .ask-ic{flex:none;width:28px;height:28px;border-radius:8px;background:var(--cream);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--ink-soft)}
+  .ask-rt{flex:1;min-width:0}
+  .ask-rt .t{display:block;font-size:13.5px;font-weight:600;line-height:1.3}
+  .ask-rt .s{display:block;font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4}
+  .ask-rv{font-size:13.5px;font-weight:600;white-space:nowrap}
+  .ask-ra{flex:none;min-height:34px!important;padding:7px 11px!important}
+  .ask-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .ask-ai{margin-top:10px;border:none;background:none;color:#7a4fb5;font-family:'Inter',system-ui,sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;padding:4px 0}
+  .ask-typing{display:flex;gap:5px;padding:12px 0}
+  .ask-typing i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:askDot 1s infinite}
+  .ask-typing i:nth-child(2){animation-delay:.15s} .ask-typing i:nth-child(3){animation-delay:.3s}
+  @keyframes askDot{0%,80%,100%{opacity:.25}40%{opacity:1}}
+  .gs-ask .ic{color:#7a4fb5}
+  .sn-ask{display:flex;align-items:center;gap:10px;width:100%;border:1px solid var(--line);background:var(--cream);border-radius:12px;
+    padding:10px 12px;margin:-6px 0 16px;font-family:'Inter',system-ui,sans-serif;font-size:13px;color:var(--ink-soft);cursor:pointer}
+  .sn-ask span{flex:1;text-align:left}
+  .sn-ask kbd{font-family:'Inter',system-ui,sans-serif;font-size:11px;border:1px solid var(--line);border-radius:5px;padding:1px 6px;background:#fff;color:var(--muted)}
+  .sn-ask svg{width:17px;height:17px}
+  @media(max-width:699px){
+    .overlay .modal.ask-modal{height:100dvh;max-height:100dvh;border-radius:0}
+    .ask-modal > .mh::before{display:none}
+    .ask-modal > .mh{padding-top:calc(14px + env(safe-area-inset-top))}
+  }
   .mf-tot{display:flex;flex-direction:column;line-height:1.15;min-width:90px}
   .mf-tot span{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
   .mf-tot b{font-size:20px;font-weight:600}
@@ -1423,6 +1484,7 @@
       <aside class="sidenav">
         <div class="sn-brand"><img src="https://i.imgur.com/TbSGZu5.png" alt="THILIKON"></div>
         <button class="sn-new" onclick="openQuick()"><span>+</span> Νέα καταχώρηση</button>
+        <button class="sn-ask" onclick="openAsk()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg><span>Ρώτα ή ψάξε</span><kbd>/</kbd></button>
         <nav class="sn-list" id="snList"></nav>
         <div class="sn-foot">
           <button class="sn" onclick="openSettings()"><span class="i"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span><span class="t">Ρυθμίσεις</span><span id="gearDot" class="gear-dot hidden"></span></button>
@@ -1433,7 +1495,8 @@
       <!-- επάνω μπάρα: κινητό και tablet κάθετα -->
       <header class="topbar">
         <img src="https://i.imgur.com/TbSGZu5.png" alt="THILIKON">
-        <button class="tb-ic" onclick="openSettings()" aria-label="Ρυθμίσεις">⚙</button>
+        <div style="display:flex;gap:8px"><button class="tb-ic" onclick="openAsk()" aria-label="Ρώτα ή ψάξε"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg></button>
+        <button class="tb-ic" onclick="openSettings()" aria-label="Ρυθμίσεις">⚙</button></div>
       </header>
 
       <div class="page" id="page">
@@ -1774,7 +1837,7 @@
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();openCleanNames()">Καθαρισμός ονομάτων υλικών</button>
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();restorePalette()">Επαναφορά αποχρώσεων Mix &amp; Match</button>
     <p style="font-size:11.5px;color:var(--muted);margin:14px 0 0;padding-top:12px;border-top:1px solid var(--line)">
-      Έκδοση <b style="color:var(--ink)">2026.10.05.1256</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
+      Έκδοση <b style="color:var(--ink)">2026.10.05.1339</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
       κλείσε και ξανάνοιξε την καρτέλα, ή τράβα την σελίδα προς τα κάτω για ανανέωση.</p>
     <p id="setRebuiltNote" style="font-size:11.5px;color:var(--muted);margin-top:6px">Συμπληρώνει τις κινήσεις αποθήκης από τις παραγγελίες, τις πωλήσεις και τα bazaar που υπάρχουν ήδη. Το απόθεμα δεν αλλάζει.</p>
   </div>
@@ -2091,6 +2154,26 @@
   <div class="modal" style="max-width:560px">
     <div class="mh"><h2 class="serif">Νέα καταχώρηση</h2><button class="x" onclick="_ovClose('quickSheet')">✕</button></div>
     <div id="quickBody"></div>
+  </div>
+</div>
+<div id="askSheet" class="overlay hidden">
+  <div class="modal ask-modal">
+    <div class="mh">
+      <div style="min-width:0"><h2 class="serif">Ρώτα το THILIKON</h2><div class="ask-hsub">Απαντήσεις από τα δεδομένα σας</div></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="ask-new" onclick="askClear()" title="Νέα συζήτηση">Νέα</button>
+        <button class="x" onclick="_ovClose('askSheet')">✕</button>
+      </div>
+    </div>
+    <div id="askThread" class="ask-thread"></div>
+    <div class="mf ask-bar">
+      <div id="askLive" class="ask-livebox"></div>
+      <div class="ask-in">
+        <input id="askInput" placeholder="Ρώτα ή ψάξε οτιδήποτε…" autocomplete="off" enterkeyhint="send" oninput="askLiveType()" onkeydown="askKey(event)">
+        <button class="ask-send" aria-label="Αποστολή" onclick="askSend(document.getElementById('askInput').value)">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></button>
+      </div>
+    </div>
   </div>
 </div>
 <div id="itemSheet" class="overlay hidden">
@@ -5983,10 +6066,6 @@ function openCustomer(orderId){
   _ovOpen("custModal");
 }
 function closeCustomer(){ _ovClose("custModal"); }
-function newOrderFor(orderId){
-  openOrderModal();
-  pickCustomer(orderId);
-}
 
 /* ---- Έξυπνη αναζήτηση: τόνοι, greeklish, μικρά λάθη ---- */
 const GR2LAT = {α:"a",ά:"a",β:"v",γ:"g",δ:"d",ε:"e",έ:"e",ζ:"z",η:"i",ή:"i",θ:"th",ι:"i",ί:"i",ϊ:"i",ΐ:"i",
@@ -8824,6 +8903,642 @@ function renderHome(){
 }
 
 
+/* ============ ΡΩΤΑ ΤΟ THILIKON ============
+   Ένας βοηθός που απαντά σε ερωτήσεις με τα δεδομένα της εφαρμογής.
+   Δουλεύει μέσα στη σελίδα, αμέσως και χωρίς σύνδεση με εξωτερική υπηρεσία:
+   καταλαβαίνει τι ρωτάς (πρόθεση), για ποια περίοδο, και για ποιον/ποιο
+   (πελάτη, μοντέλο, νήμα, παραγγελία, bazaar). Κάθε απάντηση έχει μια
+   πρόταση σε απλά ελληνικά, τα στοιχεία που τη στηρίζουν, και ενέργειες.
+   Αν υπάρχει η προαιρετική σύνδεση με Claude, οι ελεύθερες ερωτήσεις
+   πηγαίνουν εκεί μαζί με μια σύνοψη των αριθμών.                         */
+
+const ASK_KW = (function(){
+  const K = {
+    sales:   ["πουλησ","πουλη","πουλα","πωλησ","πωλει","τζιρ","εσοδ","εισπραξ","βγαλαμε","βγαλα","εβγαλ","μπηκαν","εισπρ"],
+    profit:  ["κερδ","καθαρ","περιθωρ","αποτελεσμ","μεινει","εμεινε","μενει"],
+    expense: ["εξοδ","ξοδεψ","ξοδευ","πληρωσα","πληρωσαμε","δαπαν","αγορασαμε","αγορασα","κοστισ"],
+    owed:    ["χρωστ","απληρ","ανεξοφλ","οφειλ","εκκρεμ","υπολοιπ","χρεο","πληρωθ"],
+    due:     ["παραδοσ","παραδοτ","παραδωσ","παραδιδ","αργησ","καθυστερ","προθεσμ","αποστολ","στειλ"],
+    open:    ["σε εξελιξη","ανοιχτ","ανοικτ","εκκρεμουν","δουλευ","φτιαχν","εχω να φτιαξ","τι εχω να"],
+    stock:   ["αποθηκ","αποθεμ","εχουμε","εχω","μενουν","τελειων","τελειωσ","λειπ","αγορασω","αγορασουμε","παραγγειλω","κουβαρ","νημα","νηματ","υλικ"],
+    top:     ["περισσοτερο","καλυτερ","δημοφιλ","top","κορυφαι","πιο πολυ","ζητησ","ζηταν","πουλαει","τρεχει","χειροτερ","λιγοτερο"],
+    colors:  ["χρωμα","αποχρωσ"],
+    bazaar:  ["bazaar","μπαζαρ","παζαρ"],
+    balance: ["ταμει","τραπεζ","λεφτα","χρηματα","μετρητ","διαθεσιμ","λογαριασμ"],
+    time:    ["ωρα","ωρες","χρονο","χρονος","αποδοσ","ωριαι","δουλεια"],
+    price:   ["τιμη","ποσο κοστιζει","ποσο πουλαμε","ποσο να","χρεωσ","τιμολογ"],
+    suggest: ["προτασ","προτειν","συμβουλ","ιδεα","ιδεες","τι να κανω","τι να κανει","βελτιω","πως να","τι πρεπει","στρατηγ","αναπτυξ","συμβουλευ"],
+    customers:["πελατ","πελατισσ","αγοραστ"],
+    feedback:["feedback","γνωμη","αξιολογ","σχολι","ικανοποι","λενε οι","τι λενε"],
+    help:    ["βοηθεια","τι μπορεις","τι ξερεις","πως λειτουργ","help"]
+  };
+  const out={}; Object.keys(K).forEach(k=> out[k]=K[k].map(w=>normText(w)));
+  return out;
+})();
+const ASK_MONTHS=["ιανουαρ","φεβρουαρ","μαρτ","απριλ","μαι","ιουν","ιουλ","αυγουστ","σεπτεμβρ","οκτωβρ","νοεμβρ","δεκεμβρ"].map(normText);
+
+function askHas(nq, key){ return ASK_KW[key].some(w=> (" "+nq+" ").includes(w.length<=3?" "+w:w)); }
+/* l = ονομαστική (για τίτλους), w = «πότε» μέσα σε πρόταση (τον Οκτώβριο 2026) */
+function askRange(from, to, l, w){ return {from, to, l, w:w||l}; }
+function askMonth(y,i){ const d=new Date(y,i,1); return askRange(d, new Date(y,i+1,1), GR_MONTHS_FULL[d.getMonth()]+" "+d.getFullYear(), "τον "+GR_MONTHS_ACC[d.getMonth()]+" "+d.getFullYear()); }
+function askThisMonth(){ const n=new Date(); return askMonth(n.getFullYear(), n.getMonth()); }
+
+/* περίοδος από τη φράση· null = δεν ειπώθηκε */
+function askPeriod(q){
+  const nq=" "+normText(q)+" ", n=new Date(), y=n.getFullYear(), m=n.getMonth();
+  const day=d=>{ const a=new Date(d); a.setHours(0,0,0,0); return a; };
+  const has=w=>nq.includes(normText(w));
+  if(has("σημερα")) { const a=day(n); return askRange(a, new Date(a.getTime()+86400000), "Σήμερα", "σήμερα"); }
+  if(has("χθες"))   { const a=day(n); a.setDate(a.getDate()-1); return askRange(a, new Date(a.getTime()+86400000), "Χθες", "χθες"); }
+  if(has("εβδομαδ")||has("βδομαδ")){
+    const a=day(n); const dow=(a.getDay()+6)%7; a.setDate(a.getDate()-dow);
+    if(has("περασμεν")||has("προηγουμεν")){ const b=new Date(a); a.setDate(a.getDate()-7); return askRange(a,b,"Προηγούμενη εβδομάδα","την προηγούμενη εβδομάδα"); }
+    return askRange(a, new Date(a.getTime()+7*86400000), "Αυτή η εβδομάδα", "αυτή την εβδομάδα");
+  }
+  // ρητός μήνας (π.χ. «Σεπτέμβριο», «τον Μάιο του 2025»)
+  const ym=nq.match(/\b(20\d\d)\b/); const yy=ym?Number(ym[1]):null;
+  for(let i=0;i<12;i++){
+    const st=ASK_MONTHS[i];
+    const re=new RegExp("\\b"+st+(i===4?"(o|i|ou|s)":"")+"[a-z]*");
+    if(re.test(nq)){
+      let year=yy|| (i>m ? y-1 : y);
+      return askMonth(year,i);
+    }
+  }
+  if(has("μηνα")||has("μηνας")||has("μηνιαι")){
+    if(has("περασμεν")||has("προηγουμεν")||has("προπερσ")) return askMonth(y,m-1);
+    return askThisMonth();
+  }
+  if(has("τριμην")){ const qq=Math.floor(m/3); return askRange(new Date(y,qq*3,1), new Date(y,qq*3+3,1), (qq+1)+"ο τρίμηνο "+y, "το "+(qq+1)+"ο τρίμηνο "+y); }
+  if(has("περσι")||has("περυσι")) return askRange(new Date(y-1,0,1), new Date(y,0,1), "Έτος "+(y-1), "το "+(y-1));
+  if(has("φετος")||has("χρονια")||has("ετος")||yy) { const Y=yy||y; return askRange(new Date(Y,0,1), new Date(Y+1,0,1), "Έτος "+Y, Y===y?"φέτος":"το "+Y); }
+  if(has("απο την αρχη")||has("συνολικα")||has("ποτε")||has("ολα τα χρονια")||has("μεχρι τωρα")){
+    let first=new Date(); (ordersCache||[]).forEach(o=>{ const c=new Date(o.created_at||0); if(c.getTime()&&c<first) first=c; });
+    return askRange(first, new Date(2100,0,1), "Από την αρχή", "από την αρχή");
+  }
+  return null;
+}
+function askPrev(r){
+  if(!r || r.to.getFullYear()>=2100) return null;
+  const len=r.to-r.from;
+  // μήνας → προηγούμενος μήνας (όχι 30 μέρες)
+  if(r.from.getDate()===1 && r.to.getDate()===1 && (r.to.getMonth()-r.from.getMonth()+12)%12===1)
+    return askMonth(r.from.getFullYear(), r.from.getMonth()-1);
+  if(r.from.getMonth()===0 && r.from.getDate()===1 && r.to.getFullYear()===r.from.getFullYear()+1)
+    return askRange(new Date(r.from.getFullYear()-1,0,1), r.from, "Έτος "+(r.from.getFullYear()-1), "το "+(r.from.getFullYear()-1));
+  return askRange(new Date(r.from.getTime()-len), r.from, "Προηγούμενη περίοδος", "την προηγούμενη περίοδο");
+}
+
+/* οντότητες: πελάτης, μοντέλο, είδος αποθήκης, παραγγελία, bazaar */
+function askEntities(q){
+  const nq=" "+normText(q)+" ", toks=normText(q).split(" ").filter(t=>t.length>=3);
+  const E={};
+  const num=String(q).match(/\b(?:th[-\s]?)?(?:20\d\d[-\s]?)?(\d{3,4})\b/i);
+  if(num){
+    const o=(ordersCache||[]).find(o=>o.order_number && (String(o.order_number).toLowerCase()===String(num[0]).toLowerCase()
+      || String(o.order_number).replace(/\D/g,"").endsWith(num[1])));
+    if(o && !/^20\d\d$/.test(num[1])) E.order=o;
+  }
+  // πελάτης: το όνομα (ή το μικρό) υπάρχει ως λέξη στην ερώτηση
+  const STOP=new Set(["νημα","τσαντα","bazaar","μηνα","αυτη","ποσα","ποσο","ποια","ποιος","ποιοι","εχει","εχουμε"].map(normText));
+  let bestC=null, bestS=0;
+  customerGroups().forEach(c=>{
+    const parts=normText(c.name).split(" ").filter(p=>p.length>=3 && !STOP.has(p));
+    let s=0; parts.forEach(p=>{ if(toks.some(t=>t===p || (p.length>=4 && (t.startsWith(p.slice(0,-1))||p.startsWith(t)) && Math.abs(t.length-p.length)<=2))) s++; });
+    if(s>bestS){ bestS=s; bestC=c; }
+  });
+  if(bestC) E.customer=bestC;
+  // μοντέλο τσάντας
+  const models=new Set();
+  (modelCat||[]).forEach(m=>m.name&&models.add(m.name));
+  (ANASA||[]).forEach(a=>a.name&&models.add(a.name));
+  (stockCache||[]).filter(it=>it.type==="product").forEach(it=>models.add(modelOf(it)));
+  for(const m of models){ const nm=normText(m); if(nm.length>=3 && (nq.includes(" "+nm+" ")||nq.includes(" "+nm))){ E.model=m; break; } }
+  // είδος αποθήκης (νήμα/υλικό) με όνομα που ταιριάζει
+  const raw=(stockCache||[]).filter(it=>it.type!=="product" && !isArchivedStock(it));
+  let bestI=null, bestIS=0;
+  raw.forEach(it=>{
+    const parts=normText(String(it.name).replace(/^Νήμα\s*·?\s*/i,"")).split(" ").filter(p=>p.length>=3);
+    const s=parts.filter(p=>toks.includes(p)).length;
+    if(s>bestIS && s>=Math.min(parts.length,1)){ bestIS=s; bestI=it; }
+  });
+  if(bestI && !(E.customer && normText(E.customer.name).includes(normText(bestI.name)))) E.item=bestI;
+  (bazaars||[]).forEach(b=>{ const nb=normText(b.name); if(nb && nb.split(" ").some(p=>p.length>=4 && toks.includes(p) && p!=="bazaar" && p!=="mpazar")) E.bazaar=b; });
+  return E;
+}
+
+/* ---- μορφοποίηση ---- */
+const ASKB = s=>`<b>${s}</b>`;
+function askPct(a,b){ if(!b) return null; return Math.round((a-b)/Math.abs(b)*100); }
+function askTrend(a,b,l){
+  const p=askPct(a,b); if(p==null||!isFinite(p)) return "";
+  if(Math.abs(p)<3) return ` — περίπου ίδια με ${l}`;
+  return p>0?` — <span class="ask-up">${p}% πάνω</span> από ${l}`:` — <span class="ask-down">${Math.abs(p)}% κάτω</span> από ${l}`;
+}
+function askOrderRow(o){
+  const due=orderOwed(o);
+  return { thumb:stockThumb({name:(getItems(o)[0]||{}).name||o.product_name, type:"product"}),
+    title:o.customer_name||o.order_number||"Πώληση",
+    sub:[getItems(o).map(i=>i.name).join(", "), o.order_number, o.created_at?fmtDateShort(o.created_at):""].filter(Boolean).join(" · "),
+    right:due>0.01?`<span class="ask-warn">${fmtMoney(due)}</span>`:fmtMoney(orderValue(o)), go:`editOrder('${o.id}')` };
+}
+function askStockRow(it){
+  return { thumb:stockThumb(it), title:it.name,
+    sub:[it.category, `${fmtNum(it.qty)} ${it.unit||""}`.trim()].filter(Boolean).join(" · "),
+    right:it.type==="product"&&it.sell_price!=null?fmtMoney(it.sell_price):(it.unit_cost!=null?fmtMoney(it.unit_cost):""),
+    go:`openItemSheet('${it.id}')` };
+}
+
+/* ---- οι απαντήσεις ---- */
+function askSales(q, r){
+  r=r||askThisMonth();
+  const d=reportData(r), pr=askPrev(r), p=pr?reportData(pr):null;
+  if(!d.n) return { text:`${cap(r.w)} δεν έχει καταγραφεί καμία πώληση.`, more:["Πόσα βγάλαμε τον προηγούμενο μήνα;","Τι παραδίδεται αυτή την εβδομάδα;"] };
+  const CH=["order","retail","wholesale","bazaar"].filter(k=>d.ch[k].n>0).sort((a,b)=>d.ch[b].rev-d.ch[a].rev);
+  let t=`${cap(r.w)}: ${ASKB(d.n+" "+(d.n===1?"πώληση":"πωλήσεις"))} αξίας ${ASKB(fmtMoney(d.rev))}${p?askTrend(d.rev,p.rev,pr.w):""}.`;
+  t+=` Μικτό κέρδος ${ASKB(fmtMoney(d.gross))}${d.margin!=null?` (περιθώριο ${d.margin}%)`:""}, μέση πώληση ${fmtMoney(d.rev/d.n)}.`;
+  if(CH.length>1) t+=` Τα περισσότερα ήρθαν από ${ASKB(SALE_CHANNELS[CH[0]].l)} (${Math.round(d.ch[CH[0]].rev/d.rev*100)}%).`;
+  return { text:t,
+    rows:CH.map(k=>({icon:SALE_CHANNELS[k].ic, title:SALE_CHANNELS[k].l, sub:`${d.ch[k].n} ${d.ch[k].n===1?"πώληση":"πωλήσεις"}`, right:fmtMoney(d.ch[k].rev), go:k==="wholesale"?"goTab('wholesale')":(k==="bazaar"?"goTab('bazaar')":`showAdminTab('orders');setSaleChannel('${k}')`)})),
+    actions:[{l:"Αναφορά περιόδου", f:askRepGo(r,"summary")}],
+    more:["Και το καθαρό κέρδος;","Ποια τσάντα πουλάει περισσότερο;","Ποιοι χρωστάνε;"] };
+}
+function askProfit(q, r){
+  r=r||askThisMonth();
+  const d=reportData(r), pr=askPrev(r), p=pr?reportData(pr):null;
+  if(!d.n && !d.opex && !d.bzCost) return { text:`${cap(r.w)} δεν υπάρχουν κινήσεις για να βγει αποτέλεσμα.` };
+  let t=`${cap(r.w)} το ${ASKB("καθαρό αποτέλεσμα")} είναι ${ASKB(fmtMoney(d.net))}${p?askTrend(d.net,p.net,pr.w):""}.`;
+  t+=` Από ${fmtMoney(d.rev)} πωλήσεις αφαιρέθηκαν ${fmtMoney(d.cost)} υλικά`;
+  if(d.bzCost+d.opex) t+=`, ${fmtMoney(d.bzCost+d.opex)} έξοδα`;
+  if(d.workSecs) t+=` και ${fmtMoney(d.labour)} εργασία (${fmtDur(d.workSecs)} × ${fmtMoney(hourRate)}/ώρα)`;
+  t+=".";
+  if(d.nCosted<d.n) t+=` Προσοχή: ${d.n-d.nCosted} ${d.n-d.nCosted===1?"πώληση δεν έχει":"πωλήσεις δεν έχουν"} κόστος υλικών, άρα το πραγματικό κέρδος είναι μικρότερο.`;
+  return { text:t,
+    rows:[{title:"Πωλήσεις",right:fmtMoney(d.rev)},{title:"Κόστος υλικών",right:"−"+fmtMoney(d.cost)},
+          ...(d.bzCost+d.opex?[{title:"Έξοδα",right:"−"+fmtMoney(d.bzCost+d.opex)}]:[]),
+          ...(d.workSecs?[{title:"Εργασία",right:"−"+fmtMoney(d.labour)}]:[]),
+          {title:"<b>Καθαρό αποτέλεσμα</b>",right:`<b>${fmtMoney(d.net)}</b>`}],
+    actions:[{l:"Κατάσταση αποτελέσματος", f:askRepGo(r,"pnl")}],
+    more:["Πού ξοδέψαμε αυτόν τον μήνα;","Ποια τσάντα έχει το καλύτερο περιθώριο;","Προτάσεις για καλύτερο κέρδος"] };
+}
+function askExpense(q, r){
+  r=r||askThisMonth();
+  const mv=(typeof allMoves==="function"?allMoves():[]).filter(m=>{ const t=new Date(m.moved_at||0); return t>=r.from && t<r.to && Number(m.amount)<0 && m.kind!=="transfer" && m.kind!=="owner_draw"; });
+  if(!mv.length) return { text:`${cap(r.w)} δεν υπάρχουν έξοδα ή αγορές.` };
+  const tot=mv.reduce((a,m)=>a+Math.abs(Number(m.amount)||0),0);
+  const by={}; mv.forEach(m=>{ const k=m.kind==="purchase"?"Αγορές υλικών":(m.category||(CASH_KINDS[m.kind]||{}).l||"Λοιπά"); by[k]=(by[k]||0)+Math.abs(Number(m.amount)||0); });
+  const cats=Object.entries(by).sort((a,b)=>b[1]-a[1]);
+  return { text:`${cap(r.w)} βγήκαν ${ASKB(fmtMoney(tot))} σε ${mv.length} ${mv.length===1?"κίνηση":"κινήσεις"}. Η μεγαλύτερη κατηγορία είναι ${ASKB(cats[0][0])} με ${fmtMoney(cats[0][1])} (${Math.round(cats[0][1]/tot*100)}%).`,
+    rows:cats.map(([k,v])=>({title:esc(k), right:fmtMoney(v)})).concat(
+      mv.slice().sort((a,b)=>Math.abs(b.amount)-Math.abs(a.amount)).slice(0,5).map(m=>({icon:"·", title:esc(m.name||"—"), sub:fmtDateShort(m.moved_at), right:fmtMoney(m.amount),
+        go:m.src==="manual"?`openCashMove('${m.id}')`:""}))),
+    actions:[{l:"Ταμείο", f:"goTab('cash')"}],
+    more:["Πόσα έχουμε στο ταμείο;","Τι αγοράσαμε αυτόν τον μήνα;"] };
+}
+function askOwed(q, E){
+  let rows=owedRows();
+  if(E.customer) rows=rows.filter(x=>custKey(x.o)===E.customer.key);
+  if(!rows.length) return { text:E.customer?`Η ${esc(firstName(E.customer.name))} δεν χρωστάει τίποτα. ✓`:"Δεν χρωστάει κανείς — όλες οι πωλήσεις είναι εξοφλημένες. ✓" };
+  const tot=rows.reduce((a,x)=>a+x.owed,0), old=rows.filter(x=>x.days>30);
+  const ppl=new Set(rows.map(x=>custKey(x.o))).size;
+  let t=E.customer?`Η ${ASKB(esc(E.customer.name))} χρωστάει ${ASKB(fmtMoney(tot))} σε ${rows.length} ${rows.length===1?"πώληση":"πωλήσεις"}.`
+                  :`Εκκρεμούν ${ASKB(fmtMoney(tot))} από ${ppl} ${ppl===1?"πελάτη":"πελάτες"} (${rows.length} ${rows.length===1?"πώληση":"πωλήσεις"}).`;
+  if(old.length) t+=` ${old.length===1?"Μία είναι":old.length+" είναι"} πάνω από 30 ημέρες — αξίζει υπενθύμιση.`;
+  return { text:t, rows:rows.slice(0,12).map(x=>({...askOrderRow(x.o), sub:`${x.days} ${x.days===1?"ημέρα":"ημέρες"} · ${getItems(x.o).map(i=>i.name).join(", ")}`,
+      right:`<span class="ask-warn">${fmtMoney(x.owed)}</span>`, act:{l:"Εξόφληση", f:`quickPaid('${x.o.id}')`}})),
+    more:["Τι παραδίδεται αυτή την εβδομάδα;","Πόσα βγάλαμε αυτόν τον μήνα;"] };
+}
+function askDue(q, r){
+  const nq=normText(q);
+  const days = nq.includes(normText("σημερα"))?0 : (nq.includes(normText("αυριο"))?1 : (nq.includes(normText("μηνα"))?31:7));
+  const all=dueItems(days===0?0.99:days+1);
+  const late=all.filter(x=>x.t<Date.now());
+  if(!all.length) return { text:`Δεν υπάρχει παράδοση με ημερομηνία ${days===0?"σήμερα":"τις επόμενες "+(days===31?"30":days)+" ημέρες"}. Οι παραγγελίες χωρίς ημερομηνία δεν φαίνονται εδώ.`,
+    more:["Ποιες παραγγελίες είναι σε εξέλιξη;"] };
+  return { text:`${days===0?"Σήμερα":"Ως "+(days===31?"το τέλος του μήνα":"την επόμενη εβδομάδα")} ${all.length===1?"παραδίδεται":"παραδίδονται"} ${ASKB(all.length+" "+(all.length===1?"προϊόν":"προϊόντα"))}.${late.length?` <span class="ask-down">${late.length} ${late.length===1?"έχει":"έχουν"} ήδη περάσει την ημερομηνία.</span>`:""}`,
+    rows:all.slice(0,12).map(x=>({ thumb:stockThumb({name:x.it.name,type:"product"}), title:esc(x.it.name||"—"),
+      sub:`${esc(x.o.customer_name||"")} · ${STAGE_TITLE(x.o,x.it)}`, right:x.t<Date.now()?`<span class="ask-down">άργησε</span>`:fmtDateShort(x.it.eta), go:`editOrder('${x.o.id}')`,
+      act:{l:"Επόμενο στάδιο", f:`advanceItem('${x.o.id}','${x.it.id}')`}})),
+    more:["Ποιες παραγγελίες είναι σε εξέλιξη;","Ποιοι χρωστάνε;"] };
+}
+function STAGE_TITLE(o,it){ try{ const S=stagesFor(itemFlow(it), o.delivery_method==="pickup"?"pickup":"shipping"); return esc(S[itemStage(it)].title); }catch(e){ return ""; } }
+function askOpen(q){
+  const rows=(ordersCache||[]).filter(o=>!isWholesale(o)&&!isInstantSale(o)&&!orderIsDone(o));
+  if(!rows.length) return { text:"Δεν υπάρχει παραγγελία σε εξέλιξη." };
+  const items=[]; rows.forEach(o=>getItems(o).filter(it=>!itemDone(it)).forEach(it=>items.push({o,it})));
+  return { text:`Σε εξέλιξη είναι ${ASKB(rows.length+" "+(rows.length===1?"παραγγελία":"παραγγελίες"))} με ${items.length} ${items.length===1?"προϊόν":"προϊόντα"} που δεν έχουν παραδοθεί.`,
+    rows:items.slice(0,14).map(x=>({thumb:stockThumb({name:x.it.name,type:"product"}), title:esc(x.it.name), sub:`${esc(x.o.customer_name||"")} · ${STAGE_TITLE(x.o,x.it)}`,
+      right:x.it.eta?fmtDateShort(x.it.eta):"", go:`editOrder('${x.o.id}')`, act:{l:"⏱", f:`timerStart('${x.o.id}','${x.it.id}')`}})),
+    more:["Τι παραδίδεται αυτή την εβδομάδα;","Πόσο χρόνο δουλέψαμε αυτόν τον μήνα;"] };
+}
+function askStock(q, E){
+  const nq=normText(q);
+  if(E.model){
+    const pcs=(stockCache||[]).filter(it=>it.type==="product" && !isArchivedStock(it) && normText(modelOf(it))===normText(E.model));
+    const n=pcs.reduce((a,it)=>a+(Number(it.qty)||0),0);
+    if(!pcs.length) return { text:`Δεν υπάρχει ${ASKB(esc(E.model))} στα έτοιμα κομμάτια.`, actions:[{l:"Νέο έτοιμο κομμάτι", f:"goTab('stock','product');openStockModal(null)"}] };
+    const inBz=pcs.filter(it=>bzOfStock(it)).reduce((a,it)=>a+(Number(it.qty)||0),0);
+    return { text:`Από ${ASKB(esc(E.model))} υπάρχουν ${ASKB(fmtNum(n)+" "+(n===1?"κομμάτι":"κομμάτια"))} σε ${pcs.length} ${pcs.length===1?"απόχρωση":"αποχρώσεις"}${inBz?`, από τα οποία ${inBz} στο bazaar`:""}.`,
+      rows:pcs.map(askStockRow) };
+  }
+  if(E.item){
+    const it=E.item, st=stockState(it);
+    return { text:`${ASKB(esc(it.name))}: ${ASKB(fmtNum(it.qty)+" "+esc(it.unit||""))} στην αποθήκη${it.unit_cost!=null?`, τελευταία τιμή ${fmtMoney(it.unit_cost)}`:""}.${st!=="ok"?` <span class="ask-down">Είναι στο όριο — καλό είναι να αγοραστεί.</span>`:""}`,
+      rows:[askStockRow(it)], actions:[{l:"Αγορά", f:`openPurchase(null,'${it.id}')`},{l:"Ιστορικό", f:`openStockHistory('${it.id}')`}] };
+  }
+  const low=buyLowItems();
+  const G=stockGroups(), val=a=>a.reduce((s,it)=>s+(Number(it.qty)||0)*(Number(it.unit_cost)||0),0);
+  const wantBuy=["αγορασ","λειπ","τελειων","παραγγειλ"].some(w=>nq.includes(normText(w)));
+  if(wantBuy || low.length){
+    let t=low.length?`${ASKB(low.length+" "+(low.length===1?"είδος":"είδη"))} ${low.length===1?"έχει":"έχουν"} πέσει στο όριο και ${low.length===1?"θέλει":"θέλουν"} αγορά.`:"Τίποτα δεν έχει πέσει στο όριο — η αποθήκη είναι εντάξει.";
+    t+=` Στην αποθήκη υπάρχουν νήματα αξίας ${fmtMoney(val(G.yarn))}, υλικά ${fmtMoney(val(G.supplies))} και έτοιμα κομμάτια ${fmtMoney(val(G.product))} (σε κόστος).`;
+    return { text:t, rows:low.map(askStockRow),
+      actions:low.length?[{l:"Αγορά με όλα αυτά", f:"openPurchase();buyFillLow()"}]:[{l:"Αποθήκη", f:"goTab('stock')"}],
+      more:["Ποια χρώματα ζητιούνται περισσότερο;","Ποια έτοιμα δεν πουλιούνται;"] };
+  }
+  return { text:`Στην αποθήκη: νήματα ${fmtMoney(val(G.yarn))}, υλικά ${fmtMoney(val(G.supplies))}, έτοιμα κομμάτια ${fmtMoney(val(G.product))} (${fmtNum(G.product.reduce((a,x)=>a+(Number(x.qty)||0),0))} τεμ.).`,
+    actions:[{l:"Αποθήκη", f:"goTab('stock')"}] };
+}
+function askTop(q, r){
+  const nq=normText(q);
+  r=r||askRange(new Date(new Date().getFullYear(),0,1), new Date(new Date().getFullYear()+1,0,1), "Έτος "+new Date().getFullYear(), "φέτος");
+  const d=reportData(r);
+  const worst=["χειροτερ","λιγοτερο","δεν πουλα","δεν κινουν"].some(w=>nq.includes(normText(w)));
+  if(askHas(nq,"customers") && !askHas(nq,"colors")){
+    const by={}; (d.sales||[]).forEach(o=>{ const k=custKey(o); if(!k||isAnonSale(o)) return; const c=by[k]=by[k]||{id:o.id,name:o.customer_name,n:0,rev:0}; c.n++; c.rev+=orderValue(o); });
+    const top=Object.values(by).sort((a,b)=>b.rev-a.rev).slice(0,8);
+    if(!top.length) return { text:`${cap(r.w)} δεν υπάρχουν πωλήσεις με όνομα πελάτη.` };
+    return { text:`Οι καλύτεροι πελάτες ${r.w}: πρώτη ${ASKB(esc(top[0].name))} με ${fmtMoney(top[0].rev)} (${top[0].n} ${top[0].n===1?"αγορά":"αγορές"}).`,
+      rows:top.map(c=>({icon:"◎", title:esc(c.name), sub:`${c.n} ${c.n===1?"αγορά":"αγορές"}`, right:fmtMoney(c.rev), go:`openCustomer('${c.id}')`})) };
+  }
+  const list=(askHas(nq,"colors")?d.colors:d.models).slice();
+  if(!list.length) return { text:`${cap(r.w)} δεν υπάρχουν πωλήσεις για σύγκριση.` };
+  if(worst) list.reverse();
+  const what=askHas(nq,"colors")?"χρώμα":"μοντέλο";
+  return { text:`${worst?"Το λιγότερο δυνατό":"Το πιο δυνατό"} ${what} ${r.w} είναι ${ASKB(esc(list[0].k))}: ${fmtNum(list[0].n)} τεμ., ${fmtMoney(list[0].rev)} (${Math.round(list[0].rev/Math.max(1,d.rev)*100)}% του τζίρου).`,
+    rows:list.slice(0,8).map((m,i)=>({icon:String(i+1), title:esc(m.k), sub:`${fmtNum(m.n)} τεμ.`, right:fmtMoney(m.rev)})),
+    actions:[{l:"Αναφορά προϊόντων", f:askRepGo(r,"products")}],
+    more:["Ποια τσάντα αποδίδει καλύτερα ανά ώρα;","Ποια χρώματα ζητιούνται περισσότερο;"] };
+}
+function askCustomer(q, E){
+  const c=E.customer; const ref=(ordersCache||[]).find(o=>o.id===c.anyId); if(!ref) return null;
+  const list=customerOrders(ref);
+  const spent=list.reduce((a,o)=>a+orderValue(o),0), owed=list.reduce((a,o)=>a+orderOwed(o),0);
+  const last=list.reduce((a,o)=>Math.max(a,new Date(o.created_at||0).getTime()),0);
+  const since=last?Math.floor((Date.now()-last)/86400000):null;
+  const mods={}, cols={}; list.forEach(o=>getItems(o).forEach(it=>{ const m=splitItemName(it.name).model||it.name; mods[m]=(mods[m]||0)+1; if(it.color) cols[it.color]=(cols[it.color]||0)+1; }));
+  const fm=Object.entries(mods).sort((a,b)=>b[1]-a[1])[0], fc=Object.entries(cols).sort((a,b)=>b[1]-a[1])[0];
+  const info=custInfo[c.key]||{};
+  let t=`${ASKB(esc(c.name))}: ${list.length} ${list.length===1?"αγορά":"αγορές"} συνολικά ${ASKB(fmtMoney(spent))}`;
+  t+= since!=null?`, τελευταία ${fmtAgo(since)}.`:".";
+  if(fm) t+=` Προτιμά ${ASKB(esc(fm[0]))}${fc?` σε ${esc(fc[0])}`:""}.`;
+  t+= owed>0.01?` <span class="ask-warn">Χρωστάει ${fmtMoney(owed)}.</span>`:" Δεν χρωστάει τίποτα.";
+  if(info.note) t+=` Σημείωση: «${esc(info.note)}».`;
+  return { text:t, rows:list.slice().reverse().slice(0,8).map(askOrderRow),
+    actions:[{l:"Καρτέλα πελάτη", f:`openCustomer('${c.anyId}')`},{l:"Νέα παραγγελία", f:`newOrderFor('${c.anyId}')`}].concat(owed>0.01?[{l:"Εξόφληση", f:`quickPaid('${(list.find(o=>orderOwed(o)>0.01)||{}).id}')`}]:[]) };
+}
+function askOrder(q, E){
+  const o=E.order, due=orderOwed(o);
+  const its=getItems(o);
+  const st=orderIsDone(o)?"παραδόθηκε":"σε εξέλιξη";
+  return { text:`Η ${ASKB(esc(o.order_number||"πώληση"))} είναι της ${ASKB(esc(o.customer_name||"—"))}, ${fmtMoney(orderValue(o))}, ${st}${due>0.01?` · <span class="ask-warn">υπόλοιπο ${fmtMoney(due)}</span>`:" · εξοφλημένη"}.`,
+    rows:its.map(it=>({thumb:stockThumb({name:it.name,type:"product"}), title:esc(it.name), sub:STAGE_TITLE(o,it), right:it.price!=null?fmtMoney(it.price):"", go:`editOrder('${o.id}')`})),
+    actions:[{l:"Άνοιγμα", f:`editOrder('${o.id}')`}].concat(due>0.01?[{l:"Εξόφληση", f:`quickPaid('${o.id}')`}]:[]).concat(isInstantSale(o)?[]:[{l:"Αντιγραφή link", f:`copyLinkFor('${o.track_token}')`}]) };
+}
+function askBazaar(q, E){
+  const b=E.bazaar || bzCurrent() || (bazaars||[]).slice().sort((a,b)=>String(b.date||"").localeCompare(String(a.date||"")))[0];
+  if(!b) return { text:"Δεν υπάρχει καταχωρημένο bazaar.", actions:[{l:"Νέο bazaar", f:"goTab('bazaar');openBzModal()"}] };
+  const t=bzTotals(b);
+  const left=bzStock(b.id);
+  return { text:`${ASKB(esc(b.name))}${b.date?" ("+fmtMonthDate(b.date+"T09:00:00")+")":""}: πουλήθηκαν ${ASKB(t.sold+" "+(t.sold===1?"κομμάτι":"κομμάτια"))} για ${ASKB(fmtMoney(t.rev))}. Μετά τα υλικά (${fmtMoney(t.mat)}), τη συμμετοχή (${fmtMoney(t.fee)}) και τα έξοδα (${fmtMoney(t.exp)}) το ${ASKB("καθαρό είναι "+fmtMoney(t.net))}.${!b.closed&&left.length?` Έχεις μαζί σου ακόμη ${t.left} ${t.left===1?"κομμάτι":"κομμάτια"}.`:""}`,
+    rows:left.slice(0,10).map(askStockRow),
+    actions:b.closed?[{l:"Άνοιγμα bazaar", f:`goTab('bazaar');setBzView('${b.id}')`}]:[{l:"Πώληση", f:`tillOpen('${b.id}',null)`},{l:"Άνοιγμα bazaar", f:`goTab('bazaar');setBzView('${b.id}')`}],
+    more:["Ποια έτοιμα δεν πουλιούνται;","Πόσα βγάλαμε αυτόν τον μήνα;"] };
+}
+function askBalance(){
+  const acc=(accounts||[]).filter(a=>!a.archived);
+  if(!acc.length) return { text:"Δεν βρέθηκαν λογαριασμοί ταμείου." };
+  return { text:`Διαθέσιμα σήμερα: ${ASKB(fmtMoney(totalBalance()))}${acc.length>1?" ("+acc.map(a=>esc(a.name)+" "+fmtMoney(balanceOf(a.id))).join(", ")+")":""}.`,
+    rows:acc.map(a=>({icon:"€", title:esc(a.name), right:fmtMoney(balanceOf(a.id)), go:"goTab('cash')"})),
+    actions:[{l:"Ταμείο", f:"goTab('cash')"}], more:["Πού ξοδέψαμε αυτόν τον μήνα;","Πόσα βγάλαμε αυτόν τον μήνα;"] };
+}
+function askTime(q, r){
+  r=r||askThisMonth();
+  const d=reportData(r);
+  if(!d.workSecs) return { text:`${cap(r.w)} δεν έχει μετρηθεί χρόνος εργασίας. Ξεκίνα τον από το «+ → Χρόνος εργασίας».` };
+  const ph=d.gross/(d.workSecs/3600);
+  const rows=repItemRows(d).filter(x=>x.sec>300);
+  const by={}; rows.forEach(x=>{ const a=by[x.model]=by[x.model]||{k:x.model,sec:0,net:0}; a.sec+=x.sec; a.net+=x.rev-(x.cost||0); });
+  const per=Object.values(by).map(a=>({...a, ph:a.net/(a.sec/3600)})).sort((a,b)=>b.ph-a.ph);
+  return { text:`${cap(r.w)} μετρήθηκαν ${ASKB(fmtDur(d.workSecs))} δουλειάς. Κάθε ώρα έφερε ${ASKB(fmtMoney(ph))} μικτό κέρδος — ${ph>=hourRate?"πάνω":"<span class=\"ask-down\">κάτω</span>"} από τον στόχο των ${fmtMoney(hourRate)}/ώρα.`,
+    rows:per.map(a=>({icon:"⏱", title:esc(a.k), sub:fmtDur(a.sec), right:`<span class="${a.ph>=hourRate?"ask-up":"ask-down"}">${fmtMoney(a.ph)}/ώρα</span>`})),
+    actions:[{l:"Αναφορά χρόνου", f:askRepGo(r,"time")}] };
+}
+function askPrice(q, E){
+  const name=E.model || (E.item&&E.item.name);
+  if(!name) return null;
+  const m=(modelCat||[]).find(x=>normText(x.name)===normText(name));
+  const pcs=(stockCache||[]).filter(it=>it.type==="product" && normText(modelOf(it))===normText(name));
+  const sells=pcs.map(it=>Number(it.sell_price)).filter(x=>x>0);
+  const costs=pcs.map(it=>Number(it.unit_cost)).filter(x=>x>0);
+  const secs=pcs.map(it=>bomSec(it.id)).filter(x=>x>0);
+  const cost=costs.length?costs.reduce((a,b)=>a+b,0)/costs.length:null, sec=secs.length?secs.reduce((a,b)=>a+b,0)/secs.length:null;
+  const price=(m&&m.price!=null)?Number(m.price):(sells.length?sells[0]:null);
+  let t=`${ASKB(esc(name))}: ${price!=null?"τιμή "+ASKB(fmtMoney(price)):"δεν έχει οριστεί τιμή"}.`;
+  if(cost!=null){
+    const full=cost+(sec?labourCost(sec):0);
+    t+=` Υλικά περίπου ${fmtMoney(cost)}${sec?`, εργασία ${fmtDur(sec)} (${fmtMoney(labourCost(sec))})`:""} — συνολικό κόστος ${fmtMoney(full)}.`;
+    if(price!=null) t+= price>=full*1.6 ? " Η τιμή καλύπτει άνετα το κόστος." : ` <span class="ask-down">Η τιμή αφήνει μικρό περιθώριο</span> — με ${fmtMoney(hourRate)}/ώρα θα ήθελε τουλάχιστον ${ASKB(fmtMoney(Math.ceil(full*1.6)))}.`;
+  } else t+=" Δεν έχουν δηλωθεί υλικά και χρόνος για να ελεγχθεί αν η τιμή βγαίνει.";
+  return { text:t, rows:pcs.map(askStockRow), actions:m?[{l:"Προδιαγραφές", f:`goTab('stock','models');openModelModal('${m.id}')`}]:[] };
+}
+function askFeedback(){
+  const fb=(feedbackCache||[]);
+  if(!fb.length) return { text:"Δεν έχουν έρθει ακόμη αξιολογήσεις." };
+  const sat=fb.map(r=>r.q_satisfaction).filter(x=>x!=null);
+  const avg=sat.length?sat.reduce((a,b)=>a+b,0)/sat.length:null;
+  const cm=fb.filter(r=>r.q_open&&r.q_open.trim()).slice(-5).reverse();
+  return { text:`${fb.length} ${fb.length===1?"αξιολόγηση":"αξιολογήσεις"}${avg!=null?`, μέση ικανοποίηση ${ASKB(avg.toFixed(1)+"/5")}`:""}.`,
+    rows:cm.map(r=>({icon:"★", title:"«"+esc(r.q_open.slice(0,120))+"»", sub:fmtDateShort(new Date(r.created_at))})),
+    actions:[{l:"Feedback", f:"showAdminTab('feedback')"}] };
+}
+/* ---- προτάσεις: τι αξίζει να κάνει η Αναστασία τώρα ---- */
+function askSuggest(){
+  const S=[];
+  const now=Date.now();
+  // 1. οφειλές
+  const old=owedRows().filter(x=>x.days>21);
+  old.slice(0,3).forEach(x=>S.push({w:3, icon:"€", title:`Υπενθύμιση πληρωμής: ${esc(x.o.customer_name)}`, sub:`${fmtMoney(x.owed)} εδώ και ${x.days} ημέρες`, go:`notifyCustomer('${x.o.id}')`}));
+  // 2. καθυστερήσεις
+  dueItems(0.99).filter(x=>x.t<now).slice(0,3).forEach(x=>S.push({w:3, icon:"!", title:`Καθυστέρηση: ${esc(x.it.name)} της ${esc(firstName(x.o.customer_name))}`, sub:"πέρασε η ημερομηνία παράδοσης — ενημέρωσε την πελάτισσα", go:`notifyCustomer('${x.o.id}')`}));
+  // 3. τιμές που δεν πληρώνουν τον χρόνο
+  const yr=askRange(new Date(new Date().getFullYear(),0,1), new Date(new Date().getFullYear()+1,0,1), "φέτος");
+  const d=reportData(yr);
+  const by={}; repItemRows(d).filter(x=>x.sec>300).forEach(x=>{ const a=by[x.model]=by[x.model]||{k:x.model,sec:0,net:0,n:0,rev:0,cost:0}; a.sec+=x.sec; a.net+=x.rev-(x.cost||0); a.n+=x.qty; a.rev+=x.rev; a.cost+=(x.cost||0); });
+  Object.values(by).forEach(a=>{ const ph=a.net/(a.sec/3600); if(ph<hourRate*0.85){
+    const per=a.n?((a.cost/a.n)+labourCost(a.sec/a.n)):0;
+    S.push({w:2, icon:"↗", title:`Τιμή ${esc(a.k)}: αποδίδει ${fmtMoney(ph)}/ώρα`, sub:`στόχος ${fmtMoney(hourRate)}/ώρα${per?` — για να τον πιάσει θέλει περίπου ${fmtMoney(Math.ceil(per))}`:""}`, go:askRepGo(yr,"products")}); } });
+  // 4. ζητημένα χρώματα που τελειώνουν
+  const cols=d.colors.slice(0,5);
+  cols.forEach(c=>{ const it=(stockCache||[]).find(x=>x.type!=="product" && !isArchivedStock(x) && normText(x.name).includes(normText(c.k)));
+    if(it && stockState(it)!=="ok") S.push({w:2, icon:"🧵", title:`Αγορά νήματος: ${esc(it.name)}`, sub:`το ${esc(c.k)} είναι από τα πιο ζητημένα χρώματα και έχουν μείνει ${fmtNum(it.qty)}`, go:`openPurchase(null,'${it.id}')`}); });
+  const low=buyLowItems(); if(low.length) S.push({w:1, icon:"🛒", title:`${low.length} ${low.length===1?"είδος θέλει":"είδη θέλουν"} αγορά`, sub:low.slice(0,3).map(x=>esc(x.name)).join(", "), go:"openPurchase();buyFillLow()"});
+  // 5. κομμάτια που δεν κινούνται
+  const lastSold={}; (ordersCache||[]).forEach(o=>getItems(o).forEach(it=>{ const k=normText(it.name); const t=new Date(o.created_at||0).getTime(); if(t>(lastSold[k]||0)) lastSold[k]=t; }));
+  const slow=(stockCache||[]).filter(it=>it.type==="product" && Number(it.qty)>0 && !isArchivedStock(it) && !bzOfStock(it) && (!lastSold[normText(it.name)] || now-lastSold[normText(it.name)]>60*86400000));
+  if(slow.length) S.push({w:1, icon:"🛍️", title:`${slow.length} ${slow.length===1?"έτοιμο κομμάτι κάθεται":"έτοιμα κομμάτια κάθονται"} πάνω από 2 μήνες`, sub:"καλές υποψήφιες για το επόμενο bazaar, μια προσφορά στο Instagram ή χονδρική", go:"goTab('stock','product')"});
+  // 6. πιστές πελάτισσες που άργησαν να ξανάρθουν
+  customerGroups().forEach(c=>{
+    if(c.n<2) return;
+    const ref=(ordersCache||[]).find(o=>o.id===c.anyId); if(!ref) return;
+    const ts=customerOrders(ref).map(o=>new Date(o.created_at||0).getTime()).filter(Boolean).sort((a,b)=>a-b);
+    if(ts.length<2) return;
+    const cad=(ts[ts.length-1]-ts[0])/(ts.length-1), since=now-ts[ts.length-1];
+    if(since>Math.max(45*86400000, cad*1.5)) S.push({w:1, icon:"◎", title:`Επικοινωνία με ${esc(c.name)}`, sub:`αγοράζει συνήθως κάθε ${fmtEvery(Math.round(cad/86400000))}, τελευταία ${fmtAgo(Math.floor(since/86400000))} — στείλε της τα καινούργια`, go:`openCustomer('${c.anyId}')`});
+  });
+  // 7. κόστος που λείπει
+  const m=reportData(askThisMonth());
+  if(m.nCosted<m.n) S.push({w:1, icon:"✎", title:`Κόστος υλικών σε ${m.n-m.nCosted} ${m.n-m.nCosted===1?"πώληση":"πωλήσεις"} του μήνα`, sub:"χωρίς αυτό το κέρδος φαίνεται μεγαλύτερο απ' ό,τι είναι", go:"goTab('orders')"});
+  // 8. τάση
+  const pm=reportData(askPrev(askThisMonth()));
+  const dayOf=new Date().getDate(), dim=new Date(new Date().getFullYear(), new Date().getMonth()+1, 0).getDate();
+  const proj=m.rev/dayOf*dim;
+  if(pm.rev>0 && proj<pm.rev*0.8 && dayOf>=10) S.push({w:1, icon:"↘", title:"Ο μήνας κινείται πιο αργά", sub:`με τον σημερινό ρυθμό θα κλείσει γύρω στα ${fmtMoney(proj)}, έναντι ${fmtMoney(pm.rev)} τον προηγούμενο — ίσως μια ανάρτηση με τα έτοιμα κομμάτια`, go:askRepGo(askThisMonth(),"summary")});
+  // 9. το καλύτερο περιθώριο → προβολή
+  const bm={}; repItemRows(d).forEach(x=>{ if(x.cost==null) return; const a=bm[x.model]=bm[x.model]||{k:x.model,rev:0,cost:0}; a.rev+=x.rev; a.cost+=x.cost; });
+  const best=Object.values(bm).filter(a=>a.rev>0).map(a=>({...a, mg:(a.rev-a.cost)/a.rev})).sort((a,b)=>b.mg-a.mg)[0];
+  if(best && best.mg>0.5) S.push({w:0, icon:"★", title:`Προβολή του ${esc(best.k)}`, sub:`έχει το καλύτερο περιθώριο (${Math.round(best.mg*100)}%) — αξίζει να το δείχνετε περισσότερο`, go:askRepGo(yr,"products")});
+  if(!S.length) return { text:"Όλα δείχνουν εντάξει: καμία παλιά οφειλή, καμία καθυστέρηση και τίποτα δεν τελειώνει. Καλή στιγμή για νέα σχέδια ή ένα bazaar. ✓" };
+  S.sort((a,b)=>b.w-a.w);
+  return { text:`Αυτά αξίζει να γίνουν τώρα, με σειρά προτεραιότητας:`, rows:S.slice(0,10).map(s=>({icon:s.icon, title:s.title, sub:s.sub, go:s.go})),
+    more:["Ποιοι χρωστάνε;","Ποια τσάντα αποδίδει καλύτερα ανά ώρα;","Τι να αγοράσω;"] };
+}
+function askSlow(){
+  const lastSold={}; (ordersCache||[]).forEach(o=>getItems(o).forEach(it=>{ const k=normText(it.name); const t=new Date(o.created_at||0).getTime(); if(t>(lastSold[k]||0)) lastSold[k]=t; }));
+  const now=Date.now();
+  const slow=(stockCache||[]).filter(it=>it.type==="product" && Number(it.qty)>0 && !isArchivedStock(it))
+    .map(it=>({it, last:lastSold[normText(it.name)]||0})).filter(x=>!x.last || now-x.last>60*86400000)
+    .sort((a,b)=>a.last-b.last);
+  if(!slow.length) return { text:"Όλα τα έτοιμα κομμάτια έχουν κίνηση τους τελευταίους δύο μήνες. ✓" };
+  const val=slow.reduce((a,x)=>a+(Number(x.it.qty)||0)*(Number(x.it.sell_price)||0),0);
+  return { text:`${ASKB(slow.length+" "+(slow.length===1?"έτοιμο κομμάτι":"έτοιμα κομμάτια"))} δεν έχουν πουληθεί τους τελευταίους δύο μήνες — αξία πώλησης ${fmtMoney(val)}. Είναι καλές επιλογές για το επόμενο bazaar, μια ανάρτηση ή χονδρική.`,
+    rows:slow.map(x=>({...askStockRow(x.it), sub:x.last?`τελευταία πώληση ${fmtDateShort(new Date(x.last))}`:"καμία πώληση ακόμη"})),
+    actions:[{l:"Νέο bazaar", f:"goTab('bazaar');openBzModal()"}] };
+}
+function askHelp(){
+  return { text:"Ρώτα με ό,τι θα ρωτούσες έναν συνεργάτη που ξέρει όλα τα νούμερα. Για παράδειγμα:",
+    more:ASK_SUGGEST.flatMap(g=>g.q) };
+}
+function cap(s){ s=String(s||""); return s.charAt(0).toUpperCase()+s.slice(1); }
+function askRepGo(r, tab){
+  const per = (r.to-r.from)>200*86400000 ? (r.to.getFullYear()>=2100?"all":"year") : ((r.to-r.from)>40*86400000?"quarter":"month");
+  return `_ovClose('askSheet');repPeriod='${per}';repAnchor='${r.from.toISOString()}';repTab='${tab}';showAdminTab('stats')`;
+}
+
+/* ---- ο «εγκέφαλος»: πρόθεση → απάντηση ---- */
+function askAnswer(q){
+  const nq=normText(q);
+  if(!nq) return askHelp();
+  const r=askPeriod(q), E=askEntities(q);
+  const H=k=>askHas(nq,k);
+  if(H("help")) return askHelp();
+  if(H("suggest")) return askSuggest();
+  if(E.order && /\d/.test(q)) return askOrder(q,E);
+  if(H("owed")) return askOwed(q,E);
+  if(H("price") && (E.model||E.item)) { const a=askPrice(q,E); if(a) return a; }
+  if(E.customer && !H("top") && !H("sales") && !H("profit")) return askCustomer(q,E) || askFallback(q);
+  if(["δεν πουλιουν","δεν πουλιεται","δεν κινουν","δεν πουληθηκ","κανουν καιρο","καθονται"].some(w=>nq.includes(normText(w)))) return askSlow();
+  if(H("bazaar")) return askBazaar(q,E);
+  if(H("feedback")) return askFeedback();
+  if(H("time") && H("top")) return askTime(q, r||askRange(new Date(new Date().getFullYear(),0,1), new Date(new Date().getFullYear()+1,0,1), "Έτος "+new Date().getFullYear(), "φέτος"));
+  if(H("top")) return askTop(q,r);
+  if(H("due")) return askDue(q,r);
+  if(H("time") && !H("sales")) return askTime(q,r);
+  if(H("profit")) return askProfit(q,r);
+  if(H("expense") && !H("sales")) return askExpense(q,r);
+  if(H("balance")) return askBalance();
+  if(H("sales")) return askSales(q,r);
+  if(H("open")) return askOpen(q);
+  if(E.model || E.item || H("stock")) return askStock(q,E);
+  if(E.customer) return askCustomer(q,E) || askFallback(q);
+  if(r) return askSales(q,r);
+  return askFallback(q);
+}
+function askFallback(q){
+  const rows=globalFind(q);
+  if(rows.length) return { text:`Βρήκα ${rows.length===1?"αυτό":"αυτά"} για «${esc(q)}»:`, search:true,
+    rows:rows.slice(0,12).map(x=>({icon:x.icon, title:esc(x.title), sub:esc(x.kind)+(x.sub?" · "+esc(x.sub):""), right:x.right, go:x.go})) };
+  return { text:`Δεν βρήκα κάτι για «${esc(q)}». Δοκίμασε μια ερώτηση σαν αυτές:`, unknown:true,
+    more:["Πόσα βγάλαμε αυτόν τον μήνα;","Ποιοι χρωστάνε;","Τι να αγοράσω;","Προτάσεις για την Αναστασία"] };
+}
+
+/* ============ UI ============ */
+const ASK_SUGGEST=[
+  {h:"Οικονομικά", q:["Πόσα βγάλαμε αυτόν τον μήνα;","Ποιο είναι το καθαρό κέρδος φέτος;","Πού ξοδέψαμε αυτόν τον μήνα;","Πόσα έχουμε στο ταμείο;"]},
+  {h:"Παραγγελίες & πελάτες", q:["Ποιοι χρωστάνε;","Τι παραδίδεται αυτή την εβδομάδα;","Ποιες παραγγελίες είναι σε εξέλιξη;","Ποιοι είναι οι καλύτεροι πελάτες φέτος;"]},
+  {h:"Προϊόντα & αποθήκη", q:["Ποια τσάντα πουλάει περισσότερο;","Ποια χρώματα ζητιούνται περισσότερο;","Τι να αγοράσω;","Πόσο αποδίδει η ώρα δουλειάς;"]},
+  {h:"Για την Αναστασία", q:["Προτάσεις για την Αναστασία","Πώς πήγε το bazaar;"]}
+];
+let askLog=[];
+function askRecents(){ try{ return JSON.parse(localStorage.getItem("th_ask_recent")||"[]"); }catch(e){ return []; } }
+function askRemember(q){ try{ const r=[q, ...askRecents().filter(x=>x!==q)].slice(0,6); localStorage.setItem("th_ask_recent", JSON.stringify(r)); }catch(e){} }
+function openAsk(q){
+  _ovOpen("askSheet");
+  askAiProbe();
+  renderAsk();
+  const i=document.getElementById("askInput");
+  if(q){ i.value=""; askSend(q); }
+  else if(!matchMedia("(pointer:coarse)").matches) setTimeout(()=>i.focus(),200);
+}
+function askChip(q){ return `<button class="ask-chip" onclick="askSend(this.textContent)">${esc(q)}</button>`; }
+function renderAsk(){
+  const th=document.getElementById("askThread"); if(!th) return;
+  if(!askLog.length){
+    const rec=askRecents();
+    const hour=new Date().getHours(), hi=hour<12?"Καλημέρα":(hour<18?"Καλησπέρα":"Καλησπέρα");
+    th.innerHTML=`<div class="ask-hello"><div class="ask-av">T</div>
+        <div><div class="ask-hi serif">${hi}.</div><div class="ask-sub">Ρώτα με για πωλήσεις, οικονομικά, παραγγελίες, αποθήκη ή πελάτες — ή γράψε ένα όνομα για αναζήτηση.</div></div></div>
+      ${rec.length?`<div class="act-sep">Πρόσφατα</div><div class="ask-chips">${rec.map(askChip).join("")}</div>`:""}
+      ${ASK_SUGGEST.map(g=>`<div class="act-sep">${g.h}</div><div class="ask-chips">${g.q.map(askChip).join("")}</div>`).join("")}`;
+    return;
+  }
+  th.innerHTML=askLog.map((m,idx)=>m.who==="me"
+    ? `<div class="ask-me"><span>${esc(m.q)}</span></div>`
+    : askAnswerHtml(m.a, idx)).join("");
+  const sc=th.closest(".modal"); if(sc) setTimeout(()=>{ const last=th.lastElementChild; if(last) last.scrollIntoView({block:"start",behavior:"smooth"}); },30);
+}
+function askAnswerHtml(a, idx){
+  if(a.loading) return `<div class="ask-bot"><div class="ask-av">T</div><div class="ask-body"><div class="ask-typing"><i></i><i></i><i></i></div></div></div>`;
+  const row=r=>`<div class="ask-row">
+      <button class="ask-row-m" ${r.go?`onclick="askGo(\`${String(r.go).replace(/`/g,"")}\`)"`:"disabled"}>
+        ${r.thumb?`<span class="ask-th">${r.thumb}</span>`:(r.icon?`<span class="ask-ic">${r.icon}</span>`:"")}
+        <span class="ask-rt"><span class="t">${r.title||""}</span>${r.sub?`<span class="s">${r.sub}</span>`:""}</span>
+        ${r.right?`<span class="ask-rv">${r.right}</span>`:""}
+      </button>
+      ${r.act?`<button class="btn ghost sm ask-ra" onclick="askGo(\`${String(r.act.f).replace(/`/g,"")}\`)">${esc(r.act.l)}</button>`:""}
+    </div>`;
+  return `<div class="ask-bot"><div class="ask-av">${a.ai?"✦":"T"}</div><div class="ask-body">
+    <div class="ask-text">${a.text||""}</div>
+    ${a.rows&&a.rows.length?`<div class="ask-rows">${a.rows.map(row).join("")}</div>`:""}
+    ${a.actions&&a.actions.length?`<div class="ask-acts">${a.actions.map(x=>`<button class="btn ${x===a.actions[0]?"solid":"ghost"} sm" onclick="askGo(\`${String(x.f).replace(/`/g,"")}\`)">${esc(x.l)}</button>`).join("")}</div>`:""}
+    ${askAiOn() && !a.ai && !a.loading && a.q?`<button class="ask-ai" onclick="askAi(${idx})">✦ Ανάλυση με Claude</button>`:""}
+    ${a.more&&a.more.length?`<div class="ask-chips" style="margin-top:10px">${a.more.map(askChip).join("")}</div>`:""}
+  </div></div>`;
+}
+function askGo(code){
+  // οι ενέργειες ανοίγουν πάνω από τη σελίδα· ο βοηθός κλείνει για να φανεί το αποτέλεσμα
+  if(!/^_ovClose\('askSheet'\)/.test(code)) _ovClose("askSheet");
+  try{ new Function(code)(); }catch(e){ console.error(e); }
+}
+function askSend(q){
+  q=String(q||"").trim(); if(!q) return;
+  const i=document.getElementById("askInput"); if(i) i.value="";
+  document.getElementById("askLive").innerHTML="";
+  askRemember(q);
+  askLog.push({who:"me", q});
+  // ελεύθερο αίτημα (γράψε, εξήγησε, γιατί, ιδέες…) → κατευθείαν στο Claude, αν υπάρχει
+  const FREE=["γραψε","γραψ μου","εξηγησ","γιατι","τι πιστευεις","τι λες","αναλυσ","συγκριν","στρατηγικ","ιδεες για","σχεδιο","κειμενο","λεζαντ","caption","ποστ","post","μηνυμα για"].map(normText);
+  if(askAiOn() && FREE.some(w=>normText(q).includes(w))){
+    askLog.push({who:"bot", a:{q}});
+    askAi(askLog.length-1); return;
+  }
+  let a;
+  try{ a=askAnswer(q); }catch(e){ console.error(e); a={text:"Κάτι πήγε στραβά με αυτή την ερώτηση. Δοκίμασε να τη γράψεις αλλιώς."}; }
+  a.q=q;
+  askLog.push({who:"bot", a});
+  renderAsk();
+  // ελεύθερη ερώτηση που δεν κατάλαβε ο τοπικός βοηθός → Claude, αν είναι συνδεδεμένο
+  if(a.unknown && askAiOn()) askAi(askLog.length-1);
+}
+function askClear(){ askLog=[]; renderAsk(); }
+function askLiveType(){
+  const q=(document.getElementById("askInput").value||"").trim();
+  const box=document.getElementById("askLive");
+  if(q.length<2){ box.innerHTML=""; return; }
+  const looksQuestion=/[;?]$/.test(q) || q.split(/\s+/).length>=3;
+  const rows=looksQuestion?[]:globalFind(q).slice(0,4);
+  box.innerHTML=rows.map(r=>`<button class="ask-live" onclick="document.getElementById('askInput').value='';askGo(\`${String(r.go).replace(/`/g,"")}\`)">
+      <span class="ic">${r.icon}</span><span class="m"><b>${esc(r.title)}</b> <span>${esc(r.kind)}</span></span>${r.right?`<span class="v">${r.right}</span>`:""}</button>`).join("");
+}
+function askKey(e){ if(e.key==="Enter"){ e.preventDefault(); askSend(e.target.value); } }
+document.addEventListener("keydown", e=>{
+  if(e.key!=="/" || !document.body.classList.contains("admin-mode")) return;
+  const t=e.target; if(t && (t.tagName==="INPUT"||t.tagName==="TEXTAREA"||t.tagName==="SELECT"||t.isContentEditable)) return;
+  if(document.querySelector(".overlay:not(.hidden)")) return;
+  e.preventDefault(); openAsk();
+});
+
+/* ============ ΠΡΟΑΙΡΕΤΙΚΗ ΣΥΝΔΕΣΗ ΜΕ CLAUDE ============
+   Ενεργοποιείται μόνο αν έχει ανέβει η Supabase Edge Function «thilikon-ai».
+   Το κλειδί του API μένει στη Supabase — ποτέ μέσα σε αυτό το αρχείο.
+   Στέλνεται μόνο η ερώτηση και μια σύνοψη αριθμών (όχι τηλέφωνα).          */
+let _askAi = null;   // null = άγνωστο, true/false μετά τον έλεγχο
+function askAiOn(){ return _askAi===true; }
+async function askAiProbe(){
+  if(_askAi!==null) return _askAi;
+  try{
+    const res=await authFetch(SUPABASE_URL+"/functions/v1/thilikon-ai",{method:"POST",noAbort:true,body:JSON.stringify({ping:true})});
+    const j=res.ok ? await res.json().catch(()=>({})) : {};
+    _askAi = j && j.ok===true && j.service==="thilikon-ai";
+  }catch(e){ _askAi=false; }
+  if(_askAi && askLog.length) renderAsk();
+  return _askAi;
+}
+function askContext(){
+  const m=askThisMonth(), d=reportData(m), p=reportData(askPrev(m));
+  const y=askRange(new Date(new Date().getFullYear(),0,1), new Date(new Date().getFullYear()+1,0,1), "φέτος"), Y=reportData(y);
+  const pick=o=>({rev:Math.round(o.rev), gross:Math.round(o.gross), net:Math.round(o.net), n:o.n, margin:o.margin, cost:Math.round(o.cost),
+    expenses:Math.round(o.bzCost+o.opex), workHours:Math.round(o.workSecs/360)/10,
+    channels:Object.fromEntries(Object.entries(o.ch).filter(([k,v])=>v.n).map(([k,v])=>[k,{n:v.n,rev:Math.round(v.rev)}]))});
+  return {
+    today:new Date().toISOString().slice(0,10), business:"THILIKON — χειροποίητες πλεκτές τσάντες, ιδιοκτήτρια Αναστασία",
+    hourRateTarget:hourRate,
+    thisMonth:{label:m.l, ...pick(d)}, prevMonth:{label:askPrev(m).l, ...pick(p)}, thisYear:pick(Y),
+    topModelsYear:Y.models.slice(0,8).map(x=>({model:x.k, units:x.n, rev:Math.round(x.rev)})),
+    topColorsYear:Y.colors.slice(0,8).map(x=>({color:x.k, units:x.n})),
+    owed:owedRows().slice(0,15).map(x=>({customer:firstName(x.o.customer_name), amount:Math.round(x.owed), days:x.days})),
+    dueNext7:dueItems(7).slice(0,15).map(x=>({item:x.it.name, customer:firstName(x.o.customer_name), eta:x.it.eta, late:x.t<Date.now()})),
+    lowStock:buyLowItems().map(it=>({item:it.name, qty:Number(it.qty), unit:it.unit})),
+    readyPieces:(stockCache||[]).filter(it=>it.type==="product"&&Number(it.qty)>0&&!isArchivedStock(it)).map(it=>({name:it.name, qty:Number(it.qty), price:it.sell_price})),
+    balance:Math.round(totalBalance()),
+    bazaars:(bazaars||[]).slice(-4).map(b=>{ const t=bzTotals(b); return {name:b.name, date:b.date, closed:!!b.closed, sold:t.sold, rev:Math.round(t.rev), net:Math.round(t.net)}; }),
+    customers:{ total:customerGroups().length, repeat:customerGroups().filter(c=>c.n>1).length },
+    suggestions:(askSuggest().rows||[]).map(r=>String(r.title).replace(/<[^>]+>/g,"")+" — "+String(r.sub||"").replace(/<[^>]+>/g,""))
+  };
+}
+async function askAi(idx){
+  const m=askLog[idx]; if(!m || !m.a) return;
+  const q=m.a.q || (askLog[idx-1]||{}).q;
+  let holder;
+  if(!m.a.text && !m.a.ai){ holder=m; m.a={loading:true}; }        // κενή θέση: γεμίζει εδώ
+  else { holder={who:"bot", a:{loading:true}}; askLog.push(holder); }
+  renderAsk();
+  try{
+    const history=askLog.filter(x=>x.who==="me").slice(-6).map(x=>x.q);
+    const res=await authFetch(SUPABASE_URL+"/functions/v1/thilikon-ai",{method:"POST",noAbort:true,
+      body:JSON.stringify({question:q, history, context:askContext()})});
+    const j=await res.json().catch(()=>({}));
+    if(!res.ok || !j.answer) throw new Error(j.error||("HTTP "+res.status));
+    holder.a={ai:true, text:askMd(j.answer)};
+  }catch(e){
+    holder.a={ai:true, text:`Η σύνδεση με το Claude δεν απάντησε (${esc(e.message||"σφάλμα")}). Οι απαντήσεις από τα δεδομένα δουλεύουν κανονικά.`};
+  }
+  renderAsk();
+}
+/* απλό markdown → html (έντονα, λίστες, παράγραφοι) */
+function askMd(s){
+  const lines=esc(String(s||"")).split(/\n/);
+  let out="", inList=false;
+  lines.forEach(l=>{
+    const li=l.match(/^\s*(?:[-•*]|\d+\.)\s+(.*)$/);
+    if(li){ if(!inList){ out+="<ul>"; inList=true; } out+="<li>"+li[1]+"</li>"; return; }
+    if(inList){ out+="</ul>"; inList=false; }
+    if(l.trim()) out+="<p>"+l+"</p>";
+  });
+  if(inList) out+="</ul>";
+  return out.replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/^#+\s*/gm,"");
+}
+
 /* ============ ΑΝΑΖΗΤΗΣΗ ΓΙΑ ΟΛΑ ============
    Μέχρι τώρα κάθε σελίδα είχε δικό της πεδίο: για να βρεις ένα νήμα έπρεπε
    να ξέρεις ότι είναι νήμα. Εδώ γράφεις ό,τι θυμάσαι και βρίσκεται. */
@@ -8886,12 +9601,14 @@ function runGlobalFind(){
   const rows=globalFind(q);
   if(!q.trim()){ box.innerHTML=""; box.classList.add("hidden"); return; }
   box.classList.remove("hidden");
-  box.innerHTML = rows.length ? rows.map(r=>`<button class="gs-row" onclick="gsGo(this)" data-go="${esc(r.go)}">
+  const askRow=`<button class="gs-row gs-ask" onclick="document.getElementById('gsInput').value='';runGlobalFind();openAsk(${esc(JSON.stringify(q))})">
+      <span class="ic">✦</span><span class="m"><span class="n">Ρώτα: «${esc(q)}»</span><span class="s">απάντηση με αριθμούς, λίστες και προτάσεις</span></span></button>`;
+  box.innerHTML = askRow + (rows.length ? rows.map(r=>`<button class="gs-row" onclick="gsGo(this)" data-go="${esc(r.go)}">
       <span class="ic">${r.icon}</span>
       <span class="m"><span class="n">${esc(r.title)}</span><span class="s">${esc(r.kind)}${r.sub?" · "+esc(r.sub):""}</span></span>
       ${r.right?`<span class="v">${r.right}</span>`:""}
     </button>`).join("")
-    : `<div class="gs-none">Τίποτα για «${esc(q)}».</div>`;
+    : `<div class="gs-none">Τίποτα για «${esc(q)}».</div>`);
 }
 function gsGo(el){
   const go=el.getAttribute("data-go"); if(!go) return;
@@ -8901,8 +9618,8 @@ function gsGo(el){
 }
 function panelSearch(){
   return `<div class="panel wide-panel gs-panel">
-    <input id="gsInput" placeholder="Αναζήτηση σε όλα — πελάτη, τσάντα, νήμα, bazaar…"
-      oninput="runGlobalFind()" autocomplete="off">
+    <input id="gsInput" placeholder="Ρώτα ή ψάξε — «πόσα βγάλαμε;», «ποιοι χρωστάνε;», ένα όνομα…"
+      oninput="runGlobalFind()" onkeydown="if(event.key==='Enter'){event.preventDefault();const v=this.value;this.value='';runGlobalFind();openAsk(v);}" autocomplete="off" enterkeyhint="search">
     <div id="gsResults" class="hidden"></div>
   </div>`;
 }
