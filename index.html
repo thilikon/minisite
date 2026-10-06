@@ -90,6 +90,8 @@ h2.sec-title{font-family:'Cormorant Garamond',serif;font-size:clamp(38px,5vw,68p
 .coll-tab-new{position:absolute;top:-7px;right:10px;font-family:'Montserrat',sans-serif;font-size:7px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;background:var(--anth-green);color:#fff;padding:3px 8px;border-radius:100px}
 .coll-tab.active .coll-tab-new{background:var(--anth-sand);color:var(--anth-green)}
 .coll-meta{text-align:center;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gd);padding:26px 24px 0}
+.coll-pill{position:absolute;top:12px;left:12px;z-index:3;font-size:8px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;padding:6px 13px;border-radius:100px;background:rgba(255,255,255,.93);color:var(--black);backdrop-filter:blur(6px);box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.coll-pill.anthesis{background:var(--anth-green);color:#fff}
 /* COMING SOON CARDS */
 .bag-card.soon{cursor:default;pointer-events:none}
 .soon-art{aspect-ratio:3/4;position:relative;overflow:hidden;background:linear-gradient(145deg,var(--anth-sand) 0%,#cfc0af 48%,var(--anth-green) 100%)}
@@ -362,13 +364,14 @@ footer img.footer-logo{height:30px;filter:invert(1);margin-bottom:18px;display:b
 
 <section id="collection">
   <div class="sec-hdr fade-up">
-    <p class="eyebrow eyebrow-center" id="collEyebrow">The Collections</p>
-    <h2 class="sec-title" id="collTitle">Anthesis</h2>
-    <p class="sec-sub" id="collSub">Our new collection, blooming one piece at a time.</p>
+    <p class="eyebrow eyebrow-center" id="collEyebrow">Anthesis &amp; Anasa</p>
+    <h2 class="sec-title" id="collTitle">The Collections</h2>
+    <p class="sec-sub" id="collSub">Browse both collections, or filter by material.</p>
   </div>
   <div class="coll-wrap fade-up">
     <div class="coll-tabs">
-      <button class="coll-tab active" data-coll="anthesis">Anthesis<span class="coll-tab-new">New</span></button>
+      <button class="coll-tab active" data-coll="all">All</button>
+      <button class="coll-tab" data-coll="anthesis">Anthesis<span class="coll-tab-new">New</span></button>
       <button class="coll-tab" data-coll="anasa">Anasa</button>
     </div>
   </div>
@@ -859,10 +862,10 @@ const bags=[
   {id:'basket',name:'Knit Basket',cat:'accessories',colorCat:'tshirt',desc:'Χειροποίητα πλεκτά καλαθάκια που οργανώνουν με στυλ τα αγαπημένα σου αντικείμενα. Για το κομοδίνο, το μπάνιο ή το γραφείο σου.',img:'https://i.imgur.com/VIlFAAc.png',note:'Handmade knit basket. Available in different sizes and colours.'},
 
   // ===== ANTHESIS =====
-  {id:'softy',coll:'anthesis',name:'Softy',cat:'marshmallow',desc:'Η πιο cozy προσθήκη στην γκαρνταρόμπα σου είναι εδώ! Με chunky πλέξη και πλεκτή λαβή που κρατιέται άνετα στο χέρι, η Softy δίνει το απόλυτο "cute yet chic" vibe σε κάθε σου εμφάνιση.',img:'https://i.imgur.com/Cs8y1oy.png',note:'Top-handle bag with knitted handle. Dimensions: 34×15cm.'},
-  {id:'sarah',coll:'anthesis',name:'Sarah',cat:'tshirt',desc:'Ανεπιτήδευτα chic και με έντονο fashion χαρακτήρα. Η Sarah ήρθε για να γίνει η νέα αγαπημένη σου shoulder bag, με ευρύχωρο σχήμα και statement μακρύ χερούλι που φοριέται άνετα όλη μέρα.',img:'https://i.imgur.com/JU6ACZS.png',note:'Roomy shoulder bag with a long statement strap. Dimensions: 32×18cm.'},
+  {id:'softy',coll:'anthesis',name:'Softy',cat:'marshmallow',desc:'Η πιο cozy προσθήκη στην γκαρνταρόμπα σου είναι εδώ! Με chunky πλέξη και πλεκτή λαβή που κρατιέται άνετα στο χέρι, η Softy δίνει το απόλυτο "cute yet chic" vibe σε κάθε σου εμφάνιση.',img:'https://i.imgur.com/Cs8y1oy.png',lifestyle:['https://i.imgur.com/GUGHUuG.jpeg'],note:'Top-handle bag with knitted handle. Dimensions: 34×15cm.'},
+  {id:'sarah',coll:'anthesis',name:'Sarah',cat:'tshirt',desc:'Ανεπιτήδευτα chic και με έντονο fashion χαρακτήρα. Η Sarah ήρθε για να γίνει η νέα αγαπημένη σου shoulder bag, με ευρύχωρο σχήμα και statement μακρύ χερούλι που φοριέται άνετα όλη μέρα.',img:'https://i.imgur.com/JU6ACZS.png',lifestyle:['https://i.imgur.com/QQQDzP0.jpeg','https://i.imgur.com/IKN3x1a.jpeg'],note:'Roomy shoulder bag with a long statement strap. Dimensions: 32×18cm.'},
   {id:'zoe',coll:'anthesis',name:'Zoe',cat:'tshirt',desc:'Φθινοπωρινό πρωινό, ένα oversized πουλόβερ, καφές στο χέρι και η Zoe στον ώμο. Είναι η τσάντα που θα πιάνεις κάθε φορά που βγαίνεις βιαστικά από το σπίτι.',img:'https://i.imgur.com/r6y7Isc.png',note:'Oversized everyday shoulder bag. Dimensions: 32×32cm.'},
-  {id:'anth4',coll:'anthesis',soon:true,name:'Coming Soon',desc:'Το επόμενο κομμάτι της Anthesis ανθίζει σύντομα.'},
+  {id:'rosie',coll:'anthesis',name:'Rosie',cat:'tshirt',desc:'Μικρή, στρογγυλή και με πλούσια puffy πλέξη. Η Rosie κρατιέται άνετα στο χέρι και δίνει ακριβώς αυτό το pop που θες στο ντύσιμό σου.',img:'https://i.imgur.com/refq0Kv.png',lifestyle:['https://i.imgur.com/sBqOrDr.jpeg','https://i.imgur.com/YRT2S2u.jpeg'],note:'Top-handle handbag. Dimensions: 20×12cm.'},
   {id:'anth5',coll:'anthesis',soon:true,name:'Coming Soon',desc:'Το επόμενο κομμάτι της Anthesis ανθίζει σύντομα.'},
   {id:'anth6',coll:'anthesis',soon:true,name:'Coming Soon',desc:'Το επόμενο κομμάτι της Anthesis ανθίζει σύντομα.'},
   {id:'anth7',coll:'anthesis',soon:true,name:'Coming Soon',desc:'Το επόμενο κομμάτι της Anthesis ανθίζει σύντομα.'},
@@ -884,9 +887,10 @@ bags.forEach((b,i)=>{
   card.dataset.cats=(b.cats||(b.cat?[b.cat]:[])).join(',');
   card.style.transitionDelay=(i%3*.08)+'s';
   if (b.soon) {
-    card.innerHTML=`<div class="soon-art"><div class="soon-badge"><span>Coming Soon</span></div></div><div class="bag-info"><span class="bag-cat-tag">Anthesis</span><h3 class="bag-name">${b.name}</h3><p class="bag-desc">${b.desc}</p></div>`;
+    card.innerHTML=`<div class="soon-art"><span class="coll-pill anthesis">Anthesis</span><div class="soon-badge"><span>Coming Soon</span></div></div><div class="bag-info"><span class="bag-cat-tag">Anthesis</span><h3 class="bag-name">${b.name}</h3><p class="bag-desc">${b.desc}</p></div>`;
   } else {
-    card.innerHTML=`<div class="bag-img-wrap"><img src="${b.img}" alt="${b.name}" loading="lazy" onerror="this.parentElement.style.background='#e8e4de';this.style.display='none'"><div class="bag-overlay"></div></div><div class="bag-info"><span class="bag-cat-tag">${CATS[b.cat].label}</span><h3 class="bag-name">${b.name}</h3><p class="bag-desc">${b.desc}</p><p class="bag-ooakline">Delivered within 20 days</p><span class="bag-see">See colours</span></div>`;
+    const pill = b.coll==='anthesis' ? '<span class="coll-pill anthesis">Anthesis</span>' : '<span class="coll-pill">Anasa</span>';
+    card.innerHTML=`<div class="bag-img-wrap">${pill}<img src="${b.img}" alt="${b.name}" loading="lazy" onerror="this.parentElement.style.background='#e8e4de';this.style.display='none'"><div class="bag-overlay"></div></div><div class="bag-info"><span class="bag-cat-tag">${CATS[b.cat].label}</span><h3 class="bag-name">${b.name}</h3><p class="bag-desc">${b.desc}</p><p class="bag-ooakline">Delivered within 20 days</p><span class="bag-see">See colours</span></div>`;
     card.addEventListener('click',()=>openModal(b));
     const target = b.coll==='anthesis' ? flinksAnth : flinksAnasa;
     target.innerHTML+=`<li><a href="#collection" onclick="event.preventDefault();scrollToBag('${b.id}')">${b.name}</a></li>`;
@@ -896,23 +900,34 @@ bags.forEach((b,i)=>{
 
 // ---- collection switching ----
 const COLLS={
+  all:{title:'The Collections',sub:'Browse both collections, or filter by material.',eyebrow:'Anthesis & Anasa'},
   anthesis:{title:'Anthesis',sub:'Our new collection, blooming one piece at a time.',eyebrow:'New Collection'},
   anasa:{title:'Anasa',sub:'Choose a category and discover the available colours for each bag.',eyebrow:'The Collection'}
 };
-let activeColl='anthesis', activeCat='all';
+let activeColl='all', activeCat='all';
 
 function applyFilters(){
   document.querySelectorAll('.bag-card').forEach(c=>{
-    const okColl = c.dataset.coll===activeColl;
+    const okColl = activeColl==='all' || c.dataset.coll===activeColl;
     const cats = c.dataset.cats ? c.dataset.cats.split(',') : [];
     const okCat = activeCat==='all' || cats.includes(activeCat);
     c.classList.toggle('hidden', !(okColl && okCat));
   });
-  const live = bags.filter(b=>b.coll===activeColl && !b.soon).length;
-  const total = bags.filter(b=>b.coll===activeColl).length;
+  const inColl = b => activeColl==='all' || b.coll===activeColl;
+  const live = bags.filter(b=>inColl(b) && !b.soon).length;
+  const total = bags.filter(inColl).length;
   document.getElementById('collMeta').textContent =
-    activeColl==='anthesis' ? `${total} pieces · ${live} available now` : `${total} pieces`;
-  document.getElementById('filterWrap').style.display = activeColl==='anasa' ? 'flex' : 'none';
+    total===live ? `${total} pieces` : `${total} pieces · ${live} available now`;
+  // show only the material filters that exist in the current view
+  const collCats = new Set();
+  bags.filter(b=>inColl(b) && !b.soon).forEach(b=>{
+    (b.cats||(b.cat?[b.cat]:[])).forEach(c=>collCats.add(c));
+  });
+  document.querySelectorAll('.filter-btn').forEach(btn=>{
+    const f = btn.dataset.filter;
+    btn.style.display = (f==='all' || collCats.has(f)) ? '' : 'none';
+  });
+  document.getElementById('filterWrap').style.display = 'flex';
 }
 
 function setCollection(coll, silent){
@@ -936,7 +951,7 @@ function scrollToBag(id) {
   const card = document.getElementById('bag-'+id);
   const bag = bags.find(b=>b.id===id);
   if (!card || !bag || bag.soon) return;
-  setCollection(bag.coll, true);
+  if (activeColl !== 'all') setCollection(bag.coll, true); else { activeCat='all'; document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active', b.dataset.filter==='all')); applyFilters(); }
   card.scrollIntoView({behavior:'smooth', block:'center'});
   setTimeout(()=>openModal(bag), 600);
 }
@@ -971,7 +986,7 @@ function openFromHash(instant){
   const bag = bags.find(b => b.id === m[1]);
   if (!bag || bag.soon) return false;
   const card = document.getElementById('bag-' + bag.id);
-  setCollection(bag.coll, true);
+  if (activeColl !== 'all') setCollection(bag.coll, true); else { activeCat='all'; document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active', b.dataset.filter==='all')); applyFilters(); }
   if (card) card.scrollIntoView({behavior: instant ? 'auto' : 'smooth', block:'center'});
   setTimeout(()=>openModal(bag), instant ? 250 : 600);
   return true;
@@ -1130,7 +1145,7 @@ const questions = [
     q: "How would you describe your daily vibe?",
     opts: [
       { icon: '🌸', text: 'Soft & cosy, I love touchable textures', tags: {softy:3, loopi:3, hug:2} },
-      { icon: '🎀', text: 'Feminine & elegant, details matter to me',  tags: {sarah:3, bella:3, perla:2, kelly:2} },
+      { icon: '🎀', text: 'Feminine & elegant, details matter to me',  tags: {sarah:3, bella:3, perla:2, kelly:2, rosie:2} },
       { icon: '🖤', text: 'Bold & structured, clean lines',    tags: {grace:3, zoe:2, kelly:2, nicole:2} },
       { icon: '✨', text: 'Glamorous, I want to shine and be noticed',            tags: {laluna:3, perla:2, cardholder:1} },
     ]
@@ -1138,7 +1153,7 @@ const questions = [
   {
     q: "What's a typical day for you?",
     opts: [
-      { icon: '☕', text: 'Casual outings, coffee, errands, everyday life',    tags: {loopi:3, softy:3, hug:2, bella:2} },
+      { icon: '☕', text: 'Casual outings, coffee, errands, everyday life',    tags: {loopi:3, softy:3, rosie:3, hug:2, bella:2} },
       { icon: '💼', text: 'On the go, meetings, work, busy schedule',          tags: {zoe:3, grace:3, nicole:2, kelly:2} },
       { icon: '🥂', text: 'Special occasions, dinners out, evenings',  tags: {laluna:3, perla:2, cardholder:2} },
       { icon: '🌀', text: 'Mixed, I need a bag for everything',        tags: {zoe:3, grace:2, hug:2, sarah:2, nicole:2} },
@@ -1147,7 +1162,7 @@ const questions = [
   {
     q: "How much do you carry?",
     opts: [
-      { icon: '🪭', text: 'Just cards & phone, the bare minimum',             tags: {cardholder:3, laluna:2, kelly:1} },
+      { icon: '🪭', text: 'Just cards & phone, the bare minimum',             tags: {cardholder:3, rosie:3, laluna:2, kelly:1} },
       { icon: '👛', text: 'Wallet, phone, keys, a bit of makeup',              tags: {softy:3, perla:2, bella:2, loopi:2, kelly:2} },
       { icon: '🎒', text: 'Quite a lot, I always need everything',    tags: {zoe:4, grace:3, hug:2, sarah:2, nicole:2} },
       { icon: '🌙', text: 'Almost nothing, I travel light',    tags: {laluna:3, perla:2, cardholder:2} },
@@ -1156,7 +1171,7 @@ const questions = [
   {
     q: "Which do you reach for first?",
     opts: [
-      { icon: '🌿', text: 'Something new, I like being early to a drop', tags: {softy:3, sarah:3, zoe:3} },
+      { icon: '🌿', text: 'Something new, I like being early to a drop', tags: {softy:3, sarah:3, zoe:3, rosie:3} },
       { icon: '🤍', text: 'A timeless piece I know I will keep for years', tags: {grace:2, bella:2, perla:2, hug:2, loopi:2} },
       { icon: '🫶', text: 'Whatever feels the softest in my hand', tags: {softy:4, loopi:3, hug:3} },
       { icon: '👜', text: 'The biggest one that still looks good', tags: {zoe:4, grace:2, nicole:2} },
@@ -1177,6 +1192,7 @@ const bagResults = {
   softy:      { desc: 'Soft girl era starts here. Chunky knit and a hand-knitted handle that sits perfectly in your hand: the Softy is the cosiest addition to your wardrobe and gives every look that cute-yet-chic vibe. 34×15cm.' },
   sarah:      { desc: 'Effortlessly chic with a strong fashion character. The Sarah is your new favourite shoulder bag: roomy shape, statement long strap, and that instant effortless vibe all day long. 32×18cm.' },
   zoe:        { desc: 'An autumn morning, an oversized jumper, coffee in hand and the Zoe on your shoulder. This is the bag you grab every time you rush out of the house, and it still looks composed. 32×32cm.' },
+  rosie:      { desc: 'You like your accessories to do the talking. The Rosie is small, round and built from a rich puffy stitch that sits beautifully in the hand, and it brings exactly the pop your outfit was missing. 20×12cm.' },
 };
 
 let quizAnswers = [];
