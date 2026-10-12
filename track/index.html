@@ -501,6 +501,17 @@
   .cf-r.stat{color:var(--ink-soft)}
   .cf-sub{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px;color:var(--ink-soft);padding:0 0 8px 20px;flex-wrap:wrap}
   .cf-sub span{flex:1 1 160px;min-width:0}
+  .cf-h{font-size:12.5px;line-height:1.5;padding:10px 0 4px;border-top:1px solid var(--line)}
+  .cust-facts > :first-child{border-top:none}
+  .cf-h.owe{color:#9a3a2a}
+  .cf-link{display:flex;align-items:center;gap:10px;padding:8px 8px;margin:0 -8px;border-radius:10px;cursor:pointer;font-size:12.5px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+  .cf-link:hover,.cf-link:focus-visible{background:var(--cream);outline:none}
+  .cf-link .si-img{width:34px;height:34px;flex:none}
+  .cf-link .t{flex:1;min-width:0} .cf-link .t b{font-weight:600} .cf-link .t small{display:block;color:var(--muted);font-size:11.5px}
+  .cf-link .go{flex:none;color:var(--muted);font-size:18px;line-height:1}
+  .cf-link .go-l{flex:none;font-size:11.5px;font-weight:600;color:var(--ink);white-space:nowrap}
+  .cf-link.note{color:#7a5f22;border-top:none}
+  .cf-link.stat{border-top:1px solid var(--line);border-radius:0 0 10px 10px;margin-top:4px;color:var(--ink-soft)}
   .sup-sug-w{position:relative;min-width:0}
   .sup-sug{top:calc(100% - 10px)}
   .sup-sug.up{top:auto;bottom:calc(100% - 22px)}
@@ -1919,7 +1930,7 @@
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();openCleanNames()">Καθαρισμός ονομάτων υλικών</button>
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();restorePalette()">Επαναφορά αποχρώσεων Mix &amp; Match</button>
     <p style="font-size:11.5px;color:var(--muted);margin:14px 0 0;padding-top:12px;border-top:1px solid var(--line)">
-      Έκδοση <b style="color:var(--ink)">2026.10.12.2110</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
+      Έκδοση <b style="color:var(--ink)">2026.10.12.2225</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
       κλείσε και ξανάνοιξε την καρτέλα, ή τράβα την σελίδα προς τα κάτω για ανανέωση.</p>
     <p id="setRebuiltNote" style="font-size:11.5px;color:var(--muted);margin-top:6px">Συμπληρώνει τις κινήσεις αποθήκης από τις παραγγελίες, τις πωλήσεις και τα bazaar που υπάρχουν ήδη. Το απόθεμα δεν αλλάζει.</p>
   </div>
@@ -2274,7 +2285,7 @@
       <button type="button" class="tb" data-p="card" onclick="sePayWay('card')">Κάρτα / IRIS</button>
     </div></div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <label class="fld" style="flex:1 1 160px"><span>Όνομα πελάτη (προαιρετικό)</span><input id="seName" placeholder="—" oninput="renderFacts('seFacts',this.value,{exclude:seId})"></label>
+      <label class="fld" style="flex:1 1 160px"><span>Όνομα πελάτη (προαιρετικό)</span><input id="seName" placeholder="—" oninput="renderFacts('seFacts',this.value,{exclude:seId,safe:true})"></label>
       <label class="fld" style="flex:1 1 130px"><span>Ημερομηνία</span><input id="seDate" type="date"></label>
     </div>
     <div id="seFacts" class="hidden" style="margin:-4px 0 12px"></div>
@@ -5087,7 +5098,7 @@ function openSaleEdit(id){
   document.getElementById("seTotal").value = String(Number(o.price)||0).replace(".",",");
   document.getElementById("seMsg").classList.add("hidden");
   seRender(); seRenderCost();
-  renderFacts("seFacts", document.getElementById("seName").value, {exclude:id});
+  renderFacts("seFacts", document.getElementById("seName").value, {exclude:id, safe:true});
   _ovOpen("saleEditModal");
 }
 /* το κόστος της πώλησης: τα κομμάτια και ό,τι υλικό μπήκε, με προσθήκη από την αποθήκη */
@@ -5756,7 +5767,7 @@ function knownPhoneFor(name){
 }
 function showCustNote(){
   const box=document.getElementById("custNoteBox"); if(!box) return;
-  const h=custFactsHtml(fullName(), {exclude:editingId||null});
+  const h=custFactsHtml(fullName(), {exclude:editingId||null, safe:true});
   if(h){ box.className=""; box.innerHTML=h; box.classList.remove("hidden"); return; }
   box.className="cust-note hidden";
   const info=custInfoFor(fullName(), document.getElementById("fPhone").value);
@@ -6360,31 +6371,40 @@ function custFactsHtml(name, opts){
   const others=orders.filter(o=>o.id!==opts.exclude);
   const info=custInfo[c.key] || (c.extraId?((custExtra||[]).find(x=>x.id===c.extraId)||{}):{}) || {};
   const L=[];
-  if(info.note) L.push(`<div class="cf-r note">📝 ${esc(info.note).replace(/\n/g,"<br>")}</div>`);
+  const openCard = c.anyId ? `openCustomer('${c.anyId}')` : (c.extraId ? `openCustomerExtra('${c.extraId}')` : "");
+  // κάθε γραμμή ανοίγει αυτό που περιγράφει: την παραγγελία, την πώληση ή την καρτέλα
+  // μέσα σε φόρμα που επεξεργάζεσαι (παραγγελία, λεπτομέρειες πώλησης) ανοίγει η καρτέλα πελάτη από πάνω,
+  // ώστε να μη χαθεί ό,τι γράφεις· αλλού ανοίγει κατευθείαν η παραγγελία
+  const row=(o, sub, right)=>`<div class="cf-link" role="button" tabindex="0" onclick="${opts.safe&&openCard?openCard:`editOrder('${o.id}')`}">
+      ${stockThumb({name:(getItems(o)[0]||{}).name, type:"product"})}
+      <span class="t"><b>${esc(getItems(o).map(i=>i.name).join(", ")||o.order_number||"Πώληση")}</b><small>${sub}</small></span>
+      ${right||""}<span class="go">›</span></div>`;
+  if(info.note) L.push(`<div class="cf-link note" role="button" tabindex="0" onclick="${openCard}"><span class="t">📝 ${esc(info.note).replace(/\n/g,"<br>")}</span><span class="go">›</span></div>`);
   const owed=others.filter(o=>orderOwed(o)>0.01);
   if(owed.length){
     const tot=owed.reduce((a,o)=>a+orderOwed(o),0);
-    L.push(`<div class="cf-r owe">💶 Χρωστάει <b>${fmtMoney(tot)}</b> από ${owed.length===1?"προηγούμενη αγορά":owed.length+" αγορές"}:</div>`+
-      owed.map(o=>`<div class="cf-sub"><span>${esc(getItems(o).map(i=>i.name).join(", ")||o.order_number||"")} · ${fmtD(o.created_at)}</span>
-        <button type="button" class="btn ghost sm" onclick="custFactsPay('${o.id}')">Πλήρωσε ${fmtMoney(orderOwed(o))}</button></div>`).join(""));
+    L.push(`<div class="cf-h owe">💶 Χρωστάει <b>${fmtMoney(tot)}</b></div>`+
+      owed.map(o=>row(o, `${o.order_number?esc(o.order_number)+" · ":""}${fmtD(o.created_at)} · υπόλοιπο ${fmtMoney(orderOwed(o))}`,
+        `<button type="button" class="btn ghost sm" onclick="event.stopPropagation();custFactsPay('${o.id}')">Πλήρωσε</button>`)).join(""));
   }
-  const open=[]; others.filter(o=>!isWholesale(o) && !isInstantSale(o)).forEach(o=>getItems(o).forEach(it=>{ if(!itemDone(it)) open.push({o,it}); }));
-  if(open.length){
-    L.push(`<div class="cf-r open">📦 ${open.length===1?"Έχει ανοιχτή παραγγελία":"Έχει "+open.length+" προϊόντα σε εξέλιξη"}:</div>`+
-      open.slice(0,4).map(x=>{ const N=itemN(x.it), rd=itemStage(x.it)>=N-1 && x.o.delivery_method==="pickup";
-        return `<div class="cf-sub"><span>${esc(x.it.name||"")} · ${STAGE_TITLE(x.o,x.it)}${x.it.eta?" · παράδοση "+fmtD(x.it.eta):""}${rd?` · <b style="color:#2c6e49">έτοιμη για παραλαβή</b>`:""}</span>
-          ${rd?`<button type="button" class="btn ghost sm" onclick="custFactsDeliver('${x.o.id}','${x.it.id}')">Την παρέλαβε</button>`:""}</div>`; }).join(""));
+  const openO=others.filter(o=>!isWholesale(o) && !isInstantSale(o) && getItems(o).some(it=>!itemDone(it)) && !owed.includes(o));
+  const openAll=others.filter(o=>!isWholesale(o) && !isInstantSale(o) && getItems(o).some(it=>!itemDone(it)));
+  if(openAll.length){
+    L.push(`<div class="cf-h">📦 ${openAll.length===1?"Ανοιχτή παραγγελία":openAll.length+" ανοιχτές παραγγελίες"}</div>`+
+      openAll.slice(0,4).map(o=>{ const it=getItems(o).find(i=>!itemDone(i)); const rd=itemStage(it)>=itemN(it)-1 && o.delivery_method==="pickup";
+        return row(o, `${STAGE_TITLE(o,it)}${it.eta?" · παράδοση "+fmtD(it.eta):""}${rd?` · <b style="color:#2c6e49">έτοιμη για παραλαβή</b>`:""}`,
+          rd?`<button type="button" class="btn ghost sm" onclick="event.stopPropagation();custFactsDeliver('${o.id}','${it.id}')">Την παρέλαβε</button>`:""); }).join(""));
   }
   const nPrev=orders.filter(o=>!opts.exclude || new Date(o.created_at||0) < new Date(((ordersCache||[]).find(x=>x.id===opts.exclude)||{}).created_at||Date.now())).length;
   const nth = opts.exclude ? nPrev+1 : others.length+1;
   const fav={}; orders.forEach(o=>getItems(o).forEach(it=>{ const m=(splitItemName(it.name||"").model||it.name||"").trim(); if(m) fav[m]=(fav[m]||0)+1; }));
   const favM=Object.entries(fav).sort((a,b)=>b[1]-a[1])[0];
   const lastO=others.slice().sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0))[0];
-  const stats=[`${opts.exclude?"Είναι η":"Θα είναι η"} <b>${nth}η αγορά</b> ${c.shop?"του καταστήματος":"της/του"}`];
+  const stats=[];
   if(lastO) stats.push(`τελευταία ${fmtD(lastO.created_at)}`);
-  if(favM && orders.length>1) stats.push(`αγαπημένο: ${esc(favM[0])}`);
+  if(favM && orders.length>1) stats.push(`αγαπημένο ${esc(favM[0])}`);
   if(c.spent>0) stats.push(`σύνολο ${fmtMoney(c.spent)}`);
-  L.push(`<div class="cf-r stat">◎ ${stats.join(" · ")}</div>`);
+  L.push(`<div class="cf-link stat" role="button" tabindex="0" onclick="${openCard}"><span class="t">◎ ${opts.exclude?"Είναι η":"Θα είναι η"} <b>${nth}η αγορά</b>${stats.length?`<small>${stats.join(" · ")}</small>`:""}</span><span class="go-l">Καρτέλα πελάτη ›</span></div>`);
   return `<div class="cust-facts">${L.join("")}</div>`;
 }
 function custFactsPay(orderId){ _factsAfter=refreshAllFacts; quickPaid(orderId); }
@@ -6405,7 +6425,7 @@ function renderFacts(boxId, name, opts){
 }
 function refreshAllFacts(){
   try{ if(!document.getElementById("tillModal").classList.contains("hidden")) renderFacts("tillFacts", document.getElementById("tillName").value); }catch(e){}
-  try{ if(!document.getElementById("saleEditModal").classList.contains("hidden")) renderFacts("seFacts", document.getElementById("seName").value, {exclude:seId}); }catch(e){}
+  try{ if(!document.getElementById("saleEditModal").classList.contains("hidden")) renderFacts("seFacts", document.getElementById("seName").value, {exclude:seId, safe:true}); }catch(e){}
   try{ showCustNote(); }catch(e){}
 }
 
