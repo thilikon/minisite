@@ -487,6 +487,11 @@
   .sup-cmp-h{display:flex;gap:12px;align-items:center;margin-bottom:6px}
   .sup-cmp-h .si-img{width:40px;height:40px}
   .si-sup{color:#6b5d48;font-weight:500}
+  .r-name-l{background:none;border:none;padding:0;margin:0;font:inherit;color:inherit;cursor:pointer;text-align:left;text-decoration:underline;text-decoration-color:transparent;text-underline-offset:3px;transition:text-decoration-color .15s}
+  .r-name-l:hover{text-decoration-color:currentColor}
+  .tap{cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .led-r.tap:hover,.mat-line.tap:hover,.sup-cmp-r.tap:hover{background:var(--cream)}
+  .pcardx.tap:hover{box-shadow:0 0 0 1.5px var(--ink) inset}
   .sup-facts{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 10px}
   .sup-facts span{font-size:11.5px;padding:4px 10px;border-radius:99px;background:var(--cream);color:var(--ink-soft)}
   .sup-iban{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;margin:0 0 10px;padding:8px 12px;border:1px dashed var(--line);border-radius:10px}
@@ -1643,7 +1648,7 @@
       <h2>Ειδοποίηση πελάτη</h2>
       <button class="x" onclick="closeNotify()">✕</button>
     </div>
-    <p style="font-size:12.5px;color:var(--muted);margin:0 0 10px">Διάλεξε τι ενημέρωση στέλνεις , φτιάχνεται έτοιμο μήνυμα. Αντίγραψέ το και στείλ’ το από το Instagram.</p>
+    <p style="font-size:12.5px;color:var(--muted);margin:0 0 10px">Επιλέξτε τύπο ενημέρωσης· το κείμενο συντάσσεται αυτόματα με τα στοιχεία της παραγγελίας και αποστέλλεται μέσω Instagram.</p>
     <label class="fld"><span>Τι ενημέρωση;</span><select id="notifyType" onchange="refreshNotifyMsg()"></select></label>
     <label class="fld"><span>Μήνυμα (μπορείς να το αλλάξεις)</span><textarea id="notifyMsg" style="min-height:150px"></textarea></label>
     <div class="notify-btns">
@@ -1745,7 +1750,7 @@
         </span>
       </div>
       <div id="matHint" class="hidden" style="font-size:11.5px;color:var(--ink-soft);margin-top:8px;background:var(--stone);border-radius:9px;padding:8px 10px"></div>
-      <div id="matList" style="margin-top:8px"><div class="mat-empty">Δεν έχουν δηλωθεί υλικά. Διάλεξε για να υπολογιστεί το κόστος και να αφαιρεθούν από το στοκ.</div></div>
+      <div id="matList" style="margin-top:8px"><div class="mat-empty">Δεν έχουν καταχωριστεί αναλώσεις υλικών. Η επιλογή υλικών υπολογίζει το κόστος της παραγγελίας και ενημερώνει το απόθεμα.</div></div>
     </div>
 
     <div id="depHint" class="dep-hint hidden"></div>
@@ -1803,7 +1808,7 @@
 <div id="readyModal" class="overlay hidden">
   <div class="modal">
     <div class="mh"><h2 class="serif">Από τα έτοιμα προϊόντα</h2><button class="x" onclick="closeReadyPicker()">✕</button></div>
-    <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:12px">Διάλεξε έτοιμο κομμάτι για να μπει σε αυτή την παραγγελία. Θα αφαιρεθεί από την αποθήκη και το κόστος του θα προστεθεί στην παραγγελία μόλις αποθηκεύσεις.</p>
+    <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:12px">Επιλέξτε έτοιμο είδος για τη συγκεκριμένη παραγγελία. Με την αποθήκευση γίνεται εξαγωγή από το απόθεμα και το κόστος του προστίθεται στην παραγγελία.</p>
     <div id="readyBody"></div>
   </div>
 </div>
@@ -1859,7 +1864,7 @@
   <div class="modal">
     <div class="mh"><h2 class="serif">Εκκαθάριση</h2><button class="x" onclick="closeSettle()">✕</button></div>
     <div id="settleShop" style="font-size:13px;font-weight:600;margin-bottom:2px"></div>
-    <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:12px">Πόσα πούλησε το κατάστημα και πόσα γυρίζουν πίσω. Η οφειλή υπολογίζεται μόνο στα πουλημένα.</p>
+    <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:12px">Καταχώριση πωληθέντων και επιστρεφόμενων τεμαχίων. Η οφειλή του καταστήματος υπολογίζεται μόνο επί των πωληθέντων.</p>
     <div id="settleBody"></div>
     <div class="mf">
       <button class="btn solid" onclick="applySettle()">Αποθήκευση</button>
@@ -1872,7 +1877,7 @@
   <div class="modal">
     <div class="mh"><h2 class="serif">Εξόφληση</h2><button class="x" onclick="closePay()">✕</button></div>
     <div id="payWho" style="font-size:13px;font-weight:600;margin-bottom:2px"></div>
-    <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:12px">Πάτα ένα ποσό για να συμπληρωθεί, ή γράψε όσα έλαβες. Καλύπτονται πρώτα οι παλαιότερες.</p>
+    <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:12px">Επιλέξτε ποσό ή πληκτρολογήστε το εισπραχθέν. Η είσπραξη συμψηφίζεται κατά προτεραιότητα με τις παλαιότερες οφειλές.</p>
     <div class="mat-block" id="payList"></div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       <label class="fld" style="flex:1 1 140px"><span>Ποσό που έλαβες €</span><input id="payAmount" inputmode="decimal" placeholder="0"></label>
@@ -1924,13 +1929,13 @@
     <button class="btn ghost" style="width:100%" onclick="closeSettings();openWrap()">Δες την ανασκόπηση του μήνα</button>
     <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px">Εργασία</p>
     <label class="fld"><span>Αμοιβή ανά ώρα €</span><input id="setRate" inputmode="decimal" onchange="saveRate()"></label>
-    <p style="font-size:11.5px;color:var(--muted);margin-top:-8px">Χρησιμοποιείται από το χρονόμετρο για να υπολογίζεται η αξία του χρόνου σου.</p>
+    <p style="font-size:11.5px;color:var(--muted);margin-top:-8px">Χρησιμοποιείται για την αποτίμηση του χρόνου εργασίας στο κόστος και στις αναφορές απόδοσης.</p>
     <p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px">Δεδομένα</p>
     <button class="btn ghost" style="width:100%" onclick="closeSettings();rebuildStockHistory()">Ανακατασκευή ιστορικού κινήσεων</button>
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();openCleanNames()">Καθαρισμός ονομάτων υλικών</button>
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();restorePalette()">Επαναφορά αποχρώσεων Mix &amp; Match</button>
     <p style="font-size:11.5px;color:var(--muted);margin:14px 0 0;padding-top:12px;border-top:1px solid var(--line)">
-      Έκδοση <b style="color:var(--ink)">2026.10.12.2225</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
+      Έκδοση <b style="color:var(--ink)">2026.10.13.0005</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
       κλείσε και ξανάνοιξε την καρτέλα, ή τράβα την σελίδα προς τα κάτω για ανανέωση.</p>
     <p id="setRebuiltNote" style="font-size:11.5px;color:var(--muted);margin-top:6px">Συμπληρώνει τις κινήσεις αποθήκης από τις παραγγελίες, τις πωλήσεις και τα bazaar που υπάρχουν ήδη. Το απόθεμα δεν αλλάζει.</p>
   </div>
@@ -1951,9 +1956,9 @@
       <label class="fld" style="flex:1"><span>Έκπτωση bazaar %</span><input id="bzDisc" inputmode="decimal" placeholder="0"></label>
     </div>
     <label class="fld"><span>Τοποθεσία (προαιρετικό)</span><input id="bzPlace" placeholder="π.χ. Δημοτική Αγορά Χανίων"></label>
-    <p style="font-size:11.5px;color:var(--muted);margin-top:-6px">Το κόστος συμμετοχής αφαιρείται από το καθαρό του bazaar. Η έκπτωση μπαίνει μόνη της σε κάθε πώληση εδώ — μπορείς να την αλλάξεις στο ταμείο.</p>
+    <p style="font-size:11.5px;color:var(--muted);margin-top:-6px">Το κόστος συμμετοχής επιβαρύνει το καθαρό αποτέλεσμα του σημείου πώλησης. Η έκπτωση εφαρμόζεται αυτόματα σε κάθε πώληση και τροποποιείται κατά την καταχώριση.</p>
     <label class="chk-row" style="margin:6px 0 10px"><input type="checkbox" id="bzDonOn" onchange="bzDonToggle()">
-      <span><b>Φιλανθρωπικό bazaar</b> — μέρος των πωλήσεων πηγαίνει σε φορέα και αφαιρείται αυτόματα</span></label>
+      <span><b>Φιλανθρωπικό bazaar</b> — μέρος των εσόδων αποδίδεται σε φορέα και αφαιρείται αυτόματα από το αποτέλεσμα</span></label>
     <div id="bzDonBox" class="hidden">
       <label class="fld"><span>Υπέρ</span><input id="bzDonTo" placeholder="π.χ. Άλμα Ζωής"></label>
       <div style="display:flex;gap:10px">
@@ -2151,7 +2156,7 @@
       <h2 class="serif">Υλικά από την αποθήκη</h2>
       <button class="x" onclick="closeMatPicker()">✕</button>
     </div>
-    <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:10px">Διάλεξε ποσότητες. Στην επιβεβαίωση, το κόστος μπαίνει στην παραγγελία και οι ποσότητες αφαιρούνται από το στοκ.</p>
+    <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:10px">Ορίστε ποσότητες. Με την επιβεβαίωση γίνεται εξαγωγή από το απόθεμα και το κόστος καταχωρίζεται στην παραγγελία.</p>
     <input id="matSearch" placeholder="Αναζήτηση υλικού…" oninput="renderMatPicker()" style="width:100%;margin-bottom:6px">
     <div id="matSelTop" class="stat-row hidden" style="margin:0 0 10px"></div>
     <div id="matPickerList"><div class="spinner"></div></div>
@@ -2172,7 +2177,7 @@
       <h2 class="serif">Αγορά γι' αυτήν την παραγγελία</h2>
       <button class="x" onclick="_ovClose('adhocModal')">✕</button>
     </div>
-    <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:12px">Νήμα ή υλικό που αγοράστηκε για αυτό το κομμάτι και δεν θα κρατηθεί ως απόθεμα. Μπαίνει κατευθείαν στο κόστος της παραγγελίας — <b>δεν</b> δημιουργεί είδος στην αποθήκη.</p>
+    <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:12px">Υλικό που αγοράστηκε αποκλειστικά για τη συγκεκριμένη παραγγελία και δεν τηρείται σε απόθεμα. Καταχωρίζεται απευθείας στο κόστος της — <b>δεν</b> δημιουργεί είδος αποθήκης.</p>
     <label class="fld"><span>Τι αγόρασες *</span>
       <input id="ahName" list="adhocList" placeholder="π.χ. Νήμα Σκούρο Καφέ"></label>
     <datalist id="adhocList"></datalist>
@@ -2228,7 +2233,7 @@
       <h2 class="serif">Καθαρισμός ονομάτων</h2>
       <button class="x" onclick="_ovClose('cleanModal')">✕</button>
     </div>
-    <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:12px">Υλικά που έχουν όνομα πελάτη μέσα στο όνομά τους. Το όνομα καθαρίζεται και η παραγγελία κρατιέται ως σύνδεση. Έλεγξε και βγάλε όσα δεν ισχύουν.</p>
+    <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:12px">Είδη με όνομα πελάτη στην περιγραφή τους. Η περιγραφή διορθώνεται και η παραγγελία διατηρείται ως συσχέτιση. Ελέγξτε και εξαιρέστε όσα δεν ισχύουν.</p>
     <div id="cleanList"></div>
     <p id="cleanMsg" class="msg err hidden" style="margin-top:10px"></p>
     <div class="mf">
@@ -2243,7 +2248,7 @@
       <h2 class="serif">Αγορά</h2>
       <button class="x" onclick="_ovClose('buyModal')">✕</button>
     </div>
-    <p style="font-size:12.5px;color:var(--ink-soft);margin:-6px 0 14px">Οι αγορές μπαίνουν στην αποθήκη και πληρώνονται από τον λογαριασμό που επιλέγεις. Αν μέρος μπήκε σε παραγγελία, δήλωσέ το στο «Πόσα χρησιμοποίησες»: το κόστος του πάει στην παραγγελία και το υπόλοιπο μένει στην αποθήκη.</p>
+    <p style="font-size:12.5px;color:var(--ink-soft);margin:-6px 0 14px">Η αγορά ενημερώνει το απόθεμα και χρεώνει τον επιλεγμένο λογαριασμό. Ποσότητα που αναλώθηκε σε παραγγελία δηλώνεται στο «Πόσα χρησιμοποίησες»: το κόστος της μεταφέρεται στην παραγγελία και το υπόλοιπο παραμένει στο απόθεμα.</p>
     <div id="buyLow"></div>
     <div id="buyLines"></div>
     <button type="button" class="btn ghost sm" style="width:100%;margin:4px 0 14px" onclick="buyAddLine()">+ Άλλο είδος</button>
@@ -2253,6 +2258,7 @@
     </div>
     <label class="fld"><span>Προμηθευτής</span><input id="buyFrom" data-supsug="1" autocomplete="off" placeholder="π.χ. Νηματουργία Αθηνών" oninput="buyHints()"></label>
     <datalist id="buySupList"></datalist>
+    <div id="buyPend"></div>
     <p id="buyMsg" class="msg err hidden" style="margin-top:10px"></p>
     <div class="mf">
       <div class="mf-tot"><span>Σύνολο</span><b id="buyTotal">€0,00</b></div>
@@ -2308,9 +2314,9 @@
 <div id="soModal" class="overlay hidden">
   <div class="modal">
     <div class="mh"><h2 class="serif" id="soTitle">Παραγγελία σε προμηθευτή</h2><button class="x" onclick="_ovClose('soModal')">✕</button></div>
-    <p style="font-size:12.5px;color:var(--ink-soft);margin:-6px 0 12px">Στείλε το μήνυμα στον προμηθευτή και κατέγραψέ την ως «σε αναμονή». Όταν έρθει, πατάς «Ήρθε» και η αγορά ανοίγει συμπληρωμένη.</p>
+    <p style="font-size:12.5px;color:var(--ink-soft);margin:-6px 0 12px">Καταχώριση παραγγελίας προς προμηθευτή σε κατάσταση «σε αναμονή». Κατά την παραλαβή, η επιλογή «Ήρθε» ανοίγει την αγορά προσυμπληρωμένη για έλεγχο και καταχώριση.</p>
     <div id="soBody"></div>
-    <div class="mf"><button class="btn solid" onclick="saveSupOrder()">Καταγραφή ως σε αναμονή</button></div>
+    <div class="mf"><button class="btn solid" onclick="saveSupOrder()">Καταχώριση παραγγελίας</button></div>
   </div>
 </div>
 <div id="supEditModal" class="overlay hidden">
@@ -2388,7 +2394,7 @@
       <h2 class="serif">Μεταφορά στο Mix &amp; Match</h2>
       <button class="x" onclick="_ovClose('mmModal')">✕</button>
     </div>
-    <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:10px">Τα νήματα που διαλέγεις θα προσφέρονται ως επιλογή χρώματος. Μένουν στην αποθήκη με το ίδιο απόθεμα — δεν δημιουργείται δεύτερη εγγραφή.</p>
+    <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:10px">Τα επιλεγμένα νήματα διατίθενται ως επιλογές χρώματος. Παραμένουν στο ίδιο είδος αποθήκης με κοινό απόθεμα — δεν δημιουργείται δεύτερη εγγραφή.</p>
     <label class="fld"><span>Οικογένεια χρώματος (προαιρετικά)</span>
       <select id="mmFam"><option value="">— κράτα την κατηγορία τους</option></select></label>
     <input id="mmSearch" placeholder="Αναζήτηση νήματος…" oninput="renderMmTransfer()" style="margin-bottom:8px">
@@ -2442,7 +2448,7 @@
     <div id="sSupWrap" style="position:relative">
       <label class="fld"><span>Βασικός προμηθευτής</span><input id="sSup" data-supsug="1" autocomplete="off" placeholder="π.χ. Νηματουργία Αθηνών — προαιρετικό"></label>
       <datalist id="sSupList"></datalist>
-      <div class="fld-hint" id="sSupHint" style="margin:-8px 0 14px;font-size:11.5px;color:var(--muted)">Προτείνεται σε κάθε αγορά· μπορείς πάντα να αγοράσεις κι από αλλού.</div>
+      <div class="fld-hint" id="sSupHint" style="margin:-8px 0 14px;font-size:11.5px;color:var(--muted)">Προτείνεται αυτόματα σε κάθε αγορά· η αγορά μπορεί πάντα να καταχωριστεί σε άλλον προμηθευτή.</div>
     </div>
     <label class="chk-row hidden" id="sPerOrderRow" style="margin:-4px 0 14px">
       <input type="checkbox" id="sPerOrder" onchange="onPerOrderToggle()">
@@ -2451,7 +2457,7 @@
     <div id="sBuyWrap" class="hidden">
       <label class="chk-row" style="margin:-4px 0 10px">
         <input type="checkbox" id="sBuy" onchange="onBuyToggle()">
-        <span><b>Το αγόρασα τώρα</b> — να καταχωρηθεί ως αγορά και να μειωθεί το ταμείο</span>
+        <span><b>Αγορά τώρα</b> — καταχώριση ως αγορά με χρέωση του λογαριασμού</span>
       </label>
       <div id="sBuyBox" class="hidden" style="display:flex;gap:10px;margin-bottom:12px">
         <label class="fld" style="flex:1"><span>Από λογαριασμό</span><select id="sBuyAcc"></select></label>
@@ -3687,8 +3693,10 @@ function buildBrief(ctx){
 
   // υλικά που τελείωσαν / τελειώνουν
   {
-    const outSt=(stockCache||[]).filter(it=>stockState(it)==="out" && !stEv(it));
-    const lowSt=(stockCache||[]).filter(it=>stockState(it)==="low" && !stEv(it));
+    // όσα έχουν ήδη παραγγελθεί σε προμηθευτή δεν ξαναζητούν προσοχή
+    const _pend=it=>{ try{ return !!itemPending(it.id); }catch(e){ return false; } };
+    const outSt=(stockCache||[]).filter(it=>stockState(it)==="out" && !stEv(it) && !_pend(it));
+    const lowSt=(stockCache||[]).filter(it=>stockState(it)==="low" && !stEv(it) && !_pend(it));
     if(outSt.length)
       add(96, `${outSt.length===1?"Εξαντλήθηκε":"Εξαντλήθηκαν"}: <b>${outSt.slice(0,3).map(x=>esc(x.name)).join("</b>, <b>")}</b>${outSt.length>3?` +${outSt.length-3}`:""}.`);
     if(lowSt.length)
@@ -3725,6 +3733,9 @@ function buildBrief(ctx){
     if(dups.length) add(90, `Υπάρχ${dups.length===1?"ει":"ουν"} <b>${dups.length}</b> ${dups.length===1?"διπλοκαταχωρημένη παραγγελία":"διπλοκαταχωρημένες παραγγελίες"} με ίδιο κωδικό: ${dups.slice(0,2).map(o=>pill(o.order_number||"δες", o.id)).join(" ")}.`);
   }
 
+  // παραγγελίες σε προμηθευτές που καθυστερούν
+  try{ supOrdersPending().forEach(po=>{ const days=Math.floor((Date.now()-new Date(po.created).getTime())/86400000), lead=supLeadDays(supFind(po.sup)||{});
+    if(lead!=null && days>lead) add(86, `Η παραγγελία προς <button class="brief-pill" onclick="openSupplier(${esc(JSON.stringify(po.sup))})">${esc(po.sup)}</button> εκκρεμεί ${days} ημέρες (συνήθης παράδοση ${lead}).`); }); }catch(e){}
   // bazaar: πλησιάζει, είναι σήμερα, ή έμεινε ανοιχτό
   {
     const bpill=(name,id)=>`<button class="brief-pill" onclick="showAdminTab('bazaar');setBzView('${id}')">${esc(name)}</button>`;
@@ -5009,7 +5020,7 @@ function renderOrders(){
     return `<div class="order-row${!everyDone&&items.some(it=>itemFlow(it)==='return')?' is-return':''}">
       <div class="r-top">
         <div>
-          <div class="r-name">${isAnonSale(o)?`<span style="color:var(--muted);font-weight:500">${esc(o.customer_name)}</span>`:esc(o.customer_name)}</div>
+          <div class="r-name">${isAnonSale(o)?`<span style="color:var(--muted);font-weight:500">${esc(o.customer_name)}</span>`:`<button class="r-name-l" title="Καρτέλα πελάτη" onclick="openCustomer('${o.id}')">${esc(o.customer_name)}</button>`}</div>
           <div class="r-meta">
             ${o.order_number?`<span>${esc(o.order_number)}</span>`:""}
             ${o.created_at?`<span>${fmtD(o.created_at)}</span>`:""}
@@ -5036,8 +5047,8 @@ function renderOrders(){
         ${orderBadge}
       </div>
       <div class="order-items">${itemsHtml}</div>
-      ${everyReady && !everyDone && !pickup && !o.tracking_number ? `<div class="r-hint">Όλα έτοιμα — πρόσθεσε courier/tracking από «Επεξεργασία» και προχώρα τα στάδια.</div>` : ""}
-      ${everyReady && !everyDone && pickup ? `<div class="r-hint">Όλα έτοιμα — κανόνισε παραλαβή με τον πελάτη.</div>` : ""}
+      ${everyReady && !everyDone && !pickup && !o.tracking_number ? `<div class="r-hint">Η παραγγελία είναι έτοιμη. Καταχωρίστε courier και αριθμό αποστολής από την «Επεξεργασία» και προωθήστε τα στάδια.</div>` : ""}
+      ${everyReady && !everyDone && pickup ? `<div class="r-hint">Η παραγγελία είναι έτοιμη προς παραλαβή από τον πελάτη.</div>` : ""}
       ${moneyLine(o)}
       <div class="r-actions">
         <button class="btn ghost sm" onclick="editOrder('${o.id}')">Επεξεργασία</button>
@@ -5111,7 +5122,7 @@ function seRenderCost(){
       <span class="d">${esc(m.name||"—")}<small>${fmtNum(m.qty)} ${esc(m.unit||"τεμ.")} × ${fmtMoney(m.unit_cost||0)}${m.ad_hoc?" · εκτός αποθήκης":""}</small></span>
       <span class="a">${fmtMoney((Number(m.qty)||0)*(Number(m.unit_cost)||0))}</span>
       <button class="x" title="Αφαίρεση" onclick="dropMatFromOrder('${o.id}','${m.id}')">✕</button></div>`).join("")}</div>`
-    :`<div class="r-hint" style="margin-bottom:10px">Δεν έχει καταχωρηθεί κόστος. Πρόσθεσε τα υλικά που χρησιμοποιήθηκαν — αφαιρούνται από την αποθήκη και το κέρδος βγαίνει σωστό.</div>`}
+    :`<div class="r-hint" style="margin-bottom:10px">Δεν έχει καταχωριστεί κόστος. Η προσθήκη των υλικών που αναλώθηκαν ενημερώνει το απόθεμα και αποδίδει σωστό μικτό κέρδος.</div>`}
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
       <button type="button" class="btn ghost sm" onclick="openMatPickerFor('${o.id}')">+ Υλικά από αποθήκη</button>
       <span style="flex:1;text-align:right;font-size:13px">Κόστος <b>${cost!=null?fmtMoney(cost):"—"}</b>${cost!=null&&price?` · κέρδος <b style="color:${price-cost>=0?"#2c6e49":"#b54b3a"}">${fmtMoney(price-cost)}</b>`:""}</span>
@@ -5188,7 +5199,7 @@ function instantSaleCard(o){
   return `<div class="order-row sale-row">
     <div class="sr-top">
       <div style="min-width:0">
-        <div class="r-name">${(isAnonSale(o)||!String(o.customer_name||"").trim()||(b&&o.customer_name===b.name))?`<span style="color:var(--ink-soft);font-weight:500">${b?"Πώληση στο "+esc(b.name):"Πώληση λιανικής"}</span>`:esc(o.customer_name)}</div>
+        <div class="r-name">${(isAnonSale(o)||!String(o.customer_name||"").trim()||(b&&o.customer_name===b.name))?`<span style="color:var(--ink-soft);font-weight:500">${b?"Πώληση στο "+esc(b.name):"Πώληση λιανικής"}</span>`:`<button class="r-name-l" title="Καρτέλα πελάτη" onclick="openCustomer('${o.id}')">${esc(o.customer_name)}</button>`}</div>
         <div class="r-meta">
           ${when?`<span>${fmtD(when)} ${when.toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit"})}</span>`:""}
           ${pay?`<span>${esc(pay)}</span>`:""}
@@ -5767,8 +5778,18 @@ function knownPhoneFor(name){
 }
 function showCustNote(){
   const box=document.getElementById("custNoteBox"); if(!box) return;
-  const h=custFactsHtml(fullName(), {exclude:editingId||null, safe:true});
-  if(h){ box.className=""; box.innerHTML=h; box.classList.remove("hidden"); return; }
+  const h=custFactsHtml(fullName(), {exclude:editingId||null, safe:true, noStat:true});
+  // η «Καρτέλα πελάτη» ζει στο chip της παραγγελίας — με το ποια αγορά είναι, χωρίς δεύτερο πλαίσιο
+  { const chip=document.getElementById("fCustLink"), c=custGroupByName(fullName());
+    if(chip){
+      if(c && c.n>0){
+        const cur=editingId?(ordersCache||[]).find(o=>o.id===editingId):null;
+        const prev=(ordersCache||[]).filter(o=>custKey(o)===c.key && o.id!==editingId && (!cur || new Date(o.created_at||0)<new Date(cur.created_at||0))).length;
+        chip.innerHTML=`👤 Καρτέλα πελάτη · <b>${prev+1}η αγορά</b>`; chip.dataset.any=c.anyId||""; chip.classList.remove("hidden");
+      } else if(editingId){ chip.textContent="👤 Καρτέλα πελάτη"; chip.dataset.any=""; chip.classList.remove("hidden"); }
+      else { chip.classList.add("hidden"); chip.dataset.any=""; }
+    } }
+  if(h && h!=='<div class="cust-facts"></div>'){ box.className=""; box.innerHTML=h; box.classList.remove("hidden"); return; }
   box.className="cust-note hidden";
   const info=custInfoFor(fullName(), document.getElementById("fPhone").value);
   if(info && info.note){ box.textContent=info.note; box.classList.remove("hidden"); }
@@ -5917,6 +5938,7 @@ function openOrderModal(){
   pendingStock=[];
   document.getElementById("custNoteBox").classList.add("hidden");
   document.getElementById("custNoteBox").textContent="";
+  { const ch=document.getElementById("fCustLink"); if(ch){ ch.classList.add("hidden"); ch.dataset.any=""; ch.textContent="👤 Καρτέλα πελάτη"; } }
   document.getElementById("nameSug").classList.add("hidden");
   document.getElementById("fKind").value="custom";
   // νέα παραγγελία = πελάτης· η χονδρική ξεκινά από «Νέα παράδοση», όπου ο τύπος είναι ήδη ορισμένος
@@ -6007,8 +6029,9 @@ function editOrder(id, full){
 let returnTab=null;
 const missingCols=new Set();
 function openCustomerFromOrder(){
-  const id=editingId; if(!id) return;
-  closeOrderModal(); openCustomer(id);
+  // η καρτέλα ανοίγει από πάνω — η παραγγελία μένει ανοιχτή όπως ήταν
+  const any=(document.getElementById("fCustLink")||{}).dataset?.any || editingId; if(!any) return;
+  openCustomer(any);
 }
 function closeOrderModal(){
   _ovClose("orderModal");
@@ -6404,7 +6427,7 @@ function custFactsHtml(name, opts){
   if(lastO) stats.push(`τελευταία ${fmtD(lastO.created_at)}`);
   if(favM && orders.length>1) stats.push(`αγαπημένο ${esc(favM[0])}`);
   if(c.spent>0) stats.push(`σύνολο ${fmtMoney(c.spent)}`);
-  L.push(`<div class="cf-link stat" role="button" tabindex="0" onclick="${openCard}"><span class="t">◎ ${opts.exclude?"Είναι η":"Θα είναι η"} <b>${nth}η αγορά</b>${stats.length?`<small>${stats.join(" · ")}</small>`:""}</span><span class="go-l">Καρτέλα πελάτη ›</span></div>`);
+  if(!opts.noStat) L.push(`<div class="cf-link stat" role="button" tabindex="0" onclick="${openCard}"><span class="t">◎ ${opts.exclude?"Είναι η":"Θα είναι η"} <b>${nth}η αγορά</b>${stats.length?`<small>${stats.join(" · ")}</small>`:""}</span><span class="go-l">Καρτέλα πελάτη ›</span></div>`);
   return `<div class="cust-facts">${L.join("")}</div>`;
 }
 function custFactsPay(orderId){ _factsAfter=refreshAllFacts; quickPaid(orderId); }
@@ -6618,7 +6641,8 @@ function openCustomer(orderId){
     html+=`<div class="stats-sub">Τι αγοράζει</div>
       <div class="pgrid">${plist.map(P=>{
         const c=topOfObj(P.colors), l=topOfObj(P.labels);
-        return `<div class="pcardx">
+        const _mOk=allModelNames().some(m=>normText(m)===normText(P.name));
+        return `<div class="pcardx${_mOk?" tap":""}" ${_mOk?`role="button" onclick="openModelSheet(${esc(JSON.stringify(P.name))})"`:""}>
           ${P.img?`<img src="${esc(P.img)}" alt="">`:`<div class="ph"></div>`}
           <div class="pcx-b">
             <div class="pcx-n">${esc(P.name)}${P.n>1?` <span class="pcx-x">×${P.n}</span>`:""}</div>
@@ -6652,7 +6676,7 @@ function openCustomer(orderId){
     .sort((a,b)=>new Date(b.at||0)-new Date(a.at||0));
   if(pays.length){
     html+=`<div class="stats-sub">Πληρωμές</div><div class="led">${pays.map(p=>`
-      <div class="led-r"><span class="d">${esc(getItems(p.o).map(i=>i.name).join(", ")||p.o.order_number||"Πληρωμή")}<small>${p.at?fmtDateShort(new Date(p.at)):""}${p.o.order_number?" · "+esc(p.o.order_number):""}${p.o.note&&/Μετρητά|Κάρτα/.test(p.o.note)?" · "+esc(String(p.o.note).split(" · ")[0]):""}</small></span>
+      <div class="led-r tap" role="button" onclick="editOrder('${p.o.id}')"><span class="d">${esc(getItems(p.o).map(i=>i.name).join(", ")||p.o.order_number||"Πληρωμή")}<small>${p.at?fmtDateShort(new Date(p.at)):""}${p.o.order_number?" · "+esc(p.o.order_number):""}${p.o.note&&/Μετρητά|Κάρτα/.test(p.o.note)?" · "+esc(String(p.o.note).split(" · ")[0]):""}</small></span>
       <span class="a" style="color:#2c6e49">+${fmtMoney(p.amt)}</span></div>`).join("")}
       <div class="led-r" style="background:var(--cream)"><span class="d"><b>Σύνολο πληρωμών</b></span><span class="a"><b>${fmtMoney(paid)}</b></span></div></div>`;
   }
@@ -7198,11 +7222,11 @@ function renderStock(){
   }
   if(!rows.length){
     let empty;
-    if(stockView==="product") empty=`<div class="fbd-empty">Δεν υπάρχουν έτοιμα κομμάτια. Πάτα «+ Νέο» για να προσθέσεις.</div>`;
+    if(stockView==="product") empty=`<div class="fbd-empty">Δεν υπάρχουν έτοιμα είδη. Η καταχώριση γίνεται από το «+ Νέο».</div>`;
     else if(stockView==="yarn") empty = stockQty==="out"
       ? `<div class="fbd-empty">Κανένα νήμα δεν έχει τελειώσει.</div>`
-      : `<div class="fbd-empty">Κανένα νήμα σε απόθεμα. Ό,τι αγοράζεις μπαίνει εδώ από το «+ → Αγορά».</div>`;
-    else if(stockView==="supplies") empty=`<div class="fbd-empty">Κανένα υλικό${stockQty==="in"?" σε απόθεμα":""}. Ταμπελάκια, συσκευασίες και αξεσουάρ μπαίνουν από το «+ → Αγορά».</div>`;
+      : `<div class="fbd-empty">Δεν υπάρχει απόθεμα νημάτων. Οι αγορές καταχωρίζονται από το «+ → Αγορά».</div>`;
+    else if(stockView==="supplies") empty=`<div class="fbd-empty">Κανένα υλικό${stockQty==="in"?" σε απόθεμα":""}. Ταμπελάκια, συσκευασίες και αξεσουάρ καταχωρίζονται από το «+ → Αγορά».</div>`;
     else if(stockView==="mm"){
       const _lost=paletteLost();
       empty=`<div class="fbd-empty" style="padding-bottom:14px">Καμία απόχρωση στο Mix &amp; Match.</div>
@@ -7219,10 +7243,10 @@ function renderStock(){
 
   if(stockView==="perjob"){
     let html = toggle + `<div class="r-hint" style="margin-bottom:14px">Είδη που αγοράζονται για συγκεκριμένη παραγγελία. Δεν τηρείται απόθεμα και δεν εκδίδεται ειδοποίηση αναπαραγγελίας· το κόστος βαρύνει την παραγγελία.</div>`;
-    html+=`<div class="r-hint" style="margin-bottom:14px">Νέος τρόπος: ένα νήμα που αγοράζεται για μία παραγγελία μπαίνει πλέον κατευθείαν στο κόστος της, από το «+ Αγορά γι' αυτήν» μέσα στην παραγγελία. Δεν δημιουργεί είδος εδώ. Αυτά παρακάτω είναι τα παλιά.</div>`;
+    html+=`<div class="r-hint" style="margin-bottom:14px">Υλικό που αγοράζεται για μία παραγγελία καταχωρίζεται πλέον απευθείας στο κόστος της, από το «+ Αγορά γι' αυτήν», χωρίς είδος αποθήκης. Οι παρακάτω εγγραφές αφορούν την προηγούμενη μέθοδο.</div>`;
     const _done=spentPerJob();
     if(_done.length) html+=`<div class="r-hint" style="margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-      <span style="flex:1;min-width:180px"><b>${_done.length}</b> ${_done.length===1?"υλικό έχει":"υλικά έχουν"} εξαντληθεί. Το κόστος τους μένει στις παραγγελίες.</span>
+      <span style="flex:1;min-width:180px"><b>${_done.length}</b> ${_done.length===1?"υλικό έχει":"υλικά έχουν"} εξαντληθεί. Το κόστος τους παραμένει καταχωρισμένο στις παραγγελίες.</span>
       <button class="btn ghost sm" onclick="clearSpentPerJob()">Καθάρισμα</button></div>`;
     const _dirty=cleanCandidates();
     if(_dirty.length) html+=`<div class="r-hint" style="margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
@@ -7256,11 +7280,11 @@ function renderStock(){
     <div class="stat"><div class="n">${isMM?fmtMoney(totalVal):rows.length}</div><div class="l">${isMM?"Αξία (κόστος)":(stockView==="product"?"Κομμάτια":(stockView==="yarn"?"Χρώματα":"Είδη"))}</div></div>
   </div>`;
   if(lowItems.length){
-    html+=`<div class="r-hint" style="color:#8a5a1e;background:#fdf6ea;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="flex:1;min-width:180px">${stockView==="product"?"Λίγα κομμάτια":"Τελειώνουν"}: ${lowItems.map(it=>esc(it.name)+(stockState(it)==="out"?" (0)":` (${fmtNum(it.qty)})`)).join(" · ")}</span>${stockView==="product"||stockView==="mm"?"":`<button class="btn ghost sm" onclick="openPurchase();buyFillLow()">Αγορά τους</button>`}</div>`;
+    html+=`<div class="r-hint" style="color:#8a5a1e;background:#fdf6ea;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="flex:1;min-width:180px">${stockView==="product"?"Λίγα κομμάτια":"Τελειώνουν"}: ${lowItems.map(it=>esc(it.name)+(stockState(it)==="out"?" (0)":` (${fmtNum(it.qty)})`)).join(" · ")}</span>${stockView==="product"||stockView==="mm"?"":`<button class="btn ghost sm" onclick="openSupOrder()">Παραγγελία</button><button class="btn ghost sm" onclick="openPurchase();buyFillLow()">Αγορά τους</button>`}</div>`;
   }
   if(stockView==="mm"){
     html+=`<div class="r-hint" style="margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-      <span style="flex:1;min-width:170px">Οι αποχρώσεις που προσφέρονται στην πελάτισσα. Είναι τα ίδια νήματα της αποθήκης — ένα απόθεμα.</span>
+      <span style="flex:1;min-width:170px">Οι αποχρώσεις που διατίθενται στον πελάτη. Αντιστοιχούν στα νήματα της αποθήκης, με κοινό απόθεμα.</span>
       <button class="btn ghost sm" onclick="openMmTransfer()">+ Από την αποθήκη</button>
       ${allRows.length?`<button class="btn ghost sm" onclick="clearMixMatch()">Καθάρισμα</button>`:""}</div>`;
   }
@@ -8173,7 +8197,7 @@ function renderModelMats(list){
   modelMats=(list||[]).map(x=>({...x}));
   const box=document.getElementById("mMatList");
   const raws=(stockCache||[]).filter(it=>it.type!=="product");
-  if(!raws.length){ box.innerHTML='<div class="mat-empty">Πρόσθεσε πρώτα υλικά στην αποθήκη.</div>'; return; }
+  if(!raws.length){ box.innerHTML='<div class="mat-empty">Δεν υπάρχουν υλικά στην αποθήκη.</div>'; return; }
   box.innerHTML = modelMats.length
     ? modelMats.map(mm=>{
         const it=raws.find(x=>x.id===mm.id);
@@ -8384,7 +8408,7 @@ function bzDonHint(){
   const m=document.getElementById("bzDonMode").value, v=parseMoney(document.getElementById("bzDonVal").value)||0;
   document.getElementById("bzDonValL").textContent = m==="pct" ? "Ποσοστό %" : "Ποσό €";
   const to=document.getElementById("bzDonTo").value.trim()||"τον φορέα";
-  document.getElementById("bzDonHint").textContent = !v ? "Οι τιμές μένουν ίδιες· το ποσό της δωρεάς αφαιρείται αυτόματα από το καθαρό και από το ταμείο."
+  document.getElementById("bzDonHint").textContent = !v ? "Οι τιμές πώλησης δεν μεταβάλλονται· η δωρεά αφαιρείται αυτόματα από το καθαρό αποτέλεσμα και το ταμείο."
     : m==="pct" ? `Από κάθε €100 πωλήσεων, ${fmtMoney(v)} πηγαίνουν για ${to}.`
     : m==="fixed" ? `${fmtMoney(v)} πηγαίνουν για ${to}, όσο κι αν πουληθεί.`
     : `Για κάθε κομμάτι που πουλιέται, ${fmtMoney(v)} πηγαίνουν για ${to} (π.χ. 10 κομμάτια = ${fmtMoney(v*10)}).`;
@@ -8541,7 +8565,7 @@ function closeBazaar(id){
            <span class="a"><input id="bk-${e.key}" inputmode="decimal" placeholder="0" style="width:72px;text-align:right;padding:7px 9px;border:1px solid var(--line);border-radius:9px;font-family:'Inter';font-size:13px"></span>
          </div>`).join("")}
        </div>
-       <p style="font-size:11.5px;color:var(--muted);margin-top:8px">Οι ποσότητες που δηλώνονται επιστρέφουν στο απόθεμα και δεν βαρύνουν το κόστος του σημείου πώλησης.</p>`
+       <p style="font-size:11.5px;color:var(--muted);margin-top:8px">Οι δηλωμένες ποσότητες επανεισάγονται στο απόθεμα και δεν επιβαρύνουν το κόστος του σημείου πώλησης.</p>`
     : "";
   document.getElementById("bzCloseMsg").classList.add("hidden");
   document.getElementById("bzCloseBtn").disabled=false;
@@ -9068,19 +9092,19 @@ const PAGES = {
   home:      {t:"Αρχική",       s:""},
   orders:    {t:"Πωλήσεις",      s:"Παραγγελίες, λιανική, χονδρική και bazaar σε μία λίστα",
               act:{l:"+ Πώληση", f:"openSaleKind()"}},
-  stock:     {t:"Αποθήκη",      s:"Νήματα, υλικά, έτοιμα κομμάτια και μοντέλα",
+  stock:     {t:"Αποθήκη",      s:"Νήματα, υλικά, έτοιμα είδη και μοντέλα",
               act:{l:"+ Νέο είδος", f:"stockView==='models'?openModelModal():openStockModal()"}},
-  customers: {t:"Πελάτες",      s:"Καρτέλες, ιστορικό αγορών και υπόλοιπα",
+  customers: {t:"Πελάτες",      s:"Καρτέλες πελατών, ιστορικό συναλλαγών και υπόλοιπα",
               act:{l:"+ Νέος", f:"openCustNew(custFilter==='shops'?'shop':'retail')"}},
   wholesale: {t:"Χονδρική",     s:"Παραδόσεις καταστημάτων και παρακαταθήκη",
               act:{l:"+ Νέα παράδοση", f:"newWholesale()"}},
-  bazaar:    {t:"Bazaar",       s:"Σημεία πώλησης: κομμάτια, πωλήσεις και έξοδα",
+  bazaar:    {t:"Bazaar",       s:"Σημεία πώλησης: απόθεμα, πωλήσεις και έξοδα",
               act:{l:"+ Νέο bazaar", f:"openBzModal()"}},
-  cash:      {t:"Ταμείο",       s:"Κινήσεις, έξοδα και υπόλοιπα λογαριασμών",
+  cash:      {t:"Ταμείο",       s:"Ταμειακές κινήσεις, έξοδα και υπόλοιπα λογαριασμών",
               act:{l:"+ Νέα κίνηση", f:"openCashMove()"}},
   stats:     {t:"Αναφορές",     s:"Αποτέλεσμα, προϊόντα, πελάτες, κανάλια και αποθήκη ανά περίοδο"},
   feedback:  {t:"Feedback",     s:"Αξιολογήσεις και σχόλια πελατών"},
-  suppliers: {t:"Προμηθευτές",  s:"Από πού αγοράζουμε, σε τι τιμή και τι συμφέρει",
+  suppliers: {t:"Προμηθευτές",  s:"Προμηθευτές, τιμές αγοράς, παραγγελίες και συγκρίσεις",
               act:{l:"+ Νέος προμηθευτής", f:"openSupEdit(null)"}}
 };
 /* Έξι ενότητες στο μενού. Η χονδρική και το bazaar είναι κανάλια πώλησης,
@@ -9324,6 +9348,11 @@ function buyFillLow(){
   renderBuy();
 }
 function renderBuyLow(){
+  { const f=((document.getElementById("buyFrom")||{}).value||"").trim(), box=document.getElementById("buyPend");
+    if(box){ const P=(f && !buySupOrder)?supOrdersPending(supCanon(f)):[];
+      box.innerHTML = P.length ? `<div class="r-hint" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:-4px 0 12px;background:#f4f8fc;color:#2f5d8a">
+        <span style="flex:1;min-width:180px">Εκκρεμεί παραγγελία προς ${esc(P[0].sup)} (${fmtD(P[0].created)}): ${esc(P[0].lines.map(l=>fmtNum(l.qty)+" "+l.name).join(", "))}.</span>
+        <button type="button" class="btn ghost sm" onclick="_ovClose('buyModal');supOrderArrived('${P[0].id}')">Καταχώριση ως παραλαβή</button></div>` : ""; } }
   const L=buyLowFor();
   const _low=L.list.filter(it=>!buyRows.some(r=>normText(r.name)===normText(it.name)));
   const lowBox=document.getElementById("buyLow");
@@ -9476,6 +9505,7 @@ function openQuick(){
     ]},
     {h:"Αποθήκη & ταμείο", a:[
       {i:"🛒", t:"Αγορά", d:"νήματα & υλικά", f:"openPurchase()"},
+      {i:"🚚", t:"Παραγγελία σε προμηθευτή", d:(function(){ const n=supOrdersPending().length; return n?`${n} σε αναμονή`:"νήματα & υλικά"; })(), f:"openSupOrder()"},
       {i:"📦", t:"Έτοιμο κομμάτι", d:"νέο στην αποθήκη", f:"goTab('stock','product');openStockModal(null)"},
       {i:"🧮", t:"Έξοδο", d:"λοιπά έξοδα", f:"openCashMove()"}
     ]},
@@ -9528,10 +9558,13 @@ function openItemSheet(id){
   const A=[];
   if(isProd && q>0 && !arch) A.push({p:true, i:"🧾", t:"Πώληση", d:"λιανική ή στο bazaar", f:go(`tillOpen(null,'${id}')`)});
   const _ms=!isProd?itemSupOf(id):null;
+  if(!isProd && !arch) A.push({i:"🚚", t:"Παραγγελία σε προμηθευτή", d:_ms?`προς ${_ms.name} — καταχώριση σε αναμονή`:"καταχώριση σε αναμονή μέχρι την παραλαβή", f:go(`openSupOrder(null,'${id}')`)});
   if(!isProd && !arch) A.push({p:true, i:"🛒", t:"Αγορά", d:_ms?`από ${_ms.name} — ή από άλλον στη φόρμα`:"προσθήκη αποθέματος με πληρωμή", f:go(`openPurchase(null,'${id}')`)});
   if(isProd && !arch) A.push({i:"⏱", t:"Χρόνος εργασίας", d:"μέτρηση χρόνου για αυτό το κομμάτι", f:go(`timerStartStock('${id}')`)});
   A.push({i:"✎", t:"Επεξεργασία", d:isProd?"όνομα, τιμή, φωτογραφία, υλικά":"όνομα, κατηγορία, τιμή, όριο", f:go(`openStockModal('${id}')`)});
   A.push({i:"📋", t:"Ιστορικό κινήσεων", d:"αγορές, αναλώσεις, πωλήσεις", f:go(`openStockHistory('${id}')`)});
+  if(!isProd && (ordersCache||[]).some(o=>Array.isArray(o.materials) && o.materials.some(m=>m.id===id)))
+    A.push({i:"🧵", t:"Πού χρησιμοποιήθηκε", d:"οι παραγγελίες που το περιέχουν", f:go(`openMaterialUse('${id}')`)});
   const B=[];
   if(it.mm){ B.push({i:"✕", t:"Αφαίρεση από το Mix & Match", d:"μένει στην αποθήκη", f:go(`mmRemove('${id}')`)});
              B.push({w:true, i:"🗑", t:"Διαγραφή απόχρωσης", d:"οριστικά, μαζί με το απόθεμά της", f:go(`mmDelete('${id}')`)}); }
@@ -9551,9 +9584,9 @@ function openItemSheet(id){
         ? (it.sell_price!=null?"Τιμή πώλησης "+fmtMoney(it.sell_price):"Χωρίς τιμή πώλησης")+(it.unit_cost!=null?" · κόστος υλικών "+fmtMoney(it.unit_cost):"")
         : (it.unit_cost!=null?fmtMoney(it.unit_cost)+" / "+esc(unit)+(val?" · αξία "+fmtMoney(val):""):"Χωρίς τιμή κόστους")}
         ${esc(it.category||"")?"<br>"+esc(it.category):""}</div></div></div>
-    ${(function(){ const pd=!isProd?itemPending(id):null; return pd?`<div class="is-sup" style="border-color:#cfe0f0;background:#f4f8fc">⏳ <span style="flex:1;min-width:0">Σε αναμονή <b>${fmtNum(pd.qty)} ${esc(unit)}</b> από ${esc(pd.sup)} (παραγγέλθηκε ${fmtD(pd.at)})</span></div>`:""; })()}
+    ${(function(){ const pd=!isProd?itemPending(id):null; return pd?`<div class="is-sup tap" role="button" onclick="_ovClose('itemSheet');openSupplier(${esc(JSON.stringify(pd.sup))})" style="border-color:#cfe0f0;background:#f4f8fc">⏳ <span style="flex:1;min-width:0">Σε αναμονή <b>${fmtNum(pd.qty)} ${esc(unit)}</b> από ${esc(pd.sup)} (παραγγέλθηκε ${fmtD(pd.at)})</span></div>`:""; })()}
     ${!isProd?`<div class="is-sup">🚚 ${_ms?`<span style="flex:1;min-width:0">Βασικός προμηθευτής: <button class="lnk" onclick="_ovClose('itemSheet');openSupplier(${esc(JSON.stringify(_ms.name))})">${esc(_ms.name)}</button>${_ms.auto?` <small style="color:var(--muted)">(από την τελευταία αγορά)</small>`:""}</span>`
-      :`<span style="flex:1;min-width:0;color:var(--muted)">Χωρίς βασικό προμηθευτή — ορίζεται μόνος του με την πρώτη αγορά.</span>`}
+      :`<span style="flex:1;min-width:0;color:var(--muted)">Χωρίς βασικό προμηθευτή — ορίζεται αυτόματα με την πρώτη αγορά.</span>`}
       <button class="btn ghost sm" onclick="_ovClose('itemSheet');openStockModal('${id}');setTimeout(()=>{const e=document.getElementById('sSup');if(e)e.focus();},250)">${_ms?"Αλλαγή":"Ορισμός"}</button></div>`:""}
     <div class="act-list">${A.map(row).join("")}</div>
     ${supHtml}
@@ -9699,12 +9732,25 @@ function panelBazaar(){
     ${body}
   </div>`;
 }
+/* παραγγελίες σε προμηθευτές που περιμένουν παραλαβή */
+function panelSupOrders(){
+  const P=supOrdersPending(); if(!P.length) return "";
+  return `<div class="panel">
+    <div class="panel-h"><span class="t">Αναμένονται από προμηθευτές</span><button class="a" onclick="goTab('suppliers')">Προμηθευτές →</button></div>
+    ${P.slice(0,5).map(po=>{ const days=Math.floor((Date.now()-new Date(po.created).getTime())/86400000), lead=supLeadDays(supFind(po.sup)||{}), late=lead!=null&&days>lead;
+      return `<div class="p-row" role="button" onclick="openSupplier(${esc(JSON.stringify(po.sup))})">
+        <span class="si-img bl-ph" style="font-size:15px">🚚</span>
+        <span class="m"><span class="n">${esc(po.sup)}</span><span class="s">${esc(po.lines.map(l=>fmtNum(l.qty)+" "+l.name).join(", "))}</span></span>
+        <span class="v ${late?"warn":""}">${late?"καθυστερεί":fmtD(po.created)}</span>
+        <button class="btn ghost sm" onclick="event.stopPropagation();supOrderArrived('${po.id}')">Ήρθε</button></div>`; }).join("")}
+  </div>`;
+}
 function panelStock(){
   const low=(stockCache||[]).filter(it=>stockState(it)!=="ok" && !isArchivedStock(it)).slice(0,5);
   const val=(stockCache||[]).reduce((a,it)=>a+(Number(it.qty)||0)*(Number(it.unit_cost)||0),0);
   if(!low.length) return "";   // τίποτα δεν τελειώνει — καμία ανάγκη για πίνακα
   return `<div class="panel">
-    <div class="panel-h"><span class="t">Τελειώνουν</span><button class="a" onclick="goStockLow()">Αποθήκη →</button></div>
+    <div class="panel-h"><span class="t">Τελειώνουν</span><span style="display:flex;gap:12px"><button class="a" onclick="openSupOrder()">Παραγγελία →</button><button class="a" onclick="goStockLow()">Αποθήκη →</button></span></div>
     ${low.map(it=>`<button class="p-row" onclick="openItemSheet('${it.id}')">
       ${stockThumb(it)}
       <span class="m"><span class="n">${esc(it.name)}</span><span class="s">${esc(it.category||"")}</span></span>
@@ -9744,6 +9790,7 @@ function renderHome(){
     panelOrders(),
     panelOwed(),       // μόνο όταν χρωστάνε
     panelStock(),      // μόνο όταν τελειώνει κάτι
+    panelSupOrders(),  // μόνο με παραγγελίες σε αναμονή
     panelSales()
   ].filter(Boolean);
   box.innerHTML = wide.join("") + `<div class="home-grid">${panels.join("")}</div>`;
@@ -10284,6 +10331,12 @@ function askAnswer(q){
     let hasN=false; while(NEW.includes(toks[i])){ hasN=true; i++; }
     const kk=KIND.find(([w])=>w===toks[i]);
     if(!isQuestion && kk && (hasV||hasN) && !toks.slice(i+1).some(t=>t===normText("παραγγελία"))) return askNewContactStart(q, kk[1]);
+  }
+  // παραγγελία σε προμηθευτή / παραλαβή της
+  { const supN=askSupEntity(q);
+    const SO=["παραγγειλε","κανε παραγγελια","παραγγελια σε προμηθευτ","παραγγελια στ","νεα παραγγελια σε"].some(w=>nq.includes(normText(w)));
+    const ARR=["ηρθε η παραγγελια","ηρθαν τα","παρελαβα την παραγγελια","παραλαβη παραγγελιας","εφτασε η παραγγελια"].some(w=>nq.includes(normText(w)));
+    if(!isQuestion && ((SO && (supN || nq.includes(normText("προμηθευτ")))) || (ARR && (supN || supOrdersPending().length)))) return askSupOrderCmd(q, supN);
   }
   if(!isQuestion && (nq.startsWith(normText("νέα παραγγελία")) || nq.startsWith(normText("καταχώρησε παραγγελία")) || nq.startsWith(normText("παραγγελία για"))
      || tok("παράγγειλε","παραγγειλε") || nq.includes(normText("θέλει μια")) || nq.includes(normText("θελει ενα"))))
@@ -10982,6 +11035,37 @@ function askMatNext(d){
     {label:"Προσθήκη"});
 }
 
+
+/* ---------- παραγγελία σε προμηθευτή από τον βοηθό ----------
+   «παράγγειλε 5 Καφέ από Νηματουργία», «κάνε παραγγελία στη Νηματουργία», «ήρθε η παραγγελία της Νηματουργίας» */
+function askSupOrderCmd(q, supN){
+  const nq=normText(q);
+  // παραλαβή
+  if(["ηρθε","ηρθαν","παρελαβα","παραλαβα","παραλαβη","εφτασε","εφτασαν"].some(w=>nq.includes(normText(w)))){
+    const P=supOrdersPending(supN||null);
+    if(!P.length) return { text:supN?`Δεν υπάρχει παραγγελία σε αναμονή από ${ASKB(esc(supN))}.`:"Δεν υπάρχει παραγγελία σε αναμονή." };
+    const po=P[0];
+    return { text:`Παραλαβή παραγγελίας από ${ASKB(esc(po.sup))} (${fmtD(po.created)}): ${esc(po.lines.map(l=>fmtNum(l.qty)+" "+l.name).join(", "))}. Η αγορά ανοίγει προσυμπληρωμένη για έλεγχο τιμών και ποσοτήτων.`,
+      actions:[{l:"Καταχώριση παραλαβής", f:`_ovClose('askSheet');supOrderArrived('${po.id}')`}].concat(P.length>1?[{l:"Όλες σε αναμονή", f:`_ovClose('askSheet');goTab('suppliers')`}]:[]) };
+  }
+  let lines=[];
+  try{ const P=askParsePurchase(q.replace(/^\s*(παράγγειλε|παραγγειλε|κάνε παραγγελία|κανε παραγγελια|παραγγελία|παραγγελια)\s*(σ(τ)?ην?|στο|στον|στη|σε|από|απο)?\s*/i,"αγόρασα ")); 
+    lines=(P.lines||[]).filter(l=>l.it).map(l=>soLine(l.it, l.qty||1));
+    if(!supN && P.from) supN=supCanon(P.from); }catch(e){}
+  if(!supN && lines.length) supN=itemSupName(lines[0].id);
+  if(!supN) return { text:"Σε ποιον προμηθευτή; Γράψτε π.χ. «παράγγειλε 5 Καφέ από Νηματουργία» ή ανοίξτε τη φόρμα.", actions:[{l:"Παραγγελία σε προμηθευτή", f:"_ovClose('askSheet');openSupOrder()"}] };
+  if(!lines.length) lines=soLowFor(supN).map(it=>soLine(it));
+  if(!lines.length) return { text:`Δεν υπάρχουν είδη του ${ASKB(esc(supN))} κάτω από το όριο. Προσδιορίστε είδη και ποσότητες, π.χ. «παράγγειλε 5 Καφέ από ${esc(supN)}».`,
+    actions:[{l:"Άνοιγμα φόρμας", f:`_ovClose('askSheet');openSupOrder(${esc(JSON.stringify(supN))})`}] };
+  const est=lines.reduce((a,l)=>a+(Number(l.qty)||0)*(Number(l.cost)||0),0);
+  const rec=supFind(supN)||{}, minO=Number(rec.min_order)||0;
+  return askConfirmCard(`Θα καταχωριστεί παραγγελία προς ${ASKB(esc(supN))} σε κατάσταση «σε αναμονή»: ${lines.length} ${lines.length===1?"είδος":"είδη"}, εκτιμώμενο κόστος ${ASKB(fmtMoney(est))}.${minO&&est<minO?` <span class="ask-down">Κάτω από την ελάχιστη παραγγελία (${fmtMoney(minO)}).</span>`:""} Με την παραλαβή ανοίγει η αγορά προσυμπληρωμένη.`,
+    lines.map(l=>{ const it=(stockCache||[]).find(x=>x.id===l.id)||{}; return {thumb:stockThumb(it), title:esc(l.name), sub:`απόθεμα ${fmtNum(it.qty)} ${esc(l.unit)}`, right:`${fmtNum(l.qty)}${l.cost!=null?" × "+fmtMoney(l.cost):""}`}; }),
+    async ()=>{ soDraft={sup:supN, rec, lines, q:""}; await saveSupOrder(); if(supOrdersPending(supN).length===0) throw new Error("δεν αποθηκεύτηκε");
+      return {text:`✓ Η παραγγελία προς ${esc(supN)} καταχωρίστηκε σε αναμονή.`, actions:[{l:"Καρτέλα προμηθευτή", f:`_ovClose('askSheet');openSupplier(${esc(JSON.stringify(supN))})`}]}; },
+    {label:"Καταχώριση παραγγελίας", altLabel:"Άνοιγμα στη φόρμα", alt:()=>{ _ovClose("askSheet"); openSupOrder(supN, null, lines); return {cancel:true, text:"Η φόρμα άνοιξε προσυμπληρωμένη."}; }});
+}
+
 /* ============ ΑΛΛΑΓΕΣ ΤΙΜΩΝ ΑΠΟ ΤΟ CHAT ============
    Καταλαβαίνει όπως μιλάει η Αναστασία:
    «Kelly 50€», «το Kelly να κάνει 50», «ανέβασε το Grace 5€», «κατέβασε την Grace 10%»,
@@ -11556,7 +11640,7 @@ const ASK_SUGGEST=[
   {h:"Προϊόντα & αποθήκη", q:["Ποια τσάντα πουλάει περισσότερο;","Ποια τσάντα αφήνει το περισσότερο κέρδος;","Ποια μοντέλα έχουν χαμηλό περιθώριο;","Ποια χρώματα ζητιούνται περισσότερο;","Ποια μέρα πουλάμε περισσότερο;","Τι να αγοράσω;"]},
   {h:"Τιμές", q:["Kelly 50€","Ανέβασε το Grace 5€","Kelly λιανική 55 χονδρική 32","Όλες οι τσάντες +3€","ANASA +10%","Χονδρική 60% της λιανικής σε όλα","Στρογγύλεψε τις τιμές στο 5"]},
   {h:"Για την Αναστασία", q:["Προτάσεις για την Αναστασία","Πώς πήγε το bazaar;"]},
-  {h:"Προμηθευτές", q:["Από πού να πάρω μπεζ νήμα;","Πόσα δώσαμε σε προμηθευτές φέτος;","Νέος προμηθευτής Νηματουργία 2101234567"]},
+  {h:"Προμηθευτές", q:["Από πού να πάρω μπεζ νήμα;","Πόσα δώσαμε σε προμηθευτές φέτος;","Παράγγειλε από Νηματουργία όσα τελειώνουν","Τι περιμένουμε από προμηθευτές;","Ήρθε η παραγγελία από Νηματουργία","Νέος προμηθευτής Νηματουργία 2101234567"]},
   {h:"Κάνε κάτι", q:["Νέα παραγγελία για Μαρία Grace μπλε","Πούλησα μια Kelly 45€ μετρητά","Η παραγγελία της Ελένης είναι έτοιμη","Πληρώθηκα από την Ελένη","Σημείωση για τη Μαρία: θέλει μακρύτερο λουρί","Ξεκίνα χρονόμετρο για Grace","Έξοδο 12€ courier","Αγόρασα 3 μπεζ νήματα 3,20 το ένα","Ανάληψη 100€ από το ταμείο"]}
 ];
 let askLog=[];
@@ -11918,23 +12002,46 @@ async function saveSupOrders(){ return await saveSetting("sup_orders", supOrders
 function supLeadDays(rec){ const m=String((rec&&rec.lead)||"").match(/(\d+)\s*(?:[-–]\s*(\d+))?/); return m ? Number(m[2]||m[1]) : null; }
 
 /* ---- νέα παραγγελία ---- */
-function openSupOrder(name){
-  const rec=supFind(name)||{name};
+/* Παραγγελία σε προμηθευτή — από παντού: καρτέλα προμηθευτή, «+», αρχική, φύλλο είδους,
+   αποθήκη, βοηθός. Χωρίς προμηθευτή ζητείται πρώτα η επιλογή του· με είδος, μπαίνει έτοιμο. */
+function soLine(it, qty){ return {id:it.id, name:it.name, unit:it.unit||"τεμ.", qty:qty!=null?qty:Math.max(1, Math.ceil((Number(it.low_threshold)||2)*2-(Number(it.qty)||0))), cost:it.unit_cost!=null?Number(it.unit_cost):null}; }
+function soLowFor(name){
   const pend=new Set(); supOrdersPending(name).forEach(o=>(o.lines||[]).forEach(l=>pend.add(l.id)));
-  const low=supStockItems(name).filter(it=>stockState(it)!=="ok" && !pend.has(it.id));
-  soDraft={sup:supCanon(name)||name, rec, lines:low.map(it=>({id:it.id, name:it.name, unit:it.unit||"τεμ.", qty:Math.max(1, Math.ceil((Number(it.low_threshold)||2)*2-(Number(it.qty)||0))), cost:it.unit_cost!=null?Number(it.unit_cost):null})), q:""};
-  document.getElementById("soTitle").textContent="Παραγγελία · "+soDraft.sup;
+  return supStockItems(name).filter(it=>stockState(it)!=="ok" && !pend.has(it.id));
+}
+function openSupOrder(name, itemId, lines){
+  const it=itemId?(stockCache||[]).find(x=>x.id===itemId):null;
+  if(!name && it) name=itemSupName(it.id)||"";
+  soDraft={sup:name?(supCanon(name)||name):"", rec:name?(supFind(name)||{name}):{}, lines:[], q:""};
+  if(lines && lines.length) soDraft.lines=lines;
+  else if(name) soDraft.lines=soLowFor(name).map(x=>soLine(x));
+  if(it && !soDraft.lines.some(l=>l.id===it.id)) soDraft.lines.unshift(soLine(it));
   renderSupOrder();
   _ovOpen("soModal");
 }
-function soMsg(){
-  const d=soDraft; if(!d) return "";
-  const L=d.lines.filter(l=>l.qty>0);
-  return `Καλησπέρα${d.rec&&d.rec.name?"":""}! Θα ήθελα να παραγγείλω:\n${L.map(l=>`• ${fmtNum(l.qty)} ${l.unit} ${l.name}`).join("\n")}\n\nΕυχαριστώ πολύ,\nΑναστασία — THILIKÓN`;
+function soSetSup(name){
+  name=String(name||"").trim(); const d=soDraft; if(!d) return;
+  d.sup=name?(supCanon(name)||name):""; d.rec=name?(supFind(name)||{name}):{};
+  if(d.sup) soLowFor(d.sup).forEach(it=>{ if(!d.lines.some(l=>l.id===it.id)) d.lines.push(soLine(it)); });
+  renderSupOrder();
+}
+/* προμηθευτές με είδη κάτω από το όριο — για γρήγορη επιλογή */
+function soSuggestedSups(){
+  return supAllNames().map(n=>({n, low:soLowFor(n).length})).filter(x=>x.low>0).sort((a,b)=>b.low-a.low);
 }
 function renderSupOrder(){
   const d=soDraft; if(!d) return;
   const rec=d.rec||{};
+  document.getElementById("soTitle").textContent=d.sup?("Παραγγελία · "+d.sup):"Παραγγελία σε προμηθευτή";
+  if(!d.sup){
+    const S=soSuggestedSups();
+    document.getElementById("soBody").innerHTML=`
+      <label class="fld"><span>Προμηθευτής</span><input id="soSup" data-supsug="1" autocomplete="off" placeholder="Επιλογή ή πληκτρολόγηση προμηθευτή" onchange="soSetSup(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();soSetSup(this.value);}"></label>
+      ${S.length?`<div class="act-sep" style="margin-top:0">Με είδη κάτω από το όριο</div><div class="act-list">${S.map(x=>`<button onclick="soSetSup(${esc(JSON.stringify(x.n))})"><span class="i">🚚</span><span>${esc(x.n)}<span class="d">${x.low} ${x.low===1?"είδος":"είδη"} προς αναπαραγγελία</span></span></button>`).join("")}</div>`:""}
+      ${d.lines.length?`<div class="r-hint" style="margin-top:12px">Στην παραγγελία: ${d.lines.map(l=>esc(l.name)).join(", ")}</div>`:""}`;
+    attachSupSuggest(document.getElementById("soSup"));
+    return;
+  }
   const est=d.lines.reduce((a,l)=>a+(Number(l.qty)||0)*(Number(l.cost)||0),0);
   const minO=Number(rec.min_order)||0;
   const cand=(d.q?buyCandidates().filter(it=>!isArchivedStock(it) && smartMatch(it.name+" "+(it.category||""), d.q)):[]).filter(it=>!d.lines.some(l=>l.id===it.id)).slice(0,8);
@@ -11944,44 +12051,35 @@ function renderSupOrder(){
         <span class="d">${esc(l.name)}<small>${(function(){ const it=(stockCache||[]).find(x=>x.id===l.id); return it?`στην αποθήκη ${fmtNum(it.qty)} ${esc(it.unit||"")}`:""; })()}${l.cost!=null?` · τελ. τιμή ${fmtMoney(l.cost)}`:""}</small></span>
         <span class="a"><input inputmode="decimal" value="${l.qty}" oninput="soDraft.lines[${i}].qty=parseMoney(this.value)||0;soRefresh()" style="width:64px;text-align:right;padding:7px 9px;border:1px solid var(--line);border-radius:9px;font-size:13px"></span>
         <button class="x" onclick="soDraft.lines.splice(${i},1);renderSupOrder()">✕</button></div>`).join("")
-      :`<div class="led-empty">Τίποτα δεν τελειώνει από αυτόν τον προμηθευτή. Πρόσθεσε είδη από κάτω.</div>`}</div>
-    <input id="soSearch" placeholder="+ Πρόσθεσε είδος (γράψε όνομα)…" value="${esc(d.q)}" oninput="soDraft.q=this.value;renderSupOrder();setTimeout(()=>{const e=document.getElementById('soSearch');if(e){e.focus();e.setSelectionRange(e.value.length,e.value.length);}},0)" style="margin-bottom:6px">
+      :`<div class="led-empty">Δεν υπάρχουν είδη του προμηθευτή κάτω από το όριο αναπαραγγελίας. Προσθέστε είδη από την αναζήτηση.</div>`}</div>
+    <input id="soSearch" placeholder="Αναζήτηση είδους για προσθήκη…" value="${esc(d.q)}" oninput="soDraft.q=this.value;renderSupOrder();setTimeout(()=>{const e=document.getElementById('soSearch');if(e){e.focus();e.setSelectionRange(e.value.length,e.value.length);}},0)" style="margin-bottom:6px">
     ${cand.length?`<div class="so-cand">${cand.map(it=>`<button type="button" class="ns-row bl-opt" onclick="soAdd('${it.id}')">${stockThumb(it)}<span><span class="ns-n">${esc(it.name)}</span><span class="ns-s">${fmtNum(it.qty)} ${esc(it.unit||"")}${it.unit_cost!=null?" · "+fmtMoney(it.unit_cost):""}</span></span></button>`).join("")}</div>`:""}
     <div id="soEst" class="r-hint" style="margin:10px 0">${soEstText(est, minO)}</div>
-    <label class="fld"><span>Μήνυμα προς τον προμηθευτή</span><textarea id="soText" rows="6">${esc(soMsg())}</textarea></label>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:-4px 0 12px">
-      <button type="button" class="btn ghost sm" onclick="soCopy()">Αντιγραφή</button>
-      ${rec.email?`<a class="btn ghost sm" href="mailto:${esc(rec.email)}?subject=${encodeURIComponent("Παραγγελία THILIKÓN")}&body=${encodeURIComponent(soMsg())}" id="soMail">Email</a>`:""}
-      ${rec.phone?`<a class="btn ghost sm" href="sms:${esc(rec.phone)}?&body=${encodeURIComponent(soMsg())}" id="soSms">SMS</a>`:""}
-    </div>`;
+`;
 }
 function soEstText(est, minO){
-  if(!(est>0)) return `Πρόσθεσε είδη — η εκτίμηση κόστους βγαίνει από τις τελευταίες τιμές${minO?` (ελάχιστη παραγγελία ${fmtMoney(minO)})`:""}.`;
-  return `Εκτίμηση με τις τελευταίες τιμές: <b>${fmtMoney(est)}</b>${minO?(est<minO?` · <span style="color:#b54b3a">κάτω από την ελάχιστη παραγγελία (${fmtMoney(minO)})</span>`:` · πάνω από την ελάχιστη (${fmtMoney(minO)}) ✓`):""}`;
+  if(!(est>0)) return `Προσθέστε είδη — η εκτίμηση κόστους βασίζεται στις τελευταίες τιμές αγοράς${minO?` (ελάχιστη παραγγελία ${fmtMoney(minO)})`:""}.`;
+  return `Εκτιμώμενο κόστος (τελευταίες τιμές): <b>${fmtMoney(est)}</b>${minO?(est<minO?` · <span style="color:#b54b3a">κάτω από την ελάχιστη παραγγελία (${fmtMoney(minO)})</span>`:` · πάνω από την ελάχιστη (${fmtMoney(minO)}) ✓`):""}`;
 }
 function soRefresh(){
   const d=soDraft; const est=d.lines.reduce((a,l)=>a+(Number(l.qty)||0)*(Number(l.cost)||0),0);
   const e=document.getElementById("soEst"); if(e) e.innerHTML=soEstText(est, Number((d.rec||{}).min_order)||0);
-  const t=document.getElementById("soText"); if(t) t.value=soMsg();
 }
 function soAdd(id){
   const it=(stockCache||[]).find(x=>x.id===id); if(!it) return;
   soDraft.lines.push({id:it.id, name:it.name, unit:it.unit||"τεμ.", qty:1, cost:it.unit_cost!=null?Number(it.unit_cost):null});
   soDraft.q=""; renderSupOrder();
 }
-async function soCopy(){
-  const t=(document.getElementById("soText")||{}).value||soMsg();
-  try{ await navigator.clipboard.writeText(t); adminFlash("Αντιγράφηκε ✓"); }catch(e){ prompt("Αντίγραψε το μήνυμα:", t); }
-}
 async function saveSupOrder(){
-  const d=soDraft; const L=d.lines.filter(l=>l.qty>0);
+  const d=soDraft; if(!d.sup){ adminFlash("Επιλέξτε προμηθευτή"); return; }
+  const L=d.lines.filter(l=>l.qty>0);
   if(!L.length){ adminFlash("Πρόσθεσε τουλάχιστον ένα είδος"); return; }
   try{ await supEnsure(d.sup); }catch(e){}
   supOrders=[...(supOrders||[]), {id:"po"+Math.random().toString(36).slice(2,9), sup:d.sup, created:new Date().toISOString(), lines:L.map(l=>({...l})), note:null, status:"pending"}];
   if(!(await saveSupOrders())) return;
   _ovClose("soModal"); soDraft=null;
   if(!document.getElementById("supModal").classList.contains("hidden")) openSupplier(d.sup);
-  try{ renderSuppliers(); renderStock(); }catch(e){}
+  try{ renderSuppliers(); renderStock(); if(!document.getElementById("homeAdmin").classList.contains("hidden")) renderHome(); }catch(e){}
   adminFlash("Η παραγγελία καταγράφηκε ως «σε αναμονή» ✓");
 }
 /* ---- ήρθε: ανοίγει η αγορά συμπληρωμένη ---- */
@@ -12039,12 +12137,12 @@ function renderSuppliers(){
   const unassigned=(cashMoves||[]).filter(m=>m.kind==="purchase" && !moveSupplier(m));
   let h="";
   if(unassigned.length) h+=`<div class="r-hint" style="margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-    <span style="flex:1;min-width:200px"><b>${unassigned.length}</b> ${unassigned.length===1?"αγορά δεν έχει":"αγορές δεν έχουν"} προμηθευτή. Αν τις αντιστοιχίσεις, μπαίνουν στις συγκρίσεις.</span>
+    <span style="flex:1;min-width:200px"><b>${unassigned.length}</b> ${unassigned.length===1?"αγορά δεν έχει":"αγορές δεν έχουν"} προμηθευτή. Η αντιστοίχιση τις εντάσσει στις συγκρίσεις τιμών.</span>
     <button class="btn ghost sm" onclick="openSupAssign()">Αντιστοίχιση</button></div>`;
   if(supView==="compare"){ box.innerHTML=h+supCompareHtml(q); return; }
   let names=supAllNames();
   if(q) names=names.filter(n=>smartMatch(n+" "+((supFind(n)||{}).note||""), q));
-  if(!names.length){ box.innerHTML=h+`<div class="fbd-empty">${q?"Κανένας προμηθευτής με αυτό το όνομα.":"Δεν υπάρχουν ακόμη προμηθευτές. Γράψε «Από πού» σε μια αγορά και ο προμηθευτής εμφανίζεται εδώ μόνος του — ή πάτα «+ Νέος προμηθευτής»."}</div>`; return; }
+  if(!names.length){ box.innerHTML=h+`<div class="fbd-empty">${q?"Κανένας προμηθευτής με αυτό το όνομα.":"Δεν υπάρχουν καταχωρισμένοι προμηθευτές. Δημιουργούνται αυτόματα από το πεδίο «Προμηθευτής» της αγοράς ή από το «+ Νέος προμηθευτής»."}</div>`; return; }
   const all=names.map(n=>({n, st:supStats(n), rec:supFind(n)})).sort((a,b)=>b.st.year-a.st.year || b.st.spent-a.st.spent);
   const yTot=all.reduce((a,x)=>a+x.st.year,0);
   const pt=priceTable(), saveAll=pt.reduce((a,e)=>a+e.save,0);
@@ -12066,7 +12164,7 @@ function renderSuppliers(){
           return (pn?`<div class="cc-s" style="color:#2f5d8a">⏳ ${pn} ${pn===1?"παραγγελία":"παραγγελίες"} σε αναμονή</div>`:"")+(si.length?`<div class="cc-s">Βασικός για ${si.length} ${si.length===1?"είδος":"είδη"} της αποθήκης${lo?` · <span style="color:#b54b3a">${lo} ${lo===1?"τελειώνει":"τελειώνουν"}</span>`:""}</div>`:""); })()}
         ${cheapest?`<div class="cc-s" style="color:#2c6e49">Φθηνότερος σε ${cheapest} ${cheapest===1?"είδος":"είδη"}</div>`:""}
       </div></button>
-      <div class="cc-btns"><button class="btn ghost sm" onclick="openPurchaseFrom(${esc(JSON.stringify(x.n))})">Νέα αγορά</button></div>
+      <div class="cc-btns"><button class="btn ghost sm" onclick="openSupOrder(${esc(JSON.stringify(x.n))})">Παραγγελία</button><button class="btn ghost sm" onclick="openPurchaseFrom(${esc(JSON.stringify(x.n))})">Νέα αγορά</button></div>
     </div>`;
   }).join("");
   box.innerHTML=h;
@@ -12074,7 +12172,7 @@ function renderSuppliers(){
 function supCompareHtml(q){
   let pt=priceTable();
   if(q) pt=pt.filter(e=>smartMatch(e.name, q));
-  if(!pt.length) return `<div class="fbd-empty">Δεν υπάρχουν ακόμη τιμές για σύγκριση. Μόλις αγοράσεις το ίδιο είδος από δύο προμηθευτές, η σύγκριση εμφανίζεται εδώ.</div>`;
+  if(!pt.length) return `<div class="fbd-empty">Δεν υπάρχουν ακόμη στοιχεία για σύγκριση. Η σύγκριση εμφανίζεται όταν το ίδιο είδος έχει αγοραστεί από δύο ή περισσότερους προμηθευτές.</div>`;
   const multi=pt.filter(e=>e.rows.filter(r=>r.sup!=="Χωρίς προμηθευτή").length>1);
   const saveAll=pt.reduce((a,e)=>a+e.save,0);
   let h=`<p class="rep-intro">Η τελευταία τιμή κάθε είδους ανά προμηθευτή. Με πράσινο ο φθηνότερος.${saveAll>0.5?` Αν όσα αγοράσατε είχαν αγοραστεί στην καλύτερη τιμή, θα είχατε γλιτώσει περίπου <b>${fmtMoney(saveAll)}</b>.`:""}</p>`;
@@ -12103,7 +12201,7 @@ function openSupplier(name){
     const verdict = !others.length ? `<small>μόνο από εδώ</small>`
       : cheaper ? `<small style="color:#b54b3a">${esc(cheaper.sup)} ${fmtMoney(cheaper.last)} (−${fmtMoney(e.last-cheaper.last)})</small>`
       : `<small style="color:#2c6e49">φθηνότερος</small>`;
-    return `<div class="sup-cmp-r"><span class="s">${esc(e.name)}<small>${fmtNum(e.qty)} ${esc(e.unit)} · ${fmtMoney(e.spent)}</small></span>
+    return `<div class="sup-cmp-r${e.it?" tap":""}" ${e.it?`role="button" onclick="_ovClose('supModal');openItemSheet('${e.it.id}')"`:""}><span class="s">${esc(e.name)}<small>${fmtNum(e.qty)} ${esc(e.unit)} · ${fmtMoney(e.spent)}</small></span>
       <span class="p">${e.last!=null?fmtMoney(e.last):"—"}${verdict}</span></div>`;
   }).join("");
   const nameJ=esc(JSON.stringify(name));
@@ -12191,7 +12289,7 @@ function openSupAssign(){
   const list=(cashMoves||[]).filter(m=>m.kind==="purchase" && !moveSupplier(m)).sort((a,b)=>String(b.moved_at).localeCompare(String(a.moved_at)));
   const names=supAllNames();
   document.getElementById("supTitle").textContent="Αντιστοίχιση αγορών";
-  document.getElementById("supBody").innerHTML=`<p class="rep-intro">Γράψε από πού έγινε κάθε αγορά. Αρκεί μία φορά — οι επόμενες αγορές κρατούν τον προμηθευτή μόνες τους.</p>
+  document.getElementById("supBody").innerHTML=`<p class="rep-intro">Ορίστε τον προμηθευτή κάθε αγοράς. Η αντιστοίχιση γίνεται μία φορά· οι νέες αγορές τον καταχωρίζουν αυτόματα.</p>
     ${list.map(m=>`<div class="sup-asg"><div style="flex:1;min-width:0"><b>${esc((Array.isArray(m.lines)?m.lines:[]).map(l=>l.name).join(", ")||m.name)}</b>
       <div class="cc-s">${fmtD(m.moved_at)} · ${fmtMoney(Math.abs(Number(m.amount)||0))}</div></div>
       <input data-supsug="1" autocomplete="off" placeholder="Προμηθευτής" data-mid="${m.id}" style="margin:0"></div>`).join("")}
@@ -12255,7 +12353,7 @@ function openModelSheet(name){
   document.getElementById("isBody").innerHTML=`
     <div class="is-top">${img?`<img class="si-img" src="${esc(img)}" alt="" style="width:84px;height:84px;object-fit:cover">`:`<div class="si-img" style="width:84px;height:84px"></div>`}
       <div class="n" style="flex:1">
-        <div><b>${n}</b> σε απόθεμα · <b>${fmtNum(soldAll)}</b> ${soldAll===1?"πουλήθηκε":"πουλήθηκαν"} συνολικά (${fmtMoney(revAll)})</div>
+        <div><b>${n}</b> σε απόθεμα · ${soldAll?`<button class="r-name-l" style="text-decoration-color:currentColor" onclick="openSales(${js})"><b>${fmtNum(soldAll)}</b> ${soldAll===1?"πουλήθηκε":"πουλήθηκαν"} συνολικά (${fmtMoney(revAll)}) ›</button>`:"καμία πώληση ακόμη"}</div>
         ${last?`<div>Τελευταία πώληση ${fmtD(new Date(last))}</div>`:""}
         ${topC.length?`<div>Χρώματα που προτιμούν: ${topC.map(([c,q])=>esc(c)+" ×"+q).join(", ")}</div>`:""}
         ${I.full!=null?`<div>Κόστος ~${fmtMoney(I.full)}${I.sec?` (υλικά ${fmtMoney(I.cost)} + ${fmtDur(I.sec)})`:""}${I.suggest?` · πρόταση <b>${fmtMoney(I.suggest)}</b>`:""}</div>`:""}
@@ -13448,8 +13546,8 @@ function renderReport(){
       ${d.workSecs?repRow(`Κόστος εργασίας (${fmtDur(d.workSecs)} × ${fmtMoney(hourRate)})`, d.labour, {neg:true, cls:"soft"}):""}
       ${repRow("Καθαρό αποτέλεσμα", d.net, {cls:"tot"})}
     </div>
-    ${d.nCosted<d.n?`<p class="rep-note">${d.n-d.nCosted} από ${d.n} ${d.n===1?"πώληση":"πωλήσεις"} δεν έχουν καταχωρημένο κόστος υλικών, οπότε το μικτό κέρδος είναι αισιόδοξο.</p>`:""}
-    ${!d.workSecs?`<p class="rep-note">Δεν μετρήθηκε χρόνος εργασίας σε αυτή την περίοδο, οπότε το καθαρό αποτέλεσμα δεν τον περιλαμβάνει.</p>`:""}`;
+    ${d.nCosted<d.n?`<p class="rep-note">${d.n-d.nCosted} από ${d.n} ${d.n===1?"πώληση":"πωλήσεις"} δεν έχουν καταχωρημένο κόστος υλικών, επομένως το μικτό κέρδος εμφανίζεται υψηλότερο από το πραγματικό.</p>`:""}
+    ${!d.workSecs?`<p class="rep-note">Δεν καταγράφηκε χρόνος εργασίας στην περίοδο· το καθαρό αποτέλεσμα δεν περιλαμβάνει κόστος εργασίας.</p>`:""}`;
 
   /* 1β. Ταμειακή ροή — άλλο πράγμα από το αποτέλεσμα */
   const flow = (d.cashIn||d.cashOut) ? `
@@ -13459,7 +13557,7 @@ function renderReport(){
       ${repRow("Πληρωμές", d.cashOut, {neg:true, cls:"soft"})}
       ${repRow("Διαφορά", d.cashNet, {cls:"sum"})}
     </div>
-    <p class="rep-note">Το αποτέλεσμα βαρύνεται με τα υλικά κατά την <b>ανάλωση</b>· η ταμειακή ροή με τις <b>πληρωμές</b> της περιόδου. Γι' αυτό τα δύο νούμερα διαφέρουν.
+    <p class="rep-note">Το αποτέλεσμα επιβαρύνεται με τα υλικά κατά την <b>ανάλωση</b>, ενώ η ταμειακή ροή με τις <b>πληρωμές</b> της περιόδου· γι' αυτό τα δύο μεγέθη διαφέρουν.
       <button class="lnk" onclick="goTab('cash')">Κινήσεις →</button></p>` : "";
 
   /* 2. Κανάλια */
@@ -13514,7 +13612,7 @@ function renderReport(){
         <span class="cnt" style="width:78px">${fmtMoney(mv[i])}</span></div>`).join("")}</div>
     <div class="year-total">Σύνολο ${yr}: <b>${fmtMoney(mv.reduce((a,b)=>a+b,0))}</b></div>`;
 
-  box.innerHTML = periodBar + tabBar + `<p class="rep-intro">Η κατάσταση αποτελέσματος: από τις πωλήσεις αφαιρούνται τα υλικά, τα έξοδα και η εργασία, για να φανεί τι πραγματικά έμεινε.</p>`
+  box.innerHTML = periodBar + tabBar + `<p class="rep-intro">Κατάσταση αποτελέσματος περιόδου: πωλήσεις μείον κόστος υλικών, λειτουργικά έξοδα και κόστος εργασίας.</p>`
     + result + flow + chTable + sellBlock + rest + trend +
     `<div class="rep-foot"><button class="btn ghost sm" onclick="window.print()">Εκτύπωση</button></div>`;
 }
@@ -13563,7 +13661,7 @@ function repSummary(d){
   const owedAll=(ordersCache||[]).reduce((a,o)=>a+orderOwed(o),0);
   const owedN=new Set((ordersCache||[]).filter(o=>orderOwed(o)>0.01).map(custKey)).size;
 
-  let h=`<p class="rep-intro">Τα βασικά της περιόδου με μια ματιά, σε σύγκριση με την προηγούμενη${p?` (${esc(p.label)})`:""}.</p>
+  let h=`<p class="rep-intro">Βασικοί δείκτες περιόδου σε σύγκριση με την προηγούμενη${p?` (${esc(p.label)})`:""}.</p>
   <div class="rk-grid">
     ${repKpi("Πωλήσεις", fmtMoney(d.rev), d.n+" "+(d.n===1?"πώληση":"πωλήσεις")+" ", p?repDelta(d.rev,p.rev):"")}
     ${repKpi("Μικτό κέρδος", fmtMoney(d.gross), d.margin!=null?"περιθώριο "+d.margin+"% ":"", p?repDelta(d.gross,p.gross):"")}
@@ -13607,16 +13705,17 @@ function repProducts(d){
     const mg=m.costed>0?Math.round((m.costed-m.cost)/m.costed*100):null;
     const ph=m.sec>300?Math.round((m.rev-m.cost)/(m.sec/3600)*100)/100:null;
     const col=ph==null?"var(--muted)":(ph>=hourRate?"#2c6e49":(ph>=hourRate*0.6?"#9a6a1e":"#b54b3a"));
-    return `<div class="rep-tr rt5"><span>${esc(m.k)}</span><span>${fmtNum(m.n)}</span><span>${fmtMoney(m.rev)}</span>
-      <span>${mg!=null?mg+"%":"—"}</span><span style="color:${col}">${ph!=null?fmtMoney(ph):"—"}</span></div>`;}).join("");
+    const _ok=allModelNames().some(x=>normText(x)===normText(m.k));
+    return `<${_ok?"button":"div"} class="rep-tr rt5${_ok?" rep-trb":""}"${_ok?` onclick="openModelSheet(${esc(JSON.stringify(m.k))})"`:""}><span>${esc(m.k)}</span><span>${fmtNum(m.n)}</span><span>${fmtMoney(m.rev)}</span>
+      <span>${mg!=null?mg+"%":"—"}</span><span style="color:${col}">${ph!=null?fmtMoney(ph):"—"}</span></${_ok?"button":"div"}>`;}).join("");
   const under=models.filter(m=>m.sec>300 && (m.rev-m.cost)/(m.sec/3600)<hourRate);
-  return `<p class="rep-intro">Ποια μοντέλα και ποια χρώματα φέρνουν τα έσοδα, με τι περιθώριο, και πόσο πιάνει η ώρα σε καθένα.</p>
+  return `<p class="rep-intro">Ανάλυση εσόδων ανά μοντέλο και απόχρωση, με μικτό περιθώριο και απόδοση ανά ώρα εργασίας.</p>
     <div class="rep-sec">Ανά μοντέλο</div>
     <div class="rep-tbl"><div class="rep-hr rt5"><span>Μοντέλο</span><span>Τεμ.</span><span>Τζίρος</span><span>Περιθ.</span><span>€/ώρα</span></div>${tbl||""}</div>
-    <p class="rep-note"><b>Περιθώριο</b>: τι μένει από κάθε €100 πώλησης μετά τα υλικά. <b>€/ώρα</b>: μικτό κέρδος ανά ώρα εργασίας, μόνο όπου έχει μετρηθεί χρόνος — πράσινο όταν πιάνει τον στόχο των ${fmtMoney(hourRate)}.</p>
-    ${under.length?`<div class="r-hint" style="margin-top:12px;background:#fdf6ea;color:#8a5a1e">Κάτω από τον στόχο ανά ώρα: ${under.map(m=>`<b>${esc(m.k)}</b>`).join(", ")}. Αξίζει να δεις την τιμή τους ή τον χρόνο που παίρνουν.</div>`:""}
+    <p class="rep-note"><b>Περιθώριο</b>: μικτό κέρδος ως ποσοστό των πωλήσεων, μετά το κόστος υλικών. <b>€/ώρα</b>: μικτό κέρδος ανά ώρα εργασίας, όπου έχει καταγραφεί χρόνος — με πράσινο όταν καλύπτεται ο στόχος των ${fmtMoney(hourRate)}.</p>
+    ${under.length?`<div class="r-hint" style="margin-top:12px;background:#fdf6ea;color:#8a5a1e">Κάτω από τον στόχο ανά ώρα: ${under.map(m=>`<b>${esc(m.k)}</b>`).join(", ")} — προτείνεται επανεξέταση τιμής ή χρόνου παραγωγής.</div>`:""}
     ${colors.length?`<div class="rep-sec">Ανά απόχρωση</div>${repBars(colors.slice(0,10),"τεμ.")}
-      <p class="rep-note">Τα χρώματα που ζητιούνται περισσότερο — χρήσιμο για το τι νήμα να υπάρχει πάντα στην αποθήκη.</p>`:""}`;
+      <p class="rep-note">Ζήτηση ανά απόχρωση — χρήσιμη για τον προγραμματισμό αποθέματος νημάτων.</p>`:""}`;
 }
 function repCustomers(d){
   const by={};
@@ -13628,20 +13727,20 @@ function repCustomers(d){
   const tot=Object.keys(allK).length, rep=Object.values(allK).filter(n=>n>1).length;
   const owed=(ordersCache||[]).filter(o=>orderOwed(o)>0.01).map(o=>({o, due:orderOwed(o),
     days:Math.floor((Date.now()-new Date(o.created_at||Date.now()))/86400000)})).sort((a,b)=>b.days-a.days);
-  return `<p class="rep-intro">Ποιοι αγοράζουν, πόσοι επιστρέφουν και ποιοι χρωστούν.</p>
+  return `<p class="rep-intro">Πελατολόγιο περιόδου, ποσοστό επαναλαμβανόμενων αγορών και ανοιχτά υπόλοιπα.</p>
     <div class="rk-grid">
       ${repKpi("Πελάτες περιόδου", String(d.cust.total), d.cust.fresh+" νέοι")}
       ${repKpi("Ανά πελάτη", fmtMoney(d.cust.avg), "μέση αξία")}
       ${repKpi("Επιστρέφουν", tot?Math.round(rep/tot*100)+"%":"—", rep+" από "+tot+" συνολικά")}
     </div>
-    <p class="rep-note"><b>Επιστρέφουν</b>: πόσοι από όλους τους πελάτες έχουν αγοράσει πάνω από μία φορά. Όσο ανεβαίνει, τόσο λιγότερο εξαρτάσαι από νέους πελάτες.</p>
+    <p class="rep-note"><b>Επιστρέφουν</b>: ποσοστό πελατών με περισσότερες από μία αγορές. Υψηλότερο ποσοστό σημαίνει μικρότερη εξάρτηση από νέους πελάτες.</p>
     ${top.length?`<div class="rep-sec">Κορυφαίοι πελάτες περιόδου</div>
       <div class="rep-tbl"><div class="rep-hr"><span>Πελάτης</span><span>Αγορές</span><span>Τζίρος</span><span>Μερίδιο</span></div>
       ${top.map(c=>`<button class="rep-tr rep-trb" onclick="openCustomer('${c.id}')"><span>${esc(c.name)}</span><span>${c.n}</span><span>${fmtMoney(c.rev)}</span><span>${Math.round(c.rev/Math.max(1,d.rev)*100)}%</span></button>`).join("")}</div>`:""}
     <div class="rep-sec">Ανεξόφλητα σήμερα</div>
     ${owed.length?`<div class="rep-tbl"><div class="rep-hr"><span>Πελάτης</span><span>Ημέρες</span><span>Οφειλή</span><span></span></div>
       ${owed.map(x=>`<button class="rep-tr rep-trb" onclick="editOrder('${x.o.id}')"><span>${esc(x.o.customer_name)}</span><span style="${x.days>30?"color:#b54b3a;font-weight:600":""}">${x.days}</span><span>${fmtMoney(x.due)}</span><span>${esc(x.o.order_number||"")}</span></button>`).join("")}</div>
-      <p class="rep-note">Ημέρες από την καταχώρηση. Πάνω από 30 ημέρες σημαίνεται με κόκκινο.</p>`
+      <p class="rep-note">Ημέρες από την καταχώριση· οφειλές άνω των 30 ημερών επισημαίνονται με κόκκινο.</p>`
       :`<p class="rep-note">Δεν υπάρχουν ανεξόφλητα.</p>`}`;
 }
 function repChannels(d){
@@ -13651,17 +13750,17 @@ function repChannels(d){
     .map(b=>{ const sales=bzSales(b.id); const rev=sales.reduce((a,o)=>a+orderValue(o),0);
       const cost=sales.reduce((a,o)=>a+(Number(o.cost)||0),0); const ex=bzExtraCost(b);
       return {b, n:sales.length, rev, cost, ex, net:rev-cost-ex}; });
-  return `<p class="rep-intro">Από πού έρχονται τα έσοδα και πόσο κερδίζεις σε κάθε κανάλι, αφού αφαιρεθούν τα υλικά.</p>
+  return `<p class="rep-intro">Έσοδα και μικτό κέρδος ανά κανάλι πώλησης, μετά το κόστος υλικών.</p>
     <div class="rep-tbl"><div class="rep-hr rt5"><span>Κανάλι</span><span>Πωλ.</span><span>Τζίρος</span><span>Μικτό</span><span>Περιθ.</span></div>
     ${CH.map(k=>{ const c=d.ch[k]; const g=c.costed>0?c.costed-c.cost:null;
-      return `<div class="rep-tr rt5"><span>${esc(SALE_CHANNELS[k].l)}</span><span>${c.n}</span><span>${fmtMoney(c.rev)}</span>
-        <span>${g!=null?fmtMoney(g):"—"}</span><span>${c.costed>0?Math.round(g/c.costed*100)+"%":"—"}</span></div>`;}).join("")}</div>
-    <p class="rep-note">Η χονδρική έχει συνήθως μικρότερο περιθώριο αλλά μεγαλύτερες ποσότητες· το bazaar έχει και έξοδα συμμετοχής, που φαίνονται παρακάτω.</p>
+      return `<button class="rep-tr rt5 rep-trb" onclick="${k==="bazaar"?"goTab('bazaar')":k==="wholesale"?"goTab('wholesale')":`goSales('${k}','all')`}"><span>${esc(SALE_CHANNELS[k].l)}</span><span>${c.n}</span><span>${fmtMoney(c.rev)}</span>
+        <span>${g!=null?fmtMoney(g):"—"}</span><span>${c.costed>0?Math.round(g/c.costed*100)+"%":"—"}</span></button>`;}).join("")}</div>
+    <p class="rep-note">Η χονδρική έχει κατά κανόνα χαμηλότερο περιθώριο και μεγαλύτερο όγκο· τα bazaar επιβαρύνονται επιπλέον με κόστος συμμετοχής, όπως φαίνεται παρακάτω.</p>
     ${bzs.length?`<div class="rep-sec">Bazaar της περιόδου</div>
       <div class="rep-tbl"><div class="rep-hr rt5"><span>Bazaar</span><span>Πωλ.</span><span>Τζίρος</span><span>Έξοδα</span><span>Καθαρό</span></div>
       ${bzs.map(x=>`<button class="rep-tr rt5 rep-trb" onclick="goTab('bazaar');setBzView('${x.b.id}')"><span>${esc(x.b.name)}</span><span>${x.n}</span><span>${fmtMoney(x.rev)}</span><span>${fmtMoney(x.ex)}</span>
         <span style="color:${x.net>=0?"#2c6e49":"#b54b3a"};font-weight:600">${fmtMoney(x.net)}</span></button>`).join("")}</div>
-      <p class="rep-note"><b>Καθαρό</b> = τζίρος − υλικά των κομματιών − συμμετοχή και έξοδα. Δείχνει αν ένα bazaar αξίζει να το ξανακάνεις.</p>`:""}`;
+      <p class="rep-note"><b>Καθαρό</b> = τζίρος − υλικά των κομματιών − συμμετοχή και έξοδα. Αξιολογεί τη βιωσιμότητα κάθε σημείου πώλησης.</p>`:""}`;
 }
 function repStock(d){
   const G=stockGroups(), val=a=>a.reduce((s,it)=>s+(Number(it.qty)||0)*(Number(it.unit_cost)||0),0);
@@ -13677,17 +13776,17 @@ function repStock(d){
     (Array.isArray(m.lines)?m.lines:[]).forEach(l=>{ const b=bought[l.name]=bought[l.name]||{k:l.name,n:0,rev:0}; b.n+=Number(l.qty)||0; b.rev+=(Number(l.qty)||0)*(Number(l.unit_cost)||0); });
   });
   const bList=Object.values(bought).sort((a,b)=>b.rev-a.rev);
-  return `<p class="rep-intro">Πόσα χρήματα είναι «δεμένα» στην αποθήκη σήμερα, τι κάθεται χωρίς να πουλιέται και τι πρέπει να αγοραστεί.</p>
+  return `<p class="rep-intro">Αξία αποθέματος, είδη χωρίς κίνηση και είδη προς αναπαραγγελία.</p>
     <div class="rk-grid">
       ${repKpi("Νήματα", fmtMoney(val(G.yarn)), G.yarn.filter(x=>Number(x.qty)>0).length+" χρώματα")}
       ${repKpi("Υλικά", fmtMoney(val(G.supplies)), G.supplies.filter(x=>Number(x.qty)>0).length+" είδη")}
       ${repKpi("Έτοιμα κομμάτια", fmtMoney(val(G.product)), fmtNum(G.product.reduce((a,x)=>a+(Number(x.qty)||0),0))+" τεμ. · αξία πώλησης "+fmtMoney(prodSell))}
     </div>
-    <p class="rep-note">Οι αξίες είναι σε τιμή κόστους. Η αξία πώλησης των έτοιμων είναι όσα θα εισπράξεις αν πουληθούν όλα στην τιμή τους.</p>
+    <p class="rep-note">Οι αξίες αποτιμώνται σε τιμή κόστους. Η αξία πώλησης των έτοιμων αντιστοιχεί στα έσοδα με πώληση όλων στην τιμή καταλόγου.</p>
     ${low.length?`<div class="rep-sec">Για αγορά</div><div class="rep-t">${low.map(it=>repRow(it.name,0,{raw:`${fmtNum(it.qty)} ${esc(it.unit||"")}`,cls:"soft"})).join("")}</div>
-      <p class="rep-note">Είδη στο ή κάτω από το όριο που έχεις ορίσει. <button class="lnk" onclick="openPurchase()">Νέα αγορά →</button></p>`:""}
+      <p class="rep-note">Είδη στο όριο αναπαραγγελίας ή κάτω από αυτό. <button class="lnk" onclick="openPurchase()">Νέα αγορά →</button></p>`:""}
     ${slow.length?`<div class="rep-sec">Έτοιμα που δεν κινούνται</div><div class="rep-t">${slow.map(x=>repRow(x.it.name,0,{raw:x.last?`τελευταία πώληση ${fmtDateShort(new Date(x.last))}`:"καμία πώληση",cls:"soft"})).join("")}</div>
-      <p class="rep-note">Κομμάτια σε απόθεμα χωρίς πώληση τις τελευταίες 60 ημέρες — υποψήφια για bazaar, έκπτωση ή χονδρική.</p>`:""}
+      <p class="rep-note">Είδη χωρίς πώληση τις τελευταίες 60 ημέρες — υποψήφια για bazaar, έκπτωση ή χονδρική.</p>`:""}
     ${bList.length?`<div class="rep-sec">Αγορές περιόδου</div>${repBars(bList.slice(0,10),"μον.")}`:""}`;
 }
 function repTime(d){
@@ -13695,13 +13794,13 @@ function repTime(d){
   const hrs=d.workSecs/3600;
   const items=rows.length, avg=items?d.workSecs/items:0;
   const perHour=hrs>0.2?Math.round(d.gross/hrs*100)/100:null;
-  return `<p class="rep-intro">Πόσος χρόνος δουλειάς μπήκε στην περίοδο και πόσο αποδίδει. Ο χρόνος μετράει από το ⏱ στο «+» ή μέσα στην παραγγελία.</p>
+  return `<p class="rep-intro">Χρόνος εργασίας περιόδου και απόδοσή του. Ο χρόνος καταγράφεται με το ⏱ από το «+» ή μέσα από την παραγγελία.</p>
     <div class="rk-grid">
       ${repKpi("Ώρες εργασίας", fmtDur(d.workSecs), items+" κομμάτια με χρόνο")}
       ${repKpi("Μέσος χρόνος", items?fmtDur(avg):"—", "ανά κομμάτι")}
       ${repKpi("Απόδοση ώρας", perHour!=null?fmtMoney(perHour):"—", "στόχος "+fmtMoney(hourRate))}
     </div>
-    <p class="rep-note"><b>Απόδοση ώρας</b> = μικτό κέρδος της περιόδου ÷ ώρες εργασίας. Αν είναι κάτω από τον στόχο, η τιμή δεν πληρώνει τον χρόνο σου.</p>
+    <p class="rep-note"><b>Απόδοση ώρας</b> = μικτό κέρδος της περιόδου ÷ ώρες εργασίας. Τιμή κάτω από τον στόχο σημαίνει ότι η τιμή πώλησης δεν καλύπτει το κόστος εργασίας.</p>
     ${repPerfBlock()}`;
 }
 
@@ -13727,7 +13826,7 @@ function repPerfBlock(){
     .map(a=>({...a, rate:Math.round(a.net/(a.sec/3600)*100)/100}))
     .sort((a,b)=>b.rate-a.rate);
   if(!rows.length) return `<div class="rep-sec">Απόδοση ανά κατηγορία</div>
-    <p class="rep-note">Δεν μετρήθηκε χρόνος σε αυτή την περίοδο. Με το ⏱ Χρόνος σε μια παραγγελία, εδώ φαίνεται πόσο πιάνει η ώρα σε κάθε κατηγορία.</p>`;
+    <p class="rep-note">Δεν καταγράφηκε χρόνος εργασίας στην περίοδο. Με την καταγραφή χρόνου (⏱) εμφανίζεται εδώ η απόδοση ανά κατηγορία.</p>`;
   const col=r=> r.rate>=hourRate ? "#2c6e49" : (r.rate>=hourRate*0.6 ? "#c9922e" : "#b54b3a");
   return `<div class="rep-sec">Απόδοση ανά κατηγορία</div>
     <p class="rep-note" style="margin:0 0 12px">Στόχος ${fmtMoney(hourRate)}/ώρα. Υπολογίζεται μόνο από όσα έχουν μετρημένο χρόνο.</p>
@@ -14062,7 +14161,7 @@ function cashMonths(){
 const CASH_FILTERS = [["all","Όλες"],["in","Εισπράξεις"],["out","Πληρωμές"],["owner","Ιδιοκτήτη"]];
 function renderCash(){
   const box=document.getElementById("cashAdmin"); if(!box) return;
-  if(!accounts.length){ box.innerHTML=`<div class="fbd-empty">Δεν βρέθηκαν λογαριασμοί. Έτρεξε το SQL της Φάσης 1;</div>`; return; }
+  if(!accounts.length){ box.innerHTML=`<div class="fbd-empty">Δεν βρέθηκαν λογαριασμοί. Απαιτείται η εκτέλεση του SQL της Φάσης 1.</div>`; return; }
   const months=cashMonths();
   if(!cashMonth || !months.includes(cashMonth)) cashMonth=months[0];
   const label = cashMonth==="all" ? "από την έναρξη"
@@ -14361,8 +14460,7 @@ function renderBazaar(){
   let html="";      // το «+ Νέο bazaar» ζει στην κεφαλίδα της σελίδας
   if(!list.length){
     box.innerHTML=html+`<div class="fbd-empty" style="line-height:1.7">Κανένα bazaar ακόμη.<br>
-      <span style="color:var(--muted);font-size:12px">Φτιάξε ένα, διάλεξε ποια έτοιμα κομμάτια θα πάρεις μαζί σου και πούλα με ένα πάτημα.
-      Ό,τι δεν πουληθεί γυρίζει μόνο του στα έτοιμα προϊόντα.</span></div>`;
+      <span style="color:var(--muted);font-size:12px">Δημιουργήστε σημείο πώλησης, επιλέξτε τα έτοιμα είδη που διατίθενται και καταχωρίστε τις πωλήσεις επί τόπου. Τα απούλητα επιστρέφουν αυτόματα στα έτοιμα με το κλείσιμο.</span></div>`;
     return;
   }
   const tot=list.reduce((a,b)=>{ const t=bzTotals(b); a.rev+=t.rev; a.sold+=t.sold; a.net+=t.net; a.exp+=t.exp+t.fee; return a; },{rev:0,sold:0,net:0,exp:0});
@@ -14407,7 +14505,7 @@ function bzExpHtml(b){
       <span class="a">${fmtMoney(bzExpOne(e))}</span>
       ${b.closed?"":`<button class="x" title="Αφαίρεση" onclick="bzDropExp('${b.id}','${e.key}')">✕</button>`}
     </div>`).join("")
-    : `<div class="led-empty">Καμία καταχώρηση. Καταχωρούνται εδώ αναλώσιμα και λοιπά έξοδα του σημείου πώλησης — συσκευασία, ετικέτες, μετακίνηση, συμμετοχή.</div>`;
+    : `<div class="led-empty">Δεν υπάρχουν καταχωρίσεις. Εδώ καταχωρίζονται αναλώσιμα και λοιπά έξοδα του σημείου πώλησης — συσκευασία, ετικέτες, μετακίνηση, συμμετοχή.</div>`;
   return `<div class="stats-sub">Έξοδα bazaar</div>
     <div class="led">
       <div class="led-h"><span class="d">Περιγραφή</span><span class="a">Σύνολο</span>${b.closed?"":'<span class="x" style="border:none;background:none"></span>'}</div>
@@ -14467,7 +14565,7 @@ function bzDetailHtml(b){
   if(!b.closed){
     html+=`<div class="stats-sub" style="margin-top:0">Πάτα ό,τι πούλησες${pieces.length?` · ${pieces.length}`:""}</div>`;
     if(!pieces.length){
-      html+=`<div class="fbd-empty" style="line-height:1.7">Δεν έχεις διαλέξει κομμάτια ακόμη.<br>
+      html+=`<div class="fbd-empty" style="line-height:1.7">Δεν έχουν επιλεγεί είδη για το σημείο πώλησης.<br>
         <div style="display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap">
           <button class="btn solid sm" onclick="openBzPicker('${b.id}')">Διάλεξε από τα έτοιμα</button>
         </div></div>`;
@@ -14602,7 +14700,7 @@ function matSelSummary(){
 }
 function renderMatPicker(){
   const list=document.getElementById("matPickerList");
-  if(!matRows.length){ list.innerHTML='<div class="mat-empty">Δεν υπάρχει διαθέσιμο στοκ. Πρόσθεσε είδη από την καρτέλα «Αποθήκη».</div>'; matPickerTotalUpdate(); return; }
+  if(!matRows.length){ list.innerHTML='<div class="mat-empty">Δεν υπάρχει διαθέσιμο απόθεμα. Τα είδη καταχωρίζονται από την ενότητα «Αποθήκη».</div>'; matPickerTotalUpdate(); return; }
   const ov=document.getElementById("matModal"); const st=ov?ov.scrollTop:0;
   const q=(document.getElementById("matSearch")?.value||"").trim().toLowerCase();
   let html="";
@@ -14780,12 +14878,12 @@ function renderMatList(){
   const box=document.getElementById("matList"); const btn=document.getElementById("matBtn");
   if(btn){ btn.classList.remove("hidden"); btn.textContent = pickedMaterials.length ? "Πρόσθεσε / άλλαξε" : "Επίλεξε"; }
   if(!pickedMaterials.length){
-    box.innerHTML='<div class="mat-empty">Δεν έχουν δηλωθεί υλικά. Διάλεξε για να υπολογιστεί το κόστος και να αφαιρεθούν από το στοκ.</div>';
+    box.innerHTML='<div class="mat-empty">Δεν έχουν καταχωριστεί αναλώσεις υλικών. Η επιλογή υλικών υπολογίζει το κόστος της παραγγελίας και ενημερώνει το απόθεμα.</div>';
     return;
   }
   const total=pickedMaterials.reduce((s,m)=>s+m.qty*(m.unit_cost||0),0);
   const fromStock=pickedMaterials.filter(m=>!m.ad_hoc);
-  box.innerHTML=pickedMaterials.map(m=>`<div class="mat-line"><span>${esc(m.name)} <span class="q">× ${fmtNum(m.qty)} ${esc(m.unit||"")}</span>${
+  box.innerHTML=pickedMaterials.map(m=>`<div class="mat-line${!m.ad_hoc&&(stockCache||[]).some(x=>x.id===m.id)?" tap":""}" ${!m.ad_hoc&&(stockCache||[]).some(x=>x.id===m.id)?`role="button" onclick="if(!event.target.closest('button'))openItemSheet('${m.id}')"`:""}><span>${esc(m.name)} <span class="q">× ${fmtNum(m.qty)} ${esc(m.unit||"")}</span>${
       m.ad_hoc?` <span class="ah-tag">μίας χρήσης</span>`:""}</span><span>${fmtMoney(m.qty*(m.unit_cost||0))}${
       m.ad_hoc?` <button type="button" class="ah-b" title="Κράτα το υπόλοιπο στην αποθήκη" onclick="keepAdHoc('${m.id}')">📦</button><button type="button" class="ah-b" title="Αφαίρεση" onclick="dropAdHoc('${m.id}')">✕</button>`:""}</span></div>`).join("")
     + `<div class="mat-total"><span>Κόστος υλικών</span><span>${fmtMoney(Math.round(total*100)/100)}</span></div>`
