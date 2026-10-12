@@ -487,11 +487,16 @@
   .sup-cmp-h{display:flex;gap:12px;align-items:center;margin-bottom:6px}
   .sup-cmp-h .si-img{width:40px;height:40px}
   .si-sup{color:#6b5d48;font-weight:500}
+  .bl-back{color:#2c6e49;font-weight:600}
   .is-sup{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0 2px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;font-size:13px}
   .is-sup b{font-weight:600}
   .is-sup .lnk{font-size:13px;font-weight:600;color:var(--ink);padding:0;background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:3px;font-family:inherit}
   .sup-cmp-r .mk{display:inline-block;margin-left:6px;font-size:10.5px;font-weight:600;letter-spacing:.04em;padding:1px 7px;border-radius:99px;background:var(--cream);color:var(--ink);vertical-align:1px}
   .sup-cmp-r .set{font-size:11.5px;font-weight:500;background:none;border:none;color:var(--muted);padding:0;margin-left:6px;cursor:pointer;text-decoration:underline;font-family:inherit}
+  .bz-don{margin-top:8px;font-size:12.5px;color:#9c2f62;background:#fdf1f6;border:1px solid #f0c4d8;border-radius:99px;padding:5px 12px;display:inline-block}
+  .bz-don-stat{background:#fdf1f6!important;border-color:#f0c4d8!important}
+  .bz-don-stat .n{color:#9c2f62}
+  .till-don{font-size:12.5px;color:#9c2f62;background:#fdf1f6;border-radius:10px;padding:8px 12px;margin-top:10px}
   .sup-cmp-r{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 0;border-top:1px solid var(--line)}
   .sup-cmp > .sup-cmp-r:first-child{border-top:none}
   .sup-cmp-r .s{flex:1;min-width:0;font-size:13.5px}
@@ -1891,7 +1896,7 @@
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();openCleanNames()">Καθαρισμός ονομάτων υλικών</button>
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();restorePalette()">Επαναφορά αποχρώσεων Mix &amp; Match</button>
     <p style="font-size:11.5px;color:var(--muted);margin:14px 0 0;padding-top:12px;border-top:1px solid var(--line)">
-      Έκδοση <b style="color:var(--ink)">2026.10.05.2155</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
+      Έκδοση <b style="color:var(--ink)">2026.10.12.1830</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
       κλείσε και ξανάνοιξε την καρτέλα, ή τράβα την σελίδα προς τα κάτω για ανανέωση.</p>
     <p id="setRebuiltNote" style="font-size:11.5px;color:var(--muted);margin-top:6px">Συμπληρώνει τις κινήσεις αποθήκης από τις παραγγελίες, τις πωλήσεις και τα bazaar που υπάρχουν ήδη. Το απόθεμα δεν αλλάζει.</p>
   </div>
@@ -1913,6 +1918,21 @@
     </div>
     <label class="fld"><span>Τοποθεσία (προαιρετικό)</span><input id="bzPlace" placeholder="π.χ. Δημοτική Αγορά Χανίων"></label>
     <p style="font-size:11.5px;color:var(--muted);margin-top:-6px">Το κόστος συμμετοχής αφαιρείται από το καθαρό του bazaar. Η έκπτωση μπαίνει μόνη της σε κάθε πώληση εδώ — μπορείς να την αλλάξεις στο ταμείο.</p>
+    <label class="chk-row" style="margin:6px 0 10px"><input type="checkbox" id="bzDonOn" onchange="bzDonToggle()">
+      <span><b>Φιλανθρωπικό bazaar</b> — μέρος των πωλήσεων πηγαίνει σε φορέα και αφαιρείται αυτόματα</span></label>
+    <div id="bzDonBox" class="hidden">
+      <label class="fld"><span>Υπέρ</span><input id="bzDonTo" placeholder="π.χ. Άλμα Ζωής"></label>
+      <div style="display:flex;gap:10px">
+        <label class="fld" style="flex:1.4"><span>Πώς υπολογίζεται</span>
+          <select id="bzDonMode" onchange="bzDonHint()">
+            <option value="piece">€ ανά κομμάτι</option>
+            <option value="pct">% επί των εσόδων</option>
+            <option value="fixed">Σταθερό σύνολο</option>
+          </select></label>
+        <label class="fld" style="flex:1"><span id="bzDonValL">Ποσό €</span><input id="bzDonVal" inputmode="decimal" placeholder="0" oninput="bzDonHint()"></label>
+      </div>
+      <p id="bzDonHint" style="font-size:11.5px;color:var(--muted);margin-top:-6px"></p>
+    </div>
     <p id="bzModalMsg" class="msg err hidden"></p>
     <div class="mf">
       <button class="btn ghost hidden" id="bzDelBtn" onclick="deleteBz()">🗑</button>
@@ -1965,6 +1985,7 @@
       <div class="till-sum hidden" id="tillDiscOff"><span>Μείον</span><span id="tillDiscOffV">€0,00</span></div>
     </div>
     <div class="till-grand"><span class="l">Σύνολο</span><span class="v" id="tillTotal">€0,00</span></div>
+    <div class="till-don hidden" id="tillDon"></div>
     <div class="seg" id="tillPaySeg" style="display:flex;gap:8px;margin-top:14px">
       <button type="button" class="btn ghost sm till-pay sel" data-p="cash" onclick="tillPay('cash')">Μετρητά</button>
       <button type="button" class="btn ghost sm till-pay" data-p="card" onclick="tillPay('card')">Κάρτα / IRIS</button>
@@ -2690,6 +2711,7 @@ function _ovOpen(id){
   el.scrollTop=0;
 }
 function _ovClose(id){
+  if(_livePending) setTimeout(()=>liveSync(), 700);
   const _e=document.getElementById(id); if(_e) _e.style.zIndex="";
   const el=document.getElementById(id);
   if(!el || el.classList.contains("hidden")) return;
@@ -3186,7 +3208,14 @@ async function ensureToken(){
   return !!adminToken;
 }
 // Authenticated fetch με auto-refresh σε λήξη/401
+let _wSeq=0, _wIn=0;   // εγγραφές σε εξέλιξη: η ζωντανή ενημέρωση δεν τις προσπερνά
 async function authFetch(url, opts){
+  const _w = !!(opts && opts.method && opts.method!=="GET");
+  if(_w){ _wSeq++; _wIn++; }
+  try{ return await _authFetch(url, opts); }
+  finally{ if(_w){ _wIn--; _wSeq++; } }
+}
+async function _authFetch(url, opts){
   await ensureToken();
   if(_abort && !(opts && opts.noAbort)) opts = Object.assign({}, opts, {signal:_abort.signal});
   opts = opts || {};
@@ -3236,6 +3265,88 @@ async function enterPanel(){
   refreshAfterSettings();
   applyRoute();
   maybeShowWrap();
+  liveStart();
+}
+
+/* ============ ΖΩΝΤΑΝΗ ΕΝΗΜΕΡΩΣΗ ============
+   Ό,τι καταχωρεί η Αναστασία από το κινητό (ή φτάνει από το site) εμφανίζεται
+   εδώ χωρίς ανανέωση: κάθε λίγα δευτερόλεπτα, και αμέσως μόλις η εφαρμογή
+   ξαναγίνει ορατή. Δεν ενημερώνει ποτέ κάτω από τα χέρια σου: με ανοιχτό
+   παράθυρο ή ενώ γράφεις, η ενημέρωση περιμένει να τελειώσεις.              */
+const LIVE_MS=15000;
+let _liveBusy=false, _livePending=false, _liveStarted=false;
+function liveBlocked(){
+  if(document.querySelector(".overlay:not(.hidden)")) return true;
+  const a=document.activeElement;
+  if(a && (/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) || a.isContentEditable)) return true;
+  const gs=document.getElementById("gsInput"); if(gs && gs.value.trim()) return true;
+  return _wIn>0;
+}
+async function liveSync(){
+  const panel=document.getElementById("adminPanel");
+  if(_liveBusy || !adminToken || !panel || panel.classList.contains("hidden")) return;
+  if(document.visibilityState==="hidden") return;
+  if(liveBlocked()){ _livePending=true; return; }
+  _liveBusy=true;
+  const seq=_wSeq;
+  try{
+    const get=u=>authFetch(REST+u,{noAbort:true});
+    const R=await Promise.all([
+      get("/orders?select=*&order=created_at.desc"),
+      get("/thilikon_stock?select=*&archived=eq.false&order=category.asc,name.asc"),
+      get("/thilikon_cash?select=*&order=moved_at.desc,created_at.desc"),
+      get("/thilikon_accounts?select=*&order=sort.asc"),
+      get("/thilikon_settings?select=key,value")
+    ]);
+    if(R.some(r=>!r.ok)) return;
+    const [o,st,c,a,set]=await Promise.all(R.map(r=>r.json()));
+    // κάτι γράφτηκε ή άνοιξε στο μεταξύ: τα δεδομένα ίσως είναι ήδη παλιά — ξανά σε λίγο
+    if(seq!==_wSeq || liveBlocked()){ _livePending=true; return; }
+    const S=JSON.stringify, ch={};
+    let fresh=[];
+    if(Array.isArray(o) && S(o)!==S(ordersCache)){
+      const had=new Set((ordersCache||[]).map(x=>x.id));
+      fresh=(ordersCache||[]).length ? o.filter(x=>!had.has(x.id)) : [];
+      ordersCache=o; ch.orders=true; }
+    if(Array.isArray(st) && S(st)!==S(stockCache)){ stockCache=st; ch.stock=true; }
+    if(Array.isArray(c) && S(c)!==S(cashMoves)){ cashMoves=c; ch.cash=true; }
+    if(Array.isArray(a) && S(a)!==S(accounts)){ accounts=a; ch.cash=true; }
+    if(Array.isArray(set) && settingsOk){
+      const map={}; set.forEach(r=>map[r.key]=r.value);
+      const sig=S(map);
+      if(sig!==_settingsSig){ applySettingsMap(map); _settingsSig=sig; ch.settings=true; renderTimerBar(); }
+    }
+    _livePending=false;
+    if(Object.keys(ch).length) liveRender(ch, fresh);
+  }catch(e){ /* χωρίς σύνδεση: δοκιμάζει ξανά στον επόμενο γύρο */ }
+  finally{ _liveBusy=false; }
+}
+function liveRender(ch, fresh){
+  const vis=id=>{ const e=document.getElementById(id); return e && !e.classList.contains("hidden"); };
+  const y=window.scrollY;
+  try{
+    renderStats(); renderOrders();
+    if(vis("homeAdmin")) renderHome();
+    if(vis("cashAdmin")) renderCash();
+    if(vis("bzAdmin")) renderBazaar();
+    if(vis("stockAdmin")) renderStock();
+    if(vis("custAdmin")) renderCustomers();
+    if(vis("wholeAdmin")) renderWholesale();
+    if(vis("supAdmin")) renderSuppliers();
+  }catch(e){ console.error(e); }
+  try{ if(Math.abs(window.scrollY-y)>2) window.scrollTo(0,y); }catch(e){}
+  if(fresh && fresh.length){
+    const o=fresh[0];
+    adminFlash(fresh.length===1 ? `Νέα καταχώρηση: ${o.customer_name||o.order_number||"πώληση"}` : `${fresh.length} νέες καταχωρήσεις`);
+  }
+}
+function liveStart(){
+  if(_liveStarted) return; _liveStarted=true;
+  setInterval(()=>liveSync(), LIVE_MS);
+  document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="visible") setTimeout(()=>liveSync(), 300); });
+  window.addEventListener("focus", ()=>setTimeout(()=>liveSync(), 300));
+  window.addEventListener("online", ()=>setTimeout(()=>liveSync(), 500));
+  document.addEventListener("focusout", ()=>{ if(_livePending) setTimeout(()=>liveSync(), 900); });
 }
 
 /* Τα settings (bazaar, προδιαγραφές, αμοιβή/ώρα) φτάνουν μετά τις παραγγελίες —
@@ -3280,9 +3391,21 @@ function applyRoute(){
   _routeLock=false;
   return true;
 }
+/* Κάθε σελίδα έχει τη δική της αναζήτηση: φεύγοντας από μια σελίδα η αναζήτησή
+   της καθαρίζει, ώστε να μη φιλτράρει (ή να μη δείχνει «Βρέθηκαν επίσης») αλλού. */
+let _curTab=null;
+const PAGE_SEARCH={orders:"search", stock:"stockSearch", customers:"custSearch", suppliers:"supSearch"};
+function clearPageSearches(keep){
+  Object.entries(PAGE_SEARCH).forEach(([t,id])=>{ if(t===keep) return;
+    const el=document.getElementById(id); if(el && el.value){ el.value=""; } });
+  if(keep!=="orders"){ const af=document.getElementById("alsoFound"); if(af){ af.classList.add("hidden"); af.innerHTML=""; } }
+}
 function showAdminTab(tab){
   if(tab==="sales") tab="orders";
   if(!PAGES[tab]) tab="home";
+  if(tab!==_curTab){ const had=Object.entries(PAGE_SEARCH).some(([t,id])=>t!==tab && (document.getElementById(id)||{}).value);
+    clearPageSearches(tab); _curTab=tab;
+    if(had && tab!=="orders" && ordersCache.length) try{ renderOrders(); }catch(e){} }
   const isHome = tab==="home", isOrders = tab==="orders", isStock = tab==="stock", isFb = tab==="feedback",
         isCust = tab==="customers", isWhole = tab==="wholesale", isBz = tab==="bazaar", isStats = tab==="stats",
         isCash = tab==="cash", isSup = tab==="suppliers";
@@ -3298,6 +3421,7 @@ function showAdminTab(tab){
   document.getElementById("tabBz").classList.toggle("sel", isBz);
   document.getElementById("tabStats").classList.toggle("sel", isStats);
   document.getElementById("tabCash").classList.toggle("sel", isCash);
+  { const af=document.getElementById("alsoFound"); if(af && !isOrders) af.classList.add("hidden"); }
   ["search","fltSt","ordersList"].forEach(id=>{
     const el = document.getElementById(id);
     if(el) el.classList.toggle("hidden", !isOrders);
@@ -3742,7 +3866,7 @@ function renderStats(){
     if(!b.date) return;
     const d=new Date(b.date+"T00:00:00");
     if(d.getFullYear()+"-"+d.getMonth()!==ymNow) return;
-    bzFeeMonth += (Number(b.fee)||0) + bzExpTotal(b.id);
+    bzFeeMonth += bzExtraCost(b);
   });
   if(bzFeeMonth>0 && costMonthKnown) profitMonth=Math.round((profitMonth-bzFeeMonth)*100)/100;
   const margin = (revCosted>0 && costMonthKnown) ? Math.round(profitMonth/revCosted*100) : null;
@@ -4692,6 +4816,7 @@ function newOrderFor(orderId){
 
 function renderAlsoFound(q){
   const box=document.getElementById("alsoFound"); if(!box) return;
+  if(_curTab && _curTab!=="orders"){ box.classList.add("hidden"); box.innerHTML=""; return; }
   if(!q || q.length<2){ box.classList.add("hidden"); box.innerHTML=""; return; }
   const bits=[];
   // πελάτες
@@ -6484,13 +6609,8 @@ let bazaars = [];     // [{id,name,date,place,fee,closed,closedAt}]
 let bzItems = {};     // stockId -> bazaarId (ποια έτοιμα κομμάτια πήραμε στο bazaar)
 
 let settingsOk=false;   // αν δεν φόρτωσαν οι ρυθμίσεις, ΔΕΝ γράφουμε τίποτα πάνω τους
-async function loadSettings(){
-  try{
-    const res=await authFetch(REST + "/thilikon_settings?select=key,value",{});
-    if(res.status===401) return;
-    if(!res.ok) throw new Error("HTTP "+res.status);
-    const rows=await res.json();
-    const map={}; (rows||[]).forEach(r=> map[r.key]=r.value);
+let _settingsSig=null;
+function applySettingsMap(map){
     eventsOn  = map.events || {};
     custLinks = map.cust_links || {};
     custInfo  = map.cust_info  || {};
@@ -6507,6 +6627,16 @@ async function loadSettings(){
     prodBom   = map.prod_bom || {};
     bzExp     = map.bz_exp || {};
     _oldExpenses = Array.isArray(map.expenses) ? map.expenses : [];   // πηγή μεταφοράς
+}
+async function loadSettings(){
+  try{
+    const res=await authFetch(REST + "/thilikon_settings?select=key,value",{});
+    if(res.status===401) return;
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    const rows=await res.json();
+    const map={}; (rows||[]).forEach(r=> map[r.key]=r.value);
+    applySettingsMap(map);
+    _settingsSig = JSON.stringify(map);
     settingsOk = true;
   }catch(e){
     // Χωρίς τις ρυθμίσεις δεν ξέρουμε τι υπάρχει. Μηδενίζοντας τα πάντα και
@@ -6972,7 +7102,7 @@ function renderStock(){
     <div class="stat"><div class="n">${isMM?fmtMoney(totalVal):rows.length}</div><div class="l">${isMM?"Αξία (κόστος)":(stockView==="product"?"Κομμάτια":(stockView==="yarn"?"Χρώματα":"Είδη"))}</div></div>
   </div>`;
   if(lowItems.length){
-    html+=`<div class="r-hint" style="color:#8a5a1e;background:#fdf6ea;margin-bottom:14px">${stockView==="product"?"Λίγα κομμάτια":"Τελειώνουν"}: ${lowItems.map(it=>esc(it.name)+(stockState(it)==="out"?" (0)":` (${fmtNum(it.qty)})`)).join(" · ")}</div>`;
+    html+=`<div class="r-hint" style="color:#8a5a1e;background:#fdf6ea;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="flex:1;min-width:180px">${stockView==="product"?"Λίγα κομμάτια":"Τελειώνουν"}: ${lowItems.map(it=>esc(it.name)+(stockState(it)==="out"?" (0)":` (${fmtNum(it.qty)})`)).join(" · ")}</span>${stockView==="product"||stockView==="mm"?"":`<button class="btn ghost sm" onclick="openPurchase();buyFillLow()">Αγορά τους</button>`}</div>`;
   }
   if(stockView==="mm"){
     html+=`<div class="r-hint" style="margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
@@ -7180,13 +7310,13 @@ function stockExistSug(field){
   const q = field==="sName" ? document.getElementById("sName").value.trim()
           : (document.getElementById("sModel").value+" "+document.getElementById("sVariant").value).trim();
   if(q.length<2){ box.classList.add("hidden"); return; }
-  const rows=(stockCache||[]).filter(it=>!isArchivedStock(it) && (prod ? it.type==="product" : (it.type!=="product" && !it.mm)))
+  const rows=(stockCache||[]).filter(it=>(prod ? (it.type==="product" && !isArchivedStock(it)) : (it.type!=="product" && !it.mm)))
     .filter(it=>smartMatch((it.name||"")+" "+(it.category||""), q)).slice(0,6);
   if(!rows.length){ box.classList.add("hidden"); return; }
   box.innerHTML=`<div class="ns-row" style="cursor:default;background:var(--cream)"><span class="ns-s" style="margin:0">Υπάρχει ήδη στην αποθήκη — διάλεξέ το αντί να φτιάξεις καινούργιο:</span></div>`+
     rows.map(it=>`<button type="button" class="ns-row bl-opt" onmousedown="event.preventDefault()" onclick="stockExistPick('${it.id}')">
       ${stockThumb(it)}<span style="min-width:0;flex:1"><span class="ns-n">${esc(it.name)}</span>
-      <span class="ns-s">${fmtNum(it.qty)} ${esc(it.unit||"")} · ${prod?"άνοιγμα κομματιού":"καταχώρηση αγοράς"}</span></span><span style="font-size:12px;font-weight:600">${prod?"Άνοιγμα →":"Αγορά →"}</span></button>`).join("");
+      <span class="ns-s">${isArchivedStock(it)?"στο αρχείο — επανέρχεται":Number(it.qty)<=0&&!prod?"τελείωσε — ξαναμπαίνει σε απόθεμα":fmtNum(it.qty)+" "+esc(it.unit||"")} · ${prod?"άνοιγμα κομματιού":"καταχώρηση αγοράς"}</span></span><span style="font-size:12px;font-weight:600">${prod?"Άνοιγμα →":"Αγορά →"}</span></button>`).join("");
   box.classList.remove("hidden");
 }
 function stockExistPick(id){
@@ -8066,8 +8196,47 @@ function bzExpOne(e){
 function bzExpTotal(id){ return Math.round(bzExpList(id).reduce((a,e)=>a+bzExpOne(e),0)*100)/100; }
 async function saveBzExp(silent){ return await saveSetting("bz_exp", bzExp, silent!==false); }
 
+/* ---- Φιλανθρωπικό bazaar ----
+   b.don = {to:"Άλμα Ζωής", mode:"piece"|"pct"|"fixed", val}. Η δωρεά υπολογίζεται
+   από τις πωλήσεις και αφαιρείται αυτόματα όπως η συμμετοχή: από το καθαρό,
+   τα αποτελέσματα και το ταμείο. Οι τιμές πώλησης δεν αλλάζουν.               */
+function bzDonOn(b){ return !!(b && b.don && Number(b.don.val)>0); }
+function bzDonLabel(b){
+  if(!bzDonOn(b)) return "";
+  const d=b.don, v=Number(d.val);
+  return d.mode==="pct" ? `${fmtNum(v)}% των εσόδων` : d.mode==="fixed" ? `${fmtMoney(v)} συνολικά` : `${fmtMoney(v)} ανά κομμάτι`;
+}
+function bzDonFor(b, pieces, rev){
+  if(!bzDonOn(b)) return 0;
+  const d=b.don, v=Number(d.val)||0;
+  const x = d.mode==="pct" ? rev*Math.min(100,v)/100 : d.mode==="fixed" ? v : pieces*v;
+  return Math.round(x*100)/100;
+}
+function bzDonation(b){
+  if(!bzDonOn(b)) return 0;
+  let pieces=0, rev=0;
+  bzSales(b.id).forEach(o=>{ pieces+=bzSalePieces(o,b.id); rev+=bzSaleValue(o,b.id); });
+  return bzDonFor(b, pieces, rev);
+}
+/* συμμετοχή + έξοδα + δωρεά: όσα βαρύνουν το bazaar πέρα από τα υλικά */
+function bzExtraCost(b){ return Math.round(((Number(b.fee)||0) + bzExpTotal(b.id) + bzDonation(b))*100)/100; }
+function bzDonToggle(){
+  const on=document.getElementById("bzDonOn").checked;
+  document.getElementById("bzDonBox").classList.toggle("hidden", !on);
+  if(on){ const t=document.getElementById("bzDonTo"); if(!t.value) setTimeout(()=>t.focus(),50); }
+  bzDonHint();
+}
+function bzDonHint(){
+  const m=document.getElementById("bzDonMode").value, v=parseMoney(document.getElementById("bzDonVal").value)||0;
+  document.getElementById("bzDonValL").textContent = m==="pct" ? "Ποσοστό %" : "Ποσό €";
+  const to=document.getElementById("bzDonTo").value.trim()||"τον φορέα";
+  document.getElementById("bzDonHint").textContent = !v ? "Οι τιμές μένουν ίδιες· το ποσό της δωρεάς αφαιρείται αυτόματα από το καθαρό και από το ταμείο."
+    : m==="pct" ? `Από κάθε €100 πωλήσεων, ${fmtMoney(v)} πηγαίνουν για ${to}.`
+    : m==="fixed" ? `${fmtMoney(v)} πηγαίνουν για ${to}, όσο κι αν πουληθεί.`
+    : `Για κάθε κομμάτι που πουλιέται, ${fmtMoney(v)} πηγαίνουν για ${to} (π.χ. 10 κομμάτια = ${fmtMoney(v*10)}).`;
+}
 function bzTotals(b){
-  if(!b) return {sold:0, rev:0, mat:0, fee:0, exp:0, net:0, left:0, taken:0};
+  if(!b) return {sold:0, rev:0, mat:0, fee:0, exp:0, don:0, net:0, left:0, taken:0};
   const sales=bzSales(b.id);
   let sold=0, rev=0, mat=0;
   sales.forEach(o=>{
@@ -8077,9 +8246,10 @@ function bzTotals(b){
   });
   const fee=Number(b.fee)||0;
   const exp=bzExpTotal(b.id);
+  const don=bzDonFor(b, sold, rev);
   const left=bzStock(b.id).reduce((a,it)=>a+(Number(it.qty)||0),0);
-  return { sold, rev:Math.round(rev*100)/100, mat:Math.round(mat*100)/100, fee, exp,
-           net:Math.round((rev-mat-fee-exp)*100)/100, left, taken:sold+left, orders:sales.length };
+  return { sold, rev:Math.round(rev*100)/100, mat:Math.round(mat*100)/100, fee, exp, don,
+           net:Math.round((rev-mat-fee-exp-don)*100)/100, left, taken:sold+left, orders:sales.length };
 }
 
 /* ---- προσθήκη / αφαίρεση εξόδου ---- */
@@ -8144,6 +8314,12 @@ function openBzModal(id){
   document.getElementById("bzPlace").value=b?(b.place||""):"";
   document.getElementById("bzFee").value=(b&&b.fee!=null)?b.fee:"";
   document.getElementById("bzDisc").value=(b&&b.disc!=null)?b.disc:"";
+  { const d=(b&&b.don)||{};
+    document.getElementById("bzDonOn").checked=bzDonOn(b);
+    document.getElementById("bzDonTo").value=d.to||"";
+    document.getElementById("bzDonMode").value=d.mode||"piece";
+    document.getElementById("bzDonVal").value=d.val!=null?String(d.val).replace(".",","):"";
+    bzDonToggle(); }
   document.getElementById("bzModalMsg").classList.add("hidden");
   document.getElementById("bzDelBtn").classList.toggle("hidden", !id);
   _ovOpen("bzModal");
@@ -8158,8 +8334,13 @@ async function saveBz(){
     date: document.getElementById("bzDate").value||null,
     place: document.getElementById("bzPlace").value.trim()||null,
     fee: parseMoney(document.getElementById("bzFee").value),
-    disc: parseMoney(document.getElementById("bzDisc").value)
+    disc: parseMoney(document.getElementById("bzDisc").value),
+    don: document.getElementById("bzDonOn").checked && (parseMoney(document.getElementById("bzDonVal").value)||0)>0
+      ? { to:document.getElementById("bzDonTo").value.trim()||"Δωρεά", mode:document.getElementById("bzDonMode").value,
+          val:parseMoney(document.getElementById("bzDonVal").value) }
+      : null
   };
+  if(document.getElementById("bzDonOn").checked && !rec.don){ msg.textContent="Συμπλήρωσε το ποσό της δωρεάς."; msg.classList.remove("hidden"); return; }
   if(editingBzId){
     const b=bzById(editingBzId); if(b) Object.assign(b, rec);
   }else{
@@ -8485,6 +8666,11 @@ function tillCashChips(){
 function tillSetCash(v){ document.getElementById("tillCash").value=v; renderTillMoney(); }
 function renderTillMoney(){
   const total=tillTotal(), off=tillDiscOffAmount();
+  { const el=document.getElementById("tillDon"), b=bzById(tillBz);
+    if(el){ const on=bzDonOn(b) && tillItems.length>0 && b.don.mode!=="fixed";
+      const n=tillItems.reduce((a,l)=>a+Math.max(1,Number(l.qty)||1),0);
+      el.classList.toggle("hidden", !on);
+      if(on) el.innerHTML=`💗 Από αυτή την πώληση <b>${fmtMoney(bzDonFor(b, n, total))}</b> πηγαίνουν για ${esc(b.don.to)}.`; } }
   document.getElementById("tillSub").textContent=fmtMoney(tillSub());
   document.getElementById("tillTotal").textContent=fmtMoney(total);
   document.getElementById("tillDiscChips").innerHTML =
@@ -8895,12 +9081,13 @@ function buySug(i){
   const q=String((buyRows[i]||{}).name||"").trim();
   let c=buyCandidates();
   if(q) c=c.filter(it=>smartMatch((it.name||"")+" "+(it.category||""), q));
-  c=c.slice().sort((a,b)=>(isYarnItem(b)-isYarnItem(a)) || String(a.name).localeCompare(String(b.name),"el")).slice(0,40);
+  const _qn=normText(q);
+  c=c.slice().sort((a,b)=>((normText(b.name)===_qn)-(normText(a.name)===_qn)) || (isArchivedStock(a)-isArchivedStock(b)) || (isYarnItem(b)-isYarnItem(a)) || String(a.name).localeCompare(String(b.name),"el")).slice(0,40);
   const exact=q && buyMatch(q);
   if(exact && c.length===1){ box.classList.add("hidden"); return; }
   box.innerHTML = c.map(it=>`<button type="button" class="ns-row bl-opt" onmousedown="event.preventDefault()" onclick="buyPick(${i},'${it.id}')">
       ${stockThumb(it)}<span style="min-width:0"><span class="ns-n">${esc(it.name)}</span>
-      <span class="ns-s">${esc(it.category||"")} · στην αποθήκη ${fmtNum(it.qty)} ${esc(it.unit||"")}${it.unit_cost!=null?" · τελευταία τιμή "+fmtMoney(it.unit_cost):""}</span></span></button>`).join("")
+      <span class="ns-s">${esc(it.category||"")} · ${isArchivedStock(it)?`<b class="bl-back">στο αρχείο — επανέρχεται με την αγορά</b>`:Number(it.qty)<=0?`<b class="bl-back">τελείωσε — ξαναμπαίνει σε απόθεμα</b>`:`στην αποθήκη ${fmtNum(it.qty)} ${esc(it.unit||"")}`}${it.unit_cost!=null?" · τελευταία τιμή "+fmtMoney(it.unit_cost):""}${(function(){const s=itemSupName(it.id);return s?" · "+esc(s):"";})()}</span></span></button>`).join("")
     + (q && !exact ? `<button type="button" class="ns-row bl-opt" onmousedown="event.preventDefault()" onclick="buyNewName(${i})">
       <span class="si-img bl-ph">＋</span><span><span class="ns-n">Νέο είδος «${esc(q)}»</span><span class="ns-s">θα δημιουργηθεί στην αποθήκη</span></span></button>` : "")
     + (!c.length && !q ? `<div class="ns-row" style="cursor:default"><span class="ns-s">Η αποθήκη είναι άδεια — γράψε το πρώτο είδος.</span></div>` : "");
@@ -8911,7 +9098,8 @@ function buyTag(i){
   const r=buyRows[i]; if(!r || !String(r.name||"").trim()) return "";
   const it=buyMatch(r.name);
   if(!it) return "νέο είδος";
-  let t=`στην αποθήκη: ${fmtNum(it.qty)} ${esc(it.unit||"")}`;
+  let t=isArchivedStock(it) ? `<b class="bl-back">από το αρχείο — επανέρχεται στην αποθήκη</b>`
+    : Number(it.qty)<=0 ? `<b class="bl-back">είχε τελειώσει — ξαναμπαίνει στο ίδιο είδος</b>` : `στην αποθήκη: ${fmtNum(it.qty)} ${esc(it.unit||"")}`;
   { const ms=itemSupName(it.id), cur=(document.getElementById("buyFrom")||{}).value||"";
     if(ms && cur.trim() && supNorm(supCanon(cur))!==supNorm(ms)) t+=` · βασικός: ${esc(ms)}`; }
   const e=priceTable().find(x=>x.key==="i:"+it.id || x.key==="n:"+normText(it.name));
@@ -9054,6 +9242,10 @@ async function saveBuy(){
       r.id=row.id; r.unit=unit; r.nm=r.name;
     }
     await loadStock();
+    // ό,τι ήταν στο αρχείο και ξαναγοράστηκε επιστρέφει στον ενεργό κατάλογο
+    { const back=lines.map(r=>r.id).filter(id=>archivedIds().includes(id));
+      if(back.length){ _flags=Object.assign({}, _flags||{}, {stockArchived:archivedIds().filter(x=>!back.includes(x))});
+        try{ await saveSetting("flags", _flags, true); }catch(e){} } }
     // 2. το παραστατικό πρώτα — αν αποτύχει, τίποτα άλλο δεν έχει γίνει
     const first=lines.find(r=>r.order);
     const o1=first ? (ordersCache||[]).find(o=>o.id===first.order) : null;
@@ -9725,7 +9917,7 @@ function askBazaar(q, E){
   if(!b) return { text:"Δεν υπάρχει καταχωρημένο bazaar.", actions:[{l:"Νέο bazaar", f:"goTab('bazaar');openBzModal()"}] };
   const t=bzTotals(b);
   const left=bzStock(b.id);
-  return { text:`${ASKB(esc(b.name))}${b.date?" ("+fmtMonthDate(b.date+"T09:00:00")+")":""}: πουλήθηκαν ${ASKB(t.sold+" "+(t.sold===1?"κομμάτι":"κομμάτια"))} για ${ASKB(fmtMoney(t.rev))}. Μετά τα υλικά (${fmtMoney(t.mat)}), τη συμμετοχή (${fmtMoney(t.fee)}) και τα έξοδα (${fmtMoney(t.exp)}) το ${ASKB("καθαρό είναι "+fmtMoney(t.net))}.${!b.closed&&left.length?` Έχεις μαζί σου ακόμη ${t.left} ${t.left===1?"κομμάτι":"κομμάτια"}.`:""}`,
+  return { text:`${ASKB(esc(b.name))}${b.date?" ("+fmtMonthDate(b.date+"T09:00:00")+")":""}: πουλήθηκαν ${ASKB(t.sold+" "+(t.sold===1?"κομμάτι":"κομμάτια"))} για ${ASKB(fmtMoney(t.rev))}. Μετά τα υλικά (${fmtMoney(t.mat)}), τη συμμετοχή (${fmtMoney(t.fee)})${t.don?`, τη δωρεά για ${esc(b.don.to)} (${fmtMoney(t.don)})`:""} και τα έξοδα (${fmtMoney(t.exp)}) το ${ASKB("καθαρό είναι "+fmtMoney(t.net))}.${!b.closed&&left.length?` Έχεις μαζί σου ακόμη ${t.left} ${t.left===1?"κομμάτι":"κομμάτια"}.`:""}`,
     rows:left.slice(0,10).map(askStockRow),
     actions:b.closed?[{l:"Άνοιγμα bazaar", f:`goTab('bazaar');setBzView('${b.id}')`}]:[{l:"Πώληση", f:`tillOpen('${b.id}',null)`},{l:"Άνοιγμα bazaar", f:`goTab('bazaar');setBzView('${b.id}')`}],
     more:["Ποια έτοιμα δεν πουλιούνται;","Πόσα βγάλαμε αυτόν τον μήνα;"] };
@@ -12222,7 +12414,7 @@ function reportData(range){
     if(!b.date) return;
     const d=new Date(b.date+"T12:00:00");
     if(!(d>=from && d<to)) return;
-    bzCost += (Number(b.fee)||0) + bzExpTotal(b.id);
+    bzCost += bzExtraCost(b);
   });
   // λοιπά λειτουργικά έξοδα από το ταμείο (χωρίς τις αγορές υλικών, που
   // βαρύνουν την παραγγελία κατά την ανάλωση, και χωρίς τα ήδη μετρημένα bazaar)
@@ -12535,7 +12727,7 @@ function repChannels(d){
   const {from,to}=d;
   const bzs=(bazaars||[]).filter(b=>{ if(!b.date) return false; const t=new Date(b.date+"T12:00:00"); return t>=from && t<to; })
     .map(b=>{ const sales=bzSales(b.id); const rev=sales.reduce((a,o)=>a+orderValue(o),0);
-      const cost=sales.reduce((a,o)=>a+(Number(o.cost)||0),0); const ex=(Number(b.fee)||0)+bzExpTotal(b.id);
+      const cost=sales.reduce((a,o)=>a+(Number(o.cost)||0),0); const ex=bzExtraCost(b);
       return {b, n:sales.length, rev, cost, ex, net:rev-cost-ex}; });
   return `<p class="rep-intro">Από πού έρχονται τα έσοδα και πόσο κερδίζεις σε κάθε κανάλι, αφού αφαιρεθούν τα υλικά.</p>
     <div class="rep-tbl"><div class="rep-hr rt5"><span>Κανάλι</span><span>Πωλ.</span><span>Τζίρος</span><span>Μικτό</span><span>Περιθ.</span></div>
@@ -12874,6 +13066,9 @@ function bazaarCosts(){
     const acc=(cashAcc()||{}).id||null;
     if(Number(b.fee)>0) out.push({ id:"bzfee-"+b.id, src:"bazaar", kind:"expense", account_id:acc,
       moved_at:b.date, amount:-Number(b.fee), category:"Bazaar", name:`Συμμετοχή · ${b.name}`, ref_type:"bazaar", ref_id:b.id });
+    { const dn=bzDonation(b);
+      if(dn>0) out.push({ id:"bzdon-"+b.id, src:"bazaar", kind:"expense", account_id:acc,
+        moved_at:b.date, amount:-dn, category:"Δωρεές", name:`Δωρεά · ${b.don.to} · ${b.name}`, ref_type:"bazaar", ref_id:b.id }); }
     bzExpList(b.id).forEach(e=> out.push({ id:"bzexp-"+b.id+"-"+e.key, src:"bazaar", kind:"expense", account_id:acc,
       moved_at:b.date, amount:-bzExpOne(e), category:"Bazaar", name:`${e.name} · ${b.name}`, ref_type:"bazaar", ref_id:b.id }));
   });
@@ -13268,7 +13463,7 @@ function renderBazaar(){
       <div class="w-head">
         <div style="min-width:0">
           <div class="bz-name">${esc(b.name)} ${badge}</div>
-          <div class="w-shop-s">${esc(when)}${b.place?" · "+esc(b.place):""}</div>
+          <div class="w-shop-s">${esc(when)}${b.place?" · "+esc(b.place):""}${bzDonOn(b)?` · 💗 ${esc(b.don.to)}`:""}</div>
         </div>
         <div style="flex:none;text-align:right">
           <div style="font-size:17px;font-weight:700">${fmtMoney(t.rev)}</div>
@@ -13313,6 +13508,7 @@ function bzSummaryHtml(b){
     ${row("Κόστος υλικών", t.mat, true)}
     ${t.fee?row("Κόστος συμμετοχής", t.fee, true):""}
     ${t.exp?row("Έξοδα bazaar", t.exp, true):""}
+    ${bzDonOn(b)?row(`Δωρεά · ${b.don.to} (${bzDonLabel(b)})`, t.don, true):""}
     <div class="sum-t"><span class="l">Καθαρό</span><span class="a">${fmtMoney(t.net)}</span></div>
   </div>
   <div style="font-size:11.5px;color:var(--muted);margin-top:8px">Οι πωλήσεις προσμετρώνται στον τζίρο και στο αποτέλεσμα της περιόδου. Το κόστος συμμετοχής και τα έξοδα βαρύνουν την ίδια περίοδο.</div>`;
@@ -13328,6 +13524,7 @@ function bzDetailHtml(b){
   <div class="bz-hero">
     <div class="bz-hero-t serif">${esc(b.name)}</div>
     <div class="bz-hero-s">${esc(when)}${b.place?" · "+esc(b.place):""}${b.closed?" · έκλεισε":(d===0?" · σήμερα":(d!=null&&d>0?` · σε ${d===1?"1 μέρα":d+" μέρες"}`:""))}${b.disc?` · έκπτωση ${fmtNum(b.disc)}%`:""}</div>
+    ${bzDonOn(b)?`<div class="bz-don">💗 Υπέρ <b>${esc(b.don.to)}</b> · ${esc(bzDonLabel(b))}</div>`:""}
     <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
       <button class="btn ghost sm" onclick="openBzModal('${b.id}')">Στοιχεία</button>
       ${b.closed
@@ -13340,6 +13537,7 @@ function bzDetailHtml(b){
     <div class="stat dark"><div class="n" style="font-size:22px">${fmtMoney(t.rev)}</div><div class="l">Έσοδα</div></div>
     <div class="stat"><div class="n">${t.sold}<span style="font-size:14px;opacity:.55"> / ${t.taken||0}</span></div><div class="l">Πουλήθηκαν</div></div>
     <div class="stat"><div class="n" style="font-size:20px">${fmtMoney(t.net)}</div><div class="l">Καθαρό</div></div>
+    ${bzDonOn(b)?`<div class="stat bz-don-stat"><div class="n" style="font-size:20px">${fmtMoney(t.don)}</div><div class="l">Για ${esc(b.don.to)}</div></div>`:""}
     ${t.left?`<div class="stat"><div class="n">${t.left}</div><div class="l">Μαζί σου</div></div>`:""}
   </div>
   `;
