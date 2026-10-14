@@ -1584,6 +1584,17 @@
   /* πεδία δίπλα-δίπλα: όταν μια ετικέτα σπάει σε δύο γραμμές, τα κουτιά μένουν στην ίδια ευθεία */
   .modal label.fld{display:flex;flex-direction:column}
   .modal label.fld > input:last-child,.modal label.fld > select:last-child{margin-top:auto}
+  .pv-bzcard.warn{background:#fdf8ee;border-color:#eedfc0}
+  .pv-bzcard.warn .pv-bzi{background:#f6e7c8;color:#8a5a1e;font-weight:800;font-size:17px}
+  .pv-bzcard.warn .pv-bzt span{color:#8a5a1e}
+  .lnk-in{background:none;border:none;padding:0;font:inherit;color:inherit;cursor:pointer;text-decoration:underline;text-decoration-color:#e4d3ae;text-underline-offset:3px}
+  .si-st{display:inline-block;margin:2px 0 2px 6px;font-size:10.5px;font-weight:700;letter-spacing:.02em;padding:2px 8px;border-radius:100px;vertical-align:1px;white-space:nowrap}
+  .si-st.low{background:#fdf1dc;color:#8a5a1e}
+  .si-st.out{background:#fbe7e1;color:#b54b3a}
+  .si-st.pend{background:#e9f0f7;color:#2f5d8a}
+  .si-st.job{background:var(--stone);color:var(--muted)}
+  @media(max-width:600px){.si-sts{display:block}.si-sts .si-st{margin:3px 4px 0 0}}
+  #stockAdmin[data-view=yarn] .stock-item .si-img{border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
   .own-keep{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--ink);cursor:pointer;margin:0 0 14px;line-height:1.35}
   .own-keep input{width:auto;margin:2px 0 0;accent-color:var(--ink);flex:none}
   .own-keep small{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
@@ -2222,7 +2233,7 @@
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();openCleanNames()">Καθαρισμός ονομάτων υλικών</button>
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();restorePalette()">Επαναφορά αποχρώσεων Mix &amp; Match</button>
     <p style="font-size:11.5px;color:var(--muted);margin:14px 0 0;padding-top:12px;border-top:1px solid var(--line)">
-      Έκδοση <b style="color:var(--ink)">2026.10.14.2240</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
+      Έκδοση <b style="color:var(--ink)">2026.10.14.2310</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
       κλείσε και ξανάνοιξε την καρτέλα, ή τράβα την σελίδα προς τα κάτω για ανανέωση.</p>
     <p id="setRebuiltNote" style="font-size:11.5px;color:var(--muted);margin-top:6px">Συμπληρώνει τις κινήσεις αποθήκης από τις παραγγελίες, τις πωλήσεις και τα bazaar που υπάρχουν ήδη. Το απόθεμα δεν αλλάζει.</p>
   </div>
@@ -7732,10 +7743,10 @@ function setStockView(v){ stockView=v; renderStock(); syncRoute(); }
 function stockTop(isQty, qc){
   let h="";
   if(isQty){
-    h+=`<div class="chips"><div class="chiprow">
-      <button class="tb ${stockQty==="in"?"sel":""}" onclick="setStockQty('in')">Σε απόθεμα${qc.in?` (${qc.in})`:""}</button>
-      <button class="tb ${stockQty==="out"?"sel":""}" onclick="setStockQty('out')">Τελείωσαν${qc.out?` (${qc.out})`:""}</button>
-      <button class="tb ${stockQty==="all"?"sel":""}" onclick="setStockQty('all')">Όλα</button>
+    h+=`<div class="pv-bar"><div class="chiprow pv-f">
+      <button class="tb ${stockQty==="in"?"sel":""}" onclick="setStockQty('in')">Σε απόθεμα <span class="c">${qc.in||0}</span></button>
+      <button class="tb ${stockQty==="out"?"sel":""}" onclick="setStockQty('out')">Τελείωσαν <span class="c">${qc.out||0}</span></button>
+      <button class="tb ${stockQty==="all"?"sel":""}" onclick="setStockQty('all')">Όλα <span class="c">${(qc.in||0)+(qc.out||0)}</span></button>
     </div></div>`;
   }
   if(stockView==="yarn"){
@@ -7770,6 +7781,7 @@ function renderStock(){
   const toggle="";        // οι καρτέλες ζουν πλέον στην κεφαλίδα της σελίδας
   // η κεφαλίδα ανήκει στη σελίδα που φαίνεται — η αποθήκη ζωγραφίζεται και στο παρασκήνιο
   if(!box.classList.contains("hidden")) renderPageHead("stock");
+  box.dataset.view=stockView;
   if(stockView==="models"){ box.innerHTML = renderModels(); return; }
   const isQty = stockView==="yarn" || stockView==="supplies";
   let rows = stockView==="archive" ? (stockCache||[]).filter(isArchivedStock)
@@ -7847,7 +7859,12 @@ function renderStock(){
     <div class="stat"><div class="n">${isMM?fmtMoney(totalVal):rows.length}</div><div class="l">${isMM?"Αξία (κόστος)":(stockView==="product"?"Κομμάτια":(stockView==="yarn"?"Χρώματα":"Είδη"))}</div></div>
   </div>`;
   if(lowItems.length){
-    html+=`<div class="r-hint" style="color:#8a5a1e;background:#fdf6ea;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="flex:1;min-width:180px">${stockView==="product"?"Λίγα κομμάτια":"Τελειώνουν"}: ${lowItems.map(it=>esc(it.name)+(stockState(it)==="out"?" (0)":` (${fmtNum(it.qty)})`)).join(" · ")}</span>${stockView==="product"||stockView==="mm"?"":`<button class="btn ghost sm" onclick="openSupOrder()">Παραγγελία</button><button class="btn ghost sm" onclick="openPurchase();buyFillLow()">Αγορά τους</button>`}</div>`;
+    const _nOut=lowItems.filter(it=>stockState(it)==="out").length;
+    html+=`<div class="pv-bzcard warn">
+      <span class="pv-bzi">!</span>
+      <div class="pv-bzt" style="cursor:default"><b>${lowItems.length} ${lowItems.length===1?"είδος θέλει":"είδη θέλουν"} αναπλήρωση${_nOut?` · ${_nOut} ${_nOut===1?"τελείωσε":"τελείωσαν"}`:""}</b>
+        <span>${lowItems.slice(0,6).map(it=>`<button class="lnk-in" onclick="openItemSheet('${it.id}')">${esc(it.name)} (${fmtNum(it.qty)})</button>`).join(" · ")}${lowItems.length>6?` +${lowItems.length-6}`:""}</span></div>
+      ${stockView==="product"||stockView==="mm"?"":`<button class="btn ghost sm" onclick="openSupOrder()">Παραγγελία</button><button class="btn solid sm" onclick="withCash(()=>{openPurchase();buyFillLow();})">Αγορά τους</button>`}</div>`;
   }
   if(stockView==="mm"){
     html+=`<div class="r-hint" style="margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
@@ -7907,7 +7924,12 @@ function renderStock(){
       const _bs=stockView==="product"?bomSec(it.id):0;
       const meta = stockView==="product"
         ? `${it.sell_price!=null?"Πώληση "+fmtMoney(it.sell_price):"χωρίς τιμή πώλησης"}${it.unit_cost!=null?" · υλικά "+fmtMoney(it.unit_cost):""}${_bs?" · "+fmtDur(_bs)+" ("+fmtMoney(labourCost(_bs))+")":""}`
-        : `${it.unit_cost!=null?fmtMoney(it.unit_cost)+" / "+esc(unit):"χωρίς τιμή"}${(function(){const s=itemSupName(it.id);return s?` · <span class="si-sup">${esc(s)}</span>`:"";})()}${(function(){const pd=itemPending(it.id);return pd?` · <span style="color:#2f5d8a">⏳ ${fmtNum(pd.qty)} σε αναμονή</span>`:"";})()}`;
+        : `${it.unit_cost!=null?fmtMoney(it.unit_cost)+" / "+esc(unit):"χωρίς τιμή"}${(function(){const s=itemSupName(it.id);return s?` · <span class="si-sup">${esc(s)}</span>`:"";})()}`;
+      // κατάσταση: πάντα στην ίδια θέση, δίπλα στο όνομα
+      const _pd=stockView!=="product"?itemPending(it.id):null;
+      const stPill = isPerJob(it) ? `<span class="si-st job">ανά παραγγελία</span>`
+        : (_pd ? `<span class="si-st pend">⏳ ${fmtNum(_pd.qty)} σε αναμονή</span>` : "")
+        + (st==="out" ? `<span class="si-st out">${stockView==="product"?"εξαντλήθηκε":"τελείωσε"}</span>` : st==="low" ? `<span class="si-st low">${stockView==="product"?"λίγα":"τελειώνει"}</span>` : "");
       const isProd = stockView==="product";
       const qtyBlock = `<div class="si-qty">
           <button class="stepper-btn" onclick="adjustStock('${it.id}',-1)">−</button>
@@ -7918,8 +7940,8 @@ function renderStock(){
       html+=`<div class="stock-item ${st}${_mstart?" mstart":""}">
         <span class="si-tap" onclick="openItemSheet('${it.id}')">${stockThumb(it)}</span>
         <div class="si-info" onclick="openItemSheet('${it.id}')">
-          <div class="si-name">${esc(siLabel(it, _byModel))}${_sev&&isProd?` <span class="mm-pill" style="background:${_sev.color}26;color:${_sev.ink||_sev.color};border-color:${_sev.color}">${esc(_sev.name)}</span>`:""}${(function(){const b=bzOfStock(it);return b?` <button class="mm-pill cust-pill" style="background:#f3efe6;color:#8a6a2e;border-color:#e4d9c2" onclick="showAdminTab('bazaar');setBzView('${b.id}')">🛍️ ${esc(b.name)}</button>`:"";})()}</div>
-          <div class="si-meta">${meta}${it.status==="written_off"?` · <span style="color:#b54b3a">αποσύρθηκε${it.status_reason?" ("+esc(it.status_reason)+")":""}</span>`:""}${(isPerJob(it))?' · <span style="color:var(--muted)">ανά παραγγελία</span>':(st==="low"?' · <span class="si-low">'+(isProd?"λίγα":"τελειώνει")+'</span>':st==="out"?' · <span class="si-low">εξαντλήθηκε</span>':'')}</div>
+          <div class="si-name">${esc(siLabel(it, _byModel))}${stPill?`<span class="si-sts">${stPill}</span>`:""}${_sev&&isProd?` <span class="mm-pill" style="background:${_sev.color}26;color:${_sev.ink||_sev.color};border-color:${_sev.color}">${esc(_sev.name)}</span>`:""}${(function(){const b=bzOfStock(it);return b?` <button class="mm-pill cust-pill" style="background:#f3efe6;color:#8a6a2e;border-color:#e4d9c2" onclick="showAdminTab('bazaar');setBzView('${b.id}')">🛍️ ${esc(b.name)}</button>`:"";})()}</div>
+          <div class="si-meta">${meta}${it.status==="written_off"?` · <span style="color:#b54b3a">αποσύρθηκε${it.status_reason?" ("+esc(it.status_reason)+")":""}</span>`:""}</div>
         </div>
         ${stockView==="archive"?"":qtyBlock}
         <button class="si-more" aria-label="Ενέργειες" onclick="openItemSheet('${it.id}')">⋯</button>
