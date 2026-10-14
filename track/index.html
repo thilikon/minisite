@@ -2148,7 +2148,7 @@
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();openCleanNames()">Καθαρισμός ονομάτων υλικών</button>
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();restorePalette()">Επαναφορά αποχρώσεων Mix &amp; Match</button>
     <p style="font-size:11.5px;color:var(--muted);margin:14px 0 0;padding-top:12px;border-top:1px solid var(--line)">
-      Έκδοση <b style="color:var(--ink)">2026.10.14.1930</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
+      Έκδοση <b style="color:var(--ink)">2026.10.14.1940</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
       κλείσε και ξανάνοιξε την καρτέλα, ή τράβα την σελίδα προς τα κάτω για ανανέωση.</p>
     <p id="setRebuiltNote" style="font-size:11.5px;color:var(--muted);margin-top:6px">Συμπληρώνει τις κινήσεις αποθήκης από τις παραγγελίες, τις πωλήσεις και τα bazaar που υπάρχουν ήδη. Το απόθεμα δεν αλλάζει.</p>
   </div>
@@ -3724,7 +3724,9 @@ function showAdminTab(tab){
     if(el) el.classList.toggle("hidden", !isOrders);
   });
   { const rs=document.getElementById("regSum");
-    if(rs && !isOrders) rs.classList.add("hidden"); }
+    if(rs && !isOrders) rs.classList.add("hidden");
+    // η σύνοψη μήνα υπολογίζεται μόλις φανεί η λίστα, όχι μόνο μετά από φίλτρο
+    if(isOrders && (ordersCache||[]).length) try{ renderOrders(); }catch(e){} }
   document.getElementById("statsBox").classList.toggle("hidden", !isStats);
   document.getElementById("homeAdmin").classList.toggle("hidden", !isHome);
   document.getElementById("cashAdmin").classList.toggle("hidden", !isCash);
