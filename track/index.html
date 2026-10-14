@@ -1328,7 +1328,7 @@
      =================================================================== */
   body.admin-mode{background:var(--cream)}
   body.admin-mode > header, body.admin-mode > footer{display:none}
-  body.admin-mode main.wrap{max-width:none;padding:0;overflow:visible}
+  body.admin-mode main.wrap{max-width:none;padding:0!important;overflow:visible}
   body.admin-mode .wrap.wide{max-width:none}
 
   #adminPanel .legacy-nav{display:none}
@@ -1484,6 +1484,10 @@
      Κοινό λεξιλόγιο για όλα τα παράθυρα: τίτλος serif, ενότητες με σταθερή
      επικεφαλίδα, πλέγμα πεδίων, σταθερό κάτω μέρος με σύνολα και ενέργειες. */
   .modal > .mh h2{font-family:'Cormorant',Georgia,serif;font-weight:600;letter-spacing:.005em}
+  .sn .gear-dot{top:8px;left:31px;right:auto;box-shadow:0 0 0 2px #fff}
+  .own-keep{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--ink);cursor:pointer;margin:0 0 14px;line-height:1.35}
+  .own-keep input{width:auto;margin:2px 0 0;accent-color:var(--ink);flex:none}
+  .own-keep small{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
   .sec-lbl{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:16px 2px 8px}
   .osec{border:1px solid var(--line);border-radius:14px;padding:12px 14px 2px;margin-bottom:12px;background:#fff}
   .osec-h{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:0 0 10px;min-height:28px}
@@ -1557,11 +1561,15 @@
     .fg-ship .fg-wide{grid-column:auto}
     .fg-money{grid-template-columns:repeat(4,minmax(0,1fr))}
     .ie-grid{grid-template-columns:minmax(0,1.3fr) minmax(0,.9fr) minmax(0,1.3fr) minmax(0,1.1fr)}
-    .ord-foot{flex-direction:row;align-items:center;flex-wrap:nowrap}
-    .ord-foot .of-sum{flex:1;justify-content:flex-start;gap:16px;flex-direction:row-reverse}
-    .ord-foot .of-pay{border-top:none;padding-top:0;flex-direction:column;gap:2px;text-align:right;border-left:1px dashed var(--line);padding-left:14px}
-    .ord-foot .of-btns{flex:0 0 auto}
-    .ord-foot .of-btns .btn.solid{min-width:170px}
+    /* υπολογιστής: ανάλυση · πληρωμή · σύνολο σε μία γραμμή, ενέργειες από κάτω δεξιά */
+    .ord-foot{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:10px 18px}
+    .ord-foot .of-sum{display:contents}
+    .ord-foot .of-l{grid-column:1;grid-row:1;min-width:0}
+    .ord-foot .of-pay{grid-column:2;grid-row:1;border-top:none;padding:0 0 0 16px;flex-direction:column;gap:2px;border-left:1px solid var(--line)}
+    .ord-foot .of-v{grid-column:3;grid-row:1;padding-left:16px;border-left:1px solid var(--line)}
+    .ord-foot .of-btns{grid-column:1/-1;grid-row:2;justify-content:flex-end}
+    .ord-foot .of-btns .btn.solid{flex:0 0 auto;min-width:200px}
+    .ord-foot .of-pay span{white-space:nowrap}
   }
   @media(max-width:699px){
     .osec{padding:11px 12px 1px;border-radius:13px}
@@ -2030,6 +2038,8 @@
     </div>
     <div class="fld" style="margin-bottom:14px"><span style="display:block;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-weight:600">Πού μπήκαν</span>
       <div class="chips" style="margin:0"><div class="chiprow" id="payAccs"></div></div></div>
+    <label class="chk-row own-keep hidden" id="payKeepRow"><input type="checkbox" id="payKeep">
+      <span>Τα μετρητά τα κράτησε η Αναστασία<small>Η είσπραξη μετρά στις πωλήσεις και καταγράφεται αμέσως ως ανάληψη ιδιοκτήτη· το υπόλοιπο του ταμείου δεν αλλάζει.</small></span></label>
     <p id="payMsg" class="msg err hidden"></p>
     <div class="mf">
       <button class="btn solid" id="payBtn" onclick="applyPay()">Καταχώρηση πληρωμής</button>
@@ -2080,7 +2090,7 @@
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();openCleanNames()">Καθαρισμός ονομάτων υλικών</button>
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();restorePalette()">Επαναφορά αποχρώσεων Mix &amp; Match</button>
     <p style="font-size:11.5px;color:var(--muted);margin:14px 0 0;padding-top:12px;border-top:1px solid var(--line)">
-      Έκδοση <b style="color:var(--ink)">2026.10.14.2000</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
+      Έκδοση <b style="color:var(--ink)">2026.10.14.1615</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
       κλείσε και ξανάνοιξε την καρτέλα, ή τράβα την σελίδα προς τα κάτω για ανανέωση.</p>
     <p id="setRebuiltNote" style="font-size:11.5px;color:var(--muted);margin-top:6px">Συμπληρώνει τις κινήσεις αποθήκης από τις παραγγελίες, τις πωλήσεις και τα bazaar που υπάρχουν ήδη. Το απόθεμα δεν αλλάζει.</p>
   </div>
@@ -2183,6 +2193,8 @@
       <div class="till-change" id="tillChangeRow">
         <span class="l" id="tillChangeL">Ρέστα</span><span class="v" id="tillChange">€0,00</span>
       </div>
+      <label class="chk-row own-keep" style="margin:10px 0 0"><input type="checkbox" id="tillKeep">
+        <span>Τα μετρητά τα κρατά η Αναστασία<small>Καταγράφεται ως ανάληψη ιδιοκτήτη· δεν μπαίνουν στο ταμείο.</small></span></label>
     </div>
     <label class="fld" style="margin-top:14px;position:relative"><span>Όνομα πελάτη (προαιρετικό)</span>
       <input id="tillName" placeholder="—" oninput="renderFacts('tillFacts',this.value)"><div id="tillSug" class="name-sug hidden"></div></label>
@@ -4970,6 +4982,9 @@ function renderPayAccs(sel){
   const list=payAccounts();
   payAcc = sel || payAcc || ((cashAcc()||list[0]||{}).id) || null;
   document.getElementById("payAccs").innerHTML = list.map(a=>`<button type="button" class="tb ${a.id===payAcc?"sel":""}" onclick="renderPayAccs('${a.id}')">${esc(a.name)}</button>`).join("");
+  const isCash=((list.find(a=>a.id===payAcc)||{}).kind)==="cash";
+  const kr=document.getElementById("payKeepRow"); if(kr) kr.classList.toggle("hidden", !isCash);
+  if(!isCash){ const k=document.getElementById("payKeep"); if(k) k.checked=false; }
 }
 async function recordPayment(o, amount, accId, whenISO){
   const at = whenISO || new Date().toISOString();
@@ -5000,7 +5015,7 @@ function openPayOne(id){
 function payPrep(){
   document.getElementById("payDate").value=todayISO();
   document.getElementById("payMsg").classList.add("hidden");
-  payAcc=null; renderPayAccs();
+  payAcc=null; { const k=document.getElementById("payKeep"); if(k) k.checked=false; } renderPayAccs();
 }
 function setPay(v){ document.getElementById("payAmount").value=v; }
 async function applyPay(){
@@ -5022,6 +5037,11 @@ async function applyPay(){
       if(give<=0.005) continue;
       await recordPayment(o, give, payAcc, when);
       left=Math.round((left-give)*100)/100; done++;
+    }
+    const _kept=(document.getElementById("payKeep")||{}).checked && ((cashAcc()||{}).id===payAcc);
+    if(_kept && amount-left>0.005){
+      const who=(payCtx.list[0]&&payCtx.list[0].customer_name)||"πελάτη";
+      await ownerCashMove("owner_draw", amount-left, when, `Μετρητά από ${who} · τα κράτησε η ${OWNER_NAME}`);
     }
     closePay(); renderCustomers(); renderOrders(); renderStats(); try{ renderCash(); renderWholesale(); }catch(e){}
     adminFlash(left>0.005 ? `Καταχωρήθηκαν ${fmtMoney(amount-left)} · περίσσεψαν ${fmtMoney(left)}` : `Εξοφλήθηκαν ${done===1?"1 παραγγελία":done+" παραγγελίες"} ✓`);
@@ -9315,8 +9335,11 @@ async function tillCheckout(){
     if(touched) await saveBzItems(true);
     bzError=null;
     await loadOrders(); renderBazaar(); renderStock();
+    const _keep=tillPayWay==="cash" && (document.getElementById("tillKeep")||{}).checked;
+    if(_keep) await ownerCashMove("owner_draw", total, new Date().toISOString(), `Μετρητά λιανικής${anon?"":" · "+name} · τα κράτησε η ${OWNER_NAME}`);
+    { const k=document.getElementById("tillKeep"); if(k) k.checked=false; }
     closeTill();
-    adminFlash("Πώληση ✓ "+fmtMoney(total));
+    adminFlash("Πώληση ✓ "+fmtMoney(total)+(_keep?` · τα μετρητά κράτησε η ${OWNER_NAME}`:""));
   }catch(e){
     // Ακυρώνουμε ό,τι ταξιδεύει ακόμη, ώστε να μη «φτάσει» μετά την επαναφορά
     // και να αφαιρεθεί το κομμάτι δεύτερη φορά όταν ξαναπατήσει πώληση.
@@ -9471,7 +9494,8 @@ function openPurchase(orderId, stockId){
   document.getElementById("buyDate").value = todayISO();
   const acc=document.getElementById("buyAcc");
   const list=(accounts||[]).filter(a=>!a.archived);
-  acc.innerHTML = list.map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join("");
+  acc.innerHTML = list.map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join("")
+    + (cashAcc()?`<option value="owner">Πλήρωσε η ${OWNER_NAME} (από τα δικά της)</option>`:"");
   const cash=list.find(a=>a.kind==="cash"); if(cash) acc.value=cash.id;
   document.getElementById("buyFrom").value=_it?(itemSupName(_it.id)||""):"";
   document.getElementById("buyMsg").classList.add("hidden");
@@ -9662,7 +9686,8 @@ async function saveBuy(){
   if(!lines.length || bad){ msg.textContent="Κάθε γραμμή θέλει είδος, ποσότητα και τιμή."; msg.classList.remove("hidden"); return false; }
   const over=lines.find(r=>r.u>r.q);
   if(over){ msg.textContent=`«${over.name}»: χρησιμοποιήθηκαν περισσότερα από όσα αγοράστηκαν.`; msg.classList.remove("hidden"); return false; }
-  const accId=document.getElementById("buyAcc").value;
+  const _accSel=document.getElementById("buyAcc").value, _ownPaid=_accSel==="owner";
+  const accId=_ownPaid ? ((cashAcc()||{}).id) : _accSel;
   const when=(document.getElementById("buyDate").value||todayISO())===todayISO()
     ? new Date().toISOString() : (document.getElementById("buyDate").value+"T12:00:00.000Z");
   const from=document.getElementById("buyFrom").value.trim();
@@ -9693,6 +9718,8 @@ async function saveBuy(){
     await postCash([{ account_id:accId, moved_at:when, amount:-total, kind:"purchase", category:"Υλικά & αγορές",
       name, note:null, ref_type:first?"order":null, ref_id:first?first.order:null,
       lines:lines.map(r=>({item_id:r.id, name:r.nm, unit:r.unit, qty:r.q, unit_cost:r.c, job_ref:r.order||null, used:r.u||0, supplier:sup})) }]);
+    // πληρωμή από τα προσωπικά χρήματα: εισφορά ιδιοκτήτη ίσου ποσού, ώστε το ταμείο να μη μειωθεί
+    if(_ownPaid) await ownerCashMove("owner_in", total, when, `${name} · πλήρωσε η ${OWNER_NAME}`);
     if(sup) try{ await supEnsure(sup); }catch(e){}
     // το είδος που δεν έχει βασικό προμηθευτή τον «μαθαίνει» από την αγορά
     if(sup){ const fresh=lines.filter(r=>r.id && !(itemSup||{})[r.id]);
@@ -14910,6 +14937,16 @@ async function attachJobLines(lines){
   await loadOrders();
 }
 
+/* Μετρητά που δεν μπαίνουν στο ταμείο: η Αναστασία τα κρατά (ανάληψη ιδιοκτήτη)
+   ή πληρώνει από τα δικά της (εισφορά ιδιοκτήτη). Το έσοδο/έξοδο μετρά κανονικά,
+   το υπόλοιπο του ταμείου μένει όπως ήταν. */
+const OWNER_NAME="Αναστασία";
+async function ownerCashMove(kind, amount, whenISO, name){
+  const c=cashAcc(); const a=Math.round((Number(amount)||0)*100)/100;
+  if(!c || a<=0) return false;
+  try{ await postCash([{account_id:c.id, moved_at:whenISO||new Date().toISOString(), amount:kind==="owner_draw"?-a:a, kind, category:null, name, note:null, lines:null}]); return true; }
+  catch(e){ netBar(`Η κίνηση καταχωρίστηκε, αλλά η ${kind==="owner_draw"?"ανάληψη":"εισφορά"} ${fmtMoney(a)} της ${OWNER_NAME} δεν καταγράφηκε. Καταχωρίστε τη από τα Οικονομικά.`); return false; }
+}
 async function postCash(rows){
   const r=await authFetch(REST + "/thilikon_cash",{method:"POST",headers:{"Prefer":"return=representation"},body:JSON.stringify(rows)});
   if(!r.ok) throw new Error((await r.json().catch(()=>({}))).message || "HTTP "+r.status);
