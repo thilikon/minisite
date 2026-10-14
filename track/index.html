@@ -2222,7 +2222,7 @@
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();openCleanNames()">Καθαρισμός ονομάτων υλικών</button>
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();restorePalette()">Επαναφορά αποχρώσεων Mix &amp; Match</button>
     <p style="font-size:11.5px;color:var(--muted);margin:14px 0 0;padding-top:12px;border-top:1px solid var(--line)">
-      Έκδοση <b style="color:var(--ink)">2026.10.14.2230</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
+      Έκδοση <b style="color:var(--ink)">2026.10.14.2210</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
       κλείσε και ξανάνοιξε την καρτέλα, ή τράβα την σελίδα προς τα κάτω για ανανέωση.</p>
     <p id="setRebuiltNote" style="font-size:11.5px;color:var(--muted);margin-top:6px">Συμπληρώνει τις κινήσεις αποθήκης από τις παραγγελίες, τις πωλήσεις και τα bazaar που υπάρχουν ήδη. Το απόθεμα δεν αλλάζει.</p>
   </div>
@@ -8142,6 +8142,7 @@ function toggleModelFields(){
   if(split) syncVariantLists();
 }
 function onModelVariant(){
+  try{ syncVariantLists(); }catch(e){}
   document.getElementById("sName").value =
     composeName(document.getElementById("sModel").value, document.getElementById("sVariant").value);
 }
@@ -8154,10 +8155,12 @@ function stockExistSug(field){
   const q = field==="sName" ? document.getElementById("sName").value.trim()
           : (document.getElementById("sModel").value+" "+document.getElementById("sVariant").value).trim();
   if(q.length<2){ box.classList.add("hidden"); return; }
+  // έτοιμο κομμάτι: η πρόταση εμφανίζεται μόνο όταν μοντέλο + απόχρωση ταιριάζουν ακριβώς με κομμάτι που υπάρχει
+  const exactName = field==="sModel" ? composeName(document.getElementById("sModel").value.trim(), document.getElementById("sVariant").value.trim()) : null;
   const rows=(stockCache||[]).filter(it=>(prod ? (it.type==="product") : (it.type!=="product" && !it.mm)))
-    .filter(it=>smartMatch((it.name||"")+" "+(it.category||""), q)).slice(0,6);
+    .filter(it=>exactName!=null ? normText(it.name)===normText(exactName) : smartMatch((it.name||"")+" "+(it.category||""), q)).slice(0,6);
   if(!rows.length){ box.classList.add("hidden"); return; }
-  box.innerHTML=`<div class="ns-row" style="cursor:default;background:var(--cream)"><span class="ns-s" style="margin:0">Υπάρχει ήδη στην αποθήκη — διάλεξέ το αντί να φτιάξεις καινούργιο:</span></div>`+
+  box.innerHTML=`<div class="ns-row" style="cursor:default;background:var(--cream)"><span class="ns-s" style="margin:0">${exactName!=null?"Αυτό το κομμάτι υπάρχει ήδη — ανοίξτε το αντί να δημιουργηθεί δεύτερο:":"Υπάρχει ήδη στην αποθήκη — διάλεξέ το αντί να φτιάξεις καινούργιο:"}</span></div>`+
     rows.map(it=>`<button type="button" class="ns-row bl-opt" onmousedown="event.preventDefault()" onclick="stockExistPick('${it.id}')">
       ${stockThumb(it)}<span style="min-width:0;flex:1"><span class="ns-n">${esc(it.name)}</span>
       <span class="ns-s">${isArchivedStock(it)?"στο αρχείο — επανέρχεται":Number(it.qty)<=0&&!prod?"τελείωσε — ξαναμπαίνει σε απόθεμα":fmtNum(it.qty)+" "+esc(it.unit||"")} · ${prod?"άνοιγμα κομματιού":"καταχώρηση αγοράς"}</span></span><span style="font-size:12px;font-weight:600">${prod?"Άνοιγμα →":"Αγορά →"}</span></button>`).join("");
@@ -15297,7 +15300,12 @@ function knownModels(){
 }
 function syncVariantLists(){
   const dv=document.getElementById("variantList");
-  if(dv) dv.innerHTML = knownVariants().map(v=>`<option value="${esc(v)}">`).join("");
+  // πρώτα οι αποχρώσεις που έχει ήδη το μοντέλο που γράφτηκε, με ένδειξη
+  const mdl=((document.getElementById("sModel")||{}).value||"").trim();
+  const mine=mdl?(stockCache||[]).filter(it=>it.type==="product" && normText(modelOf(it))===normText(mdl) && variantOf(it)):[];
+  const mv=[...new Set(mine.map(it=>variantOf(it)))];
+  if(dv) dv.innerHTML = mv.map(v=>{ const it=mine.find(x=>variantOf(x)===v); return `<option value="${esc(v)}" label="${isArchivedStock(it)?"υπάρχει στο αρχείο":"υπάρχει ήδη · "+fmtNum(it.qty)+" τεμ."}">`; }).join("")
+    + knownVariants().filter(v=>!mv.some(x=>normText(x)===normText(v))).map(v=>`<option value="${esc(v)}">`).join("");
   const dm=document.getElementById("modelList");
   if(dm) dm.innerHTML = knownModels().map(v=>`<option value="${esc(v)}">`).join("");
 }
