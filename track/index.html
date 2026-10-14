@@ -1534,6 +1534,20 @@
   .pv-step button{border:none;background:none;width:32px;height:32px;font-size:16px;cursor:pointer;color:var(--ink)}
   .pv-step b{min-width:22px;text-align:center;font-size:13px}
   @media(max-width:520px){ .pv-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px} .pv-t{font-size:17px} .pv-b{padding:10px 11px 2px} .pv-f{padding:6px 9px 10px} .pv-seg{width:100%} .pv-seg button{flex:1} }
+  @media(max-width:520px){ .pv-grid.pm-grid{grid-template-columns:1fr}
+    .pm-card{flex-direction:row;flex-wrap:wrap}
+    .pm-card .pv-img{width:92px;height:92px;aspect-ratio:auto;flex:none;margin:12px 0 0 12px;border-radius:12px;overflow:hidden}
+    .pm-card .pv-img .pv-q{left:4px;top:4px;font-size:9.5px;padding:2px 6px}
+    .pm-card .pv-b{flex:1 1 0;min-width:0;padding-top:12px}
+    .pm-card .pv-f{width:100%} }
+  .pm-econ{display:block;width:100%;text-align:left;border:none;border-radius:10px;padding:8px 10px;margin:9px 0 0;font-family:'Inter';font-size:12.5px;line-height:1.35;cursor:default}
+  button.pm-econ{cursor:pointer;font-weight:600}
+  .pm-econ small{display:block;font-size:11px;opacity:.8;margin-top:2px;font-weight:400}
+  .pm-sug{font-size:12px;color:var(--ink-soft);margin-top:7px}
+  .pm-acts{display:flex;flex-wrap:wrap;gap:4px 10px;margin:10px 0 4px;font-size:12px}
+  .pm-a{border:none;background:none;padding:0;font-family:'Inter';font-size:12px;color:var(--ink);cursor:pointer;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+  .pm-a.dim{color:var(--muted);text-decoration:none;cursor:default}
+  .pm-a.warn{color:#8a5a1e}
   .own-keep{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--ink);cursor:pointer;margin:0 0 14px;line-height:1.35}
   .own-keep input{width:auto;margin:2px 0 0;accent-color:var(--ink);flex:none}
   .own-keep small{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
@@ -1992,6 +2006,8 @@
     <div id="mStats" class="cust-note hidden" style="margin-bottom:12px"></div>
     <p class="sec-lbl" style="margin:4px 0 8px">Τυπικά υλικά</p>
     <div class="mat-block" id="mMatList"></div>
+    <label class="chk-row own-keep" style="margin:4px 0 0"><input type="checkbox" id="mRetired">
+      <span>Αποσυρμένο μοντέλο<small>Δεν εμφανίζεται στη λίστα της νέας παραγγελίας· το ιστορικό, οι πωλήσεις και τα στατιστικά του διατηρούνται.</small></span></label>
     <div class="mf">
       <button class="btn danger hidden" id="modelDelBtn" onclick="delModel()">Διαγραφή</button>
       <button class="btn solid" onclick="saveModel()">Αποθήκευση</button>
@@ -2148,7 +2164,7 @@
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();openCleanNames()">Καθαρισμός ονομάτων υλικών</button>
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();restorePalette()">Επαναφορά αποχρώσεων Mix &amp; Match</button>
     <p style="font-size:11.5px;color:var(--muted);margin:14px 0 0;padding-top:12px;border-top:1px solid var(--line)">
-      Έκδοση <b style="color:var(--ink)">2026.10.14.1940</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
+      Έκδοση <b style="color:var(--ink)">2026.10.14.2015</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
       κλείσε και ξανάνοιξε την καρτέλα, ή τράβα την σελίδα προς τα κάτω για ανανέωση.</p>
     <p id="setRebuiltNote" style="font-size:11.5px;color:var(--muted);margin-top:6px">Συμπληρώνει τις κινήσεις αποθήκης από τις παραγγελίες, τις πωλήσεις και τα bazaar που υπάρχουν ήδη. Το απόθεμα δεν αλλάζει.</p>
   </div>
@@ -5865,7 +5881,7 @@ function stampStages(newItems, prevItems, fallbackISO){
 
 function productOptions(){
   const seen=new Set(), out=[];
-  (modelCat||[]).forEach(m=>{ const k=normText(m.name); if(k&&!seen.has(k)){ seen.add(k); out.push({name:m.name, id:m.id, coll:collOf(m)}); } });
+  (modelCat||[]).forEach(m=>{ const k=normText(m.name); if(k&&!seen.has(k)){ seen.add(k); out.push({name:m.name, id:m.id, coll:collOf(m), retired:!!m.retired}); } });
   if(!out.length) ANASA.forEach(a=>{ const k=normText(a.name); if(!seen.has(k)){ seen.add(k); out.push({name:a.name, id:null, coll:"ANASA"}); } });
   return out;
 }
@@ -5873,7 +5889,8 @@ function fillPickers(){
   const opts=productOptions();
   document.querySelectorAll("#itemsEditor .ie-pick").forEach(sel=>{
     const cur=sel.dataset.val||"";
-    const groups={}; opts.forEach(o=>{ (groups[o.coll||"Άλλα"]=groups[o.coll||"Άλλα"]||[]).push(o); });
+    // αποσυρμένα μοντέλα: μόνο αν είναι ήδη επιλεγμένα στη γραμμή
+    const groups={}; opts.filter(o=>!o.retired || (cur && normText(o.name)===normText(splitItemName(cur).model)) || (cur && normText(o.name)===normText(cur))).forEach(o=>{ (groups[o.coll||"Άλλα"]=groups[o.coll||"Άλλα"]||[]).push(o); });
     const gk=Object.keys(groups).sort((a,b)=> a==="ANASA"?-1 : b==="ANASA"?1 : a.localeCompare(b,"el"));
     sel.innerHTML='<option value="">— διάλεξε προϊόν</option>'
       + gk.map(g=>`<optgroup label="${esc(g)}">`+groups[g].map(o=>`<option value="${esc(o.name)}">${esc(o.name)}</option>`).join("")+`</optgroup>`).join("")
@@ -5944,8 +5961,9 @@ function refreshPriceHints(){
     }
     if(info){
       const L=priceLabels(info.cat, info.name);
-      if(cur!==info.base) chips.push(`<button type="button" class="ph-c" onclick="setRowPrice(${idx},${info.base})">${L.base} ${fmtMoney(info.base)}</button>`);
-      if(info.extra!=null && cur!==info.extra) chips.push(`<button type="button" class="ph-c" onclick="setRowPrice(${idx},${info.extra})">${L.extra} ${fmtMoney(info.extra)}</button>`);
+      const b0=info.base, e0=info.extra;
+      if(b0!=null && cur!==b0) chips.push(`<button type="button" class="ph-c" onclick="setRowPrice(${idx},${b0})">${L.base} ${fmtMoney(b0)}</button>`);
+      if(e0!=null && cur!==e0) chips.push(`<button type="button" class="ph-c" onclick="setRowPrice(${idx},${e0})">${L.extra} ${fmtMoney(e0)}</button>`);
     }
     if(!info || info.cat!=="Beaded")
       chips.push(`<button type="button" class="ph-c" onclick="bumpRowPrice(${idx},${PREMIUM_YARN})">+ premium νήμα ${fmtMoney(PREMIUM_YARN)}</button>`);
@@ -8306,10 +8324,17 @@ function nameMatches(itemName, catName){
   }
   return false;
 }
+/* Καλείται για κάθε είδος κάθε παραγγελίας σε στατιστικά και λίστες: τα αποτελέσματα κρατιούνται. */
+const _anasaMemo=new Map(); let _anasaMemoN=-1;
 function anasaOf(name){
   if(!name) return null;
+  if(_anasaMemoN!==ANASA.length){ _anasaMemo.clear(); _anasaMemoN=ANASA.length; }
+  if(_anasaMemo.has(name)) return _anasaMemo.get(name);
   const n=normText(canonName(name));
-  return ANASA.find(a=>normText(a.name)===n) || ANASA.find(a=>nameMatches(name, a.name)) || null;
+  const r=ANASA.find(a=>normText(a.name)===n) || ANASA.find(a=>nameMatches(name, a.name)) || null;
+  if(_anasaMemo.size>5000) _anasaMemo.clear();
+  _anasaMemo.set(name, r);
+  return r;
 }
 function imgFor(name){ const hit=anasaOf(name); return hit ? hit.img : null; }
 /* Η φωτογραφία μιας τσάντας έρχεται ΠΑΝΤΑ από το minisite — εκεί είναι η επίσημη.
@@ -8584,39 +8609,123 @@ function renderModels(){
       <div class="ms-s" style="margin-top:8px">Οι τιμές έρχονται από τις παραγγελίες σου. Μπορείς να τις αλλάξεις μετά.</div>`;
     return html;
   }
-  const anyTime=ordersCache.some(o=>getItems(o).some(it=>itemSec(it)>0));
-  if(!anyTime) html+=`<div class="empty-hint" style="margin-bottom:12px">Μόλις μετρήσεις χρόνο σε μια παραγγελία, κάθε προϊόν εδώ θα δείχνει
-    <b>πόση ώρα θέλει</b>, <b>πόσο αποδίδει</b> (€/ώρα) και <b>τι τιμή</b> χρειάζεται για τον στόχο σου.</div>`;
-  const bs=bestSeller();
-  const byColl={};
+  const vis=modelVisible();
+  const nRet=(modelCat||[]).filter(m=>m.retired).length;
+  html=`<div class="pv-bar">
+    <div class="seg2 pv-seg">${[["sales","Πωλήσεις"],["profit","Κέρδος"],["coll","Collection"]].map(([k,l])=>`<button type="button" class="${modelSort===k?"sel":""}" onclick="setModelSort('${k}')">${l}</button>`).join("")}</div>
+    <div class="chiprow pv-f"><button class="tb ${!modelShowRetired?"sel":""}" onclick="setModelRetired(false)">Ενεργά <span class="c">${(modelCat||[]).length-nRet}</span></button>${nRet?`<button class="tb ${modelShowRetired?"sel":""}" onclick="setModelRetired(true)">Αποσυρμένα <span class="c">${nRet}</span></button>`:""}</div>
+  </div>`;
   const _mq=((document.getElementById("stockSearch")||{}).value||"").trim();
-  const _ML=_mq ? modelCat.filter(m=>smartMatch(m.name+" "+collOf(m), _mq)) : modelCat;
-  if(!_ML.length) return html+`<div class="fbd-empty">Κανένα μοντέλο για «${esc(_mq)}».</div>`;
-  _ML.forEach(m=>{ const c=collOf(m); (byColl[c]=byColl[c]||[]).push(m); });
-  const collOrder=Object.keys(byColl).sort((a,b)=> a==="ANASA"?-1 : b==="ANASA"?1 : a.localeCompare(b,"el"));
-  html+=collOrder.map(c=>`<div class="stock-cat">${esc(c)}</div>`+byColl[c].slice().sort((a,b)=>modelSales(b.name).n-modelSales(a.name).n).map(m=>{
-    const sl=modelSales(m.name);
-    return `<div class="stock-item">
-      ${m.image_url?`<img class="si-img" src="${esc(m.image_url)}" alt="">`:`<div class="si-img"></div>`}
-      <div class="si-info"><div class="si-name">${esc(m.name)}${bs&&bs.name===m.name?' <span class="mm-pill" style="background:#f3efe6;color:#8a6a2e;border-color:#e4d9c2">best seller</span>':''}</div>
-        <div class="si-meta">${(function(){const L=priceLabels(m.cat, m.name); return m.price!=null
-            ? `${L.base} ${fmtMoney(m.price)}${m.price2!=null?` · ${L.extra} ${fmtMoney(m.price2)}`:""}`
-            : "χωρίς τιμή";})()}${m.wholesale!=null?` <span style="color:#2f5d8a">· χονδρική ${fmtMoney(m.wholesale)}</span>`:""} · ${sl.n?`<b style="color:var(--ink)">${sl.n}</b> ${sl.n===1?"πώληση":"πωλήσεις"} · ${fmtMoney(sl.rev)}`:"καμία πώληση"}${(function(){
-        const st=modelStats(m.name);
-        if(st.avgSec==null) return "";
-        const col=st.rate>=hourRate?"#2c6e49":(st.rate>=hourRate*0.6?"#8a6a2e":"#b54b3a");
-        return `<br><span style="color:${col}">⏱ ${fmtDur(st.avgSec)}/τεμ · ${fmtMoney(st.rate)}/ώρα</span>${st.suggested!=null&&st.rate<hourRate?` <span style="color:var(--muted)">· για ${fmtMoney(hourRate)}/ώρα → ${fmtMoney(st.suggested)}</span>`:""}`;
-      })()}${m.materials&&m.materials.length?` · ${m.materials.length} υλικά`:""}</div></div>
-      <div style="display:flex;gap:6px;flex:none">
-        ${(function(){ const n=(stockCache||[]).filter(it=>it.type==="product" && !isArchivedStock(it) && normText(modelOf(it))===normText(m.name)).reduce((a,x)=>a+Math.max(0,Number(x.qty)||0),0);
-          return n?`<button class="btn ghost sm" title="Έτοιμα κομμάτια στην αποθήκη" onclick="stockView='product';prodMode='pieces';showAdminTab('stock');document.getElementById('stockSearch').value=${esc(JSON.stringify(m.name))};renderStock()">${n} έτοιμα</button>`:""; })()}
-        ${sl.n?`<button class="btn ghost sm" onclick="openSales('${esc(m.name)}')">Ιστορικό</button>`:""}
-        <button class="btn ghost sm" onclick="openModelModal('${m.id}')">✎</button>
-      </div>
-    </div>`;
-  }).join("")).join("");
-  html+=`<div style="margin-top:10px"><button class="btn ghost" style="width:100%" onclick="openModelModal()">+ Νέο προϊόν</button></div>`;
+  const ML=vis.filter(m=>!_mq || smartMatch(m.name+" "+collOf(m), _mq));
+  if(!ML.length) return html+`<div class="fbd-empty">${_mq?`Κανένα μοντέλο για «${esc(_mq)}».`:(modelShowRetired?"Κανένα αποσυρμένο μοντέλο.":"Κανένα ενεργό μοντέλο.")}</div>`;
+  // ένα πέρασμα σε παραγγελίες και αποθήκη για όλα τα μοντέλα — όχι ξεχωριστό ανά κάρτα
+  const IX=modelIndex();
+  const bs=(function(){ let best=null; (modelCat||[]).forEach(m=>{ const x=IX.o[normText(m.name)]; if(x && x.n>0 && (!best || x.n>best.n || (x.n===best.n && x.rev>best.rev))) best={name:m.name, n:x.n, rev:x.rev}; }); return best; })();
+  const E={}; ML.forEach(m=>{ const k=normText(m.name), o=IX.o[k]||{n:0,rev:0}; E[m.id]={e:modelEcon(m, IX), a:modelActivity(m, IX), s:{n:o.n, rev:o.rev}}; });
+  const sorters={
+    sales:(x,y)=>E[y.id].s.n-E[x.id].s.n || E[y.id].s.rev-E[x.id].s.rev || x.name.localeCompare(y.name,"el"),
+    profit:(x,y)=>((E[y.id].e.profit??-1e9)-(E[x.id].e.profit??-1e9)) || x.name.localeCompare(y.name,"el"),
+    coll:(x,y)=>E[y.id].s.n-E[x.id].s.n || x.name.localeCompare(y.name,"el")
+  };
+  const groups = modelSort==="coll"
+    ? (function(){ const g={}; ML.forEach(m=>{ const c=collOf(m); (g[c]=g[c]||[]).push(m); }); return Object.keys(g).sort((a,b)=>a==="ANASA"?-1:b==="ANASA"?1:a.localeCompare(b,"el")).map(c=>[c,g[c]]); })()
+    : [[null, ML]];
+  groups.forEach(([c,list])=>{
+    if(c) html+=`<div class="stock-cat">${esc(c)} <span style="font-weight:500;letter-spacing:0;text-transform:none">· ${list.length}</span></div>`;
+    html+=`<div class="pv-grid pm-grid">`+list.slice().sort(sorters[modelSort]||sorters.sales).map(m=>modelCard(m, E[m.id], bs)).join("")+`</div>`;
+  });
   return html;
+}
+/* Ευρετήριο ανά μοντέλο σε ένα πέρασμα: πωλήσεις, χρόνος, κόστος, σε εξέλιξη, έτοιμα. */
+function modelIndex(){
+  const o={}, st={}, G=k=>o[k]||(o[k]={n:0, rev:0, units:0, sec:0, timed:0, mat:0, matUnits:0, wip:0, last:0});
+  (ordersCache||[]).forEach(ord=>{
+    const items=getItems(ord); if(!items.length) return;
+    const tot=items.reduce((a,x)=>a+((Number(x.price)||0)*Math.max(1,Number(x.qty)||1)),0)||1;
+    const t=ord.created_at?new Date(ord.created_at).getTime():0;
+    const live=!isWholesale(ord) && !isInstantSale(ord);
+    items.forEach(it=>{
+      const k=normText(itemModelName(it)); if(!k) return; const x=G(k);
+      const q=Math.max(1,Number(it.qty)||1), v=(Number(it.price)||0)*q;
+      x.n++; x.rev+=Number(it.price)||0; x.units+=q;
+      if(ord.cost!=null){ x.mat+=Number(ord.cost)*(v/tot); x.matUnits+=q; }
+      const ws=itemSec(it); if(ws){ x.sec+=ws; x.timed+=q; }
+      if(t>x.last) x.last=t;
+      if(live && !itemDone(it)) x.wip+=q;
+    });
+  });
+  (stockCache||[]).forEach(it=>{
+    if(it.type!=="product" || isArchivedStock(it)) return;
+    const k=normText(modelOf(it)), y=st[k]||(st[k]={ready:0, inBz:0, costs:[], secs:[]});
+    const q=Math.max(0,Number(it.qty)||0); y.ready+=q; if(bzOfStock(it)) y.inBz+=q;
+    if(Number(it.unit_cost)>0) y.costs.push(Number(it.unit_cost));
+    const bs=bomSec(it.id); if(bs>0) y.secs.push(bs);
+  });
+  return {o, st};
+}
+/* ---- οικονομικά μοντέλου: κόστος, κέρδος ανά τεμάχιο, προτεινόμενη τιμή ---- */
+function modelEcon(m, IX){
+  const price=m.price!=null?Number(m.price):null;
+  // υλικά: από τα τυπικά υλικά της προδιαγραφής, αλλιώς από τα έτοιμα κομμάτια και τις πωλήσεις
+  let mat=null;
+  const mm=(m.materials||[]).map(x=>{ const it=(stockCache||[]).find(s=>s.id===x.id); return it&&it.unit_cost!=null ? (Number(x.qty)||0)*Number(it.unit_cost) : null; }).filter(v=>v!=null);
+  if(mm.length) mat=mm.reduce((a,v)=>a+v,0);
+  IX=IX||modelIndex();
+  const k=normText(m.name), O=IX.o[k], S=IX.st[k];
+  const avg=a=>a&&a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+  // αλλιώς: μέσο κόστος των έτοιμων κομματιών, ή το κόστος υλικών των πωλήσεων ανά τεμάχιο
+  if(mat==null && S && S.costs.length) mat=avg(S.costs);
+  if(mat==null && O && O.matUnits) mat=O.mat/O.matUnits;
+  const sec = (O && O.timed) ? O.sec/O.timed : (S && S.secs.length ? avg(S.secs) : null);
+  const lab=sec?labourCost(sec):0;
+  const full = mat!=null ? mat+lab : null;
+  const profit = (price!=null && full!=null) ? Math.round((price-full)*100)/100 : null;
+  const pct = (profit!=null && price>0) ? Math.round(profit/price*100) : null;
+  const suggest = full!=null ? Math.ceil(full*1.6/5)*5 : null;
+  const level = profit==null ? "na" : (profit<0 ? "bad" : (suggest!=null && price<suggest-0.01 ? "low" : "ok"));
+  return {price, mat:mat!=null?Math.round(mat*100)/100:null, sec, lab, full, profit, pct, suggest, level};
+}
+function itemModelName(it){ const a=anasaOf(it.name||""); return a ? a.name : (splitItemName(it.name||"").model||it.name||""); }
+function modelActivity(m, IX){
+  IX=IX||modelIndex();
+  const k=normText(m.name), O=IX.o[k]||{wip:0,last:0}, S=IX.st[k]||{ready:0,inBz:0};
+  return {wip:O.wip, ready:S.ready, inBz:S.inBz, last:O.last||null};
+}
+let modelSort=(function(){ try{ return localStorage.getItem("th_model_sort")||"sales"; }catch(e){ return "sales"; } })();
+let modelShowRetired=false;
+function setModelSort(k){ modelSort=k; try{ localStorage.setItem("th_model_sort",k); }catch(e){} renderStock(); }
+function setModelRetired(v){ modelShowRetired=!!v; renderStock(); }
+function modelVisible(){ return (modelCat||[]).filter(m=>!!m.retired===modelShowRetired); }
+function modelGoWip(name){ showAdminTab("orders"); try{ setSaleChannel("order"); }catch(e){} const s=document.getElementById("search"); if(s){ s.value=name; renderOrders(); } }
+function modelGoReady(name){ stockView="product"; prodMode="pieces"; showAdminTab("stock"); const s=document.getElementById("stockSearch"); if(s){ s.value=name; renderStock(); } }
+function modelCard(m, X, bs){
+  const e=X.e, a=X.a, sl=X.s, L=priceLabels(m.cat, m.name);
+  const img=m.image_url || minisiteImg(m.name);
+  const ago=a.last ? Math.floor((Date.now()-a.last)/86400000) : null;
+  const lvl={ok:["#2c6e49","#eef6f0"], low:["#8a5a1e","#fdf6ea"], bad:["#b54b3a","#fdf1ec"], na:["var(--muted)","var(--cream)"]}[e.level];
+  const econ = e.level==="na"
+    ? `<button class="pm-econ" style="color:${lvl[0]};background:${lvl[1]}" onclick="openModelModal('${m.id}')">Χωρίς κοστολόγηση · ορίστε τυπικά υλικά</button>`
+    : `<div class="pm-econ" style="color:${lvl[0]};background:${lvl[1]}"><b>${e.profit<0?"Ζημιά":"Κέρδος"} ${fmtMoney(Math.abs(e.profit))}</b> / τεμ.${e.pct!=null?` · ${e.pct}%`:""}
+        <small>υλικά ${fmtMoney(e.mat)}${e.sec?` + ${fmtDur(e.sec)} εργασία (${fmtMoney(e.lab)})`:" · χωρίς μετρημένο χρόνο"}</small></div>`;
+  const sug = (e.suggest!=null && (e.price==null || e.price<e.suggest-0.01))
+    ? `<div class="pm-sug">Προτεινόμενη τιμή <b>${fmtMoney(e.suggest)}</b> <button class="ph-c" onclick="openAsk();askSend(${esc(JSON.stringify("άλλαξε τιμή στο "+m.name+" σε "+e.suggest))})">Εφαρμογή</button></div>` : "";
+  const act=[];
+  if(a.wip) act.push(`<button class="pm-a" onclick="modelGoWip(${esc(JSON.stringify(m.name))})"><b>${a.wip}</b> σε εξέλιξη</button>`);
+  if(a.ready) act.push(`<button class="pm-a" onclick="modelGoReady(${esc(JSON.stringify(m.name))})"><b>${a.ready}</b> έτοιμα${a.inBz?` · ${a.inBz} στο bazaar`:""}</button>`);
+  act.push(sl.n?`<button class="pm-a" onclick="openSales(${esc(JSON.stringify(m.name))})"><b>${sl.n}</b> ${sl.n===1?"πώληση":"πωλήσεις"} · ${fmtMoney(sl.rev)}</button>`:`<span class="pm-a dim">καμία πώληση</span>`);
+  if(ago!=null) act.push(`<span class="pm-a dim${ago>60?" warn":""}">τελευταία πώληση ${fmtAgo(ago)}</span>`);
+  return `<div class="pv-card pm-card ${m.retired?"out":""}">
+    <button class="pv-img" onclick="openModelModal('${m.id}')">${imgTag(img)}
+      ${bs&&bs.name===m.name?`<span class="pv-q">★ best seller</span>`:""}${m.retired?`<span class="pv-bzq" style="background:var(--ink);color:#fff">αποσυρμένο</span>`:""}</button>
+    <div class="pv-b" style="cursor:default">
+      <div class="pv-t">${esc(m.name)}</div>
+      <div class="pv-s">${esc(collOf(m))}</div>
+      <div class="pv-p">${m.price!=null?`${L.base==="κλασική"?"":esc(L.base)+" "}${fmtMoney(m.price)}`:"χωρίς τιμή"}${m.price2!=null?` · ${esc(L.extra||"2η")} ${fmtMoney(m.price2)}`:""}${m.wholesale!=null?` <span style="color:#2f5d8a;font-weight:500">· χονδρ. ${fmtMoney(m.wholesale)}</span>`:""}</div>
+      ${econ}${sug}
+      <div class="pm-acts">${act.join("")}</div>
+    </div>
+    <div class="pv-f"><button class="btn ghost sm" style="flex:1" onclick="openModelModal('${m.id}')">Προδιαγραφές</button></div>
+  </div>`;
 }
 async function importModels(){
   const sug=modelSuggestions();
@@ -8728,6 +8837,7 @@ function openModelModal(id){
   fillCollSelect(m?collOf(m):"ANASA");
   document.getElementById("mCollNew").value="";
   renderModelMats(m?(m.materials||[]):[]);
+  document.getElementById("mRetired").checked=!!(m&&m.retired);
   _ovOpen("modelModal");
 }
 function closeModelModal(){ _ovClose("modelModal"); }
@@ -8766,7 +8876,8 @@ async function saveModel(){
   else if(coll==="__none") coll=null;
   const prev=editingModelId?modelCat.find(m=>m.id===editingModelId):null;
   const _img=document.getElementById("mImg").value.trim()||null;
-  const rec={ id: editingModelId || ("m"+Math.random().toString(36).slice(2,9)),
+  const rec={ ...(prev||{}), id: editingModelId || ("m"+Math.random().toString(36).slice(2,9)),
+    retired: !!document.getElementById("mRetired").checked,
     name, price: parseMoney(document.getElementById("mPrice").value),
     image_url: _img, materials: modelMats,
     // αν άλλαξε τη φωτογραφία μόνη της, δεν την ξαναγράφει το minisite
