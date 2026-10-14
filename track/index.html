@@ -893,7 +893,7 @@
   /* Η γραμμή πριν το μερικό σύνολο δεν χρειάζεται δική της γραμμή: μαζί με
      αυτήν του συνόλου φτιάχνουν κουτί, που διαβάζεται σαν πλαίσιο. */
   .rep-r:has(+ .rep-r.sum){border-bottom:none}
-  .rep-r.sum{border-bottom:2px solid var(--ink);padding-top:4px;padding-bottom:12px}
+  .rep-r.sum{border:none;border-radius:0;background:none;overflow:visible;border-bottom:2px solid var(--ink);padding-top:4px;padding-bottom:12px}
   .rep-r.sum .l,.rep-r.sum .a{font-weight:600}
   .rep-r.sum .a{font-size:15px}
   .rep-r.tot{border:none;background:var(--ink);color:#fff;padding:14px 16px;margin-top:10px;border-radius:12px}
@@ -1518,6 +1518,9 @@
   .pv-t{font-family:'Cormorant',Georgia,serif;font-size:20px;font-weight:600;line-height:1.1;color:var(--ink)}
   .pv-s{font-size:12.5px;color:var(--ink-soft);margin-top:3px}
   .pv-p{font-size:13px;font-weight:600;color:var(--ink);margin-top:4px}
+  button.pv-bz{font-family:'Inter';cursor:pointer}
+  .pv-bzq{cursor:pointer}
+  .pv-send{min-height:36px;padding:8px 14px}
   .pv-bz{display:inline-block;margin-top:6px;font-size:11px;font-weight:600;color:#8a6a2e;background:#f3efe6;border:1px solid #e4d9c2;border-radius:100px;padding:2px 8px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .pv-vars{display:flex;flex-wrap:wrap;gap:5px;margin:9px 0 6px}
   .pv-v{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:var(--cream);border-radius:100px;padding:4px 5px 4px 10px;font-family:'Inter';font-size:12px;color:var(--ink);cursor:pointer;max-width:100%}
@@ -1548,6 +1551,12 @@
   .pm-a{border:none;background:none;padding:0;font-family:'Inter';font-size:12px;color:var(--ink);cursor:pointer;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
   .pm-a.dim{color:var(--muted);text-decoration:none;cursor:default}
   .pm-a.warn{color:#8a5a1e}
+  .cc-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:0 12px}
+  @media(max-width:520px){ .cc-list{grid-template-columns:1fr} }
+  .cc-av{flex:none;width:40px;height:40px;border-radius:50%;background:var(--stone);color:var(--ink);display:flex;align-items:center;justify-content:center;font-family:'Cormorant',Georgia,serif;font-weight:600;font-size:16px;margin-right:12px;letter-spacing:.02em}
+  .cc-av.shop{background:#eef3f8;color:#2f5d8a}
+  .cc-av.sup{background:#f3efe6;font-size:17px}
+  .cc-main{align-items:center}
   .own-keep{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--ink);cursor:pointer;margin:0 0 14px;line-height:1.35}
   .own-keep input{width:auto;margin:2px 0 0;accent-color:var(--ink);flex:none}
   .own-keep small{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
@@ -1919,8 +1928,8 @@
     <section class="osec">
       <div class="osec-h"><span>Παράδοση</span></div>
       <div class="seg2" id="methodPicker">
-        <button type="button" data-m="shipping" onclick="pickMethod('shipping')">📦 Courier</button>
         <button type="button" data-m="pickup" onclick="pickMethod('pickup')">🤝 Παραλαβή διά ζώσης</button>
+        <button type="button" data-m="shipping" onclick="pickMethod('shipping')">📦 Courier</button>
       </div>
       <div id="courierFields">
         <div class="fgrid fg-ship">
@@ -2004,6 +2013,16 @@
         <input id="mCollNew" placeholder="π.χ. AURA"></label>
     </div>
     <div id="mStats" class="cust-note hidden" style="margin-bottom:12px"></div>
+    <p class="sec-lbl" style="margin:4px 0 8px">Κανόνες τιμής</p>
+    <div class="fgrid" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+      <label class="fld"><span>Κατηγορία</span><select id="mCat" onchange="mLabelsDefault()">
+        <option value="Crochet">Crochet (T-shirt yarn)</option><option value="Beaded">Beaded (χάντρες)</option>
+        <option value="Marshmallow">Marshmallow</option><option value="Puffy">Puffy</option><option value="Άλλο">Άλλο</option></select></label>
+      <label class="fld"><span>Προκαταβολή %</span><input id="mDep" inputmode="decimal" placeholder="καμία"></label>
+      <label class="fld"><span>Ονομασία βασικής τιμής</span><input id="mLblBase" placeholder="π.χ. κλασική, ακρυλικές" oninput="mLabelsLive()"></label>
+      <label class="fld"><span>Ονομασία 2ης τιμής</span><input id="mLblExtra" placeholder="π.χ. + χρώμα, γυάλινες" oninput="mLabelsLive()"></label>
+    </div>
+    <p style="font-size:11.5px;color:var(--muted);margin:-4px 0 12px">Οι ονομασίες εμφανίζονται ως επιλογές τιμής στην παραγγελία (π.χ. «ακρυλικές €70 / γυάλινες €80»). Η προκαταβολή προτείνεται αυτόματα στη νέα παραγγελία· κενό = χωρίς προκαταβολή.</p>
     <p class="sec-lbl" style="margin:4px 0 8px">Τυπικά υλικά</p>
     <div class="mat-block" id="mMatList"></div>
     <label class="chk-row own-keep" style="margin:4px 0 0"><input type="checkbox" id="mRetired">
@@ -2150,6 +2169,13 @@
     <p class="sec-lbl" style="margin:18px 0 8px">Εργασία</p>
     <label class="fld"><span>Αμοιβή ανά ώρα €</span><input id="setRate" inputmode="decimal" onchange="saveRate()"></label>
     <p style="font-size:11.5px;color:var(--muted);margin-top:-8px">Χρησιμοποιείται για την αποτίμηση του χρόνου εργασίας στο κόστος και στις αναφορές απόδοσης.</p>
+    <p class="sec-lbl" style="margin:18px 0 8px">Τιμολόγηση</p>
+    <div class="fgrid" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+      <label class="fld"><span>Premium νήμα +€</span><input id="setPremium" inputmode="decimal" onchange="savePricingUI()"></label>
+      <label class="fld"><span>Custom σχέδιο +€</span><input id="setCustom" inputmode="decimal" onchange="savePricingUI()"></label>
+      <label class="fld"><span>Προκαταβολή %</span><input id="setDep" inputmode="decimal" onchange="savePricingUI()"></label>
+    </div>
+    <p style="font-size:11.5px;color:var(--muted);margin-top:-6px">Οι επιπλέον χρεώσεις εμφανίζονται ως προτάσεις στην τιμή κάθε είδους της παραγγελίας. Η προκαταβολή είναι η προεπιλογή για τα μοντέλα που τη ζητούν· κάθε μοντέλο μπορεί να έχει δικό του ποσοστό (Μοντέλα → Προδιαγραφές).</p>
     <p class="sec-lbl" style="margin:18px 0 8px">Αντίγραφο ασφαλείας</p>
     <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:10px">Ένα αρχείο με όλα τα δεδομένα της εφαρμογής: παραγγελίες και πωλήσεις, πελάτες, αποθήκη και κινήσεις, ταμείο, προμηθευτές, μοντέλα, bazaar, feedback και ρυθμίσεις. Φυλάξτε το σε ασφαλές σημείο (π.χ. Google Drive).</p>
     <button class="btn solid" style="width:100%" id="bkDlBtn" onclick="downloadBackup()">Λήψη αντιγράφου ασφαλείας</button>
@@ -2164,7 +2190,7 @@
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();openCleanNames()">Καθαρισμός ονομάτων υλικών</button>
     <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSettings();restorePalette()">Επαναφορά αποχρώσεων Mix &amp; Match</button>
     <p style="font-size:11.5px;color:var(--muted);margin:14px 0 0;padding-top:12px;border-top:1px solid var(--line)">
-      Έκδοση <b style="color:var(--ink)">2026.10.14.2015</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
+      Έκδοση <b style="color:var(--ink)">2026.10.14.2130</b> · αν δεν ταιριάζει με αυτή που ανέβασες, το κινητό κρατά παλιό αντίγραφο:
       κλείσε και ξανάνοιξε την καρτέλα, ή τράβα την σελίδα προς τα κάτω για ανανέωση.</p>
     <p id="setRebuiltNote" style="font-size:11.5px;color:var(--muted);margin-top:6px">Συμπληρώνει τις κινήσεις αποθήκης από τις παραγγελίες, τις πωλήσεις και τα bazaar που υπάρχουν ήδη. Το απόθεμα δεν αλλάζει.</p>
   </div>
@@ -2602,7 +2628,7 @@
 </div>
 <div id="moreSheet" class="overlay hidden">
   <div class="modal" style="max-width:420px">
-    <div class="mh"><h2 class="serif">Μενού</h2><button class="x" onclick="_ovClose('moreSheet')">✕</button></div>
+    <div class="mh"><h2 class="serif" id="moreTitle">Μενού</h2><button class="x" onclick="_ovClose('moreSheet')">✕</button></div>
     <div id="moreBody"></div>
   </div>
 </div>
@@ -2955,11 +2981,12 @@ function updateMoneyHint(){
   // πρόταση προκαταβολής 50% όπου χρειάζεται
   const depBox=document.getElementById("depHint");
   if(depBox){
+    // προκαταβολή: το μεγαλύτερο ποσοστό από τα μοντέλα της παραγγελίας που τη ζητούν
     const names=[...document.querySelectorAll("#itemsEditor .ie-name")].map(i=>i.value.trim()).filter(Boolean);
-    const need=names.some(needsDeposit);
-    if(need && price!=null && price>0 && (paid==null||paid<price*0.5-0.01)){
-      const half=Math.round(price*0.5*100)/100;
-      depBox.innerHTML=`Σε beaded / marshmallow ζητάς <b>προκαταβολή 50%</b> = ${fmtMoney(half)} <button type="button" class="ph-c" style="margin-left:6px" onclick="setPaid(${half})">Καταχώρησέ την</button>`;
+    const need=names.filter(needsDeposit), pct=need.length?Math.max(...need.map(depositPctFor)):0;
+    if(pct>0 && price!=null && price>0 && (paid==null||paid<price*pct/100-0.01)){
+      const half=Math.round(price*pct/100*100)/100;
+      depBox.innerHTML=`Για ${[...new Set(need.map(n=>(modelByName(n)||{name:n}).name))].map(esc).join(", ")} ζητείται <b>προκαταβολή ${pct}%</b> = ${fmtMoney(half)} <button type="button" class="ph-c" style="margin-left:6px" onclick="setPaid(${half})">Καταχώρισέ την</button>`;
       depBox.classList.remove("hidden");
     } else depBox.classList.add("hidden");
   }
@@ -5018,12 +5045,12 @@ function renderCustomers(){
     ${nOwed?`<button class="tb ${custFilter==='owed'?'sel':''}" onclick="setCustFilter('owed')">Ανεξόφλητα (${nOwed})</button>`:""}
   </div></div>`}`;
   const DAY=86400000;
-  html+=list.map(c=>{
+  html+=`<div class="cc-list">`+list.map(c=>{
     const owed=Math.max(0,Math.round((c.spent-c.paid)*100)/100);
     const days=c.last?Math.floor((Date.now()-c.last)/DAY):null;
     return `<div class="cust-card">
       <button class="cc-main" onclick="${c.extraId?`openCustomerExtra('${c.extraId}')`:`openCustomer('${c.anyId}')`}">
-        <div style="flex:1;min-width:0">
+        ${ccAvatar(c.name, c.shop?"shop":"")}<div style="flex:1;min-width:0">
           <div class="cc-n">${esc(c.name)}${c.n>1?` <span class="mm-pill" style="background:#f3efe6;color:#8a6a2e;border-color:#e4d9c2">${c.n}×</span>`:""}${c.auto?` <span class="mm-pill" title="Ενώθηκαν αυτόματα" style="background:var(--stone);color:var(--muted);border-color:var(--line)">auto</span>`:""}</div>
           <div class="cc-s">${c.extraId?`χωρίς αγορά ακόμη${c.phone?" · "+esc(c.phone):""}`:`${fmtMoney(c.spent)} ${c.shop?"πουλημένα":"σύνολο"} · ${c.items} ${c.items===1?"προϊόν":"προϊόντα"}${days!=null?` · ${fmtAgo(days)}`:""}`}</div>
           ${c.onShelf?`<div class="cc-s" style="color:#2f5d8a"><b>${c.onShelf}</b> ${c.onShelf===1?"κομμάτι":"κομμάτια"} στο ράφι του</div>`:""}
@@ -5036,13 +5063,19 @@ function renderCustomers(){
         <button class="btn ghost sm" onclick="${c.extraId?`newOrderForExtra('${c.extraId}')`:(c.shop?`newWholesaleFor('${c.anyId}')`:`newOrderFor('${c.anyId}')`)}">${c.shop?"Νέα παράδοση":"Νέα παραγγελία"}</button>
       </div>
     </div>`;
-  }).join("");
+  }).join("")+`</div>`;
   box.innerHTML=html;
 }
 let payCtx={key:null, list:[]};
 function unpaidOrders(ref){
   return customerOrders(ref).filter(o=>orderOwed(o)>0.01)
     .sort((a,b)=> new Date(a.created_at||0)-new Date(b.created_at||0));   // παλαιότερη πρώτα
+}
+/* Αρχικά ονόματος σε κύκλο: ίδια οπτική γλώσσα με τις κάρτες της αποθήκης και των μοντέλων. */
+function ccAvatar(name, kind){
+  const w=String(name||"").replace(/[^\p{L}\p{N} ]/gu,"").trim().split(/\s+/).filter(Boolean);
+  const ini=((w[0]||"?")[0]+((w[1]||"")[0]||"")).toUpperCase();
+  return `<span class="cc-av ${kind||""}">${kind==="sup"?"🚚":esc(ini)}</span>`;
 }
 function openPay(orderId){
   const ref=ordersCache.find(o=>o.id===orderId); if(!ref) return;
@@ -5108,6 +5141,8 @@ function payPrep(){
   document.getElementById("payDate").value=todayISO();
   document.getElementById("payMsg").classList.add("hidden");
   payAcc=null; { const k=document.getElementById("payKeep"); if(k) k.checked=false; } renderPayAccs();
+  // οι λογαριασμοί φορτώνονται όταν χρειαστούν: χωρίς αυτούς δεν φαίνονται ταμείο/τράπεζα
+  if(!(accounts||[]).length && typeof loadCash==="function") loadCash().then(()=>{ payAcc=null; renderPayAccs(); }).catch(()=>{});
 }
 function setPay(v){ document.getElementById("payAmount").value=v; }
 async function applyPay(){
@@ -5966,8 +6001,8 @@ function refreshPriceHints(){
       if(e0!=null && cur!==e0) chips.push(`<button type="button" class="ph-c" onclick="setRowPrice(${idx},${e0})">${L.extra} ${fmtMoney(e0)}</button>`);
     }
     if(!info || info.cat!=="Beaded")
-      chips.push(`<button type="button" class="ph-c" onclick="bumpRowPrice(${idx},${PREMIUM_YARN})">+ premium νήμα ${fmtMoney(PREMIUM_YARN)}</button>`);
-    if(!info) chips.push(`<button type="button" class="ph-c" onclick="bumpRowPrice(${idx},${CUSTOM_FEE})">+ σχεδιασμός ${fmtMoney(CUSTOM_FEE)}</button>`);
+      chips.push(`<button type="button" class="ph-c" onclick="bumpRowPrice(${idx},${pPremium()})">+ premium νήμα ${fmtMoney(pPremium())}</button>`);
+    if(!info) chips.push(`<button type="button" class="ph-c" onclick="bumpRowPrice(${idx},${pCustom()})">+ σχεδιασμός ${fmtMoney(pCustom())}</button>`);
     if(!box){ box=document.createElement("div"); box.className="price-hint"; row.appendChild(box); }
     box.innerHTML=chips.join("");
   });
@@ -7144,6 +7179,7 @@ function applySettingsMap(map){
     itemLabel = (map.item_label && typeof map.item_label==="object") ? map.item_label : {};
     custExtra = Array.isArray(map.cust_extra) ? map.cust_extra : [];
     if(map.settings && map.settings.hourRate!=null) hourRate=Number(map.settings.hourRate)||12;
+    pricing = Object.assign({premium:PREMIUM_YARN, custom:CUSTOM_FEE, depPct:50}, (map.settings&&map.settings.pricing)||{});
     timer = map[meKey()] || null;
     _flags = map.flags || {};
     modelCat  = Array.isArray(map.models) ? map.models : [];
@@ -7423,7 +7459,9 @@ async function restoreBackupFile(inp){
   bkMsg(`Η επαναφορά ολοκληρώθηκε (${done} εγγραφές). Η εφαρμογή ανανεώνεται…`, true);
   setTimeout(()=>location.reload(), 1500);
 }
+function fillPricingUI(){ const f=(id,v)=>{ const e=document.getElementById(id); if(e) e.value=String(v).replace(".",","); }; f("setPremium",pPremium()); f("setCustom",pCustom()); f("setDep",Number(pricing.depPct)||0); }
 function openSettings(){
+  fillPricingUI();
   bkRenderLast(); { const m=document.getElementById("bkMsg"); if(m) m.className="msg hidden"; }
   { const n=document.getElementById("setRebuiltNote");
     if(n && movesRebuilt()) n.textContent="Έγινε "+fmtDateShort(_flags.movesRebuilt)+". Επανάληψη θα δημιουργήσει διπλές εγγραφές.";
@@ -7443,11 +7481,22 @@ function openSettings(){
   _ovOpen("settingsModal");
 }
 function closeSettings(){ _ovClose("settingsModal"); }
+/* Κανόνες τιμολόγησης που αλλάζει η ίδια η Αναστασία (Ρυθμίσεις, Μοντέλα ή βοηθός). */
+let pricing={premium:7, custom:20, depPct:50};
+async function saveAppSettings(){ return await saveSetting("settings", {hourRate, pricing}, true); }
+function pPremium(){ return Number(pricing.premium)>=0 ? Number(pricing.premium) : PREMIUM_YARN; }
+function pCustom(){ return Number(pricing.custom)>=0 ? Number(pricing.custom) : CUSTOM_FEE; }
+async function savePricingUI(){
+  const g=id=>parseMoney(document.getElementById(id).value);
+  const pr=g("setPremium"), cu=g("setCustom"), dp=g("setDep");
+  if(pr!=null) pricing.premium=pr; if(cu!=null) pricing.custom=cu; if(dp!=null && dp>=0 && dp<=100) pricing.depPct=dp;
+  if(await saveAppSettings()) adminFlash("Οι κανόνες τιμολόγησης αποθηκεύτηκαν ✓");
+}
 async function saveRate(){
   const v=parseMoney(document.getElementById("setRate").value);
   if(v==null||v<=0) return;
   hourRate=v;
-  await saveSetting("settings", {hourRate}, true);
+  await saveAppSettings();
   renderTimerBar(); renderOrderTimer(); renderStats();
 }
 async function toggleEvent(id, val){
@@ -7822,10 +7871,11 @@ function renderProductGrid(rows){
   const L=rows.filter(prodMatch);
   let h=`<div class="pv-bar">
     <div class="seg2 pv-seg"><button type="button" class="${prodMode==="models"?"sel":""}" onclick="setProdMode('models')">Ανά μοντέλο</button><button type="button" class="${prodMode==="pieces"?"sel":""}" onclick="setProdMode('pieces')">Ανά κομμάτι</button></div>
+    ${bzOpen().length?`<button class="btn ghost sm pv-send" onclick="sendPiecesToBazaar()">🛍️ Αποστολή σε bazaar</button>`:""}
     <div class="chiprow pv-f">${[["all","Όλα"],["in","Διαθέσιμα"],["bz","Στο bazaar"],["out","Εξαντλημένα"]].filter(([k])=>k==="all"||counts[k]).map(([k,l])=>`<button class="tb ${prodFilter===k?"sel":""}" onclick="setProdFilter('${k}')">${l} <span class="c">${counts[k]}</span></button>`).join("")}</div>
   </div>`;
   if(!L.length) return h+`<div class="fbd-empty">Κανένα κομμάτι σε αυτό το φίλτρο.</div>`;
-  const bzPill=it=>{ const b=bzOfStock(it); return b?`<span class="pv-bz" title="${esc(b.name)}">🛍️ ${esc(b.name)}</span>`:""; };
+  const bzPill=it=>{ const b=bzOfStock(it); return b?`<button class="pv-bz" title="Άνοιγμα: ${esc(b.name)}" onclick="event.stopPropagation();goBz('${b.id}')">🛍️ ${esc(b.name)} ›</button>`:""; };
   const price=list=>{ const P=list.map(it=>it.sell_price).filter(v=>v!=null).map(Number); if(!P.length) return "χωρίς τιμή"; const a=Math.min(...P), b=Math.max(...P); return a===b?fmtMoney(a):`${fmtMoney(a)} – ${fmtMoney(b)}`; };
   // κατηγορίες (Τσάντα, Αξεσουάρ, event…) ως ενότητες
   const cats={}; L.forEach(it=>{ const c=it.category||"Άλλο"; (cats[c]=cats[c]||[]).push(it); });
@@ -7861,7 +7911,7 @@ function renderProductGrid(rows){
         const one=P.length===1;
         const _wo=one && P[0].status==="written_off";
         h+=`<div class="pv-card ${n<=0?"out":""}">
-          <button class="pv-img" onclick="${one?`openItemSheet('${P[0].id}')`:`setProdMode('pieces');document.getElementById('stockSearch').value='${esc(m).replace(/'/g,"")}';renderStock()`}">${stockThumb(cover)}<span class="pv-q">${n>0?fmtNum(n)+" τεμ.":"εξαντλήθηκε"}</span>${inBz?`<span class="pv-bzq">🛍️ ${inBz}</span>`:""}</button>
+          <button class="pv-img" onclick="${one?`openItemSheet('${P[0].id}')`:`setProdMode('pieces');document.getElementById('stockSearch').value='${esc(m).replace(/'/g,"")}';renderStock()`}">${stockThumb(cover)}<span class="pv-q">${n>0?fmtNum(n)+" τεμ.":"εξαντλήθηκε"}</span>${inBz?(function(){ const ids=[...new Set(P.map(it=>bzItems[it.id]).filter(Boolean))]; return `<span class="pv-bzq" role="link" title="Στο bazaar" onclick="event.stopPropagation();${ids.length===1?`goBz('${ids[0]}')`:`showAdminTab('bazaar')`}">🛍️ ${inBz} ›</span>`; })():""}</button>
           <div class="pv-b">
             <div class="pv-t">${esc(m)}</div>
             <div class="pv-p">${price(P)}${_wo?` · <span style="color:#b54b3a">αποσύρθηκε</span>`:""}</div>
@@ -8213,14 +8263,33 @@ const PRICE_LIST = [
   {name:"Blair",         cat:"Puffy",       base:30, extra:null, dep:true, coll:"ANTHESIS"},
   {name:"Sophie",        cat:"Puffy",       base:28, extra:null, dep:true, coll:"ANTHESIS"}
 ];
+function modelByName(name){ const n=normText(canonName(name||"")); return (modelCat||[]).find(m=>normText(m.name)===n)||null; }
+/* Ποσοστό προκαταβολής μοντέλου: δικό του, αλλιώς η γενική προεπιλογή αν το μοντέλο τη ζητά. */
+function modelDepPct(m){
+  if(!m) return 0;
+  if(m.dep_pct!=null && m.dep_pct!=="") return Math.max(0,Math.min(100,Number(m.dep_pct)||0));
+  return m.dep ? (Number(pricing.depPct)||0) : 0;
+}
 function priceLabels(cat, name){
+  const m = name ? modelByName(name) : null;
+  if(m && (m.label_base || m.label_extra)) return {base:m.label_base||"κλασική", extra:m.label_extra||(m.price2!=null?"+ χρώμα":null)};
   const info = name ? priceInfo(name) : null;
   if(info && info.bead) return {base:info.bead, extra:null};   // ίδια τιμή σε κάθε χάντρα
   if(cat==="Beaded") return {base:"ακρυλικές", extra:"γυάλινες"};
   return {base:"κλασική", extra:"+ χρώμα"};
 }
-function priceInfo(name){ const n=normText(canonName(name)); return PRICE_LIST.find(p=>normText(p.name)===n)||null; }
+/* Οι τιμές και οι κανόνες έρχονται από τα Μοντέλα (που αλλάζει η Αναστασία)·
+   ο ενσωματωμένος τιμοκατάλογος είναι μόνο η αρχική τιμή για μοντέλα που δεν έχουν οριστεί. */
+function priceInfo(name){
+  const n=normText(canonName(name)); const P=PRICE_LIST.find(p=>normText(p.name)===n)||null;
+  const m=modelByName(name);
+  if(!m) return P;
+  return { name:m.name, cat:m.cat||(P&&P.cat)||null, base:m.price!=null?Number(m.price):(P?P.base:null),
+    extra:m.price2!=null?Number(m.price2):null, dep:modelDepPct(m)>0, depPct:modelDepPct(m),
+    coll:m.collection||(P&&P.coll)||null, bead:(!m.label_base && P && P.bead)?P.bead:null };
+}
 function needsDeposit(name){ const p=priceInfo(name); return !!(p&&p.dep); }
+function depositPctFor(name){ const p=priceInfo(name); return p&&p.dep ? (p.depPct!=null?p.depPct:(Number(pricing.depPct)||50)) : 0; }
 
 /* ---- Φωτογραφίες συλλογής ANASA (mini-site) ---- */
 /* ============ ΚΑΤΑΛΟΓΟΣ ΑΠΟ ΤΟ MINISITE ============
@@ -8721,6 +8790,7 @@ function modelCard(m, X, bs){
       <div class="pv-t">${esc(m.name)}</div>
       <div class="pv-s">${esc(collOf(m))}</div>
       <div class="pv-p">${m.price!=null?`${L.base==="κλασική"?"":esc(L.base)+" "}${fmtMoney(m.price)}`:"χωρίς τιμή"}${m.price2!=null?` · ${esc(L.extra||"2η")} ${fmtMoney(m.price2)}`:""}${m.wholesale!=null?` <span style="color:#2f5d8a;font-weight:500">· χονδρ. ${fmtMoney(m.wholesale)}</span>`:""}</div>
+      ${modelDepPct(m)>0?`<div class="pv-s" style="color:#8a5a1e">Προκαταβολή ${modelDepPct(m)}%</div>`:""}
       ${econ}${sug}
       <div class="pm-acts">${act.join("")}</div>
     </div>
@@ -8820,6 +8890,11 @@ function openModelModal(id){
   document.getElementById("mImg").value=m?(m.image_url||""):"";
   document.getElementById("mWhole").value=(m&&m.wholesale!=null)?m.wholesale:"";
   document.getElementById("mPrice2").value=(m&&m.price2!=null)?m.price2:"";
+  document.getElementById("mCat").value=(m&&m.cat&&["Crochet","Beaded","Marshmallow","Puffy"].includes(m.cat))?m.cat:(m&&m.cat?"Άλλο":"Crochet");
+  { const L0=m?priceLabels(m.cat,m.name):{base:"κλασική",extra:"+ χρώμα"};
+    document.getElementById("mLblBase").value=(m&&m.label_base)||L0.base||"";
+    document.getElementById("mLblExtra").value=(m&&m.label_extra)||L0.extra||""; }
+  { const dp=m?modelDepPct(m):0; document.getElementById("mDep").value=dp?String(dp):""; }
   {const L=priceLabels(m?m.cat:null, m?m.name:null);
    document.getElementById("mPrice2Lbl").textContent = L.extra ? (L.extra==="γυάλινες" ? "Γυάλινες €" : "Με χρώμα €") : "2η τιμή €";}
   document.getElementById("modelDelBtn").classList.toggle("hidden", !id);
@@ -8838,8 +8913,16 @@ function openModelModal(id){
   document.getElementById("mCollNew").value="";
   renderModelMats(m?(m.materials||[]):[]);
   document.getElementById("mRetired").checked=!!(m&&m.retired);
+  mLabelsLive();
   _ovOpen("modelModal");
 }
+function mLabelsLive(){ const e=(document.getElementById("mLblExtra").value||"").trim(), b=(document.getElementById("mLblBase").value||"").trim();
+  document.getElementById("mPrice2Lbl").textContent=(e?e.charAt(0).toUpperCase()+e.slice(1):"2η τιμή")+" €";
+  const pl=document.querySelector('label.fld input#mPrice'); if(pl) pl.closest("label").querySelector("span").textContent=(b?b.charAt(0).toUpperCase()+b.slice(1):"Λιανική")+" €"; }
+function mLabelsDefault(){ const c=document.getElementById("mCat").value;
+  if(c==="Beaded"){ document.getElementById("mLblBase").value="ακρυλικές"; document.getElementById("mLblExtra").value="γυάλινες"; if(!document.getElementById("mDep").value) document.getElementById("mDep").value=String(Number(pricing.depPct)||50); }
+  else if(c==="Crochet"){ document.getElementById("mLblBase").value="κλασική"; document.getElementById("mLblExtra").value="+ χρώμα"; }
+  mLabelsLive(); }
 function closeModelModal(){ _ovClose("modelModal"); }
 let modelMats=[];
 function renderModelMats(list){
@@ -8878,6 +8961,9 @@ async function saveModel(){
   const _img=document.getElementById("mImg").value.trim()||null;
   const rec={ ...(prev||{}), id: editingModelId || ("m"+Math.random().toString(36).slice(2,9)),
     retired: !!document.getElementById("mRetired").checked,
+    label_base: (document.getElementById("mLblBase").value||"").trim()||null,
+    label_extra: (document.getElementById("mLblExtra").value||"").trim()||null,
+    dep_pct: (function(){ const v=parseMoney(document.getElementById("mDep").value); return v!=null&&v>0 ? Math.min(100,v) : 0; })(),
     name, price: parseMoney(document.getElementById("mPrice").value),
     image_url: _img, materials: modelMats,
     // αν άλλαξε τη φωτογραφία μόνη της, δεν την ξαναγράφει το minisite
@@ -8885,7 +8971,8 @@ async function saveModel(){
     wholesale: parseMoney(document.getElementById("mWhole").value),
     price2: parseMoney(document.getElementById("mPrice2").value),
     collection: coll||null, anasa: coll==="ANASA" ? true : (prev?!!prev.anasa && coll==="ANASA":false),
-    cat: prev?prev.cat:null };
+    cat: document.getElementById("mCat").value || (prev?prev.cat:null) };
+  rec.dep = rec.dep_pct>0;
   if(editingModelId) modelCat = modelCat.map(m=>m.id===editingModelId?rec:m);
   else modelCat.push(rec);
   await saveSetting("models", modelCat, true);
@@ -10196,15 +10283,19 @@ function openQuick(){
   const bz=bzCurrent(), running=!!(timer && timer.startedAt);
   const G=[
     {h:"Πωλήσεις", a:[
+      // τη μέρα του bazaar πρώτη είναι η πώληση εκεί· κάθε άλλη μέρα η παραγγελία
       bz?{dark:true, i:"🛍️", t:"Πώληση bazaar", d:bz.name, f:`tillOpen('${bz.id}',null)`}:null,
-      {dark:!bz, i:"🧾", t:"Λιανική πώληση", d:"έτοιμο κομμάτι", f:"tillOpen(null,null)"},
-      {i:"🧵", t:"Παραγγελία", d:"κατά παραγγελία", f:"openOrderModal()"},
-      {i:"🏬", t:"Παράδοση χονδρικής", d:"σε κατάστημα", f:"newWholesale()"}
+      {dark:true, i:"🧵", t:"Νέα παραγγελία", d:"κατά παραγγελία", f:"openOrderModal()"},
+      {i:"🧾", t:"Λιανική πώληση", d:"έτοιμο κομμάτι", f:"tillOpen(null,null)"},
+      (function(){ const n=(ordersCache||[]).filter(o=>orderOwed(o)>0.009).length; return n?{i:"💶", t:"Είσπραξη", d:`${n} ${n===1?"παραγγελία":"παραγγελίες"} με υπόλοιπο`, f:"goTab('customers','owed')"}:null; })(),
+      {i:"🏬", t:"Παράδοση χονδρικής", d:"σε κατάστημα", f:"newWholesale()"},
+      {i:"👤", t:"Νέος πελάτης", d:"καρτέλα χωρίς πώληση", f:"showAdminTab('customers');openCustNew('retail')"}
     ]},
     {h:"Αποθήκη & ταμείο", a:[
       {i:"🛒", t:"Αγορά", d:"νήματα & υλικά", f:"openPurchase()"},
       {i:"🚚", t:"Παραγγελία σε προμηθευτή", d:(function(){ const n=supOrdersPending().length; return n?`${n} σε αναμονή`:"νήματα & υλικά"; })(), f:"openSupOrder()"},
       {i:"📦", t:"Έτοιμο κομμάτι", d:"νέο στην αποθήκη", f:"goTab('stock','product');openStockModal(null)"},
+      bz?{i:"🛍️", t:"Αποστολή σε bazaar", d:"έτοιμα κομμάτια", f:"sendPiecesToBazaar()"}:null,
       {i:"🧮", t:"Έξοδο", d:"λοιπά έξοδα", f:"openCashMove()"}
     ]},
     {h:"Εργασία", a:[
@@ -10258,6 +10349,10 @@ function openItemSheet(id){
   const _ms=!isProd?itemSupOf(id):null;
   if(!isProd && !arch) A.push({i:"🚚", t:"Παραγγελία σε προμηθευτή", d:_ms?`προς ${_ms.name} — καταχώριση σε αναμονή`:"καταχώριση σε αναμονή μέχρι την παραλαβή", f:go(`openSupOrder(null,'${id}')`)});
   if(!isProd && !arch) A.push({p:true, i:"🛒", t:"Αγορά", d:_ms?`από ${_ms.name} — ή από άλλον στη φόρμα`:"προσθήκη αποθέματος με πληρωμή", f:go(`openPurchase(null,'${id}')`)});
+  if(isProd && !arch){ const _b=bzOfStock(it);
+    if(_b){ A.push({i:"🛍️", t:`Στο ${_b.name}`, d:"άνοιγμα της σελίδας του bazaar", f:`goBz('${_b.id}')`});
+            A.push({i:"↩", t:"Επιστροφή από το bazaar", d:"το κομμάτι μένει διαθέσιμο στην αποθήκη", f:go(`pieceFromBazaar('${id}')`)}); }
+    else if(q>0 && bzOpen().length) A.push({i:"🛍️", t:"Αποστολή σε bazaar", d:bzOpen().length===1?bzOpen()[0].name:"επιλογή ανοιχτού bazaar", f:go(`pieceToBazaar('${id}')`)}); }
   if(isProd && !arch) A.push({i:"⏱", t:"Χρόνος εργασίας", d:"μέτρηση χρόνου για αυτό το κομμάτι", f:go(`timerStartStock('${id}')`)});
   A.push({i:"✎", t:"Επεξεργασία", d:isProd?"όνομα, τιμή, φωτογραφία, υλικά":"όνομα, κατηγορία, τιμή, όριο", f:go(`openStockModal('${id}')`)});
   A.push({i:"📋", t:"Ιστορικό κινήσεων", d:"αγορές, αναλώσεις, πωλήσεις", f:go(`openStockHistory('${id}')`)});
@@ -10293,6 +10388,7 @@ function openItemSheet(id){
   _ovOpen("itemSheet");
 }
 function openMore(){
+  document.getElementById("moreTitle").textContent="Μενού";
   const items=[
     [ICON.customers,"Πελάτες","showAdminTab('customers')"],
     [ICON.models,"Μοντέλα","showAdminTab('models')"],
@@ -11134,6 +11230,8 @@ function askAnswer(q){
   // εντολές
   const QW=["πού","πόσα","πόσο","πόσες","πόσοι","τι","ποια","ποιο","ποιες","ποιοι","πότε","πώς","γιατί","ποιος"].map(normText);
   const isQuestion=/[;?]\s*$/.test(q.trim()) || QW.includes(toks[0]);
+  // κανόνες τιμολόγησης (προκαταβολή, premium, ονομασίες τιμών) — πριν από πληρωμές και αγορές
+  if(!E.order && !E.customer){ const a=askRulesCmd(q, E, isQuestion); if(a) return a; }
   { // «νέος πελάτης …», «νέο κατάστημα …», «νέος προμηθευτής …»
     const V=["καταχώρησε","πρόσθεσε","άνοιξε","φτιάξε","βάλε"].map(normText), NEW=["νέο","νέα","νέος","νέας","καινούργιο","καινούργιος","ένα","έναν","μία","μια"].map(normText);
     const KIND=[["πελάτη","retail"],["πελάτης","retail"],["πελάτισσα","retail"],["κατάστημα","shop"],["μαγαζί","shop"],["προμηθευτή","sup"],["προμηθευτής","sup"]].map(([w,k])=>[normText(w),k]);
@@ -12015,6 +12113,69 @@ function pxOpText(op, f){
   if(op.t==="pct") return `${F} ${op.v>0?"+":"−"}${fmtNum(Math.abs(op.v))}%`;
   if(op.t==="ratio") return `χονδρική = ${fmtNum(Math.round(op.v*100))}% της λιανικής`;
   return `${F} στρογγυλεμένη${op.v>1?" στο "+fmtNum(op.v):""}`;
+}
+/* ---- κανόνες τιμολόγησης από τον βοηθό ----
+   «προκαταβολή 30% στο Laluna», «προκαταβολή 50% στις χάντρες», «χωρίς προκαταβολή στο Hug»,
+   «προκαταβολή 40%» (γενική), «premium νήμα 8€», «custom σχέδιο 25€», «Laluna γυάλινες 85»,
+   «ποια μοντέλα θέλουν προκαταβολή;» */
+function askRulesTargets(q, E){
+  const nq=normText(q);
+  const CAT=[["Beaded",["χαντρ","beaded","beads"]],["Marshmallow",["marshmallow","μαρσμελ"]],["Puffy",["puffy"]],["Crochet",["crochet","κροσε","t-shirt","tshirt"]]];
+  for(const [c,ws] of CAT) if(ws.some(w=>nq.includes(normText(w)))) return {label:c==="Beaded"?"τα μοντέλα με χάντρες":"τα "+c, models:(modelCat||[]).filter(m=>m.cat===c && !m.retired)};
+  { const toks=" "+nq+" "; const hit=(modelCat||[]).filter(m=>toks.includes(" "+normText(m.name)+" ")).sort((a,b)=>b.name.length-a.name.length)[0];
+    if(hit) return {label:hit.name, models:[hit]}; }
+  if(E.model){ const m=modelByName(E.model); if(m) return {label:m.name, models:[m]}; }
+  if(/(^| )(ολα|ολες|ολους)( |$)/.test(nq)) return {label:"όλα τα μοντέλα", models:(modelCat||[]).filter(m=>!m.retired)};
+  return null;
+}
+function askRulesCmd(q, E, isQuestion){
+  const nq=normText(q), nums=askNums(q);
+  const hasDep=nq.includes(normText("προκαταβολ"));
+  // ερώτηση: ποια θέλουν προκαταβολή
+  if(hasDep && isQuestion && !E.order && !E.customer){
+    const L=(modelCat||[]).filter(m=>!m.retired && modelDepPct(m)>0);
+    return { text:L.length?`Προκαταβολή ζητείται σε ${ASKB(L.length+" "+(L.length===1?"μοντέλο":"μοντέλα"))}. Γενική προεπιλογή: ${Number(pricing.depPct)||0}%.`:"Κανένα μοντέλο δεν ζητά προκαταβολή.",
+      rows:L.map(m=>({icon:"€", title:esc(m.name), sub:esc(m.cat||""), right:modelDepPct(m)+"%", go:`_ovClose('askSheet');showAdminTab('models');openModelModal('${m.id}')`})) };
+  }
+  if(isQuestion) return null;
+  // γενικές χρεώσεις
+  const eur=nums.filter(n=>n.v>0).pop();
+  if(eur && nq.includes(normText("premium"))){
+    const v=eur.v; return askConfirmCard(`Η επιπλέον χρέωση για ${ASKB("premium νήμα")} θα γίνει ${ASKB(fmtMoney(v))} (τώρα ${fmtMoney(pPremium())}).`, [], async()=>{ pricing.premium=v; if(!(await saveAppSettings())) throw new Error("δεν αποθηκεύτηκε"); return {text:`✓ Premium νήμα: +${fmtMoney(v)}.`}; }, {label:"Αποθήκευση"});
+  }
+  if(eur && (nq.includes(normText("custom")) || nq.includes(normText("σχεδιασμ"))) && !E.order && !E.customer && !E.model){
+    const v=eur.v; return askConfirmCard(`Η επιπλέον χρέωση για ${ASKB("custom σχέδιο")} θα γίνει ${ASKB(fmtMoney(v))} (τώρα ${fmtMoney(pCustom())}).`, [], async()=>{ pricing.custom=v; if(!(await saveAppSettings())) throw new Error("δεν αποθηκεύτηκε"); return {text:`✓ Custom σχέδιο: +${fmtMoney(v)}.`}; }, {label:"Αποθήκευση"});
+  }
+  // προκαταβολή
+  if(hasDep && !E.order && !E.customer){
+    const none=["χωρις","καμια","οχι","βγαλε","αφαιρεσε"].some(w=>(" "+nq+" ").includes(" "+normText(w)));
+    const pctN=nums.find(n=>n.pct) || nums.find(n=>n.v>0 && n.v<=100);
+    const pct=none?0:(pctN?pctN.v:null);
+    if(pct==null) return { text:"Τι ποσοστό προκαταβολής; Γράψτε π.χ. «προκαταβολή 50% στις χάντρες» ή «χωρίς προκαταβολή στο Hug»." };
+    const T=askRulesTargets(q,E);
+    if(!T){ // γενική προεπιλογή
+      return askConfirmCard(`Η ${ASKB("γενική προκαταβολή")} θα γίνει ${ASKB(pct+"%")} (τώρα ${Number(pricing.depPct)||0}%). Ισχύει για τα μοντέλα που ζητούν προκαταβολή χωρίς δικό τους ποσοστό.`, [], async()=>{ pricing.depPct=pct; if(!(await saveAppSettings())) throw new Error("δεν αποθηκεύτηκε"); try{ renderStock(); }catch(e){} return {text:`✓ Γενική προκαταβολή ${pct}%.`}; }, {label:"Αποθήκευση"});
+    }
+    if(!T.models.length) return { text:`Δεν βρέθηκαν μοντέλα για ${esc(T.label)}.` };
+    return askConfirmCard(pct?`Θα ζητείται ${ASKB("προκαταβολή "+pct+"%")} για ${ASKB(esc(T.label))}.`:`Δεν θα ζητείται προκαταβολή για ${ASKB(esc(T.label))}.`,
+      T.models.map(m=>({icon:"€", title:esc(m.name), sub:esc(m.cat||""), right:`${modelDepPct(m)}% → ${pct}%`})),
+      async()=>{ const ids=new Set(T.models.map(m=>m.id)); modelCat=modelCat.map(m=>ids.has(m.id)?{...m, dep_pct:pct, dep:pct>0}:m);
+        if(!(await saveSetting("models", modelCat, true))) throw new Error("δεν αποθηκεύτηκε"); try{ renderStock(); }catch(e){}
+        return {text:`✓ Ενημερώθηκαν ${T.models.length} ${T.models.length===1?"μοντέλο":"μοντέλα"}.`, actions:[{l:"Μοντέλα", f:"_ovClose('askSheet');showAdminTab('models')"}]}; }, {label:"Αποθήκευση"});
+  }
+  // «Laluna γυάλινες 85»: τιμή με την ονομασία του μοντέλου
+  if(E.model && eur){
+    const m=modelByName(E.model); if(!m) return null;
+    const L=priceLabels(m.cat, m.name);
+    const hit=k=>k && normText(k).length>=4 && nq.includes(normText(k).replace(/^\+\s*/,""));
+    const which = hit(L.extra) ? "price2" : (hit(L.base) && L.base!=="κλασική" ? "price" : null);
+    if(!which) return null;
+    const v=eur.v, old=m[which];
+    return askConfirmCard(`Η τιμή ${ASKB(esc(which==="price2"?L.extra:L.base))} του ${ASKB(esc(m.name))} θα γίνει ${ASKB(fmtMoney(v))} (τώρα ${old!=null?fmtMoney(old):"—"}).`, [],
+      async()=>{ modelCat=modelCat.map(x=>x.id===m.id?{...x, [which]:v}:x); if(!(await saveSetting("models", modelCat, true))) throw new Error("δεν αποθηκεύτηκε"); try{ renderStock(); }catch(e){}
+        return {text:`✓ ${esc(m.name)} ${esc(which==="price2"?L.extra:L.base)}: ${fmtMoney(v)}.`}; }, {label:"Αλλαγή τιμής"});
+  }
+  return null;
 }
 function askPriceCmd(q){
   const T=pxTokens(q); if(!T.length) return null;
@@ -13028,11 +13189,11 @@ function renderSuppliers(){
     <div class="stat"><div class="n" style="font-size:20px">${fmtMoney(yTot)}</div><div class="l">Αγορές φέτος</div></div>
     ${saveAll>0.5?`<div class="stat"><div class="n" style="font-size:20px;color:#2c6e49">${fmtMoney(saveAll)}</div><div class="l">Πιθανή εξοικονόμηση</div></div>`:""}
   </div>`;
-  h+=all.map(x=>{
+  h+=`<div class="cc-list">`+all.map(x=>{
     const items=[...new Set(x.st.lines.map(l=>l.name))];
     const cheapest=pt.filter(e=>e.rows.length>1 && supNorm(e.best.sup)===supNorm(x.n)).length;
     return `<div class="cust-card"><button class="cc-main" onclick="openSupplier(${esc(JSON.stringify(x.n))})">
-      <div style="flex:1;min-width:0">
+      ${ccAvatar(x.n,"sup")}<div style="flex:1;min-width:0">
         <div class="cc-n">${esc(x.n)}</div>
         <div class="cc-s">${x.st.n} ${x.st.n===1?"αγορά":"αγορές"} · ${fmtMoney(x.st.spent)} συνολικά${x.st.last?` · τελευταία ${fmtD(new Date(x.st.last))}`:""}</div>
         ${items.length?`<div class="cc-s">${items.slice(0,4).map(esc).join(", ")}${items.length>4?` +${items.length-4}`:""}</div>`:""}
@@ -13043,7 +13204,7 @@ function renderSuppliers(){
       </div></button>
       <div class="cc-btns"><button class="btn ghost sm" onclick="openSupOrder(${esc(JSON.stringify(x.n))})">Παραγγελία</button><button class="btn ghost sm" onclick="openPurchaseFrom(${esc(JSON.stringify(x.n))})">Νέα αγορά</button></div>
     </div>`;
-  }).join("");
+  }).join("")+`</div>`;
   box.innerHTML=h;
 }
 function supCompareHtml(q){
@@ -14417,6 +14578,70 @@ function repBars(rows, unitLabel){
   </div>`).join("");
 }
 
+/* ============ ΕΚΤΥΠΩΣΗ ΑΝΑΦΟΡΑΣ A4 ============
+   Όχι στιγμιότυπο της οθόνης: ξεχωριστό έγγραφο με κεφαλίδα, ενότητες,
+   πίνακες σε πλάτος σελίδας και αλλαγές σελίδας στα σωστά σημεία. */
+const PRINT_CSS=`
+@page{size:A4;margin:14mm 13mm 16mm}
+html,body{background:#fff!important}
+body.print-doc{margin:0;padding:0;color:#111;font-family:'Inter',Arial,sans-serif;font-size:10pt;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.pr-head{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;border-bottom:2px solid #111;padding-bottom:8pt;margin-bottom:6pt}
+.pr-brand{font-family:'Cormorant',Georgia,serif;font-size:24pt;font-weight:600;letter-spacing:.06em;line-height:1}
+.pr-meta{text-align:right;font-size:9pt;color:#444;line-height:1.5}
+.pr-meta b{font-size:12pt;color:#111;display:block}
+.pr-sec{margin-top:20pt}
+.pr-sec>h2{font-family:'Inter',Arial,sans-serif;font-size:9pt;letter-spacing:.16em;text-transform:uppercase;color:#111;border-bottom:1px solid #111;padding-bottom:4pt;margin:0 0 6pt;break-after:avoid;page-break-after:avoid}
+.pr-sec{break-inside:auto}
+.pr-sec h2+*{break-before:avoid}
+.rep-intro{font-size:9pt;color:#444;margin:0 0 6pt}
+.rep-sec{font-size:8.5pt;letter-spacing:.12em;margin:12pt 0 4pt;color:#555;break-after:avoid}
+.rep-r{padding:4pt 0;border-bottom:0.5pt solid #ccc;break-inside:avoid}
+.rep-r .l{font-size:10pt}.rep-r .a{font-size:10pt}
+.rep-r.sum{border-bottom:1.2pt solid #111}
+.rep-r.tot{background:#fff!important;color:#111!important;border:1.5pt solid #111!important;border-radius:0!important;padding:6pt 8pt!important;margin:6pt 0}
+.rep-r.tot .l,.rep-r.tot .a{color:#111!important;font-weight:700}
+.rep-hr,.rep-tr{break-inside:avoid;padding:3pt 0;font-size:9pt}
+.rep-hr{font-size:7.5pt;color:#555;border-bottom:1pt solid #111}
+.rep-tr{border-bottom:0.5pt solid #ddd}
+.rep-bar{break-inside:avoid;margin-bottom:5pt}.rep-bar .t{font-size:9pt}
+.rep-bar .track{height:3pt;background:#eee}.rep-bar .fill{background:#111}
+.rep-note{font-size:8.5pt;color:#555}
+.stat,.stat.dark,[class*="dark"]{background:#fff!important;color:#111!important;border:0.8pt solid #999!important;box-shadow:none!important}
+.stat .l{color:#555!important}
+.chips,.chiprow,.rep-head,.rep-foot,.hs-btn,.lnk,.btn,button.x{display:none!important}
+.pr-foot{margin-top:18pt;padding-top:6pt;border-top:0.5pt solid #999;font-size:8pt;color:#666;display:flex;justify-content:space-between}
+img{max-width:100%}
+`;
+function printReport(){
+  const keep=repTab, d=reportData();
+  const tabs=[["pnl","Αποτέλεσμα, ταμειακή ροή και σύνοψη"],["products","Προϊόντα"],["customers","Πελάτες"],["channels","Κανάλια και σημεία πώλησης"],["stock","Αποθήκη"],["time","Χρόνος εργασίας"]];
+  const parts=[];
+  try{
+    tabs.forEach(([k,l],i)=>{
+      repTab=k; renderReport();
+      const tmp=document.createElement("div"); tmp.innerHTML=document.getElementById("statsBody").innerHTML;
+      tmp.querySelectorAll(".rep-head,.chips,.rep-foot,.lnk,.led-empty").forEach(e=>e.remove());
+      tmp.querySelectorAll("button").forEach(b=>{ const x=document.createElement("span"); x.className=b.className; x.innerHTML=b.innerHTML; b.replaceWith(x); });
+      if(tmp.textContent.trim()) parts.push(`<section class="pr-sec ${i>0?"newp":""}"><h2>${esc(l)}</h2>${tmp.innerHTML}</section>`);
+    });
+  } finally { repTab=keep; renderReport(); }
+  if(!parts.length){ adminFlash("Δεν υπάρχουν στοιχεία για εκτύπωση σε αυτή την περίοδο."); return; }
+  const now=new Date();
+  const css=[...document.querySelectorAll("style")].map(x=>x.textContent).join("\n");
+  const html=`<!doctype html><html lang="el"><head><meta charset="utf-8"><title>Αναφορά ${esc(d.label)} · THILIKÓN</title>
+    <style>${css}</style><style>${PRINT_CSS}</style></head><body class="print-doc">
+    <div class="pr-head"><div class="pr-brand">THILIKÓN</div><div class="pr-meta"><b>Αναφορά περιόδου · ${esc(d.label)}</b>Εκδόθηκε ${fmtD(now.toISOString())} ${now.toLocaleTimeString("el-GR",{hour:"2-digit",minute:"2-digit"})}</div></div>
+    ${parts.join("")}
+    <div class="pr-foot"><span>THILIKÓN · Αναφορά διαχείρισης</span><span>${esc(d.label)}</span></div>
+    </body></html>`;
+  let fr=document.getElementById("printFrame");
+  if(fr) fr.remove();
+  fr=document.createElement("iframe"); fr.id="printFrame";
+  fr.style.cssText="position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden";
+  document.body.appendChild(fr);
+  fr.onload=()=>{ setTimeout(()=>{ try{ fr.contentWindow.focus(); fr.contentWindow.print(); }catch(e){ adminFlash("Η εκτύπωση δεν ξεκίνησε."); } }, 300); };
+  fr.srcdoc=html;
+}
 function renderReport(){
   const box=document.getElementById("statsBody"); if(!box) return;
   const d=reportData();
@@ -14441,7 +14666,7 @@ function renderReport(){
   if(repTab!=="pnl"){
     const f={summary:repSummary, products:repProducts, customers:repCustomers, channels:repChannels, stock:repStock, time:repTime}[repTab]||repSummary;
     box.innerHTML = periodBar + tabBar + f(d) +
-      `<div class="rep-foot"><button class="btn ghost sm" onclick="window.print()">Εκτύπωση</button></div>`;
+      `<div class="rep-foot"><button class="btn ghost sm" onclick="printReport()">Εκτύπωση αναφοράς (A4)</button></div>`;
     return;
   }
 
@@ -14529,7 +14754,7 @@ function renderReport(){
 
   box.innerHTML = periodBar + tabBar + `<p class="rep-intro">Κατάσταση αποτελέσματος περιόδου: πωλήσεις μείον κόστος υλικών, λειτουργικά έξοδα και κόστος εργασίας.</p>`
     + result + flow + chTable + sellBlock + rest + trend +
-    `<div class="rep-foot"><button class="btn ghost sm" onclick="window.print()">Εκτύπωση</button></div>`;
+    `<div class="rep-foot"><button class="btn ghost sm" onclick="printReport()">Εκτύπωση αναφοράς (A4)</button></div>`;
 }
 
 /* ============ ΑΝΑΦΟΡΕΣ ΑΝΑ ΘΕΜΑ ============
@@ -15380,6 +15605,29 @@ async function delCashMove(){
 
 /* ---- Η σελίδα του bazaar ---- */
 let bzView=null;   // null = λίστα, αλλιώς το id ενός bazaar
+/* ---- γέφυρες αποθήκης ↔ bazaar ---- */
+function goBz(id){ _ovClose("itemSheet"); showAdminTab("bazaar"); setBzView(id); }
+function chooseBazaar(title, cb){
+  const L=bzOpen();
+  if(!L.length){ if(confirm("Δεν υπάρχει ανοιχτό bazaar. Να δημιουργηθεί νέο;")) { showAdminTab("bazaar"); openBzModal(); } return; }
+  if(L.length===1){ cb(L[0].id); return; }
+  window._bzCb=cb;
+  document.getElementById("moreTitle").textContent=title;
+  document.getElementById("moreBody").innerHTML=`<div class="more-list">${L.map(b=>`<button onclick="_ovClose('moreSheet');window._bzCb('${b.id}')"><span class="i">🛍️</span>${esc(b.name)}${b.date?` <span style="color:var(--muted);font-weight:400;margin-left:6px">${fmtMonthDate(b.date+"T09:00:00")}</span>`:""}</button>`).join("")}</div>`;
+  _ovOpen("moreSheet");
+}
+/* από τα Έτοιμα: άνοιγμα του επιλογέα «τι παίρνω μαζί» του bazaar */
+function sendPiecesToBazaar(){ chooseBazaar("Αποστολή σε bazaar", id=>openBzPicker(id)); }
+async function pieceToBazaar(stockId){
+  chooseBazaar("Σε ποιο bazaar;", async id=>{
+    bzItems[stockId]=id; await saveBzItems(true); renderStock(); try{ renderBazaar(); }catch(e){}
+    const b=bzById(id); actionToast(`Στάλθηκε στο ${b?b.name:"bazaar"} ✓`, "Άνοιγμα", ()=>goBz(id), 6);
+  });
+}
+async function pieceFromBazaar(stockId){
+  const b=bzById(bzItems[stockId]); delete bzItems[stockId]; await saveBzItems(true); renderStock(); try{ renderBazaar(); }catch(e){}
+  adminFlash(`Επέστρεψε από ${b?b.name:"το bazaar"} στην αποθήκη ✓`);
+}
 function setBzView(id){ bzView=id||null; renderBazaar(); syncRoute(); }
 function renderBazaar(){
   const box=document.getElementById("bzAdmin"); if(!box) return;
