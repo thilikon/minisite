@@ -154,7 +154,8 @@ h2.about-title{font-family:'Cormorant Garamond',serif;font-size:clamp(38px,4.5vw
 .ce-item img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .7s;cursor:zoom-in;filter:brightness(1.07) contrast(1.06) saturate(1.04)}
 .ce-item img:hover{transform:scale(1.05)}
 @media(max-width:700px){
-  .custom-editorial{grid-template-columns:repeat(2,1fr)}
+  .custom-editorial{grid-template-columns:repeat(2,1fr);gap:6px}
+  .ce-item{border-radius:8px}
   .ce-item.tall{grid-row:span 1}
 }
 
@@ -278,9 +279,6 @@ footer img.footer-logo{height:30px;filter:invert(1);margin-bottom:18px;display:b
   .bags-wrap,.filter-wrap,.sec-hdr{padding-left:24px;padding-right:24px}
   .creations-section{padding:60px 24px}
   .how-to-wrap{padding:60px 24px;margin-top:60px}
-  .custom-editorial{grid-template-columns:1fr!important}
-  .custom-editorial-main{aspect-ratio:4/3!important}
-  .custom-editorial-side{grid-template-columns:1fr 1fr!important;gap:8px!important}
   .footer-top{grid-template-columns:1fr;gap:36px}.footer-bottom{flex-direction:column;gap:10px;text-align:center}
   .quiz-section{padding:60px 24px}
   .quiz-opt{padding:14px 20px;font-size:11px}
@@ -301,7 +299,6 @@ footer img.footer-logo{height:30px;filter:invert(1);margin-bottom:18px;display:b
   .soon-badge span{font-size:7px;padding:6px 12px;letter-spacing:.18em}
   .coll-meta{padding-top:20px}
   .hero-actions{flex-direction:column;align-items:flex-start}
-  .custom-editorial-side{grid-template-columns:1fr 1fr!important}
   .filter-bar{gap:8px}
   .filter-btn{padding:8px 16px;font-size:9px}
 }
@@ -348,7 +345,7 @@ footer img.footer-logo{height:30px;filter:invert(1);margin-bottom:18px;display:b
   <div class="hero-visual fade-up">
     <div class="img-frame story-frame" id="storyFrame">
       <div class="story-bars" id="storyBars"></div>
-      <video class="story-video active" data-i="0" muted playsinline preload="auto">
+      <video class="story-video active" data-i="0" muted playsinline autoplay preload="auto">
         <source src="https://i.imgur.com/7VbW9NC.mp4" type="video/mp4">
       </video>
       <video class="story-video" data-i="1" muted playsinline preload="auto">
@@ -1356,22 +1353,32 @@ setTimeout(()=>{ document.querySelectorAll('.fade-up').forEach(el=>el.classList.
   function go(i){
     if (raf) cancelAnimationFrame(raf);
     const v0 = vids[cur];
-    v0.pause(); v0.classList.remove('active');
+    try { v0.pause(); } catch(e) {}
+    v0.classList.remove('active');
+    const target = (i + vids.length) % vids.length;
     bars.forEach((b,bi) => {
-      b.classList.toggle('done', bi < i);
-      if (bi !== i) b.firstElementChild.style.width = bi < i ? '100%' : '0';
+      b.classList.toggle('done', bi < target);
+      if (bi !== target) b.firstElementChild.style.width = bi < target ? '100%' : '0';
     });
-    cur = (i + vids.length) % vids.length;
+    cur = target;
     const v = vids[cur];
-    v.currentTime = 0;
+    // setting currentTime before metadata exists throws in some browsers
+    try { if (v.readyState > 0) v.currentTime = 0; } catch(e) {}
     v.classList.add('active');
     bars[cur].firstElementChild.style.width = '0';
-    const p = v.play();
-    if (p) p.catch(()=>{});
+    const tryPlay = () => { const p = v.play(); if (p) p.catch(()=>{}); };
+    tryPlay();
+    if (v.readyState < 3) {
+      v.addEventListener('canplay', tryPlay, {once:true});
+      v.addEventListener('loadeddata', tryPlay, {once:true});
+    }
     raf = requestAnimationFrame(paint);
   }
 
-  vids.forEach((v,i) => v.addEventListener('ended', () => go(i + 1)));
+  vids.forEach((v,i) => {
+    v.addEventListener('ended', () => go(i + 1));
+    v.addEventListener('error', () => { if (i === cur) go(i + 1); });
+  });
   document.getElementById('storyNext').addEventListener('click', e => { e.stopPropagation(); go(cur + 1); });
   document.getElementById('storyPrev').addEventListener('click', e => { e.stopPropagation(); go(cur - 1); });
 
